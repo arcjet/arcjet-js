@@ -84,32 +84,45 @@ export function guardApproval<TInput = Record<string, unknown>>(
       // Derive context from the Eve SessionContext
       const agentCtx = eveAgentContext(ctx);
 
+      // Create base metadata with derived context and eve-specific keys
+      // eve.phase is written by guardApproval, not by runGate (which is shared with guardInbound)
+      let metadata: ArcjetMetadata = {
+        ...agentCtx.metadata,
+        "eve.phase": "approval",
+        ...(typeof ctx.toolName === "string" && ctx.toolName.length > 0 && { "eve.tool": ctx.toolName }),
+        ...(typeof ctx.callId === "string" && ctx.callId.length > 0 && { "eve.call": ctx.callId }),
+      };
+
       // Resolve rules — may be a function.
       // A throwing rules callback is a caller defect; treat as unavailable.
       let ruleResolutionFailed = false;
+      let ruleResolutionError: unknown;
       let rules: RuleWithInput[] | undefined;
       try {
         rules = typeof policy.rules === "function" ? policy.rules(ctx) : policy.rules;
-      } catch {
+      } catch (error) {
         ruleResolutionFailed = true;
+        ruleResolutionError = error;
       }
 
       // Resolve metadata — may be a function.
       // A throwing metadata callback is a caller defect; treat as unavailable.
       let metadataResolutionFailed = false;
-      let metadata: ArcjetMetadata = { ...agentCtx.metadata };
+      let metadataResolutionError: unknown;
       try {
         const policyMetadata = typeof policy.metadata === "function" ? policy.metadata(ctx) : policy.metadata;
         metadata = { ...metadata, ...policyMetadata };
-      } catch {
+      } catch (error) {
         metadataResolutionFailed = true;
+        metadataResolutionError = error;
       }
 
       // If a callback threw, treat as unavailable rather than guarding
       if (ruleResolutionFailed || metadataResolutionFailed) {
         const failClosed = policy.onGuardError !== "allow";
         const correlation = agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
-        warnCallbackFailure(policy.action, failClosed);
+        const error = ruleResolutionFailed ? ruleResolutionError : metadataResolutionError;
+        warnCallbackFailure(policy.action, failClosed, error);
         captureEvent(client, {
           action: policy.action,
           ...correlation,
@@ -119,15 +132,6 @@ export function guardApproval<TInput = Record<string, unknown>>(
           ? { type: "denied", reason: unavailableReason() }
           : allowStatus();
       }
-
-      // Add Eve-specific metadata
-      // eve.phase is written by guardApproval, not by runGate (which is shared with guardInbound)
-      metadata = {
-        ...metadata,
-        "eve.phase": "approval",
-        ...(typeof ctx.toolName === "string" && ctx.toolName.length > 0 && { "eve.tool": ctx.toolName }),
-        ...(typeof ctx.callId === "string" && ctx.callId.length > 0 && { "eve.call": ctx.callId }),
-      };
 
       // Call runGate with the appropriate handlers
       return await runGate(client, {
@@ -144,11 +148,11 @@ export function guardApproval<TInput = Record<string, unknown>>(
             : { type: "denied", reason: unavailableReason() },
         onGuardError: policy.onGuardError ?? "deny",
       });
-    } catch {
+    } catch (error) {
       // Last resort: should never reach here if runGate never throws,
       // but if something unforeseen happens, fail closed by default
       const failClosed = policy.onGuardError !== "allow";
-      warnCallbackFailure(policy.action, failClosed);
+      warnCallbackFailure(policy.action, failClosed, error);
       return failClosed
         ? { type: "denied", reason: unavailableReason() }
         : allowStatus();
@@ -156,15 +160,15 @@ export function guardApproval<TInput = Record<string, unknown>>(
   };
 }
 
-function warnCallbackFailure(action: string, failClosed: boolean): void {
+function warnCallbackFailure(action: string, failClosed: boolean, error?: unknown): void {
   if (!shouldWarn()) {
     return;
   }
   // Constant format string: `action` must not be interpolated into the first argument
   // (Semgrep requirement for actionable log messages).
   if (failClosed) {
-    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing closed:', action);
+    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing closed:', action, error);
   } else {
-    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing open:', action);
+    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing open:', action, error);
   }
 }

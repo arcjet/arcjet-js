@@ -233,16 +233,25 @@ test("AC4.8: capture carries eve.phase: 'approval' on all outcomes", async () =>
   const { client: denyClient, captureCalls: denyCaptures } = stubClient(
     decisionDenyPromptInjection(),
   );
+  const { client: unavailableClient, captureCalls: unavailableCaptures } = stubClient(decisionAllow());
 
   const allowApproval = guardApproval(allowClient, { action: "resource.read" });
   const denyApproval = guardApproval(denyClient, { action: "resource.read" });
+  const unavailableApproval = guardApproval(unavailableClient, {
+    action: "resource.read",
+    rules: () => {
+      throw new Error("rules callback failed");
+    },
+    onGuardError: "deny",
+  });
 
   const ctx = createApprovalContext();
 
   await allowApproval(ctx);
   await denyApproval(ctx);
+  await unavailableApproval(ctx);
 
-  for (const captures of [allowCaptures, denyCaptures]) {
+  for (const captures of [allowCaptures, denyCaptures, unavailableCaptures]) {
     assert.equal(captures.length, 1);
     const capture = recorded(captures[0]);
     const metadata = recorded(capture.metadata);
@@ -352,11 +361,11 @@ test("metadata merge order: derived ← policy ← per-call function", async () 
   assert.equal(metadata["shared"], "from-policy");
 });
 
-test("M1: metadata function returns a key that collides — function value wins", async () => {
+test("metadata function overrides key from derived context — function value wins", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const approval = guardApproval(client, {
     action: "resource.read",
-    metadata: (ctx) => ({ shared: `from-function-${ctx.toolName}` }),
+    metadata: (ctx) => ({ user: `from-function-${ctx.toolName}` }),
   });
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
@@ -373,10 +382,10 @@ test("M1: metadata function returns a key that collides — function value wins"
   const call = recorded(guardCalls[0]);
   const metadata = recorded(call.metadata);
   // Verify the function's value wins over the derived context
-  assert.equal(metadata["shared"], "from-function-test.tool");
+  assert.equal(metadata["user"], "from-function-test.tool");
 });
 
-test("I1: ctx.toolName and callId are guarded — empty strings omitted from metadata", async () => {
+test("ctx.toolName and callId are guarded — empty strings omitted from metadata", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const approval = guardApproval(client, { action: "resource.read" });
 
@@ -395,7 +404,26 @@ test("I1: ctx.toolName and callId are guarded — empty strings omitted from met
   assert.equal("eve.call" in metadata, false, "eve.call should not be present for empty callId");
 });
 
-test("I2: callback throwing rules → warns and captures with outcome: unavailable", async () => {
+test("ctx.toolName and callId undefined — omitted from metadata", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, { action: "resource.read" });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = createApprovalContext({
+    toolName: undefined,
+    callId: undefined,
+  } as unknown as ApprovalContext);
+
+  await approval(ctx);
+
+  const call = recorded(guardCalls[0]);
+  const metadata = recorded(call.metadata);
+  // Undefined toolName/callId should not be written to metadata
+  assert.equal("eve.tool" in metadata, false, "eve.tool should not be present for undefined toolName");
+  assert.equal("eve.call" in metadata, false, "eve.call should not be present for undefined callId");
+});
+
+test("callback throwing rules → warns and captures with outcome: unavailable", async () => {
   const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
@@ -438,7 +466,7 @@ test("I2: callback throwing rules → warns and captures with outcome: unavailab
   }
 });
 
-test("C3/I5: AC4.7 with onGuardError: allow, failed-open signal → resolve to not-applicable, warning matches /fail(ing|ed) open/", async () => {
+test("AC4.7: with onGuardError: allow, failed-open signal → resolve to not-applicable, warning matches /fail(ing|ed) open/", async () => {
   const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
@@ -471,7 +499,42 @@ test("C3/I5: AC4.7 with onGuardError: allow, failed-open signal → resolve to n
   }
 });
 
-test("I5/I3: AC4.10 onDeny called with DecisionDeny by reference on actual DENY", async () => {
+test("AC4.7: with onGuardError: deny, failed-open signal → deny unavailable, warning does NOT match /fail(ing|ed) open/", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: Array<{ format: string; args: unknown[] }> = [];
+  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+  console.warn = (format: string, ...args: any[]) => {
+    warnings.push({ format, args });
+  };
+
+  try {
+    const { client } = stubClient(decisionFailOpenAllow());
+    const approval = guardApproval(client, {
+      action: "resource.read",
+      onGuardError: "deny",
+    });
+
+    const ctx = createApprovalContext();
+    const result = await approval(ctx);
+
+    assert.ok(typeof result === "object" && result !== null);
+    assert.equal((result as any).type, "denied");
+    const failClosedWarning = warnings.find((w) => w.args.includes("resource.read"));
+    assert.ok(failClosedWarning, `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`);
+    assert.ok(!/fail(ing|ed) open/.test(failClosedWarning.format), `Warning should NOT match /fail(ing|ed) open/, got: ${failClosedWarning.format}`);
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
+test("AC4.10: onDeny called with DecisionDeny by reference on actual DENY", async () => {
   const decision = decisionDenyPromptInjection();
   const { client } = stubClient(decision);
   let receivedDecision: DecisionDeny | undefined;
@@ -494,7 +557,7 @@ test("I5/I3: AC4.10 onDeny called with DecisionDeny by reference on actual DENY"
   assert.equal((result as any).reason, "custom: PROMPT_INJECTION");
 });
 
-test("I5: AC4.10 onDeny is NOT called on failed-open unavailable signal with onGuardError: deny", async () => {
+test("AC4.10: onDeny is NOT called on failed-open unavailable signal with onGuardError: deny", async () => {
   const { client } = stubClient(decisionFailOpenAllow());
   let onDenyCalls = 0;
   const approval = guardApproval(client, {
@@ -512,7 +575,7 @@ test("I5: AC4.10 onDeny is NOT called on failed-open unavailable signal with onG
   assert.equal(onDenyCalls, 0);
 });
 
-test("I3: AC4.4 correlationId is session id, eve.turn is asserted", async () => {
+test("AC4.4: correlationId is session id, eve.turn is asserted", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const approval = guardApproval(client, {
     action: "resource.read",
@@ -527,7 +590,7 @@ test("I3: AC4.4 correlationId is session id, eve.turn is asserted", async () => 
   assert.ok(metadata["eve.turn"], "eve.turn should be present in metadata");
 });
 
-test("I5/AC4.9: AC4.9 context missing session → guard still called, does not throw", async () => {
+test("AC4.9: context missing session → guard still called, does not throw", async () => {
   const { client: _client, guardCalls } = stubClient(decisionAllow());
   const approval = guardApproval(_client, { action: "resource.read" });
 
@@ -547,4 +610,43 @@ test("I5/AC4.9: AC4.9 context missing session → guard still called, does not t
   assert.ok(result !== undefined);
   // Guard should still have been called
   assert.equal(guardCalls.length, 1);
+});
+
+test("last-resort catch emits warning when onDeny throws with onGuardError: allow", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: Array<{ format: string; args: unknown[] }> = [];
+  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+  console.warn = (format: string, ...args: any[]) => {
+    warnings.push({ format, args });
+  };
+
+  try {
+    const { client } = stubClient(decisionDenyPromptInjection());
+    const approval = guardApproval(client, {
+      action: "resource.read",
+      onGuardError: "allow",
+      onDeny: () => {
+        throw new Error("onDeny threw unexpectedly");
+      },
+    });
+
+    const ctx = createApprovalContext();
+    const result = await approval(ctx);
+
+    // Last-resort catch should fail open (onGuardError: allow)
+    assert.strictEqual(result, "not-applicable");
+    // Warning should have been emitted
+    const warning = warnings.find((w) => w.args.includes("resource.read"));
+    assert.ok(warning, `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`);
+    assert.ok(/fail(ing|ed) open/.test(warning.format), `Expected warning to match /fail(ing|ed) open/, got: ${warning.format}`);
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
 });
