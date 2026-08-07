@@ -122,9 +122,11 @@ export type InboundVerdict =
  */
 export async function guardInbound(
   client: ArcjetAgentClient,
-  _text: string,
+  // oxlint-disable-next-line typescript/no-unused-vars -- parameter is not inspected; included for clarity at call sites
+  text: string,
   options: GuardInboundOptions,
 ): Promise<InboundVerdict> {
+  void text; // TypeScript: mark parameter as intentionally unused
   const action = options.action ?? "message.received";
 
   try {

@@ -85,6 +85,7 @@ test("AC5.7: unavailable with onGuardError='allow' → { allowed: true } with fa
 test("AC5.7: fail-open warning matches /fail(ing|ed) open/ pattern", async () => {
   // Use a fail-open decision instead of thrown error
   const { client } = stubClient(decisionFailOpenAllow());
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
   let warnOutput = "";
   const originalWarn = console.warn;
   console.warn = (...args: any[]) => {
@@ -99,12 +100,111 @@ test("AC5.7: fail-open warning matches /fail(ing|ed) open/ pattern", async () =>
     });
   } finally {
     console.warn = originalWarn;
-    delete process.env["ARCJET_LOG_LEVEL"];
+    if (oldLogLevel === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
   }
 
   // Check that the warning contains the pattern
   const pattern = /fail(ing|ed) open/;
   assert.ok(pattern.test(warnOutput), `Warning should match pattern /fail(ing|ed) open/, got: "${warnOutput}"`);
+});
+
+test("AC5.7: failed-open signal with default onGuardError → { allowed: false, reason: 'UNAVAILABLE' }", async () => {
+  const { client } = stubClient(decisionFailOpenAllow());
+  const verdict = await guardInbound(client, "test input", {
+    rules: [fakeRule],
+  });
+
+  assert.strictEqual(verdict.allowed, false);
+  assert.equal((verdict as any).reason, "UNAVAILABLE");
+});
+
+test("AC5.7: failed-open signal with onGuardError='allow' → { allowed: true } with fail-open warning", async () => {
+  const { client } = stubClient(decisionFailOpenAllow());
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  let warnOutput = "";
+  const originalWarn = console.warn;
+  console.warn = (...args: any[]) => {
+    warnOutput += args.join(" ");
+  };
+
+  try {
+    process.env["ARCJET_LOG_LEVEL"] = "warn";
+    const verdict = await guardInbound(client, "test input", {
+      rules: [fakeRule],
+      onGuardError: "allow",
+    });
+
+    assert.deepEqual(verdict, { allowed: true });
+    const pattern = /fail(ing|ed) open/;
+    assert.ok(pattern.test(warnOutput), `Warning should match pattern /fail(ing|ed) open/, got: "${warnOutput}"`);
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
+test("AC5.7: deny-path unavailable warning does NOT match /fail(ing|ed) open/", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: Array<{ format: string; args: unknown[] }> = [];
+  console.warn = (format: string, ...args: any[]) => {
+    warnings.push({ format, args });
+  };
+
+  try {
+    const { client } = stubClient(new Error("guard failed"));
+    await guardInbound(client, "test input", {
+      rules: [fakeRule],
+      onGuardError: "deny",
+    });
+
+    const denialWarning = warnings.find((w) => typeof w.format === "string" && w.format.length > 0);
+    assert.ok(denialWarning, `Expected a warning, got: ${warnings.map((w) => w.format).join(", ")}`);
+    assert.ok(!/fail(ing|ed) open/.test(denialWarning.format), `Warning should NOT match /fail(ing|ed) open/, got: ${denialWarning.format}`);
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
+test("AC5.7: fail-open warning is silent with ARCJET_LOG_LEVEL unset", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  delete process.env.ARCJET_LOG_LEVEL;
+  let warnOutput = "";
+  const originalWarn = console.warn;
+  console.warn = (...args: any[]) => {
+    warnOutput += args.join(" ");
+  };
+
+  try {
+    const { client } = stubClient(decisionFailOpenAllow());
+    await guardInbound(client, "test input", {
+      rules: [fakeRule],
+      onGuardError: "allow",
+    });
+
+    assert.strictEqual(warnOutput, "", "Warning should be silent with ARCJET_LOG_LEVEL unset");
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
 });
 
 test("AC5.8: never throws - rejecting guard() resolves to verdict", async () => {
@@ -119,6 +219,87 @@ test("AC5.8: never throws - rejecting guard() resolves to verdict", async () => 
   }
 
   assert.ok(!threw, "guardInbound should never throw");
+});
+
+test("AC5.8: never throws - throwing capture() resolves to verdict", async () => {
+  const throwingCaptureClient: any = {
+    guard: () => Promise.resolve(decisionAllow()),
+    capture: () => {
+      throw new Error("capture failed");
+    },
+  };
+  let threw = false;
+  let verdict: any;
+  try {
+    verdict = await guardInbound(throwingCaptureClient, "test input", {
+      rules: [fakeRule],
+    });
+  } catch {
+    threw = true;
+  }
+
+  assert.ok(!threw, "guardInbound should never throw even if capture throws");
+  assert.deepEqual(verdict, { allowed: true }, "Should return verdict despite capture error");
+});
+
+test("AC5.8: never throws - guard() rejecting rules resolves to verdict", async () => {
+  const rejectingRulesClient: any = {
+    guard: (opts: any) => {
+      // Reject if rules array contains an invalid element
+      if (Array.isArray(opts.rules) && opts.rules.some((r: any) => r.type === "INVALID")) {
+        return Promise.reject(new Error("rules rejected"));
+      }
+      return Promise.resolve(decisionAllow());
+    },
+    capture: () => {},
+  };
+  let threw = false;
+  let verdict: any;
+  try {
+    const invalidRule = { type: "INVALID" } as any;
+    verdict = await guardInbound(rejectingRulesClient, "test input", {
+      rules: [invalidRule],
+    });
+  } catch {
+    threw = true;
+  }
+
+  assert.ok(!threw, "guardInbound should never throw even if guard rejects rules");
+  assert.strictEqual(verdict.allowed, false, "Should return unavailable verdict");
+  assert.equal(verdict.reason, "UNAVAILABLE", "Reason should be UNAVAILABLE");
+});
+
+test("AC5.8: never throws - throwing deniedReason helper resolves to verdict", async () => {
+  // Create a decision with a getter that throws when accessed
+  const throwingDecision: any = {
+    conclusion: "DENY",
+    id: "gdec_throw",
+    results: [],
+    warnings: [],
+    hasFailedOpen: () => false,
+    get reason() {
+      throw new Error("reason getter threw");
+    },
+  };
+
+  const throwingDecisionClient: any = {
+    guard: () => Promise.resolve(throwingDecision),
+    capture: () => {},
+  };
+
+  let threw = false;
+  let verdict: any;
+  try {
+    verdict = await guardInbound(throwingDecisionClient, "test input", {
+      rules: [fakeRule],
+    });
+  } catch {
+    threw = true;
+  }
+
+  assert.ok(!threw, "guardInbound should never throw even if decision helpers throw");
+  assert.strictEqual(verdict.allowed, false, "Should return unavailable verdict");
+  assert.equal(verdict.reason, "UNAVAILABLE", "Reason should be UNAVAILABLE");
 });
 
 test("AC5.8: exactly ONE capture per call - ALLOW", async () => {

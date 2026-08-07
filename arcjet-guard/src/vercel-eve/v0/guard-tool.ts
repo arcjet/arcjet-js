@@ -63,9 +63,9 @@ export interface GuardToolPolicy<TInput> {
  *
  * Unlike `guardApproval`, this helper **may** throw: a thrown denial or unavailable
  * error reaches Eve, which projects it as `action.result` with `status: "failed"`
- * and an `ActionResultError`. This is often better than an approval gate when the
- * tool declares an `outputSchema` or comes from a connection, because the approval
- * gate blocks the whole invocation before the tool runs at all.
+ * and an `ActionResultError`. Reach for `guardApproval` instead when the tool
+ * declares an `outputSchema` or comes from a connection — a tool that declares an
+ * output contract should not silently return something else.
  *
  * **Limitation:** Static authored tools are supported; dynamically-defined tools
  * (`defineDynamic`) are not, because their `execute` functions are hoisted by

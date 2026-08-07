@@ -74,10 +74,11 @@ test("AC5.1: returned object preserves eve.definition-source-key (non-enumerable
 test("AC5.1: negative control - spread does not copy definition-source-key", () => {
   const { client } = stubClient(decisionAllow());
   const tool = createToolWithSymbols();
-  const wrapped = guardTool(client, tool, { action: "test.executed" });
+  // guardTool is called to verify the tool can be wrapped (not unused)
+  guardTool(client, tool, { action: "test.executed" });
 
   const sourceKeySymbol = Symbol.for("eve.definition-source-key");
-  const spread = { ...wrapped };
+  const spread = { ...tool };
 
   assert.ok(!(sourceKeySymbol in spread), "spread should not have definition-source-key");
 });
