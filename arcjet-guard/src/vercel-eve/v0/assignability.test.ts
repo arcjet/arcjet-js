@@ -9,6 +9,13 @@
  *
  * Uses typed `const` declarations rather than casts — a cast would make the test
  * pass regardless, which defeats its entire purpose.
+ *
+ * Scope: these declarations pin assignability, not `guardApproval`'s default type
+ * parameter. Each one supplies a contextual target type that TypeScript infers
+ * `TInput` from, so the default never participates. The default is pinned in
+ * `guard-approval.test.ts`, where every `await approval(ctx)` passes an
+ * `ApprovalContext` into an uninferred call — do not delete those calls expecting
+ * this file to cover them.
  */
 
 // oxlint-disable eslint/no-unnecessary-type-assertion, eslint/explicit-function-return-type -- test infrastructure
