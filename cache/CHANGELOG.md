@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/cache-v1.10.0) (2026-08-07)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/cache:** Synchronize arcjet-js versions
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/cache-v1.9.1) (2026-07-15)
 
 
