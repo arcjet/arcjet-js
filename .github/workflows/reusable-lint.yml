@@ -33,6 +33,11 @@ jobs:
       - name: Pin npm
         uses: ./.github/actions/pin-npm
       - run: npm ci
+      # Reads lockfiles only, so it runs before the build and needs no example
+      # installs. Catches a vendor SDK that resolves to two versions across the
+      # repo, which typechecks as two distinct declarations of the same type.
+      - name: Check vendor SDK version alignment
+        run: node .github/scripts/check-sdk-version-alignment.mjs
       - name: Lint (oxlint)
         run: npm run lint
       - name: Format check (oxfmt)
