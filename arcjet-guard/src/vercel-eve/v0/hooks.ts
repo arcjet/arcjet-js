@@ -1,5 +1,6 @@
 import type {
   HookDefinition,
+  HookEventMap,
   StreamEventHook,
 } from "eve/hooks";
 
@@ -39,6 +40,12 @@ export interface ArcjetHooksOptions {
  * Handlers never throw and never block the turn, even if `capture()` fails.
  * Eve's hooks are documented as observe-only; a failing hook is a defect.
  *
+ * The `session.started` event is the critical join point: it carries both the
+ * session ID and (when available) the continuation token and channel kind from
+ * the hook context. This record enables a `guardInbound` decision correlated
+ * by thread token to be joined with all in-session decisions correlated by
+ * session ID.
+ *
  * Selective capture by family is supported via `options.events`: e.g.
  * `["session", "tool"]` captures only session-related and tool-related events,
  * reducing volume for long conversations that do not need turn-level granularity.
@@ -65,7 +72,6 @@ export interface ArcjetHooksOptions {
  * @param options - Optional event family filter (default: all four families)
  * @returns A `HookDefinition` ready to wrap with `defineHook()`
  */
-// oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-member-access, typescript/no-unsafe-assignment -- hook handlers receive unknown event/ctx shapes
 export function arcjetHooks(
   client: ArcjetAgentClient,
   options?: ArcjetHooksOptions,
@@ -74,26 +80,23 @@ export function arcjetHooks(
   const enabledFamilies = new Set(options?.events ?? ["session", "turn", "tool", "subagent"]);
 
   // Build the events map conditionally
+  // oxlint-disable typescript/no-unsafe-return -- ExactDefinition constraint requires { events } return
   const events: Record<string, StreamEventHook<any>> = {};
 
-  // Session.started: join record carrying session id and continuation token
   if (enabledFamilies.has("session")) {
-    events["session.started"] = (_event: any, ctx: any): void => {
+    events["session.started"] = ((event: HookEventMap["session.started"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
 
-        // Add channel continuation token if present
         if (typeof ctx?.channel?.continuationToken === "string") {
           metadata["eve.continuation-token"] = ctx.channel.continuationToken;
         }
 
-        // Add channel kind if present
         if (typeof ctx?.channel?.kind === "string") {
           metadata["eve.channel"] = ctx.channel.kind;
         }
 
-        // Add agent name if present
         if (typeof ctx?.agent?.name === "string") {
           metadata["eve.agent"] = ctx.agent.name;
         }
@@ -108,15 +111,14 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
 
-    // Session.failed: session error
-    events["session.failed"] = (event: any, ctx: any): void => {
+    events["session.failed"] = ((event: HookEventMap["session.failed"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
           ...agentCtx.metadata,
-          "outcome": "error",
+          outcome: "error",
         };
 
         if (typeof event?.data?.code === "string") {
@@ -133,15 +135,18 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
   }
 
-  // Turn events
   if (enabledFamilies.has("turn")) {
-    events["turn.started"] = (_event: any, ctx: any): void => {
+    events["turn.started"] = ((event: HookEventMap["turn.started"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
+
+        if (typeof event?.data?.turnId === "string") {
+          metadata["eve.turn"] = event.data.turnId;
+        }
 
         const metadataArg = Object.keys(metadata).length > 0 ? { metadata } : {};
 
@@ -153,14 +158,14 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
 
-    events["turn.completed"] = (event: any, ctx: any): void => {
+    events["turn.completed"] = ((event: HookEventMap["turn.completed"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
           ...agentCtx.metadata,
-          "outcome": "success",
+          outcome: "success",
         };
 
         if (typeof event?.data?.turnId === "string") {
@@ -177,14 +182,14 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
 
-    events["turn.failed"] = (event: any, ctx: any): void => {
+    events["turn.failed"] = ((event: HookEventMap["turn.failed"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
           ...agentCtx.metadata,
-          "outcome": "error",
+          outcome: "error",
         };
 
         if (typeof event?.data?.turnId === "string") {
@@ -205,12 +210,11 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
   }
 
-  // Tool (action.result): tool call outcome
   if (enabledFamilies.has("tool")) {
-    events["action.result"] = (event: any, ctx: any): void => {
+    events["action.result"] = ((event: HookEventMap["action.result"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
@@ -218,26 +222,25 @@ export function arcjetHooks(
           "eve.phase": "result",
         };
 
-        // Map status to outcome
         const status = event?.data?.status;
         if (status === "completed") {
-          metadata["outcome"] = "success";
+          metadata.outcome = "success";
         } else if (status === "failed") {
-          metadata["outcome"] = "error";
-          // Include error code if present
+          metadata.outcome = "error";
           if (typeof event?.data?.error?.code === "string") {
             metadata["error.code"] = event.data.error.code;
           }
         } else if (status === "rejected") {
-          metadata["outcome"] = "denied";
+          metadata.outcome = "denied";
         }
-        // For unknown status, we do NOT include outcome
 
-        // Try to read callId defensively (not importing private type)
         if (typeof event?.data?.result === "object" && event.data.result !== null) {
           const result = event.data.result;
           if (typeof result.callId === "string") {
             metadata["eve.call"] = result.callId;
+          }
+          if (typeof result.toolName === "string") {
+            metadata["eve.tool"] = result.toolName;
           }
         }
 
@@ -251,12 +254,11 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
   }
 
-  // Subagent events
   if (enabledFamilies.has("subagent")) {
-    events["subagent.called"] = (event: any, ctx: any): void => {
+    events["subagent.called"] = ((event: HookEventMap["subagent.called"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
@@ -283,9 +285,9 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
 
-    events["subagent.completed"] = (event: any, ctx: any): void => {
+    events["subagent.completed"] = ((event: HookEventMap["subagent.completed"], ctx: any): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
@@ -298,9 +300,6 @@ export function arcjetHooks(
           metadata["eve.subagent"] = event.data.subagentName;
         }
 
-        // Ensure eve.child-session is NOT present (AC6.4)
-        // This is asserted in tests, not checked here
-
         const metadataArg = Object.keys(metadata).length > 0 ? { metadata } : {};
 
         captureEvent(client, {
@@ -311,7 +310,7 @@ export function arcjetHooks(
       } catch {
         // Never throw from a hook
       }
-    };
+    }) as StreamEventHook<any>;
   }
 
   // Return only { events } — ExactDefinition rejects any other key

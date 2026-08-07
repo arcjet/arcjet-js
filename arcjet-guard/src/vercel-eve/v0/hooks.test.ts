@@ -4,15 +4,23 @@ import { test } from "node:test";
 
 import type { HookDefinition } from "eve/hooks";
 
-import type { CaptureOptions } from "../../types.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import type { CaptureOptions } from "../../types.ts";
 import { arcjetHooks } from "./hooks.ts";
 
 // Mock client that captures calls
 function createMockClient(): ArcjetAgentClient & {
-  captureCalls: Array<{ action: string; correlationId?: string; metadata?: Record<string, unknown> }>;
+  captureCalls: Array<{
+    action: string;
+    correlationId?: string;
+    metadata?: Record<string, unknown>;
+  }>;
 } {
-  const captureCalls: Array<{ action: string; correlationId?: string; metadata?: Record<string, unknown> }> = [];
+  const captureCalls: Array<{
+    action: string;
+    correlationId?: string;
+    metadata?: Record<string, unknown>;
+  }> = [];
 
   return {
     captureCalls,
@@ -79,7 +87,7 @@ test("AC6.1: events map contains only valid HookEventMap keys", () => {
 });
 
 // AC6.2: action.result with status "completed" → outcome "success"
-test("AC6.2: action.result with status 'completed' captures outcome 'success'", async () => {
+test("AC6.2: action.result with status 'completed' captures outcome 'success' and correlationId", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
@@ -98,7 +106,12 @@ test("AC6.2: action.result with status 'completed' captures outcome 'success'", 
       turnId: "turn_123",
       sequence: 1,
       stepIndex: 0,
-      result: { kind: "something" },
+      result: {
+        kind: "something",
+        callId: "call_abc",
+        toolName: "search",
+        output: "SECRET_OUTPUT",
+      },
     },
   };
 
@@ -107,8 +120,15 @@ test("AC6.2: action.result with status 'completed' captures outcome 'success'", 
   assert.equal(client.captureCalls.length, 1, "one capture call expected");
   const capture = client.captureCalls[0];
   assert.equal(capture.action, "eve.action-result");
-  assert.equal(capture.metadata?.["outcome"], "success");
+  assert.equal(capture.metadata?.outcome, "success");
   assert.equal(capture.metadata?.["eve.phase"], "result");
+  assert.equal(capture.correlationId, "ses_123", "correlationId must be session id");
+  assert.equal(capture.metadata?.["eve.call"], "call_abc", "eve.call must be captured");
+  assert.equal(capture.metadata?.["eve.tool"], "search", "eve.tool must be captured");
+
+  // Verify SECRET_OUTPUT does not appear anywhere in the capture
+  const captureStr = JSON.stringify(capture);
+  assert.ok(!captureStr.includes("SECRET_OUTPUT"), "tool output must not be captured");
 });
 
 // AC6.2: action.result with status "failed" → outcome "error"
@@ -197,7 +217,10 @@ test("AC6.2: action.result with unrecognised status does not capture outcome key
 
   assert.equal(client.captureCalls.length, 1);
   const capture = client.captureCalls[0];
-  assert.ok(!("outcome" in (capture.metadata ?? {})), "outcome key must not exist for unknown status");
+  assert.ok(
+    !("outcome" in (capture.metadata ?? {})),
+    "outcome key must not exist for unknown status",
+  );
 });
 
 // AC6.3: session.started with channel.continuationToken and channel.kind present
@@ -246,8 +269,184 @@ test("AC6.3: session.started captures session id even when channel is empty", as
   assert.equal(client.captureCalls.length, 1);
   const capture = client.captureCalls[0];
   assert.equal(capture.metadata?.["eve.session"], "ses_123");
-  assert.ok(!("eve.continuation-token" in (capture.metadata ?? {})), "continuation-token should not be present");
+  assert.ok(
+    !("eve.continuation-token" in (capture.metadata ?? {})),
+    "continuation-token should not be present",
+  );
   assert.ok(!("eve.channel" in (capture.metadata ?? {})), "channel should not be present");
+});
+
+// C1: session.started with delegated context correlates to root session ID
+test("C1: action.result with delegated session correlates to root session id", async () => {
+  const client = createMockClient();
+  const definition = arcjetHooks(client);
+
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
+  const handler = definition.events!["action.result"]!;
+  const mockCtx = {
+    session: {
+      id: "ses_child",
+      parent: { sessionId: "ses_parent", rootSessionId: "ses_root_123" },
+    },
+    agent: { name: "test-agent" },
+    channel: {},
+  };
+  const mockEvent = {
+    data: {
+      status: "completed",
+      turnId: "turn_123",
+      sequence: 1,
+      stepIndex: 0,
+      result: { kind: "something" },
+    },
+  };
+
+  await handler(mockEvent as any, mockCtx as any);
+
+  assert.equal(client.captureCalls.length, 1);
+  const capture = client.captureCalls[0];
+  assert.equal(
+    capture.correlationId,
+    "ses_root_123",
+    "correlationId must be root session id for delegated session",
+  );
+});
+
+// C1: session.started captures the session-derived correlationId
+test("C1: session.started captures the session-derived correlationId", async () => {
+  const client = createMockClient();
+  const definition = arcjetHooks(client);
+
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
+  const handler = definition.events!["session.started"]!;
+  const mockCtx = {
+    session: { id: "ses_123" },
+    agent: { name: "test-agent" },
+    channel: {},
+  };
+  const mockEvent = { data: {} };
+
+  await handler(mockEvent as any, mockCtx as any);
+
+  assert.equal(client.captureCalls.length, 1);
+  const capture = client.captureCalls[0];
+  assert.equal(capture.correlationId, "ses_123", "correlationId must be session id");
+});
+
+// C3a: session.failed captures action, correlationId, outcome, and error.code
+test("C3a: session.failed handler captures action, outcome, and error.code", async () => {
+  const client = createMockClient();
+  const definition = arcjetHooks(client);
+
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
+  const handler = definition.events!["session.failed"]!;
+  const mockCtx = {
+    session: { id: "ses_123" },
+    agent: { name: "test-agent" },
+    channel: {},
+  };
+  const mockEvent = {
+    data: {
+      code: "SESSION_TIMEOUT",
+    },
+  };
+
+  await handler(mockEvent as any, mockCtx as any);
+
+  assert.equal(client.captureCalls.length, 1);
+  const capture = client.captureCalls[0];
+  assert.equal(capture.action, "eve.session-failed", "action must be eve.session-failed");
+  assert.equal(capture.correlationId, "ses_123", "correlationId must be session id");
+  assert.equal(capture.metadata?.outcome, "error", "outcome must be error");
+  assert.equal(capture.metadata?.["error.code"], "SESSION_TIMEOUT", "error.code must be captured");
+});
+
+// C3b: turn.started handler captures action, correlationId, and eve.turn
+test("C3b: turn.started handler captures action, correlationId, and eve.turn", async () => {
+  const client = createMockClient();
+  const definition = arcjetHooks(client);
+
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
+  const handler = definition.events!["turn.started"]!;
+  const mockCtx = {
+    session: { id: "ses_123" },
+    agent: { name: "test-agent" },
+    channel: {},
+  };
+  const mockEvent = {
+    data: {
+      turnId: "turn_456",
+      sequence: 1,
+    },
+  };
+
+  await handler(mockEvent as any, mockCtx as any);
+
+  assert.equal(client.captureCalls.length, 1);
+  const capture = client.captureCalls[0];
+  assert.equal(capture.action, "eve.turn-started", "action must be eve.turn-started");
+  assert.equal(capture.correlationId, "ses_123", "correlationId must be session id");
+  assert.equal(capture.metadata?.["eve.turn"], "turn_456", "eve.turn must be captured");
+});
+
+// C3c: turn.completed handler captures action, correlationId, outcome, and eve.turn
+test("C3c: turn.completed handler captures action, outcome, and eve.turn", async () => {
+  const client = createMockClient();
+  const definition = arcjetHooks(client);
+
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
+  const handler = definition.events!["turn.completed"]!;
+  const mockCtx = {
+    session: { id: "ses_123" },
+    agent: { name: "test-agent" },
+    channel: {},
+  };
+  const mockEvent = {
+    data: {
+      turnId: "turn_456",
+      sequence: 1,
+    },
+  };
+
+  await handler(mockEvent as any, mockCtx as any);
+
+  assert.equal(client.captureCalls.length, 1);
+  const capture = client.captureCalls[0];
+  assert.equal(capture.action, "eve.turn-completed", "action must be eve.turn-completed");
+  assert.equal(capture.correlationId, "ses_123", "correlationId must be session id");
+  assert.equal(capture.metadata?.outcome, "success", "outcome must be success");
+  assert.equal(capture.metadata?.["eve.turn"], "turn_456", "eve.turn must be captured");
+});
+
+// C3d: turn.failed handler captures action, correlationId, outcome, error.code, and eve.turn
+test("C3d: turn.failed handler captures action, outcome, error.code, and eve.turn", async () => {
+  const client = createMockClient();
+  const definition = arcjetHooks(client);
+
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
+  const handler = definition.events!["turn.failed"]!;
+  const mockCtx = {
+    session: { id: "ses_123" },
+    agent: { name: "test-agent" },
+    channel: {},
+  };
+  const mockEvent = {
+    data: {
+      turnId: "turn_456",
+      code: "TURN_ERROR",
+      sequence: 1,
+    },
+  };
+
+  await handler(mockEvent as any, mockCtx as any);
+
+  assert.equal(client.captureCalls.length, 1);
+  const capture = client.captureCalls[0];
+  assert.equal(capture.action, "eve.turn-failed", "action must be eve.turn-failed");
+  assert.equal(capture.correlationId, "ses_123", "correlationId must be session id");
+  assert.equal(capture.metadata?.outcome, "error", "outcome must be error");
+  assert.equal(capture.metadata?.["error.code"], "TURN_ERROR", "error.code must be captured");
+  assert.equal(capture.metadata?.["eve.turn"], "turn_456", "eve.turn must be captured");
 });
 
 // AC6.4: subagent.called captures child-session, subagent, and call
@@ -309,7 +508,10 @@ test("AC6.4: subagent.completed does not have eve.child-session", async () => {
   const capture = client.captureCalls[0];
   assert.equal(capture.metadata?.["eve.call"], "call_789");
   assert.equal(capture.metadata?.["eve.subagent"], "researcher");
-  assert.ok(!("eve.child-session" in (capture.metadata ?? {})), "eve.child-session must not be present");
+  assert.ok(
+    !("eve.child-session" in (capture.metadata ?? {})),
+    "eve.child-session must not be present",
+  );
 });
 
 // AC6.5: never throws when handler called with empty event/ctx
@@ -393,10 +595,10 @@ test("AC6.6: default events option includes all four families", () => {
   const eventKeys = Object.keys(definition.events);
 
   // Should have at least one from each family
-  const hasSessions = eventKeys.some(k => k.startsWith("session."));
-  const hasTurns = eventKeys.some(k => k.startsWith("turn."));
-  const hasTools = eventKeys.some(k => k.startsWith("action."));
-  const hasSubagents = eventKeys.some(k => k.startsWith("subagent."));
+  const hasSessions = eventKeys.some((k) => k.startsWith("session."));
+  const hasTurns = eventKeys.some((k) => k.startsWith("turn."));
+  const hasTools = eventKeys.some((k) => k.startsWith("action."));
+  const hasSubagents = eventKeys.some((k) => k.startsWith("subagent."));
 
   assert.ok(hasSessions, "should include session family");
   assert.ok(hasTurns, "should include turn family");
@@ -415,10 +617,10 @@ test("AC6.6: empty events option yields empty map", () => {
   assert.equal(eventKeys.length, 0, "events map should be empty");
 });
 
-// Task 3: Type-level assertion
+// Type-level assertion
 // This file can only assert assignability to HookDefinition, not ExactDefinition.
 // The ExactDefinition wrapper is verified in Phase 6 where defineHook is actually called.
-test("Task 3: arcjetHooks returns valid HookDefinition assignable to defineHook parameter", () => {
+test("arcjetHooks returns a value assignable to HookDefinition", () => {
   const client = createMockClient();
 
   // Assignable to what `defineHook` accepts, and to what an authored
