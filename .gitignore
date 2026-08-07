@@ -140,3 +140,8 @@ dist
 
 # Claude
 .claude/
+
+# Deno writes its lockfile to the repo root when the guard runtime suite runs,
+# so arcjet-guard/.gitignore never covered it. Anchored, because
+# examples/deno-sensitive-info/deno.lock is checked in on purpose.
+/deno.lock

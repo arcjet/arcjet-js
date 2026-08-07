@@ -80,6 +80,29 @@ export function decisionDenyRateLimit(resetAtUnixSeconds: number): DecisionDeny 
 }
 
 /**
+ * Stub DENY decision (RATE_LIMIT) without resetAtUnixSeconds.
+ *
+ * A rate-limit denial whose rule did not carry a reset time.
+ */
+export function decisionDenyRateLimitNoReset(): DecisionDeny {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
+  return {
+    conclusion: "DENY",
+    reason: "RATE_LIMIT",
+    id: "gdec_deny_rl_no_reset",
+    results: [
+      {
+        conclusion: "DENY",
+        reason: "RATE_LIMIT",
+        type: "TOKEN_BUCKET",
+      },
+    ],
+    warnings: [],
+    hasFailedOpen: () => false,
+  } as unknown as DecisionDeny;
+}
+
+/**
  * Stub fail-open ALLOW decision.
  *
  * `id` is empty because that is what the client synthesizes on a fail-open

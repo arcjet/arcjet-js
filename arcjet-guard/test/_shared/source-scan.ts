@@ -32,12 +32,87 @@ export function stripCommentsAndTemplates(source: string): string {
 }
 
 /**
+ * Spans of ordinary string literals in stripped content. After
+ * `stripCommentsAndTemplates` runs, comments are spaces and template literals
+ * are `` ` ``-pairs, so re-tokenizing yields the surviving string-literal
+ * spans. Expression-position dynamic-import matching discards any match whose
+ * keyword falls inside one: a real `import("x")` keyword sits outside every
+ * literal, while the same text inside a string is data, not an import.
+ *
+ * The tokenizer does not model regex literals, so an unbalanced quote inside
+ * one (such as `/"/`) opens a phantom span that runs to the next quote. A
+ * desynchronized span can be either over- or under-broad, but both failure
+ * modes cost at most a spurious detection — never a missed import — which is
+ * why spans gate only the expression-position matcher below; the line-anchored
+ * matcher stays unfiltered so a phantom span can never suppress a match it
+ * catches.
+ */
+function stringLiteralSpans(cleanContent: string): Array<[number, number]> {
+  const spans: Array<[number, number]> = [];
+  for (const match of cleanContent.matchAll(COMMENT_OR_STRING)) {
+    const token = match[0];
+    if ((token.startsWith('"') || token.startsWith("'")) && match.index !== undefined) {
+      spans.push([match.index, match.index + token.length]);
+    }
+  }
+  return spans;
+}
+
+/**
+ * Dynamic `import("x")` and `require("x")` specifiers.
+ *
+ * Two matchers, unioned by match end offset. The line-anchored matcher runs
+ * unfiltered, so tokenizer desync from a regex literal containing a quote can
+ * never hide a line-start dynamic import. The expression-position matcher —
+ * `return import("eve")` inside a function body counts, because a dynamic
+ * import is a runtime load wherever it appears — is additionally gated on
+ * {@link stringLiteralSpans} so import text inside a string is not read as an
+ * import, and its lookbehind rejects property accesses such as
+ * `mock.import("x")`. An expression-position import on a line desynchronized
+ * by a preceding unbalanced regex-literal quote (one that pairs with a later
+ * quote; `/a "b" c/` is balanced and harmless) is the one form neither
+ * matcher sees.
+ */
+function dynamicImportSpecifiers(cleanContent: string): string[] {
+  // Keyed by the match's end offset — both matchers consume through the
+  // closing paren, so the same occurrence dedupes even though the anchored
+  // match starts at the line's leading whitespace.
+  const found = new Map<number, string>();
+  let match: RegExpExecArray | null;
+
+  const anchoredRegex = /^[ \t]*(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/gm;
+  while ((match = anchoredRegex.exec(cleanContent)) !== null) {
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      found.set(match.index + match[0].length, specifier);
+    }
+  }
+
+  const spans = stringLiteralSpans(cleanContent);
+  const expressionRegex = /(?<![.\w$])(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/g;
+  while ((match = expressionRegex.exec(cleanContent)) !== null) {
+    const keyword = match.index;
+    const specifier = match[1];
+    if (
+      specifier !== undefined &&
+      !spans.some(([start, end]) => keyword >= start && keyword < end)
+    ) {
+      found.set(match.index + match[0].length, specifier);
+    }
+  }
+
+  return [...found.values()];
+}
+
+/**
  * Parse import/export statements from a file and extract specifiers.
  * Matches patterns like:
  * - import { x } from "./foo.ts"
  * - export { x } from "./bar.ts"
  * - export type { T } from "./baz.ts"
  * - import "ai" (bare side-effect import)
+ * - import("ai") (dynamic import, in expression position anywhere in a line)
+ * - require("ai") (dynamic require, likewise)
  */
 export function extractImportSpecifiers(content: string): string[] {
   const specifiers: string[] = [];
@@ -69,6 +144,8 @@ export function extractImportSpecifiers(content: string): string[] {
     }
   }
 
+  specifiers.push(...dynamicImportSpecifiers(cleanContent));
+
   return specifiers;
 }
 
@@ -97,6 +174,80 @@ export function collectTsFiles(dir: string): string[] {
 
   walk(dir);
   return filesToCheck;
+}
+
+/**
+ * Extract import/export specifiers along with whether the statement was
+ * type-only.
+ *
+ * `import type { X } from "eve"` and `export type { X } from "eve"` are erased
+ * at compile time; a plain `import { x } from "eve"` is not. The vercel-eve
+ * namespace is required to use only the former, so the two must be told apart —
+ * which `extractImportSpecifiers` deliberately does not do (the agnostic-layer
+ * boundary forbids both forms and never needed the distinction).
+ *
+ * Inline type modifiers (`import { type X, y } from "eve"`) count as a VALUE
+ * import: the statement still emits, because `y` is a value.
+ *
+ * Dynamic `import("...")` and `require("...")` calls are matched in expression
+ * position anywhere in a line and always classified as value imports — a
+ * dynamic import emits at runtime wherever it appears.
+ */
+export function extractTypedImportSpecifiers(
+  content: string,
+): Array<{ specifier: string; typeOnly: boolean }> {
+  const specifiers: Array<{ specifier: string; typeOnly: boolean }> = [];
+
+  const cleanContent = stripCommentsAndTemplates(content);
+
+  // Match import/export statements anchored to line start.
+  // First try type-only form: `import type { ... } from "..."`
+  const typeOnlyRegex = /^[ \t]*(import|export)\s+type\b[^;=]*?from\s+["']([^"']+)["']/gm;
+  let match: RegExpExecArray | null;
+
+  // Check type-only imports
+  while ((match = typeOnlyRegex.exec(cleanContent)) !== null) {
+    const specifier = match[2];
+    if (specifier !== undefined) {
+      specifiers.push({ specifier, typeOnly: true });
+    }
+  }
+
+  // Now match general import/export statements
+  const importFromRegex = /^[ \t]*(?:import|export)\b[^;=]*?from\s+["']([^"']+)["']/gm;
+  // Match bare side-effect imports: import "package"
+  const bareImportRegex = /^[ \t]*import\s+["']([^"']+)["']/gm;
+
+  // Check import...from patterns (but skip those already matched as type-only)
+  while ((match = importFromRegex.exec(cleanContent)) !== null) {
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      // Check if this match was already captured as type-only by looking at the full line
+      const lineStart = cleanContent.lastIndexOf("\n", match.index) + 1;
+      const lineEnd = cleanContent.indexOf("\n", match.index);
+      const line = cleanContent.slice(lineStart, lineEnd < 0 ? undefined : lineEnd);
+
+      // If the line starts with "import type" or "export type", skip it (already added above)
+      if (!line.trim().startsWith("import type") && !line.trim().startsWith("export type")) {
+        specifiers.push({ specifier, typeOnly: false });
+      }
+    }
+  }
+
+  // Check bare imports
+  while ((match = bareImportRegex.exec(cleanContent)) !== null) {
+    const specifier = match[1];
+    if (specifier !== undefined) {
+      specifiers.push({ specifier, typeOnly: false });
+    }
+  }
+
+  // Dynamic imports and requires always emit at runtime, so they are value imports
+  for (const specifier of dynamicImportSpecifiers(cleanContent)) {
+    specifiers.push({ specifier, typeOnly: false });
+  }
+
+  return specifiers;
 }
 
 /**
@@ -131,3 +282,33 @@ export function asDenial<TResult>(value: unknown): TResult {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the SDK types results as the tool's output union
   return value as TResult;
 }
+
+/**
+ * Expected root export keys in arcjet-guard/package.json exports map.
+ * Shared by both vercel-ai/v7 and vercel-eve/v0 test files.
+ */
+export const EXPECTED_ROOT_KEYS = [
+  ".",
+  "./bun",
+  "./fetch",
+  "./node",
+  // The in-memory client for application tests. Deliberately a single entry
+  // rather than a runtime-conditional one: it has no transport, so there is
+  // nothing for a condition to select.
+  "./testing",
+  "./vercel-ai/v7",
+  "./vercel-eve/v0",
+] as const;
+
+/**
+ * Expected runtime conditions in arcjet-guard/package.json exports["."] entry.
+ * Shared by both vercel-ai/v7 and vercel-eve/v0 test files.
+ */
+export const EXPECTED_CONDITIONS = [
+  "bun",
+  "default",
+  "deno",
+  "edge-light",
+  "node",
+  "workerd",
+] as const;

@@ -4,6 +4,7 @@ import type { InferToolInput, InferToolOutput, Tool } from "ai";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { ArcjetAgentContext } from "../../agents/context.ts";
+import { retryAfterSeconds } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
@@ -319,25 +320,20 @@ export function guardTool<T extends Tool>(
 
 function denialResult(decision: DecisionDeny): ArcjetDenialResult {
   const isRateLimit = decision.reason === "RATE_LIMIT";
-  let retryAfterSeconds: number | undefined;
+  let retryAfterSecs: number | undefined;
 
   // Only rate-limit denials are retryable, so only they carry a retry-after.
   // A co-occurring rule that allowed can still leave a resetAtUnixSeconds in
   // decision.results; ignore it when the denying reason is not a rate limit.
   if (isRateLimit) {
-    for (const result of decision.results) {
-      if ("resetAtUnixSeconds" in result && typeof result.resetAtUnixSeconds === "number") {
-        retryAfterSeconds = Math.max(0, Math.ceil(result.resetAtUnixSeconds - Date.now() / 1000));
-        break;
-      }
-    }
+    retryAfterSecs = retryAfterSeconds(decision);
   }
 
   let message: string;
   if (isRateLimit) {
     message =
       `Arcjet denied this tool call (${decision.reason}). It may be retried` +
-      (retryAfterSeconds === undefined ? " later." : ` after ${retryAfterSeconds} seconds.`);
+      (retryAfterSecs === undefined ? " later." : ` after ${retryAfterSecs} seconds.`);
   } else {
     message = `Arcjet denied this tool call (${decision.reason}). Do not retry; explain the denial to the user or try a different approach.`;
   }
@@ -350,8 +346,8 @@ function denialResult(decision: DecisionDeny): ArcjetDenialResult {
   };
 
   // For RATE_LIMIT, include the computed retry-after if available.
-  if (isRateLimit && retryAfterSeconds !== undefined) {
-    result.retryAfterSeconds = retryAfterSeconds;
+  if (isRateLimit && retryAfterSecs !== undefined) {
+    result.retryAfterSeconds = retryAfterSecs;
   }
 
   return result;

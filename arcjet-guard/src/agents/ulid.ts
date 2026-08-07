@@ -9,6 +9,9 @@ const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
  *
  * Sortable by creation time and safely within guard's correlation-ID rules
  * (≤256 bytes of printable ASCII).
+ *
+ * @internal Exported for use by the vendor namespaces, so every one of them
+ * generates correlation ids the same way; not part of the public API.
  */
 export function ulid(): string {
   let timestamp = Date.now();

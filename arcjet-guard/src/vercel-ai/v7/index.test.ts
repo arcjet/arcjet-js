@@ -12,6 +12,8 @@ import {
   collectTsFiles,
   extractImportSpecifiers,
   sortedKeys,
+  EXPECTED_ROOT_KEYS,
+  EXPECTED_CONDITIONS,
 } from "../../../test/_shared/source-scan.ts";
 
 // `Object.keys` on a namespace import never lists type-only exports, so assert
@@ -167,14 +169,10 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   assert.ok(exportsMap, "package.json must have an exports field");
 
   const exportKeys = sortedKeys(exportsMap);
-  // "./testing" is the in-memory client for application tests. Deliberately a
-  // single entry rather than a runtime-conditional one: it has no transport, so
-  // there is nothing for a condition to select.
-  const expectedRootKeys = [".", "./bun", "./fetch", "./node", "./testing", "./vercel-ai/v7"];
 
   assert.deepEqual(
     exportKeys,
-    expectedRootKeys,
+    EXPECTED_ROOT_KEYS,
     "root export map keys must exactly match expected set (no additions, no removals)",
   );
 
@@ -183,11 +181,10 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   assert.ok(rootEntry, 'export map must have "." entry');
 
   const runtimeConditions = sortedKeys(rootEntry);
-  const expectedConditions = ["bun", "default", "deno", "edge-light", "node", "workerd"];
 
   assert.deepEqual(
     runtimeConditions,
-    expectedConditions,
+    EXPECTED_CONDITIONS,
     "root . entry runtime conditions must exactly match expected set",
   );
 });

@@ -125,6 +125,7 @@ jobs:
       matrix:
         folder:
           - astro
+          - eve-agent
           - express-bots
           - express-newman
           - express-rate-limit
@@ -151,3 +152,5 @@ jobs:
         include:
           - folder: astro
             node-version: 22
+          - folder: eve-agent
+            node-version: 24

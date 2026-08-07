@@ -17,6 +17,9 @@ export interface ArcjetAgentClient {
 /**
  * True when `ARCJET_LOG_LEVEL` asks for warnings (guard's convention:
  * `debug`, `info`, or `warn`).
+ *
+ * @internal Exported for use by the vendor namespaces, so every one of them
+ * honours the same log level; not part of the public API.
  */
 export function shouldWarn(): boolean {
   const level = globalThis.process?.env?.["ARCJET_LOG_LEVEL"];
@@ -29,6 +32,9 @@ export function shouldWarn(): boolean {
  * `@arcjet/guard`'s own `capture()` already guarantees this, but the client is
  * typed structurally, so a caller-supplied one need not — and a capture must
  * never take down the tool call or action it is recording.
+ *
+ * @internal Exported for use by the vendor namespaces; not part of the public
+ * API.
  */
 export function captureEvent(client: ArcjetAgentClient, opts: CaptureOptions): void {
   try {

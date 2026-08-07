@@ -13,8 +13,11 @@ const CORRELATION_ID_RE: RegExp = /^[ -~]{1,256}$/;
  *
  * The `typeof` check comes first because `RegExp.test()` coerces its argument,
  * so a number would otherwise satisfy the pattern.
+ *
+ * @internal Exported for use by the vendor namespaces, so every one of them
+ * rejects the same correlation ids; not part of the public API.
  */
-function correlationIdProblem(value: unknown): string | undefined {
+export function correlationIdProblem(value: unknown): string | undefined {
   if (typeof value === "string") {
     if (CORRELATION_ID_RE.test(value)) {
       return undefined;
