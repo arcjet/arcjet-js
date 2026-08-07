@@ -1,0 +1,26 @@
+{
+  "name": "eve-agent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "eve build",
+    "dev": "eve dev",
+    "start": "eve start",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@arcjet/guard": "file:../../arcjet-guard",
+    "@opentelemetry/api": "^1.9.1",
+    "ai": "^7.0.38",
+    "eve": "0.31.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^24.10.9",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=24.5.0"
+  }
+}
