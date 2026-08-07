@@ -853,6 +853,42 @@ helper. Currently available:
   captureAction(arcjet, ctx, { action: "audit.logged" });
   ```
 
+- **`@arcjet/guard/vercel-eve/v0`** — Vercel Eve v0 integration. Exports
+  `guardTool`, `guardApproval`, `guardInbound`, and `arcjetHooks` for Eve's four
+  guard surfaces, alongside the `eveAgentContext` helper that derives context
+  from Eve's session:
+
+  ```ts
+  import { launchArcjet, tokenBucket } from "@arcjet/guard";
+  import {
+    guardApproval,
+    arcjetHooks,
+  } from "@arcjet/guard/vercel-eve/v0";
+  import { defineOpenAPIConnection } from "eve/connections";
+  import { defineHook } from "eve/hooks";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  // Gate a connection's operations
+  export const ordersConnection = defineOpenAPIConnection({
+    description: "Orders API",
+    spec: { /* ... */ },
+    approval: guardApproval(arcjet, {
+      action: "orders-api.read",
+      rules: (ctx) => [limit({ key: ctx.session.id, requested: 1 })],
+    }),
+    operations: { allow: ["GetOrder"] },
+  });
+
+  // Record agent lifecycle events
+  export default defineHook(arcjetHooks(arcjet));
+  ```
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -868,6 +904,11 @@ so a wrong path fails at resolution rather than somewhere further in.
 Supporting a new major is additive — a future `/v8` can ship alongside `/v7`,
 so you migrate on your own schedule.
 
+**Pre-1.0 SDKs:** when an SDK has not reached 1.0, the segment is `v0`. A `v1`
+is added when that SDK ships its first stable release. `eve` is currently 0.x
+and a 0.x minor may introduce breaking changes, so `v0` names a range this
+package supports rather than a promise the SDK makes.
+
 ### Optional peer dependencies
 
 Vendor integrations declare their SDK dependencies as optional peers, so users
@@ -877,6 +918,10 @@ importing only core guards are not forced to install unneeded packages:
 - **`@arcjet/guard/vercel-ai/v7`** requires `ai` and `@ai-sdk/provider-utils`
   (optional peers — the package will not be installed automatically, but the
   imports will fail clearly if the peers are missing).
+- **`@arcjet/guard/vercel-eve/v0`** requires `eve` (optional peer, installed
+  only to use `@arcjet/guard/vercel-eve/v0`). **Eve requires Node.js >= 24**,
+  which is higher than `@arcjet/guard`'s own floor of >= 22. If you are using
+  Eve, ensure your deployment environment and CI both run Node 24 or later.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -884,7 +929,7 @@ importing only core guards are not forced to install unneeded packages:
 peers, either install them explicitly or relax strict peer checking:
 
 ```sh
-pnpm install ai @ai-sdk/provider-utils
+pnpm install eve
 # or
 pnpm install --no-strict-peer-dependencies
 ```
@@ -893,40 +938,41 @@ pnpm install --no-strict-peer-dependencies
 
 `createAgentContext`, `guardAction`, `captureAction`, and `securityMetadata`
 are not tied to any AI SDK, and internally they are kept that way — nothing
-they import reaches `ai`. They are nonetheless published only on the vendor
-namespace, so there is one path to learn and no layering to reason about.
+they import reaches `ai`. They are published on each vendor namespace, so there
+is one path to learn and no layering to reason about.
 
-The cost is that a non-AI codebase wanting only `guardAction` still installs
-the `ai` peer. That is deliberate for now: a dedicated agnostic subpath would
-be a public surface justified by a single integration. Once a second vendor
-namespace exists to prove the shape, these belong in the root `@arcjet/guard`
-export rather than a subpath of their own.
+Both `@arcjet/guard/vercel-ai/v7` and `@arcjet/guard/vercel-eve/v0` now export
+these helpers. The open next step is promoting them to the root `@arcjet/guard`
+export so a caller can get the agnostic layer without installing a vendor peer.
+That awaits one more integration to confirm the shape is stable.
 
 ### `onGuardError`: handling evaluation failures
 
 When guard policy evaluation fails (e.g. the Arcjet API is unreachable), the
 SDK still allows the request to proceed — this is the platform's fail-open
-default. The agent-level helpers (`guardTool` and `guardAction`) deliberately
-flip this default, because they wrap consequential effects. Their `onGuardError`
-option controls what happens:
+default. The agent-level helpers deliberately flip this default where needed,
+because they wrap consequential effects. Their `onGuardError` option controls
+what happens:
 
 - **Default: `"deny"`** — if the policy cannot be evaluated, the call is
   blocked. For AI tool calls and application actions, this is the safe choice.
-  - `guardTool` returns `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` to the model.
-  - `guardAction` throws `ArcjetGuardUnavailableError`, which is deliberately
-    distinct from `ArcjetDeniedError` so an unavailable guard can be alerted on
-    separately from a DENY decision. The error carries `cause` (the guard call
-    threw) or `decision` (a decision failed open), making the two
-    distinguishable in a handler.
+  - Vercel AI SDK (`guardTool`, `guardAction`): `guardTool` returns
+    `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` to the model.
+    `guardAction` throws `ArcjetGuardUnavailableError`.
+  - Vercel Eve (`guardTool`, `guardApproval`): `guardTool` returns a failed
+    `action.result` to the agent. `guardApproval` returns a `denied` status
+    carrying a reason the model reads.
   - The capture `outcome` on that path is `"unavailable"`, not `"denied"`.
-  - The fail-closed tool result carries a fixed `retryAfterSeconds: 5` backoff
-    hint, not a prediction of when evaluation will succeed.
+  - The fail-closed result carries a fixed `retryAfterSeconds: 5` backoff hint.
 
 - **Opt-out: `onGuardError: "allow"`** — if the policy cannot be evaluated,
   proceed anyway. Use this for call sites where availability matters more than
-  enforcement — e.g. a read-only tool like an order lookup. During an Arcjet
-  incident, that call site is unaffected, but enforcement at other sites is
-  not.
+  enforcement — e.g. a read-only tool like an order lookup, or a channel
+  screening gate where blocking is costly. During an Arcjet incident, that call
+  site is unaffected, but enforcement at other sites is not.
+  - Eve's `guardInbound` defaults to `"allow"` — a reasonable choice where the
+    human cost of rejecting a legitimate message exceeds the security cost of
+    letting one through during an outage.
 
 The layering resolves a potential confusion: the core `@arcjet/guard` client
 still fails open by construction and *reports* it via `hasFailedOpen()`; the
