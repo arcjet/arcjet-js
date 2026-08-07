@@ -79,40 +79,40 @@ export type InboundVerdict =
  *
  * @example
  * ```ts
- * import { launchArcjet, detectPromptInjection, localDetectSensitiveInfo } from "@arcjet/guard";
+ * import {
+ *   launchArcjet,
+ *   detectPromptInjection,
+ *   localDetectSensitiveInfo,
+ * } from "@arcjet/guard";
  * import { guardInbound } from "@arcjet/guard/vercel-eve/v0";
- * import type { ChannelHandler } from "eve/channels";
  *
  * const arcjet = launchArcjet({ key: process.env["ARCJET_KEY"]! });
  *
- * export const slackChannelHandler: ChannelHandler = async (
- *   incomingMessage,
- * ): Promise<ChannelMessage[]> => {
- *   // A slack message has a thread timestamp that identifies the conversation;
- *   // that is what a session will later join to.
- *   const threadTs = incomingMessage.thread_ts || incomingMessage.ts;
- *
- *   // Build rules from the text and pass the text; the helper does not inspect it.
- *   const verdict = await guardInbound(arcjet, incomingMessage.text, {
- *     rules: [
- *       detectPromptInjection()(incomingMessage.text),
- *       localDetectSensitiveInfo()(incomingMessage.text),
- *     ],
+ * // A channel handler runs before Eve creates the session, so the identity it
+ * // passes is the one the channel already has — here a Slack thread timestamp.
+ * // `arcjetHooks` emits a join record at `session.started` tying it to the
+ * // session id.
+ * export async function onInboundMessage(
+ *   text: string,
+ *   threadTs: string,
+ * ): Promise<string | undefined> {
+ *   // Build rules from the text and pass the same text; the helper never
+ *   // inspects it, and it is deliberately kept out of metadata.
+ *   const verdict = await guardInbound(arcjet, text, {
+ *     rules: [detectPromptInjection()(text), localDetectSensitiveInfo()(text)],
  *     correlationId: threadTs,
  *   });
  *
  *   if (!verdict.allowed) {
- *     return [
- *       {
- *         text: `Your message was not processed: ${verdict.message}`,
- *         thread_ts: threadTs,
- *       },
- *     ];
+ *     // `verdict.reason` distinguishes a policy denial from an Arcjet outage,
+ *     // and on a DENY `verdict.decision` is the real decision, so a rule's own
+ *     // `results()` can classify it further.
+ *     return `Your message was not processed: ${verdict.message}`;
  *   }
  *
- *   // Message passed screening; proceed to invoke the agent
- *   return invokeAgent(incomingMessage);
- * };
+ *   // Screening passed; hand the turn to the agent.
+ *   return undefined;
+ * }
  * ```
  *
  * @param client - Arcjet guard client
