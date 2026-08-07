@@ -15,6 +15,10 @@ import {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 } from "../../../src/fetch.ts";
 import { cases } from "../../_shared/cases.ts";
 import type { GuardSurface } from "../../_shared/cases.ts";
@@ -31,6 +35,10 @@ const surface: GuardSurface = {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
 };
 
 interface TestResult {

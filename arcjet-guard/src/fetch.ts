@@ -132,6 +132,13 @@ export {
   // Transport-agnostic factory
   launchArcjetWithTransport,
 
+  // Optional registration, and the free calls it enables
+  registerArcjet,
+  unregisterArcjet,
+  guard,
+  capture,
+  flush,
+
   // Internal
   _launchWithTransportFactory,
 } from "./index.ts";

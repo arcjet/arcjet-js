@@ -11,7 +11,11 @@
     "incremental": false,
     "isolatedDeclarations": true,
     "isolatedModules": true,
-    "lib": ["es2023", "webworker"],
+    // `esnext.disposable` types `Symbol.dispose`, which the test client
+    // implements so `using` works. Types only: no emit change, no runtime
+    // floor change. Node.js 22.21 defines `Symbol.dispose` already — it is the
+    // `using` syntax that needs Node.js 24.
+    "lib": ["es2023", "esnext.disposable", "webworker"],
     "module": "es2022",
     "moduleDetection": "force",
     "moduleResolution": "bundler",

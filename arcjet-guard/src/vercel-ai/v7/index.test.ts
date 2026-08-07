@@ -167,7 +167,10 @@ test("AC1.1: root export map keys and runtime conditions unchanged", () => {
   assert.ok(exportsMap, "package.json must have an exports field");
 
   const exportKeys = sortedKeys(exportsMap);
-  const expectedRootKeys = [".", "./bun", "./fetch", "./node", "./vercel-ai/v7"];
+  // "./testing" is the in-memory client for application tests. Deliberately a
+  // single entry rather than a runtime-conditional one: it has no transport, so
+  // there is nothing for a condition to select.
+  const expectedRootKeys = [".", "./bun", "./fetch", "./node", "./testing", "./vercel-ai/v7"];
 
   assert.deepEqual(
     exportKeys,

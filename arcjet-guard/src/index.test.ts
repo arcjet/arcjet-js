@@ -4,6 +4,8 @@ import { describe, test } from "node:test";
 import { create } from "@bufbuild/protobuf";
 import { createRouterTransport } from "@connectrpc/connect";
 
+import * as bunEntrypoint from "./bun.ts";
+import * as fetchEntrypoint from "./fetch.ts";
 import {
   launchArcjetWithTransport,
   _launchWithTransportFactory,
@@ -16,6 +18,7 @@ import {
   defineCustomRule,
 } from "./index.ts";
 import type { DiagnosticLogger } from "./index.ts";
+import * as nodeEntrypoint from "./node.ts";
 import {
   DecideService,
   GuardResponseSchema,
@@ -25,6 +28,18 @@ import {
   GuardConclusion,
   GuardRuleType,
 } from "./proto/proto/decide/v2/decide_pb.js";
+
+/**
+ * The three runtime entrypoints, spread so their exports can be probed by name.
+ *
+ * Imported statically rather than with `await import(specifier)`, which returns
+ * `any` and would make every lookup below an unchecked assignment.
+ */
+const entrypoints: readonly (readonly [string, Record<string, unknown>])[] = [
+  ["./node.ts", { ...nodeEntrypoint }],
+  ["./bun.ts", { ...bunEntrypoint }],
+  ["./fetch.ts", { ...fetchEntrypoint }],
+];
 
 describe("re-exports", () => {
   test("DiagnosticLogger is nameable by consumers", () => {
@@ -55,6 +70,38 @@ describe("re-exports", () => {
 
   test("launchArcjetWithTransport is exported", () => {
     assert.equal(typeof launchArcjetWithTransport, "function");
+  });
+
+  test("registration and the free calls are exported from every entrypoint", () => {
+    // The `exports` map resolves "." to one of these three by runtime
+    // condition, so a symbol missing from any one of them is missing from the
+    // package on that runtime.
+    for (const [specifier, entrypoint] of entrypoints) {
+      for (const name of ["registerArcjet", "unregisterArcjet", "guard", "capture", "flush"]) {
+        assert.equal(typeof entrypoint[name], "function", `${specifier} must export ${name}`);
+      }
+    }
+  });
+
+  test("the registry's internals stay off the public entrypoints", () => {
+    // These exist so `registry.ts` and `testing.ts` can share code with
+    // `client.ts`; they are `@internal` and no `exports` entry resolves to the
+    // modules that declare them. Re-exporting one here would publish it by
+    // accident, which no other check would catch.
+    const internals = [
+      "registerArcjetForTesting",
+      "registeredClient",
+      "createFailOpenDecision",
+      "normalizeCaptureEvent",
+      "symbolArcjetDiagnostics",
+      "symbolArcjetClient",
+    ];
+
+    for (const [specifier, entrypoint] of entrypoints) {
+      for (const name of internals) {
+        assert.equal(name in entrypoint, false, `${specifier} must not export ${name}`);
+      }
+    }
   });
 
   test("_launchWithTransportFactory is exported", () => {
