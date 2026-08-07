@@ -16,7 +16,7 @@ The example includes:
 - An OpenAPI connection (`orders` API) guarded with `guardApproval` to rate-limit API access.
 - An HTTP channel that screens inbound webhook messages with `guardInbound` before dispatching to the agent.
 - Hooks that capture all guard decisions for audit trails.
-- Shared correlation IDs that join inbound decisions, gate decisions, and capture events from a single agent turn.
+- Two correlated Sequences per conversation — the inbound screen and the in-session decisions — joined by an `eve.session-started` record.
 
 ## Requirements
 
@@ -58,7 +58,7 @@ Send a POST request to the webhook channel (e.g., to `http://localhost:3000/webh
 
 Watch the Arcjet Console for the captured decisions:
 
-- **Inbound decision:** The `guardInbound` gate screening the webhook message, carrying the correlation ID that ties everything together.
+- **Inbound decision:** The `guardInbound` gate screening the webhook message, correlated by the conversation id, on its own Sequence.
 - **Tool and connection gates:** The `guardTool` rate limit on `lookup_order` and the `guardApproval` gate on the orders API connection.
 - **Hook capture:** The `arcjetHooks` recording all guard decisions for audit.
 

@@ -1,6 +1,6 @@
 ---
 name: integrate-arcjet-guard-eve
-description: Integrate Arcjet security into a Vercel Eve agent using @arcjet/guard — add guard gates to tools and connections, screen inbound messages, and record agent lifecycle events all joined by one correlation ID. Use when asked to add Arcjet to an Eve agent, rate limit its tools, guard connection access, or screen inbound messages.
+description: Integrate Arcjet security into a Vercel Eve agent using @arcjet/guard — add guard gates to tools and connections, screen inbound messages, and record agent lifecycle events correlated to the session. Use when asked to add Arcjet to an Eve agent, rate limit its tools, guard connection access, or screen inbound messages.
 license: Apache-2.0
 compatibility: Requires the target app to use Vercel Eve (eve >= 0.30 < 1) on Node.js >= 24.
 metadata:
@@ -28,7 +28,7 @@ rule:
 The three in-session helpers correlate by session id, so their decisions land
 on one Sequence. `guardInbound` runs before the session exists and correlates
 by whatever identity the channel has, so its decision lands on a *second*
-Sequence. `arcjetHooks` emits a `session.started` record carrying both, which
+Sequence. `arcjetHooks` emits an `eve.session-started` record carrying both, which
 is what lets you pivot from one to the other.
 
 ## Questions to ask the human first

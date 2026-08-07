@@ -967,8 +967,10 @@ what happens:
     to the agent. `guardApproval` returns a `denied` status carrying a reason the
     model reads.
   - The capture `outcome` on that path is `"unavailable"`, not `"denied"` on both
-    SDKs. The AI SDK returns a fixed `retryAfterSeconds: 5` backoff hint; Eve
-    supplies `retryAfterSeconds` only on the DENY path, derived from the decision.
+    SDKs. The AI SDK returns a fixed `retryAfterSeconds: 5` backoff hint. Eve
+    supplies `retryAfterSeconds` only on a rate-limit denial surfaced via
+    `onDeny: "result"`, derived from the decision's reset time; its default
+    denial throws and carries no hint.
 
 - **Opt-out: `onGuardError: "allow"`** — if the policy cannot be evaluated,
   proceed anyway. Use this for call sites where availability matters more than
