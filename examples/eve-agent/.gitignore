@@ -1,6 +1,0 @@
-node_modules/
-.env.local
-.output/
-.eve/
-dist/
-*.log

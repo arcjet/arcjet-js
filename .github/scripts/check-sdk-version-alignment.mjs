@@ -48,9 +48,13 @@ if (watched.length === 0) {
 }
 
 const lockfiles = ["package-lock.json"];
-for (const dir of readdirSync("examples")) {
-  const lock = join("examples", dir, "package-lock.json");
-  if (existsSync(lock)) lockfiles.push(lock);
+// Examples now live in the `arcjet/examples` repository, so this repo may have
+// no `examples` directory. When it does, include each example's lockfile.
+if (existsSync("examples")) {
+  for (const dir of readdirSync("examples")) {
+    const lock = join("examples", dir, "package-lock.json");
+    if (existsSync(lock)) lockfiles.push(lock);
+  }
 }
 
 let failed = false;
