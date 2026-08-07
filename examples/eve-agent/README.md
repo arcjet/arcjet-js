@@ -64,13 +64,13 @@ Watch the Arcjet Console for the captured decisions:
 
 ## Understanding correlation IDs
 
-The correlation ID in the console represents one agent turn. It appears in three places:
+The inbound decision and the tool/connection gate decisions are joined by **two distinct correlation IDs**, reconciled by the `arcjetHooks` record at `session.started`:
 
-1. **`session.started`** — The inbound webhook message enters the session through a `guardInbound` gate, which records the initial inbound decision and establishes the session correlation ID.
-2. **Tool and connection gates** — When the agent invokes `lookup_order` or the orders API, those guards record their decisions under the same correlation ID.
-3. **Hook captures** — The `arcjetHooks` observer sees all three gates in one turn and emits capture events sharing the same ID.
+1. **Inbound correlation ID** — The `guardInbound` gate assigns a correlation ID passed from the webhook handler. This ID is immutable and comes from the caller (e.g. the `conversationId` in the request body), ensuring the same request always joins to the same decision even if the session is recreated.
 
-All three decisions (inbound, tool, connection) share a single correlation ID because the `guardInbound` gate reads the session ID from the channel context, and all subsequent guards derive their correlation ID from that same session. This is the two-hop join: the inbound decision creates the session context, and the tool/connection gates automatically read it from the session already in progress.
+2. **Session correlation ID** — Once the inbound decision passes, the handler creates a session and runs the agent. The tools and connection operations guard their decisions using the **session ID** as their correlation ID — not the inbound ID. The `arcjetHooks` hook emits a `session.started` event that **joins both IDs** into a single Sequence in the Arcjet Console: the `session.started` record carries the inbound correlation ID and references the session ID, making one searchable from the other.
+
+So in the Console you see three gate decisions (inbound, tool, connection) on a single Sequence, all traceable to the same conversation and session.
 
 ## Notes
 

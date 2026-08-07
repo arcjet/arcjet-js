@@ -9,6 +9,7 @@ export default defineChannel({
     POST("/webhook", async (req, args) => {
       const body = (await req.json()) as Record<string, unknown>;
       const message = body.message as string | undefined;
+      const conversationId = body.conversationId as string | undefined;
 
       if (!message || typeof message !== "string") {
         return new Response(
@@ -17,9 +18,20 @@ export default defineChannel({
         );
       }
 
+      if (!conversationId || typeof conversationId !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Missing or invalid conversationId" }),
+          { status: 400 }
+        );
+      }
+
       // Screen inbound text with Arcjet before dispatching to the agent.
-      // Use the request's IP or a generated ID as the correlation ID.
-      const correlationId = args.requestIp ?? `webhook-${Date.now()}`;
+      // The correlationId is a stable conversation identity that joins two contexts:
+      // (1) the inbound guard decision via guardInbound, and (2) the session context
+      // via args.from(). Using the same value for both ensures the session.started
+      // record in arcjetHooks can join the inbound decision to subsequent tool/approval
+      // gate decisions, all under one Sequence in the Arcjet Console.
+      const correlationId = conversationId;
       const verdict = await guardInbound(arcjet, message, {
         rules: [detectPromptInjection()(message)],
         action: "message.received",

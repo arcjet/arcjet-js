@@ -929,7 +929,7 @@ importing only core guards are not forced to install unneeded packages:
 peers, either install them explicitly or relax strict peer checking:
 
 ```sh
-pnpm install eve
+pnpm install ai @ai-sdk/provider-utils eve
 # or
 pnpm install --no-strict-peer-dependencies
 ```
@@ -958,21 +958,27 @@ what happens:
   blocked. For AI tool calls and application actions, this is the safe choice.
   - Vercel AI SDK (`guardTool`, `guardAction`): `guardTool` returns
     `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` to the model.
-    `guardAction` throws `ArcjetGuardUnavailableError`.
-  - Vercel Eve (`guardTool`, `guardApproval`): `guardTool` returns a failed
-    `action.result` to the agent. `guardApproval` returns a `denied` status
-    carrying a reason the model reads.
-  - The capture `outcome` on that path is `"unavailable"`, not `"denied"`.
-  - The fail-closed result carries a fixed `retryAfterSeconds: 5` backoff hint.
+    `guardAction` throws `ArcjetGuardUnavailableError`, which is deliberately
+    distinct from `ArcjetDeniedError` so an unavailable guard can be alerted on
+    separately; it carries `cause` or `decision`, making the two distinguishable
+    in a handler.
+  - Vercel Eve (`guardTool`, `guardApproval`): `guardTool` throws
+    `ArcjetGuardUnavailableError`, which Eve projects as a failed `action.result`
+    to the agent. `guardApproval` returns a `denied` status carrying a reason the
+    model reads.
+  - The capture `outcome` on that path is `"unavailable"`, not `"denied"` on both
+    SDKs. The AI SDK returns a fixed `retryAfterSeconds: 5` backoff hint; Eve
+    supplies `retryAfterSeconds` only on the DENY path, derived from the decision.
 
 - **Opt-out: `onGuardError: "allow"`** — if the policy cannot be evaluated,
   proceed anyway. Use this for call sites where availability matters more than
   enforcement — e.g. a read-only tool like an order lookup, or a channel
   screening gate where blocking is costly. During an Arcjet incident, that call
   site is unaffected, but enforcement at other sites is not.
-  - Eve's `guardInbound` defaults to `"allow"` — a reasonable choice where the
-    human cost of rejecting a legitimate message exceeds the security cost of
-    letting one through during an outage.
+  - Eve's `guardInbound` defaults to `"deny"` — the channel stops answering if
+    the guard is unavailable, which is the safe choice. To allow messages
+    through during an outage, explicitly set `onGuardError: "allow"`, where the
+    human cost of rejecting a legitimate message exceeds the security cost.
 
 The layering resolves a potential confusion: the core `@arcjet/guard` client
 still fails open by construction and *reports* it via `hasFailedOpen()`; the
@@ -1212,9 +1218,13 @@ Use `securityMetadata()` keys consistently across your app:
 
 For a complete working example integrating `@arcjet/guard` with the Vercel AI SDK, see [examples/nextjs-ai-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-ai-agent), which demonstrates wrapping agent tools with guard checks, enforcing rules on application-invoked actions, and emitting audit events joined by correlation ID.
 
+For an example with Vercel Eve, see [examples/eve-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/eve-agent), which shows how to protect tools, connections, and channels with Arcjet guards, and record agent lifecycle events with hooks.
+
 ## Agent skill
 
-For integration help in Claude Code or other AI coding agents, a skill file is packaged with `@arcjet/guard`:
+For integration help in Claude Code or other AI coding agents, two skill files are packaged with `@arcjet/guard`:
+
+**For Vercel AI SDK:**
 
 ```bash
 # Extract the skill from node_modules into your Claude Code skills directory:
@@ -1224,7 +1234,19 @@ cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/
 ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/skills/
 ```
 
-In Claude Code, use `/integrate-arcjet-guard-agents` to start an integration session. The skill guides you through wrapping tools with guard checks, enforcing rules on app-invoked actions, and emitting audit events joined by correlation ID.
+In Claude Code, use `/integrate-arcjet-guard-agents` to start an integration session.
+
+**For Vercel Eve:**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-eve ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-eve ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-eve` to start an integration session.
+
+Each skill guides you through wrapping tools, gating connections, screening inbound messages, and recording lifecycle events joined by correlation ID.
 
 Note: `npx skills add arcjet/skills` refers to the separate Anthropic skills marketplace, not the packaged file.
 

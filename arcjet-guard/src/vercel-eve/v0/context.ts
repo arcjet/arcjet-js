@@ -20,8 +20,7 @@ import type { ArcjetMetadata } from "../../types.ts";
  * @example
  * ```ts
  * import { launchArcjet, detectPromptInjection } from "@arcjet/guard";
- * import { ArcjetDeniedError, guardAction } from "@arcjet/guard/vercel-eve/v0";
- * import { eveAgentContext } from "./context.ts";
+ * import { ArcjetDeniedError, guardAction, eveAgentContext } from "@arcjet/guard/vercel-eve/v0";
  * import type { SessionContext } from "eve/context";
  *
  * const client = launchArcjet({ key: process.env["ARCJET_KEY"]! });

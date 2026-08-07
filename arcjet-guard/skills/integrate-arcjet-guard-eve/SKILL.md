@@ -64,8 +64,7 @@ State plainly why each applies to Eve, not other frameworks:
 
 4. **`approval` is one function per tool or connection.** There is no composition
    with `always()`/`once()`/`never()` from `eve/tools/approval`. To require a
-   human *in addition* to the guard check, use `onAllow: "user-approval"` if Eve
-   supports it, or ask the Arcjet operator to flip the rule to dry-run mode.
+   human *in addition* to the guard check, use `onAllow: "user-approval"`.
 
 5. **`defineDynamic` tools are not covered.** Eve's compiler hoists a dynamic
    tool's inline `execute` to a module-scope step function, so a wrapper is not
@@ -247,9 +246,11 @@ export default defineChannel({
   has (request ID, session ID, a derived identifier). Pass it to `args.from()` to
   join the inbound decision with the agent's session in the Arcjet Console.
 - On DENY the handler returns an HTTP error; the agent never runs.
-- Guard policy unavailability: default is `onGuardError: "allow"` (the message
-  goes through), suitable for channels where blocking is costly. Use
-  `onGuardError: "deny"` if this channel is high-sensitivity.
+- Guard policy unavailability: default is `onGuardError: "deny"` — if the guard
+  cannot be evaluated, the message is rejected. This is the safe choice where
+  the agent stops answering during an Arcjet outage. For channels where the human
+  cost of rejecting a legitimate message exceeds the security cost of an outage,
+  use `onGuardError: "allow"` to let it through anyway.
 
 ## Step 5: Record agent lifecycle events
 
