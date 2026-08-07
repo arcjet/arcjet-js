@@ -276,7 +276,8 @@ test("AC6.3: session.started captures session id even when channel is empty", as
   assert.ok(!("eve.channel" in (capture.metadata ?? {})), "channel should not be present");
 });
 
-// C1: session.started with delegated context correlates to root session ID
+// A delegated session correlates to the root, so a subagent's decisions land
+// on the user-facing Sequence rather than one nobody looks at.
 test("AC3.2: action.result with delegated session correlates to root session id", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
@@ -312,7 +313,7 @@ test("AC3.2: action.result with delegated session correlates to root session id"
   );
 });
 
-// C1: session.started captures the session-derived correlationId
+// session.started captures the session-derived correlationId
 test("AC6.3: session.started captures the session-derived correlationId", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
@@ -333,7 +334,7 @@ test("AC6.3: session.started captures the session-derived correlationId", async 
   assert.equal(capture.correlationId, "ses_123", "correlationId must be session id");
 });
 
-// C3a: session.failed captures action, correlationId, outcome, and error.code
+// session.failed captures action, correlationId, outcome, and error.code
 test("AC6.2: session.failed handler captures action, outcome, and error.code", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
@@ -361,7 +362,7 @@ test("AC6.2: session.failed handler captures action, outcome, and error.code", a
   assert.equal(capture.metadata?.["error.code"], "SESSION_TIMEOUT", "error.code must be captured");
 });
 
-// C3b: turn.started handler captures action, correlationId, and eve.turn
+// turn.started handler captures action, correlationId, and eve.turn
 test("AC6.2: turn.started handler captures action, correlationId, and eve.turn", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
@@ -389,7 +390,7 @@ test("AC6.2: turn.started handler captures action, correlationId, and eve.turn",
   assert.equal(capture.metadata?.["eve.turn"], "turn_456", "eve.turn must be captured");
 });
 
-// C3c: turn.completed handler captures action, correlationId, outcome, and eve.turn
+// turn.completed handler captures action, correlationId, outcome, and eve.turn
 test("AC6.2: turn.completed handler captures action, outcome, and eve.turn", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
@@ -418,7 +419,7 @@ test("AC6.2: turn.completed handler captures action, outcome, and eve.turn", asy
   assert.equal(capture.metadata?.["eve.turn"], "turn_456", "eve.turn must be captured");
 });
 
-// C3d: turn.failed handler captures action, correlationId, outcome, error.code, and eve.turn
+// turn.failed handler captures action, correlationId, outcome, error.code, and eve.turn
 test("AC6.2: turn.failed handler captures action, outcome, error.code, and eve.turn", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
@@ -565,6 +566,33 @@ test("AC6.5: handlers don't throw when capture() throws", async () => {
       await handler(mockEvent as any, mockCtx as any);
     } catch (error) {
       assert.fail(`Handler "${name}" threw when capture() threw: ${String(error)}`);
+    }
+  }
+});
+
+// AC6.5: the enclosing guard, reached via a ctx whose property access throws.
+// The empty-input sweep cannot reach it (eveAgentContext is written with
+// optional chaining) and the throwing-client sweep cannot either (captureEvent
+// swallows capture() before a handler's catch could see it), so a runtime that
+// hydrates session state lazily is the case that exercises it.
+test("AC6.5: handlers don't throw when reading the context throws", async () => {
+  const client = createMockClient();
+  const definition = arcjetHooks(client);
+
+  assert.ok(definition.events, "events map must exist");
+
+  for (const [name, handler] of Object.entries(definition.events)) {
+    const hostileCtx = {};
+    Object.defineProperty(hostileCtx, "session", {
+      get() {
+        throw new Error("ctx exploded");
+      },
+    });
+
+    try {
+      await handler({ data: { status: "completed" } } as any, hostileCtx as any);
+    } catch (error) {
+      assert.fail(`Handler "${name}" threw when ctx access threw: ${String(error)}`);
     }
   }
 });

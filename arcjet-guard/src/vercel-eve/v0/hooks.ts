@@ -1,9 +1,4 @@
-import type {
-  HookContext,
-  HookDefinition,
-  HookEventMap,
-  StreamEventHook,
-} from "eve/hooks";
+import type { HookContext, HookDefinition, HookEventMap, StreamEventHook } from "eve/hooks";
 
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { captureEvent } from "../../agents/capture.ts";
@@ -14,7 +9,6 @@ import { eveAgentContext } from "./context.ts";
  * name, but it is reachable structurally through the public hook event map.
  */
 type RuntimeActionResult = HookEventMap["action.result"]["data"]["result"];
-
 
 /**
  * Which event families `arcjetHooks` captures.
@@ -84,15 +78,15 @@ export function arcjetHooks(
   client: ArcjetAgentClient,
   options?: ArcjetHooksOptions,
 ): HookDefinition {
-  // Determine which families to include (default: all)
   const enabledFamilies = new Set(options?.events ?? ["session", "turn", "tool", "subagent"]);
 
-  // Build the events map conditionally
-  // oxlint-disable typescript/no-unsafe-return -- ExactDefinition constraint requires { events } return
   const events: Record<string, StreamEventHook<any>> = {};
 
   if (enabledFamilies.has("session")) {
-    events["session.started"] = ((_event: HookEventMap["session.started"], ctx: HookContext): void => {
+    events["session.started"] = ((
+      _event: HookEventMap["session.started"],
+      ctx: HookContext,
+    ): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
@@ -268,7 +262,10 @@ export function arcjetHooks(
   }
 
   if (enabledFamilies.has("subagent")) {
-    events["subagent.called"] = ((event: HookEventMap["subagent.called"], ctx: HookContext): void => {
+    events["subagent.called"] = ((
+      event: HookEventMap["subagent.called"],
+      ctx: HookContext,
+    ): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
@@ -297,7 +294,10 @@ export function arcjetHooks(
       }
     }) as StreamEventHook<any>;
 
-    events["subagent.completed"] = ((event: HookEventMap["subagent.completed"], ctx: HookContext): void => {
+    events["subagent.completed"] = ((
+      event: HookEventMap["subagent.completed"],
+      ctx: HookContext,
+    ): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
