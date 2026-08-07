@@ -20,3 +20,5 @@
 export * from "../../agents/index.ts";
 export { guardApproval } from "./guard-approval.ts";
 export type { GuardApprovalPolicy } from "./guard-approval.ts";
+export { guardTool } from "./guard-tool.ts";
+export type { GuardToolPolicy } from "./guard-tool.ts";
