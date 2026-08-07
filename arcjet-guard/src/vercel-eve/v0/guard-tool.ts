@@ -81,9 +81,9 @@ export interface GuardToolPolicy<TInput> {
  * import { launchArcjet, tokenBucket } from "@arcjet/guard";
  * import { guardTool } from "@arcjet/guard/vercel-eve/v0";
  * import { defineTool } from "eve/tools";
- * import type { SessionContext } from "eve/context";
+ * import type { ToolDefinition } from "eve/tools";
  *
- * const arcjetClient = launchArcjet({ key: process.env.ARCJET_KEY! });
+ * const arcjetClient = launchArcjet({ key: process.env["ARCJET_KEY"]! });
  *
  * const emailLimit = tokenBucket({
  *   refillRate: 5,
@@ -91,19 +91,24 @@ export interface GuardToolPolicy<TInput> {
  *   maxTokens: 5,
  * });
  *
- * const sendEmail = defineTool({
+ * const sendEmail = defineTool<{ to: string }, { messageId: string }>({
  *   description: "Send an email",
- *   inputSchema: { type: "object", properties: { to: { type: "string" } } },
- *   execute: async (input) => {
- *     // Real email service call
- *     return { success: true, messageId: "msg-123" };
+ *   inputSchema: {
+ *     type: "object",
+ *     properties: { to: { type: "string" } },
+ *     required: ["to"],
  *   },
+ *   execute: async (input) => ({ messageId: `msg-for-${input.to}` }),
  * });
  *
- * const protectedEmail = guardTool(arcjetClient, sendEmail, {
- *   action: "email.sent",
- *   rules: (input) => [emailLimit({ key: input.to, requested: 1 })],
- * });
+ * // A denial throws ArcjetDeniedError, which Eve projects as a failed
+ * // `action.result`. Reach for `guardApproval` instead when the tool declares
+ * // an `outputSchema` or comes from a connection.
+ * const protectedEmail: ToolDefinition<{ to: string }, { messageId: string }> =
+ *   guardTool(arcjetClient, sendEmail, {
+ *     action: "email.sent",
+ *     rules: (input) => [emailLimit({ key: input.to, requested: 1 })],
+ *   });
  *
  * export default protectedEmail;
  * ```
