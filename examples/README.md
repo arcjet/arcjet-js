@@ -5,6 +5,9 @@ This directory contains examples of how to use Arcjet.
 The [`node-guard-policy`](node-guard-policy) example demonstrates a remotely
 configured Guard policy with server and local inputs.
 
+The [`nextjs-guard-policy`](nextjs-guard-policy) example demonstrates the same
+AI agent policy scenarios in a Next.js application.
+
 ## Example app
 
 Try an Arcjet protected Next.js app live at

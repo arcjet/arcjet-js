@@ -133,6 +133,7 @@ jobs:
           - fastify
           - nestjs
           - nextjs-ai-agent
+          - nextjs-guard-policy
           - nextjs-app-dir-rate-limit
           - nextjs-app-dir-validate-email
           - nextjs-bot-categories
