@@ -944,7 +944,8 @@ is one path to learn and no layering to reason about.
 Both `@arcjet/guard/vercel-ai/v7` and `@arcjet/guard/vercel-eve/v0` now export
 these helpers. The open next step is promoting them to the root `@arcjet/guard`
 export so a caller can get the agnostic layer without installing a vendor peer.
-That awaits one more integration to confirm the shape is stable.
+Eve was the second integration and exercised the shape without changing it,
+which is the evidence that promotion was waiting on.
 
 ### `onGuardError`: handling evaluation failures
 

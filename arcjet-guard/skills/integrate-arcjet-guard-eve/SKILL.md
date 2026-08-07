@@ -176,7 +176,7 @@ const apiLimit = tokenBucket({
 
 export default defineOpenAPIConnection({
   description: "Orders API",
-  spec: {/* ... */},
+  spec: "https://api.example.com/openapi.json",
   approval: guardApproval(arcjet, {
     action: "orders-api.read",
     rules: (ctx) => [apiLimit({ key: ctx.session.id, requested: 1 })],
