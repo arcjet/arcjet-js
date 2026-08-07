@@ -8,6 +8,9 @@ import type { DecisionDeny } from "../types.ts";
  * can still leave a `resetAtUnixSeconds` in `decision.results`, so the caller
  * decides whether to consult this at all — the reason check stays with the
  * caller rather than being duplicated here.
+ *
+ * @internal Exported for use by the vendor namespaces, so every one of them
+ * reports the same retry-after; not part of the public API.
  */
 export function retryAfterSeconds(decision: DecisionDeny): number | undefined {
   for (const result of decision.results) {
