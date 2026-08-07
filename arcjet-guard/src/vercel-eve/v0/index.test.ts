@@ -5,12 +5,43 @@ import assert from "node:assert/strict";
 
 import * as eveNamespace from "./index.ts";
 import * as agentsBarrel from "../../agents/index.ts";
+// This file imports vercel-ai/v7/index.ts which imports "ai" at runtime to verify
+// proxy identity across both namespaces. This test is not part of the Node-22-without-Eve
+// story covered by AC2.2, which applies only to Eve's own files. AC1.2 requires
+// cross-namespace assertions that can only be verified when ai is available.
+import * as v7Namespace from "../../vercel-ai/v7/index.ts";
 
+import type {
+  ArcjetHookFamily,
+  ArcjetHooksOptions,
+  GuardApprovalPolicy,
+  GuardInboundOptions,
+  GuardToolPolicy,
+  InboundVerdict,
+  ArcjetDenialResult,
+} from "./index.ts";
 import {
   sortedKeys,
   EXPECTED_ROOT_KEYS,
   EXPECTED_CONDITIONS,
 } from "../../../test/_shared/source-scan.ts";
+
+/**
+ * `Object.keys` on a namespace import never lists type-only exports, so assert
+ * them at type level instead: this stops compiling if the barrel drops one.
+ */
+function verifyTypeExports(): void {
+  const approvalPolicy: GuardApprovalPolicy | undefined = undefined;
+  const toolPolicy: GuardToolPolicy<Record<string, unknown>> | undefined = undefined;
+  const inboundOptions: GuardInboundOptions | undefined = undefined;
+  const inboundVerdict: InboundVerdict | undefined = undefined;
+  const hookFamily: ArcjetHookFamily | undefined = undefined;
+  const hooksOptions: ArcjetHooksOptions | undefined = undefined;
+  const denialResult: ArcjetDenialResult | undefined = undefined;
+  void [approvalPolicy, toolPolicy, inboundOptions, inboundVerdict, hookFamily, hooksOptions, denialResult];
+}
+
+verifyTypeExports();
 
 /**
  * Read a JSON file as a plain record. `JSON.parse` is untyped by definition, so
@@ -37,6 +68,27 @@ function objectField(
   return undefined;
 }
 
+// AC1.1: Each of the five own exports (eveAgentContext, guardApproval, guardTool,
+// guardInbound, arcjetHooks) must be a function.
+test("AC1.1: exports the five own helpers as functions", () => {
+  const ownExports = [
+    "eveAgentContext",
+    "guardApproval",
+    "guardTool",
+    "guardInbound",
+    "arcjetHooks",
+  ] as const;
+
+  for (const funcName of ownExports) {
+    const func = (eveNamespace as Record<string, unknown>)[funcName];
+    assert.equal(
+      typeof func,
+      "function",
+      `@arcjet/guard/vercel-eve/v0 must export ${funcName} as a function`,
+    );
+  }
+});
+
 // The agnostic helpers reach users through this namespace and no other,
 // so the public path is what must carry them.
 test("eve namespace exports the agnostic helpers", () => {
@@ -53,6 +105,30 @@ test("eve namespace exports the agnostic helpers", () => {
     assert.ok(
       value !== undefined,
       `@arcjet/guard/vercel-eve/v0 must export ${symbol}`,
+    );
+  }
+});
+
+// AC1.2: For each agnostic symbol, the value imported from Eve namespace must
+// be the same object identity as the value from vercel-ai/v7 namespace.
+test("AC1.2: agnostic exports have same identity across Eve and v7 namespaces", () => {
+  const agnosticSymbols = [
+    "createAgentContext",
+    "securityMetadata",
+    "guardAction",
+    "captureAction",
+    "ArcjetDeniedError",
+    "ArcjetGuardUnavailableError",
+  ] as const;
+
+  for (const symbol of agnosticSymbols) {
+    const eveValue = (eveNamespace as Record<string, unknown>)[symbol];
+    const v7Value = (v7Namespace as Record<string, unknown>)[symbol];
+
+    assert.strictEqual(
+      eveValue,
+      v7Value,
+      `${symbol} must be the same object identity from both @arcjet/guard/vercel-eve/v0 and @arcjet/guard/vercel-ai/v7`,
     );
   }
 });
@@ -80,12 +156,35 @@ test("Eve namespace is a strict superset of the agents barrel with same identity
     );
   }
 
-  // eve has exactly the agents keys plus guardApproval, guardTool, and guardInbound (3 additions)
-  // GuardApprovalPolicy, GuardToolPolicy, GuardInboundOptions, and InboundVerdict are type-only and do not appear at runtime
+  // eve has exactly the agents keys plus five own exports: eveAgentContext,
+  // guardApproval, guardTool, guardInbound, arcjetHooks.
+  // Type-only exports (GuardApprovalPolicy, GuardToolPolicy, GuardInboundOptions,
+  // InboundVerdict, ArcjetHookFamily, ArcjetHooksOptions, ArcjetDenialResult)
+  // do not appear at runtime.
+  const expectedAdditions = 5;
   assert.equal(
     eveKeys.length,
-    agentKeys.length + 3,
-    `eve namespace must have agents barrel exports plus guardApproval, guardTool, and guardInbound (eve has ${eveKeys.length}, agents has ${agentKeys.length}, expected ${agentKeys.length + 3})`,
+    agentKeys.length + expectedAdditions,
+    `eve namespace must have agents barrel exports plus ${expectedAdditions} own exports (eve has ${eveKeys.length}, agents has ${agentKeys.length}, expected ${agentKeys.length + expectedAdditions})`,
+  );
+
+  // Verify the extra keys are exactly the five own exports
+  const eveOnlyKeys = eveKeys.filter((key) => !agentKeys.includes(key));
+  const ownExportsArray = [
+    "arcjetHooks",
+    "eveAgentContext",
+    "guardApproval",
+    "guardInbound",
+    "guardTool",
+  ];
+  // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
+  const expectedOwnExports: readonly string[] = ownExportsArray.sort();
+  // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
+  const sorted: readonly string[] = eveOnlyKeys.sort();
+  assert.deepEqual(
+    sorted,
+    expectedOwnExports,
+    `eve namespace's own exports must be exactly [${expectedOwnExports.join(", ")}]`,
   );
 });
 
