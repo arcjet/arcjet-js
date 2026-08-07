@@ -68,6 +68,21 @@ jobs:
       - name: Unit tests (with coverage)
         run: npm run test-unit
 
+      # The vercel-eve namespace imports eve for types only, which is what lets
+      # guard support Node 22 at all — eve declares engines.node ">=24". A static
+      # scan proves the imports are written `import type`; this proves the
+      # consequence, catching a build step that re-emits one as a value import.
+      #
+      # Runs on every leg of the matrix rather than just Node 22, because the
+      # criterion is about all three. Runs last because it deletes a
+      # devDependency: the typecheck legitimately fails without eve, since types
+      # are a build-time dependency.
+      - name: Unit tests with eve absent
+        run: |
+          rm -rf node_modules/eve
+          npx --no-install node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
+        working-directory: ${{ github.workspace }}
+
   lint:
     name: Lint & Typecheck
     runs-on: ubuntu-latest
