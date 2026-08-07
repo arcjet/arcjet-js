@@ -13,7 +13,7 @@
     "@arcjet/guard": "file:../../arcjet-guard",
     "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart",
     "ai": "7.0.36",
-    "next": "16.2.12",
+    "next": "16.3.0",
     "react": "^19",
     "react-dom": "^19",
     "zod": "^4.4.3"
