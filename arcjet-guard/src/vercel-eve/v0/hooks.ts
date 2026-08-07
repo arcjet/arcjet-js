@@ -48,6 +48,12 @@ export interface ArcjetHooksOptions {
  * by thread token to be joined with all in-session decisions correlated by
  * session ID.
  *
+ * That event's `invocation` and `runtime` payloads are deliberately not
+ * captured: the lineage identifiers in `invocation` are already reachable
+ * through `ctx.session.parent`, and a second source for them could disagree
+ * with the first, while `runtime` is deployment identity rather than anything
+ * about the decision.
+ *
  * Selective capture by family is supported via `options.events`: e.g.
  * `["session", "tool"]` captures only session-related and tool-related events,
  * reducing volume for long conversations that do not need turn-level granularity.
