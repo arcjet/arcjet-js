@@ -93,7 +93,10 @@ function dynamicImportSpecifiers(cleanContent: string): string[] {
   while ((match = expressionRegex.exec(cleanContent)) !== null) {
     const keyword = match.index;
     const specifier = match[1];
-    if (specifier !== undefined && !spans.some(([start, end]) => keyword >= start && keyword < end)) {
+    if (
+      specifier !== undefined &&
+      !spans.some(([start, end]) => keyword >= start && keyword < end)
+    ) {
       found.set(match.index + match[0].length, specifier);
     }
   }

@@ -1,7 +1,12 @@
-import type { ArcjetMetadata, Decision, DecisionAllow, DecisionDeny, RuleWithInput } from "../../types.ts";
-
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import type {
+  ArcjetMetadata,
+  Decision,
+  DecisionAllow,
+  DecisionDeny,
+  RuleWithInput,
+} from "../../types.ts";
 
 /**
  * The guard → capture sequence for a call site that decides whether something

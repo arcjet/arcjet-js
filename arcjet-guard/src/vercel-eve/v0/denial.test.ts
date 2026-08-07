@@ -1,5 +1,5 @@
-import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
+import { describe, test } from "node:test";
 
 import {
   decisionDenyRateLimit,
@@ -8,7 +8,6 @@ import {
   decisionDenyPromptInjectionWithReset,
   decisionDenyError,
 } from "../../../test/_shared/stub-client.ts";
-
 import { deniedReason, unavailableReason } from "./denial.ts";
 
 describe("vercel-eve/v0/denial", () => {
@@ -75,10 +74,7 @@ describe("vercel-eve/v0/denial", () => {
     test("Returns unavailable message", () => {
       const reason = unavailableReason();
 
-      assert.equal(
-        reason,
-        "Arcjet security check could not be completed; please retry later.",
-      );
+      assert.equal(reason, "Arcjet security check could not be completed; please retry later.");
     });
   });
 });

@@ -1,16 +1,20 @@
+import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
-import assert from "node:assert/strict";
 
-import * as eveNamespace from "./index.ts";
+import {
+  sortedKeys,
+  EXPECTED_ROOT_KEYS,
+  EXPECTED_CONDITIONS,
+} from "../../../test/_shared/source-scan.ts";
 import * as agentsBarrel from "../../agents/index.ts";
 // This file imports vercel-ai/v7/index.ts which imports "ai" at runtime to verify
 // proxy identity across both namespaces. This test is not part of the Node-22-without-Eve
 // story covered by AC2.2, which applies only to Eve's own files. AC1.2 requires
 // cross-namespace assertions that can only be verified when ai is available.
 import * as v7Namespace from "../../vercel-ai/v7/index.ts";
-
+import * as eveNamespace from "./index.ts";
 import type {
   ArcjetHookFamily,
   ArcjetHooksOptions,
@@ -20,11 +24,6 @@ import type {
   InboundVerdict,
   ArcjetDenialResult,
 } from "./index.ts";
-import {
-  sortedKeys,
-  EXPECTED_ROOT_KEYS,
-  EXPECTED_CONDITIONS,
-} from "../../../test/_shared/source-scan.ts";
 
 /**
  * `Object.keys` on a namespace import never lists type-only exports, so assert
@@ -38,7 +37,15 @@ function verifyTypeExports(): void {
   const hookFamily: ArcjetHookFamily | undefined = undefined;
   const hooksOptions: ArcjetHooksOptions | undefined = undefined;
   const denialResult: ArcjetDenialResult | undefined = undefined;
-  void [approvalPolicy, toolPolicy, inboundOptions, inboundVerdict, hookFamily, hooksOptions, denialResult];
+  void [
+    approvalPolicy,
+    toolPolicy,
+    inboundOptions,
+    inboundVerdict,
+    hookFamily,
+    hooksOptions,
+    denialResult,
+  ];
 }
 
 verifyTypeExports();
@@ -102,10 +109,7 @@ test("eve namespace exports the agnostic helpers", () => {
 
   for (const symbol of requiredSymbols) {
     const value = (eveNamespace as Record<string, unknown>)[symbol];
-    assert.ok(
-      value !== undefined,
-      `@arcjet/guard/vercel-eve/v0 must export ${symbol}`,
-    );
+    assert.ok(value !== undefined, `@arcjet/guard/vercel-eve/v0 must export ${symbol}`);
   }
 });
 
@@ -140,10 +144,7 @@ test("Eve namespace is a strict superset of the agents barrel with same identity
 
   // Verify all agents barrel keys are present in eve namespace
   for (const key of agentKeys) {
-    assert.ok(
-      eveKeys.includes(key),
-      `agents barrel key "${key}" must be present in eve namespace`,
-    );
+    assert.ok(eveKeys.includes(key), `agents barrel key "${key}" must be present in eve namespace`);
 
     // Verify the exported value is the exact same object, not a wrapper
     const eveValue = (eveNamespace as Record<string, unknown>)[key];
@@ -269,8 +270,5 @@ test("./vercel-eve/v0 must be present in export map", () => {
 
   const exportKeys = Object.keys(exportsMap);
 
-  assert.ok(
-    exportKeys.includes("./vercel-eve/v0"),
-    'export map must have "./vercel-eve/v0"',
-  );
+  assert.ok(exportKeys.includes("./vercel-eve/v0"), 'export map must have "./vercel-eve/v0"');
 });

@@ -1,14 +1,14 @@
 import type { ToolDefinition, ToolContext } from "eve/tools";
 
-import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
-import { retryAfterSeconds } from "../../agents/denial.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { retryAfterSeconds } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
-import type { ArcjetDenialResult } from "./denial.ts";
-import { deniedReason } from "./denial.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
+import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
+import type { ArcjetDenialResult } from "./denial.ts";
+import { deniedReason } from "./denial.ts";
 
 /**
  * Policy for `guardTool()` — how to guard an authored tool's execution.
@@ -140,12 +140,14 @@ export function guardTool<TInput, TOutput>(
     // Build metadata with eve-specific keys
     const metadata: ArcjetMetadata = {
       ...agentCtx.metadata,
-      ...(typeof ctx.toolName === "string" && ctx.toolName.length > 0 && {
-        "eve.tool": ctx.toolName,
-      }),
-      ...(typeof ctx.callId === "string" && ctx.callId.length > 0 && {
-        "eve.call": ctx.callId,
-      }),
+      ...(typeof ctx.toolName === "string" &&
+        ctx.toolName.length > 0 && {
+          "eve.tool": ctx.toolName,
+        }),
+      ...(typeof ctx.callId === "string" &&
+        ctx.callId.length > 0 && {
+          "eve.call": ctx.callId,
+        }),
     };
 
     // Resolve rules and metadata from input if they are functions

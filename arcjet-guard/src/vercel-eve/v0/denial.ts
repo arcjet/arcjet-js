@@ -1,6 +1,5 @@
-import type { DecisionDeny } from "../../types.ts";
-
 import { retryAfterSeconds } from "../../agents/denial.ts";
+import type { DecisionDeny } from "../../types.ts";
 
 /**
  * Structured tool result returned to the model when a call is denied.

@@ -27,7 +27,7 @@ rule:
 
 The three in-session helpers correlate by session id, so their decisions land
 on one Sequence. `guardInbound` runs before the session exists and correlates
-by whatever identity the channel has, so its decision lands on a *second*
+by whatever identity the channel has, so its decision lands on a _second_
 Sequence. `arcjetHooks` emits an `eve.session-started` record carrying both, which
 is what lets you pivot from one to the other.
 
@@ -70,7 +70,7 @@ State plainly why each applies to Eve, not other frameworks:
 
 4. **`approval` is one function per tool or connection.** There is no composition
    with `always()`/`once()`/`never()` from `eve/tools/approval`. To require a
-   human *in addition* to the guard check, use `onAllow: "user-approval"`.
+   human _in addition_ to the guard check, use `onAllow: "user-approval"`.
 
 5. **`defineDynamic` tools are not covered.** Eve's compiler hoists a dynamic
    tool's inline `execute` to a module-scope step function, so a wrapper is not
@@ -176,7 +176,7 @@ const apiLimit = tokenBucket({
 
 export default defineOpenAPIConnection({
   description: "Orders API",
-  spec: { /* ... */ },
+  spec: {/* ... */},
   approval: guardApproval(arcjet, {
     action: "orders-api.read",
     rules: (ctx) => [apiLimit({ key: ctx.session.id, requested: 1 })],
@@ -211,20 +211,14 @@ export default defineChannel({
       const conversationId = body.conversationId as string | undefined;
 
       if (!message || typeof message !== "string") {
-        return new Response(
-          JSON.stringify({ error: "Missing message" }),
-          { status: 400 }
-        );
+        return new Response(JSON.stringify({ error: "Missing message" }), { status: 400 });
       }
 
       // Require a stable conversation identity. A generated or per-request id
       // joins to nothing, and `from()` would mint a new continuation every
       // time, so no session is ever resumed.
       if (!conversationId || typeof conversationId !== "string") {
-        return new Response(
-          JSON.stringify({ error: "Missing conversationId" }),
-          { status: 400 }
-        );
+        return new Response(JSON.stringify({ error: "Missing conversationId" }), { status: 400 });
       }
 
       // Authenticate the caller before trusting a body-supplied conversation
@@ -242,10 +236,7 @@ export default defineChannel({
       });
 
       if (!verdict.allowed) {
-        return new Response(
-          JSON.stringify({ error: verdict.message }),
-          { status: 403 }
-        );
+        return new Response(JSON.stringify({ error: verdict.message }), { status: 403 });
       }
 
       // Message passed; create a session and run the agent.
@@ -253,17 +244,16 @@ export default defineChannel({
         auth: null,
       });
 
-      return new Response(
-        JSON.stringify({ success: true, sessionId: session.id }),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: true, sessionId: session.id }), {
+        headers: { "Content-Type": "application/json" },
+      });
     }),
   ],
 });
 ```
 
 - `guardInbound` is the only place in the agent's lifecycle where a turn can be
-  declined *before* it starts. Hooks are observe-only.
+  declined _before_ it starts. Hooks are observe-only.
 - The `correlationId` is passed explicitly and should be a value the app already
   has (request ID, session ID, a derived identifier). Pass it to `args.from()` to
   join the inbound decision with the agent's session in the Arcjet Console.

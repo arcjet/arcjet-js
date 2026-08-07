@@ -10,8 +10,8 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { guardInbound } from "./guard-inbound.ts";
 import { deniedReason } from "./denial.ts";
+import { guardInbound } from "./guard-inbound.ts";
 
 test("AC5.6: ALLOW → exactly { allowed: true } with no extra fields", async () => {
   const { client } = stubClient(decisionAllow());
@@ -109,7 +109,10 @@ test("AC5.7: fail-open warning matches /fail(ing|ed) open/ pattern", async () =>
 
   // Check that the warning contains the pattern
   const pattern = /fail(ing|ed) open/;
-  assert.ok(pattern.test(warnOutput), `Warning should match pattern /fail(ing|ed) open/, got: "${warnOutput}"`);
+  assert.ok(
+    pattern.test(warnOutput),
+    `Warning should match pattern /fail(ing|ed) open/, got: "${warnOutput}"`,
+  );
 });
 
 test("AC5.7: failed-open signal with default onGuardError → { allowed: false, reason: 'UNAVAILABLE' }", async () => {
@@ -140,7 +143,10 @@ test("AC5.7: failed-open signal with onGuardError='allow' → { allowed: true } 
 
     assert.deepEqual(verdict, { allowed: true });
     const pattern = /fail(ing|ed) open/;
-    assert.ok(pattern.test(warnOutput), `Warning should match pattern /fail(ing|ed) open/, got: "${warnOutput}"`);
+    assert.ok(
+      pattern.test(warnOutput),
+      `Warning should match pattern /fail(ing|ed) open/, got: "${warnOutput}"`,
+    );
   } finally {
     console.warn = originalWarn;
     if (oldLogLevel === undefined) {
@@ -168,8 +174,14 @@ test("AC5.7: deny-path unavailable warning does NOT match /fail(ing|ed) open/", 
     });
 
     const denialWarning = warnings.find((w) => typeof w.format === "string" && w.format.length > 0);
-    assert.ok(denialWarning, `Expected a warning, got: ${warnings.map((w) => w.format).join(", ")}`);
-    assert.ok(!/fail(ing|ed) open/.test(denialWarning.format), `Warning should NOT match /fail(ing|ed) open/, got: ${denialWarning.format}`);
+    assert.ok(
+      denialWarning,
+      `Expected a warning, got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
+    assert.ok(
+      !/fail(ing|ed) open/.test(denialWarning.format),
+      `Warning should NOT match /fail(ing|ed) open/, got: ${denialWarning.format}`,
+    );
   } finally {
     console.warn = originalWarn;
     if (oldLogLevel === undefined) {
@@ -426,7 +438,10 @@ test("AC5.9: omitted correlationId → guard payload has no correlationId key", 
   });
 
   const guardPayload = guardCalls[0] as any;
-  assert.ok(!("correlationId" in guardPayload), "guard payload should not have correlationId key when omitted");
+  assert.ok(
+    !("correlationId" in guardPayload),
+    "guard payload should not have correlationId key when omitted",
+  );
 });
 
 test("AC5.9: omitted correlationId → capture payload has no correlationId key", async () => {
@@ -436,7 +451,10 @@ test("AC5.9: omitted correlationId → capture payload has no correlationId key"
   });
 
   const capturePayload = captureCalls[0] as any;
-  assert.ok(!("correlationId" in capturePayload), "capture payload should not have correlationId key when omitted");
+  assert.ok(
+    !("correlationId" in capturePayload),
+    "capture payload should not have correlationId key when omitted",
+  );
 });
 
 test("default action is 'message.received'", async () => {
@@ -468,7 +486,10 @@ test("text is not put in metadata", async () => {
 
   const capturePayload = captureCalls[0] as any;
   const metadataString = JSON.stringify(capturePayload.metadata);
-  assert.ok(!metadataString.includes("sensitive user content"), "text should not appear in metadata");
+  assert.ok(
+    !metadataString.includes("sensitive user content"),
+    "text should not appear in metadata",
+  );
 });
 
 test("rules parameter is required - cannot be omitted", async () => {

@@ -20,11 +20,9 @@
 
 // oxlint-disable eslint/no-unnecessary-type-assertion, eslint/explicit-function-return-type -- test infrastructure
 import { test } from "node:test";
+
+import type { McpClientConnectionDefinition, OpenAPIConnectionDefinition } from "eve/connections";
 import type { ToolDefinition } from "eve/tools";
-import type {
-  McpClientConnectionDefinition,
-  OpenAPIConnectionDefinition,
-} from "eve/connections";
 
 import { decisionAllow, stubClient } from "../../../test/_shared/stub-client.ts";
 import { guardApproval } from "./guard-approval.ts";

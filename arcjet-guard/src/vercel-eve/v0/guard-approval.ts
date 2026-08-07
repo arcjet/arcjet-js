@@ -1,11 +1,11 @@
 import type { Approval, ApprovalContext, ApprovalStatus } from "eve/tools";
 
-import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
-import { deniedReason, unavailableReason } from "./denial.ts";
+import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
+import { deniedReason, unavailableReason } from "./denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -89,7 +89,8 @@ export function guardApproval<TInput = Record<string, unknown>>(
       let metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
         "eve.phase": "approval",
-        ...(typeof ctx.toolName === "string" && ctx.toolName.length > 0 && { "eve.tool": ctx.toolName }),
+        ...(typeof ctx.toolName === "string" &&
+          ctx.toolName.length > 0 && { "eve.tool": ctx.toolName }),
         ...(typeof ctx.callId === "string" && ctx.callId.length > 0 && { "eve.call": ctx.callId }),
       };
 
@@ -110,7 +111,8 @@ export function guardApproval<TInput = Record<string, unknown>>(
       let metadataResolutionFailed = false;
       let metadataResolutionError: unknown;
       try {
-        const policyMetadata = typeof policy.metadata === "function" ? policy.metadata(ctx) : policy.metadata;
+        const policyMetadata =
+          typeof policy.metadata === "function" ? policy.metadata(ctx) : policy.metadata;
         metadata = { ...metadata, ...policyMetadata };
       } catch (error) {
         metadataResolutionFailed = true;
@@ -120,7 +122,8 @@ export function guardApproval<TInput = Record<string, unknown>>(
       // If a callback threw, treat as unavailable rather than guarding
       if (ruleResolutionFailed || metadataResolutionFailed) {
         const failClosed = policy.onGuardError !== "allow";
-        const correlation = agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
+        const correlation =
+          agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
         const error = ruleResolutionFailed ? ruleResolutionError : metadataResolutionError;
         warnCallbackFailure(policy.action, failClosed, error);
         captureEvent(client, {
@@ -128,9 +131,7 @@ export function guardApproval<TInput = Record<string, unknown>>(
           ...correlation,
           metadata: { ...metadata, outcome: "unavailable" },
         });
-        return failClosed
-          ? { type: "denied", reason: unavailableReason() }
-          : allowStatus();
+        return failClosed ? { type: "denied", reason: unavailableReason() } : allowStatus();
       }
 
       // Call runGate with the appropriate handlers
@@ -153,9 +154,7 @@ export function guardApproval<TInput = Record<string, unknown>>(
       // but if something unforeseen happens, fail closed by default
       const failClosed = policy.onGuardError !== "allow";
       warnCallbackFailure(policy.action, failClosed, error);
-      return failClosed
-        ? { type: "denied", reason: unavailableReason() }
-        : allowStatus();
+      return failClosed ? { type: "denied", reason: unavailableReason() } : allowStatus();
     }
   };
 }
@@ -167,8 +166,16 @@ function warnCallbackFailure(action: string, failClosed: boolean, error?: unknow
   // Constant format string: `action` must not be interpolated into the first argument
   // (Semgrep requirement for actionable log messages).
   if (failClosed) {
-    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing closed:', action, error);
+    console.warn(
+      '@arcjet/guard: approval policy for "%s" could not be evaluated; failing closed:',
+      action,
+      error,
+    );
   } else {
-    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing open:', action, error);
+    console.warn(
+      '@arcjet/guard: approval policy for "%s" could not be evaluated; failing open:',
+      action,
+      error,
+    );
   }
 }

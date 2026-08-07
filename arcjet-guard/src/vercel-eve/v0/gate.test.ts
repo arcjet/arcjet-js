@@ -2,15 +2,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { DecisionAllow } from "../../types.ts";
-import type { ArcjetMetadata } from "../../types.ts";
+import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
   decisionAllow,
   decisionDenyPromptInjection,
   decisionFailOpenAllow,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { recorded } from "../../../test/_shared/source-scan.ts";
+import type { DecisionAllow } from "../../types.ts";
+import type { ArcjetMetadata } from "../../types.ts";
 import { runGate } from "./gate.ts";
 
 test("AC4.6 + AC4.8: guard threw, failing closed → onUnavailable called, one capture with outcome: unavailable", async () => {
@@ -166,9 +166,8 @@ test("AC4.8: no capture ever carries outcome: success or error", async () => {
     decisionDenyPromptInjection(),
   );
   const { client: errorClient, captureCalls: errorCaptures } = stubClient(new Error("boom"));
-  const { client: failOpenClient, captureCalls: failOpenCaptures } = stubClient(
-    decisionFailOpenAllow(),
-  );
+  const { client: failOpenClient, captureCalls: failOpenCaptures } =
+    stubClient(decisionFailOpenAllow());
 
   // Test ALLOW
   await runGate(allowClient, {

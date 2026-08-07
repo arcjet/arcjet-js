@@ -1,7 +1,7 @@
+import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
-import assert from "node:assert/strict";
 
 /**
  * Read a JSON file as a plain record. `JSON.parse` is untyped by definition, so
@@ -37,11 +37,7 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
   assert.ok(peerDependencies, "package.json must have peerDependencies");
 
   const eveVersion = peerDependencies["eve"];
-  assert.equal(
-    eveVersion,
-    ">=0.30 <1",
-    'peerDependencies.eve must be exactly ">=0.30 <1"',
-  );
+  assert.equal(eveVersion, ">=0.30 <1", 'peerDependencies.eve must be exactly ">=0.30 <1"');
 
   // Static assertion 2: peerDependenciesMeta.eve.optional is true
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
@@ -51,11 +47,7 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
   assert.ok(eveMeta, "peerDependenciesMeta must have an eve field");
 
   const isOptional = eveMeta["optional"];
-  assert.equal(
-    isOptional,
-    true,
-    "peerDependenciesMeta.eve.optional must be true",
-  );
+  assert.equal(isOptional, true, "peerDependenciesMeta.eve.optional must be true");
 
   // Static assertion 3: eve is NOT in dependencies
   const dependencies = objectField(packageJson, "dependencies");

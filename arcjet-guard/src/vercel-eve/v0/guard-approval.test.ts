@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { ApprovalContext } from "eve/tools";
-import type { DecisionDeny } from "../../types.ts";
+
+import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
   decisionAllow,
   decisionDenyPromptInjection,
@@ -13,7 +14,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { recorded } from "../../../test/_shared/source-scan.ts";
+import type { DecisionDeny } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
 import { guardApproval } from "./guard-approval.ts";
 
@@ -182,7 +183,10 @@ test("AC4.7: with onGuardError: allow, both signals resolve to 'not-applicable',
 
     assert.strictEqual(result, "not-applicable");
     const failOpenWarning = warnings.find((w) => /fail(ing|ed) open/.test(w.format));
-    assert.ok(failOpenWarning, `Expected a fail(ing|ed) open warning, got: ${warnings.map((w) => w.format).join(", ")}`);
+    assert.ok(
+      failOpenWarning,
+      `Expected a fail(ing|ed) open warning, got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
   } finally {
     console.warn = originalWarn;
     if (oldLogLevel === undefined) {
@@ -216,8 +220,14 @@ test("AC4.7: with default onGuardError: deny, unavailable warning does NOT match
     assert.ok(typeof result === "object" && result !== null);
     assert.equal((result as any).type, "denied");
     const denialWarning = warnings.find((w) => w.args.includes("resource.read"));
-    assert.ok(denialWarning, `Expected a warning with "resource.read" action, got: ${warnings.map((w) => w.format).join(", ")}`);
-    assert.ok(!/fail(ing|ed) open/.test(denialWarning.format), `Warning should NOT match /fail(ing|ed) open/, got: ${denialWarning.format}`);
+    assert.ok(
+      denialWarning,
+      `Expected a warning with "resource.read" action, got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
+    assert.ok(
+      !/fail(ing|ed) open/.test(denialWarning.format),
+      `Warning should NOT match /fail(ing|ed) open/, got: ${denialWarning.format}`,
+    );
   } finally {
     console.warn = originalWarn;
     if (oldLogLevel === undefined) {
@@ -233,7 +243,8 @@ test("AC4.8: capture carries eve.phase: 'approval' on all outcomes", async () =>
   const { client: denyClient, captureCalls: denyCaptures } = stubClient(
     decisionDenyPromptInjection(),
   );
-  const { client: unavailableClient, captureCalls: unavailableCaptures } = stubClient(decisionAllow());
+  const { client: unavailableClient, captureCalls: unavailableCaptures } =
+    stubClient(decisionAllow());
 
   const allowApproval = guardApproval(allowClient, { action: "resource.read" });
   const denyApproval = guardApproval(denyClient, { action: "resource.read" });
@@ -419,8 +430,16 @@ test("ctx.toolName and callId undefined — omitted from metadata", async () => 
   const call = recorded(guardCalls[0]);
   const metadata = recorded(call.metadata);
   // Undefined toolName/callId should not be written to metadata
-  assert.equal("eve.tool" in metadata, false, "eve.tool should not be present for undefined toolName");
-  assert.equal("eve.call" in metadata, false, "eve.call should not be present for undefined callId");
+  assert.equal(
+    "eve.tool" in metadata,
+    false,
+    "eve.tool should not be present for undefined toolName",
+  );
+  assert.equal(
+    "eve.call" in metadata,
+    false,
+    "eve.call should not be present for undefined callId",
+  );
 });
 
 test("callback throwing rules → warns and captures with outcome: unavailable", async () => {
@@ -451,7 +470,10 @@ test("callback throwing rules → warns and captures with outcome: unavailable",
     assert.equal((result as any).type, "denied");
     // Verify warning was emitted
     const callbackWarning = warnings.find((w) => w.args.includes("resource.read"));
-    assert.ok(callbackWarning, `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`);
+    assert.ok(
+      callbackWarning,
+      `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
     // Verify capture was emitted with outcome: unavailable
     assert.equal(captureCalls.length, 1);
     const capture = recorded(captureCalls[0]);
@@ -488,7 +510,10 @@ test("AC4.7: with onGuardError: allow, failed-open signal → resolve to not-app
 
     assert.strictEqual(result, "not-applicable");
     const failOpenWarning = warnings.find((w) => /fail(ing|ed) open/.test(w.format));
-    assert.ok(failOpenWarning, `Expected a fail(ing|ed) open warning, got: ${warnings.map((w) => w.format).join(", ")}`);
+    assert.ok(
+      failOpenWarning,
+      `Expected a fail(ing|ed) open warning, got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
   } finally {
     console.warn = originalWarn;
     if (oldLogLevel === undefined) {
@@ -522,8 +547,14 @@ test("AC4.7: with onGuardError: deny, failed-open signal → deny unavailable, w
     assert.ok(typeof result === "object" && result !== null);
     assert.equal((result as any).type, "denied");
     const failClosedWarning = warnings.find((w) => w.args.includes("resource.read"));
-    assert.ok(failClosedWarning, `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`);
-    assert.ok(!/fail(ing|ed) open/.test(failClosedWarning.format), `Warning should NOT match /fail(ing|ed) open/, got: ${failClosedWarning.format}`);
+    assert.ok(
+      failClosedWarning,
+      `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
+    assert.ok(
+      !/fail(ing|ed) open/.test(failClosedWarning.format),
+      `Warning should NOT match /fail(ing|ed) open/, got: ${failClosedWarning.format}`,
+    );
   } finally {
     console.warn = originalWarn;
     if (oldLogLevel === undefined) {
@@ -639,8 +670,14 @@ test("last-resort catch emits warning when onDeny throws with onGuardError: allo
     assert.strictEqual(result, "not-applicable");
     // Warning should have been emitted
     const warning = warnings.find((w) => w.args.includes("resource.read"));
-    assert.ok(warning, `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`);
-    assert.ok(/fail(ing|ed) open/.test(warning.format), `Expected warning to match /fail(ing|ed) open/, got: ${warning.format}`);
+    assert.ok(
+      warning,
+      `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
+    assert.ok(
+      /fail(ing|ed) open/.test(warning.format),
+      `Expected warning to match /fail(ing|ed) open/, got: ${warning.format}`,
+    );
   } finally {
     console.warn = originalWarn;
     if (oldLogLevel === undefined) {
