@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { ToolDefinition } from "eve/tools";
+
+import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
   decisionAllow,
   decisionDenyPromptInjection,
@@ -11,9 +13,8 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { recorded } from "../../../test/_shared/source-scan.ts";
-import { guardTool } from "./guard-tool.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
+import { guardTool } from "./guard-tool.ts";
 
 /**
  * Build a tool definition as a plain object with both Eve symbols stamped by hand.
@@ -27,7 +28,7 @@ function createToolWithSymbols<TInput, TOutput>(
     inputSchema: { type: "object" },
     outputSchema: { type: "object" },
     // oxlint-disable-next-line eslint/require-await -- test helper, no actual async needed
-    execute: async () => ({ success: true } as TOutput),
+    execute: async () => ({ success: true }) as TOutput,
     [Symbol.for("eve:tool-brand")]: true,
     ...overrides,
   } as any;
@@ -525,10 +526,7 @@ test("AC5.5: error is Error not TypeError", () => {
   const tool = createToolWithSymbols<any, any>({ execute: undefined as any });
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test passes intentionally-incorrect tool
-  assert.throws(
-    () => guardTool(client, tool as any, { action: "test.executed" }),
-    Error,
-  );
+  assert.throws(() => guardTool(client, tool as any, { action: "test.executed" }), Error);
 });
 
 test("metadata includes eve.tool and eve.call from context", async () => {
@@ -621,7 +619,7 @@ test("metadata function receives input as parameter", async () => {
   assert.equal(metadata.custom, "value");
 });
 
-test("Task 3: onDeny: 'result' → denial resolves to ArcjetDenialResult with arcjetDenied: true", async () => {
+test("onDeny: 'result' → denial resolves to ArcjetDenialResult with arcjetDenied: true", async () => {
   const decision = decisionDenyPromptInjection();
   const { client } = stubClient(decision);
 
@@ -652,7 +650,7 @@ test("Task 3: onDeny: 'result' → denial resolves to ArcjetDenialResult with ar
   assert.equal((result as any).retryable, false);
 });
 
-test("Task 3: onDeny: 'result' on RATE_LIMIT → includes retryable: true and retryAfterSeconds", async () => {
+test("onDeny: 'result' on RATE_LIMIT → includes retryable: true and retryAfterSeconds", async () => {
   const decision = decisionDenyRateLimit(1693526400);
   const { client } = stubClient(decision);
 
@@ -680,7 +678,7 @@ test("Task 3: onDeny: 'result' on RATE_LIMIT → includes retryable: true and re
   assert.ok(typeof (result as any).retryAfterSeconds === "number");
 });
 
-test("Task 3: onDeny: 'result' works even when tool declares outputSchema (guardrail is documentation, not validation)", async () => {
+test("onDeny: 'result' works even when tool declares outputSchema (guardrail is documentation, not validation)", async () => {
   const decision = decisionDenyPromptInjection();
   const { client } = stubClient(decision);
 

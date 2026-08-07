@@ -25,8 +25,11 @@ rule:
 - **Everything else** → `arcjetHooks()` to observe agent lifecycle events.
   Hooks are observe-only by design and cannot block.
 
-All four attach the same correlation ID so the Arcjet Console reconstructs
-the whole run as one Sequence.
+The three in-session helpers correlate by session id, so their decisions land
+on one Sequence. `guardInbound` runs before the session exists and correlates
+by whatever identity the channel has, so its decision lands on a *second*
+Sequence. `arcjetHooks` emits a `session.started` record carrying both, which
+is what lets you pivot from one to the other.
 
 ## Questions to ask the human first
 
@@ -40,8 +43,10 @@ Ask only what you cannot infer from the code; suggest defaults.
 3. Who is the **user** for metadata — an opaque user/tenant/installation ID
    (never PII)? Default: the Eve principal from the session context.
 4. Is an Arcjet outage unacceptable? Should the agent be blocked if the guard
-   is unavailable? Default: yes for tools and connections (fail closed);
-   ask explicitly for the channel (default: no, let the message in).
+   is unavailable? Every helper defaults to `onGuardError: "deny"`, including
+   the channel. Ask explicitly about the channel anyway: failing closed there
+   means the agent stops answering entirely for the duration of the outage,
+   so `"allow"` is a routine and legitimate choice at that one call site.
 
 ## The six things readers get wrong
 
@@ -59,8 +64,9 @@ State plainly why each applies to Eve, not other frameworks:
 3. **Correlation is not passed; it is read from the session.** Never call
    `createAgentContext` inside an Eve callback — the session id already is the
    run identity, and generating a second one splits the Sequence. `eveAgentContext`
-   is exported for callers who need the context explicitly; the four helpers call
-   it themselves.
+   is exported for callers who need the context explicitly. Three of the four
+   helpers call it themselves; `guardInbound` runs before the session exists,
+   so it takes an explicit `correlationId` instead.
 
 4. **`approval` is one function per tool or connection.** There is no composition
    with `always()`/`once()`/`never()` from `eve/tools/approval`. To require a
@@ -202,6 +208,7 @@ export default defineChannel({
     POST("/webhook", async (req, args) => {
       const body = (await req.json()) as Record<string, unknown>;
       const message = body.message as string | undefined;
+      const conversationId = body.conversationId as string | undefined;
 
       if (!message || typeof message !== "string") {
         return new Response(
@@ -210,9 +217,24 @@ export default defineChannel({
         );
       }
 
-      // Screen the message before the agent sees it.
-      // Use a request property or generate an ID.
-      const correlationId = args.requestIp ?? `webhook-${Date.now()}`;
+      // Require a stable conversation identity. A generated or per-request id
+      // joins to nothing, and `from()` would mint a new continuation every
+      // time, so no session is ever resumed.
+      if (!conversationId || typeof conversationId !== "string") {
+        return new Response(
+          JSON.stringify({ error: "Missing conversationId" }),
+          { status: 400 }
+        );
+      }
+
+      // Authenticate the caller before trusting a body-supplied conversation
+      // id: `from()` resolves it to whichever session currently owns that
+      // address, so an unauthenticated route lets anyone post into — and read
+      // the decisions of — a conversation whose id they can guess.
+      //
+      // The same value is the guard's correlation id and the channel-local
+      // continuation address, which is what makes the two Sequences joinable.
+      const correlationId = conversationId;
       const verdict = await guardInbound(arcjet, message, {
         rules: [detectPromptInjection()(message)],
         action: "message.received",
@@ -272,8 +294,12 @@ block anything.
 1. `npm run typecheck` passes; `npm run build` (or `eve build`) succeeds.
 2. Exercise the agent with a test message or tool call.
 3. Confirm in the Arcjet dashboard (`list-requests`, `list-guards`) that the
-   inbound decision, the tool or connection gate decisions, and the lifecycle
-   captures share the same correlation ID — traced through `session.id`.
+   tool and connection gate decisions and the lifecycle captures share the
+   session id as their correlation id. The inbound decision is on its own
+   Sequence, correlated by the conversation id; find the `eve.session-started`
+   capture to pivot between the two. Eve namespaces continuation tokens per
+   channel, so that record's `eve.continuation-token` reads
+   `<channel-name>:<conversation-id>` rather than the bare id.
 4. Trip a rate limit deliberately; confirm the model receives the denial and
    does not loop on retries (tools that throw) or attempts the operation (gates
    that deny).

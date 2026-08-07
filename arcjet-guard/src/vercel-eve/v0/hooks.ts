@@ -46,7 +46,10 @@ export interface ArcjetHooksOptions {
  * session ID and (when available) the continuation token and channel kind from
  * the hook context. This record enables a `guardInbound` decision correlated
  * by thread token to be joined with all in-session decisions correlated by
- * session ID.
+ * session ID. They remain two separate Sequences; this record is what makes
+ * each reachable from the other. Note Eve namespaces continuation tokens per
+ * channel, so `eve.continuation-token` reads `<channel-name>:<token>` — the
+ * inbound correlation id is its suffix, not the whole value.
  *
  * That event's `invocation` and `runtime` payloads are deliberately not
  * captured: the lineage identifiers in `invocation` are already reachable

@@ -645,9 +645,9 @@ test("AC6.6: empty events option yields empty map", () => {
   assert.equal(eventKeys.length, 0, "events map should be empty");
 });
 
-// Type-level assertion
 // This file can only assert assignability to HookDefinition, not ExactDefinition.
-// The ExactDefinition wrapper is verified in Phase 6 where defineHook is actually called.
+// The ExactDefinition wrapper is exercised by examples/eve-agent, which calls
+// defineHook for real and builds under Eve's own compiler.
 test("arcjetHooks returns a value assignable to HookDefinition", () => {
   const client = createMockClient();
 
@@ -656,6 +656,6 @@ test("arcjetHooks returns a value assignable to HookDefinition", () => {
   const asDefinition: HookDefinition = arcjetHooks(client);
   void asDefinition;
 
-  // Type assertion passes at compile time; ExactDefinition validation is done in Phase 6
+  // Type assertion passes at compile time; ExactDefinition validation happens where defineHook is actually called
   assert.ok(true, "type assertion verified at compile time");
 });

@@ -25,12 +25,16 @@ export default defineChannel({
         );
       }
 
-      // Screen inbound text with Arcjet before dispatching to the agent.
-      // The correlationId is a stable conversation identity that joins two contexts:
-      // (1) the inbound guard decision via guardInbound, and (2) the session context
-      // via args.from(). Using the same value for both ensures the session.started
-      // record in arcjetHooks can join the inbound decision to subsequent tool/approval
-      // gate decisions, all under one Sequence in the Arcjet Console.
+      // Screen inbound text before the agent sees it. This decision correlates
+      // by the conversation id, while everything inside the session correlates
+      // by the session id — two Sequences, joined by the `eve.session-started`
+      // record arcjetHooks emits. Passing the same value to `from()` is what
+      // makes them joinable: it becomes the channel-local continuation address,
+      // which that record carries as `<channel-name>:<conversation-id>`.
+      //
+      // A real deployment must authenticate the caller first. `from()` resolves
+      // this id to whichever session currently owns it, so an unauthenticated
+      // route lets anyone post into a conversation whose id they can guess.
       const correlationId = conversationId;
       const verdict = await guardInbound(arcjet, message, {
         rules: [detectPromptInjection()(message)],

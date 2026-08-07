@@ -68,9 +68,9 @@ The inbound decision and the tool/connection gate decisions are joined by **two 
 
 1. **Inbound correlation ID** — The `guardInbound` gate assigns a correlation ID passed from the webhook handler. This ID is immutable and comes from the caller (e.g. the `conversationId` in the request body), ensuring the same request always joins to the same decision even if the session is recreated.
 
-2. **Session correlation ID** — Once the inbound decision passes, the handler creates a session and runs the agent. The tools and connection operations guard their decisions using the **session ID** as their correlation ID — not the inbound ID. The `arcjetHooks` hook emits a `session.started` event that **joins both IDs** into a single Sequence in the Arcjet Console: the `session.started` record carries the inbound correlation ID and references the session ID, making one searchable from the other.
+2. **Session correlation ID** — once the inbound decision passes, the handler creates a session and runs the agent. The tools and connection gate their decisions using the **session id**, not the inbound id. Those land on one Sequence; the inbound decision is on a second one. `arcjetHooks` emits an `eve.session-started` capture carrying both, which is what lets you pivot from either Sequence to the other. Eve namespaces continuation tokens per channel, so that record's `eve.continuation-token` reads `<channel-name>:<conversation-id>` rather than the bare conversation id.
 
-So in the Console you see three gate decisions (inbound, tool, connection) on a single Sequence, all traceable to the same conversation and session.
+So the Console shows **two** Sequences per conversation — one for the inbound screen, one for everything inside the session — joined by the `eve.session-started` record. Two ids is the expected shape here, not a bug: the channel boundary runs before Eve creates the session, so there is no session id to correlate by yet.
 
 ## Notes
 
