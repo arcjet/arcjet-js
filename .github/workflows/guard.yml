@@ -80,7 +80,7 @@ jobs:
       - name: Unit tests with eve absent
         run: |
           rm -rf node_modules/eve arcjet-guard/node_modules/eve
-          node -e "try { require.resolve('eve'); console.error('eve still resolves'); process.exit(1) } catch {}"
+          node -e "try { require.resolve('eve', { paths: ['arcjet-guard/src/vercel-eve/v0'] }); console.error('eve still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
           count=$(find arcjet-guard/src/vercel-eve -name '*.test.ts' | wc -l)
           test "$count" -ge 5 || { echo "only $count vercel-eve test files matched; the glob has gone stale" >&2; exit 1; }
           node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
