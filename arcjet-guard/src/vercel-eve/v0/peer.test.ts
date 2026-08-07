@@ -32,12 +32,12 @@ function objectField(
 test("AC1.5: eve is an optional peer and not a dependency", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
 
-  // Static assertion 1: peerDependencies.eve is exactly ">=0.30 <1"
+  // Static assertion 1: peerDependencies.eve is exactly ">=0.25.1 <1"
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies, "package.json must have peerDependencies");
 
   const eveVersion = peerDependencies["eve"];
-  assert.equal(eveVersion, ">=0.30 <1", 'peerDependencies.eve must be exactly ">=0.30 <1"');
+  assert.equal(eveVersion, ">=0.25.1 <1", 'peerDependencies.eve must be exactly ">=0.25.1 <1"');
 
   // Static assertion 2: peerDependenciesMeta.eve.optional is true
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");

@@ -7,7 +7,7 @@
  * layer they build on, so an Eve agent needs one import path and no notion of
  * layering.
  *
- * **Requires the optional peer dependency `eve@>=0.30 <1`**, and Eve's own
+ * **Requires the optional peer dependency `eve@>=0.25.1 <1`**, and Eve's own
  * Node floor of 24 — higher than `@arcjet/guard`'s. Nothing in this module
  * imports `eve` at runtime: every Eve type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls Eve in.

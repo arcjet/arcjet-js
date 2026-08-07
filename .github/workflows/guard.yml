@@ -68,6 +68,46 @@ jobs:
       - name: Unit tests (with coverage)
         run: npm run test-unit
 
+      # The `eve` peer range advertises a floor, and development happens against
+      # the newest release — so nothing would notice if the namespace quietly
+      # started needing something the floor does not have. This pins the lowest
+      # version the range claims and runs the namespace against it.
+      #
+      # The install itself is half the check: npm resolves the peer range while
+      # installing, so a floor below what package.json advertises fails here
+      # rather than in a user's project.
+      #
+      # Runs before the eve-absent step because that one deletes eve outright.
+      - name: Unit tests at the lowest supported eve
+        run: |
+          floor=$(node -e "
+            const r = require('./arcjet-guard/package.json').peerDependencies.eve;
+            const m = /^>=\s*([0-9]+\.[0-9]+\.[0-9]+)/.exec(r);
+            if (!m) { console.error('cannot read a floor from peer range: ' + r); process.exit(1) }
+            process.stdout.write(m[1]);
+          ")
+          echo "lowest supported eve: $floor"
+          npm install "eve@$floor" --no-save --workspace @arcjet/guard
+          # Assert what the namespace itself resolves, not merely what landed on
+          # disk: npm may nest the install, and eve's exports map does not expose
+          # ./package.json, so walk up from a subpath it does export.
+          node -e "
+            const { createRequire } = require('node:module');
+            const { dirname, join } = require('node:path');
+            const { existsSync } = require('node:fs');
+            const resolver = createRequire(join(process.cwd(), 'arcjet-guard/src/vercel-eve/v0/index.ts'));
+            let dir = dirname(resolver.resolve('eve/tools'));
+            while (!existsSync(join(dir, 'package.json'))) dir = dirname(dir);
+            const found = require(join(dir, 'package.json')).version;
+            if (found !== process.argv[1]) {
+              console.error('namespace resolves eve ' + found + ', expected the floor ' + process.argv[1]);
+              process.exit(1);
+            }
+            console.log('namespace resolves eve ' + found);
+          " "$floor"
+          node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
+        working-directory: ${{ github.workspace }}
+
       # The vercel-eve namespace imports eve for types only, which is what lets
       # guard support Node 22 at all — eve declares engines.node ">=24". A static
       # scan proves the imports are written `import type`; this proves the

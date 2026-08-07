@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-eve
 description: Integrate Arcjet security into a Vercel Eve agent using @arcjet/guard — add guard gates to tools and connections, screen inbound messages, and record agent lifecycle events correlated to the session. Use when asked to add Arcjet to an Eve agent, rate limit its tools, guard connection access, or screen inbound messages.
 license: Apache-2.0
-compatibility: Requires the target app to use Vercel Eve (eve >= 0.30 < 1) on Node.js >= 24.
+compatibility: Requires the target app to use Vercel Eve (eve >= 0.25.1 < 1) on Node.js >= 24.
 metadata:
   author: arcjet
 ---
