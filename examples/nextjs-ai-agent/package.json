@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@arcjet/guard": "file:../../arcjet-guard",
-    "ai": "^7.0.36",
+    "ai": "^7.0.38",
     "next": "16.3.0",
     "react": "^19",
     "react-dom": "^19",
