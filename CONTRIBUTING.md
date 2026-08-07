@@ -55,10 +55,10 @@ change them:
 - **Vendor-prefixed**, naming the SDK being integrated rather than the feature.
   A feature-named namespace such as `/ai` assumes there is only ever one AI SDK
   worth integrating, and leaves nowhere to put a second vendor whose model of
-  the same feature differs. Vercel EVE is the next planned namespace
-  (`vercel-eve/v1`) and is already a counterexample: it is filesystem-first,
-  with one `defineTool` per file and no author-controlled call site, so a
-  wrapper equivalent to `guardTool` may not even be expressible the same way.
+  the same feature differs. `vercel-eve/v0` bears this out: Eve is
+  filesystem-first, with one `defineTool` per file and no author-controlled call
+  site, so its enforcement points are a channel-boundary screen and a
+  connection-level approval gate that `vercel-ai/v7` has no equivalent of.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would
@@ -78,7 +78,10 @@ who never touch an AI SDK are unaffected.
 
 ### Adding a new integration namespace
 
-1. Create `arcjet-guard/src/<vendor-sdk>/v<major>/` (e.g. `src/vercel-eve/v1/`).
+1. Create `arcjet-guard/src/<vendor-sdk>/v<major>/` (e.g. `src/acme-sdk/v2/`).
+   The version segment names the SDK's own major, so an SDK that has not
+   reached 1.0 gets `v0` — that is why the Eve namespace is `vercel-eve/v0`,
+   and why `v1` is added additively at its GA rather than assumed now.
 2. Export the integration helpers — at minimum a wrapper equivalent to
    `guardTool` and a way to get context to it.
 3. Re-export the shared layer with `export * from "../../agents/index.ts"`.
@@ -88,9 +91,9 @@ who never touch an AI SDK are unaffected.
 4. Add an `exports` entry in `arcjet-guard/package.json`:
 
    ```json
-   "./vercel-eve/v1": {
-     "types": "./dist/vercel-eve/v1/index.d.ts",
-     "import": "./dist/vercel-eve/v1/index.js"
+   "./acme-sdk/v2": {
+     "types": "./dist/acme-sdk/v2/index.d.ts",
+     "import": "./dist/acme-sdk/v2/index.js"
    }
    ```
 
