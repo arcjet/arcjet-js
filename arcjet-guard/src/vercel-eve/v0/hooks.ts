@@ -48,10 +48,17 @@ export interface ArcjetHooksOptions {
  * import { launchArcjet } from "@arcjet/guard";
  * import { arcjetHooks } from "@arcjet/guard/vercel-eve/v0";
  * import { defineHook } from "eve/hooks";
+ * import type { HookDefinition } from "eve/hooks";
  *
  * const client = launchArcjet({ key: process.env["ARCJET_KEY"]! });
  *
- * export default defineHook(arcjetHooks(client));
+ * // Capture only the session join record and tool outcomes; a long
+ * // conversation emits one event per tool call plus one per turn.
+ * const hooks: HookDefinition = defineHook(
+ *   arcjetHooks(client, { events: ["session", "tool"] }),
+ * );
+ *
+ * export default hooks;
  * ```
  *
  * @param client - An `ArcjetAgentClient` with `capture()` support
@@ -109,7 +116,7 @@ export function arcjetHooks(
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
           ...agentCtx.metadata,
-          "eve.outcome": "error",
+          "outcome": "error",
         };
 
         if (typeof event?.data?.code === "string") {
@@ -153,7 +160,7 @@ export function arcjetHooks(
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
           ...agentCtx.metadata,
-          "eve.outcome": "success",
+          "outcome": "success",
         };
 
         if (typeof event?.data?.turnId === "string") {
@@ -177,7 +184,7 @@ export function arcjetHooks(
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
           ...agentCtx.metadata,
-          "eve.outcome": "error",
+          "outcome": "error",
         };
 
         if (typeof event?.data?.turnId === "string") {
@@ -214,15 +221,15 @@ export function arcjetHooks(
         // Map status to outcome
         const status = event?.data?.status;
         if (status === "completed") {
-          metadata["eve.outcome"] = "success";
+          metadata["outcome"] = "success";
         } else if (status === "failed") {
-          metadata["eve.outcome"] = "error";
+          metadata["outcome"] = "error";
           // Include error code if present
           if (typeof event?.data?.error?.code === "string") {
             metadata["error.code"] = event.data.error.code;
           }
         } else if (status === "rejected") {
-          metadata["eve.outcome"] = "denied";
+          metadata["outcome"] = "denied";
         }
         // For unknown status, we do NOT include outcome
 

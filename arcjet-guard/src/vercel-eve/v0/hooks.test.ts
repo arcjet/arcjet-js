@@ -107,7 +107,7 @@ test("AC6.2: action.result with status 'completed' captures outcome 'success'", 
   assert.equal(client.captureCalls.length, 1, "one capture call expected");
   const capture = client.captureCalls[0];
   assert.equal(capture.action, "eve.action-result");
-  assert.equal(capture.metadata?.["eve.outcome"], "success");
+  assert.equal(capture.metadata?.["outcome"], "success");
   assert.equal(capture.metadata?.["eve.phase"], "result");
 });
 
@@ -138,7 +138,7 @@ test("AC6.2: action.result with status 'failed' captures outcome 'error'", async
 
   assert.equal(client.captureCalls.length, 1);
   const capture = client.captureCalls[0];
-  assert.equal(capture.metadata?.["eve.outcome"], "error");
+  assert.equal(capture.metadata?.["outcome"], "error");
   assert.equal(capture.metadata?.["error.code"], "ERROR_CODE");
 });
 
@@ -168,7 +168,7 @@ test("AC6.2: action.result with status 'rejected' captures outcome 'denied'", as
 
   assert.equal(client.captureCalls.length, 1);
   const capture = client.captureCalls[0];
-  assert.equal(capture.metadata?.["eve.outcome"], "denied");
+  assert.equal(capture.metadata?.["outcome"], "denied");
 });
 
 // AC6.2: action.result with unrecognised status → no outcome key
@@ -197,7 +197,7 @@ test("AC6.2: action.result with unrecognised status does not capture outcome key
 
   assert.equal(client.captureCalls.length, 1);
   const capture = client.captureCalls[0];
-  assert.ok(!("eve.outcome" in (capture.metadata ?? {})), "outcome key must not exist for unknown status");
+  assert.ok(!("outcome" in (capture.metadata ?? {})), "outcome key must not exist for unknown status");
 });
 
 // AC6.3: session.started with channel.continuationToken and channel.kind present
