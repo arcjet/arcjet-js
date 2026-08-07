@@ -74,7 +74,8 @@ test("AC5.1: returned object preserves eve.definition-source-key (non-enumerable
 test("AC5.1: negative control - spread does not copy definition-source-key", () => {
   const { client } = stubClient(decisionAllow());
   const tool = createToolWithSymbols();
-  // guardTool is called to verify the tool can be wrapped (not unused)
+  // Wrap first: the control also catches an implementation that mutates the
+  // input's source-key descriptor, which AC5.2's Object.keys check cannot see.
   guardTool(client, tool, { action: "test.executed" });
 
   const sourceKeySymbol = Symbol.for("eve.definition-source-key");

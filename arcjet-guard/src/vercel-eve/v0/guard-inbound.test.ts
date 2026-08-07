@@ -302,6 +302,34 @@ test("AC5.8: never throws - throwing deniedReason helper resolves to verdict", a
   assert.equal(verdict.reason, "UNAVAILABLE", "Reason should be UNAVAILABLE");
 });
 
+test("AC5.7: last-resort catch fails open under onGuardError: allow", async () => {
+  // Reaches the last-resort catch the same way the fail-closed case above does,
+  // but in the mode a channel actually runs in: failing closed on an outage
+  // stops the channel answering entirely, which is what "allow" exists to avoid.
+  const throwingDecision: any = {
+    conclusion: "DENY",
+    id: "gdec_throw",
+    results: [],
+    warnings: [],
+    hasFailedOpen: () => false,
+    get reason() {
+      throw new Error("reason getter threw");
+    },
+  };
+
+  const throwingDecisionClient: any = {
+    guard: () => Promise.resolve(throwingDecision),
+    capture: () => {},
+  };
+
+  const verdict = await guardInbound(throwingDecisionClient, "test input", {
+    rules: [fakeRule],
+    onGuardError: "allow",
+  });
+
+  assert.deepEqual(verdict, { allowed: true });
+});
+
 test("AC5.8: exactly ONE capture per call - ALLOW", async () => {
   const { client, captureCalls } = stubClient(decisionAllow());
   await guardInbound(client, "test input", {

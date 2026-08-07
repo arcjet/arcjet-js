@@ -22,7 +22,6 @@ export interface ArcjetDenialResult {
   retryAfterSeconds?: number;
 }
 
-
 /** Model- and user-readable explanation of a denial. */
 export function deniedReason(decision: DecisionDeny): string {
   const isRateLimit = decision.reason === "RATE_LIMIT";
