@@ -1,8 +1,11 @@
 import type { ToolDefinition, ToolContext } from "eve/tools";
 
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+import { retryAfterSeconds } from "../../agents/denial.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import type { ArcjetDenialResult } from "./denial.ts";
+import { deniedReason } from "./denial.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { eveAgentContext } from "./context.ts";
@@ -23,8 +26,22 @@ export interface GuardToolPolicy<TInput> {
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
   onGuardError?: OnGuardError;
-  /** Reshape what a denial does. Defaults to throwing `ArcjetDeniedError`. */
-  onDeny?: (decision: DecisionDeny) => unknown;
+  /**
+   * Reshape what a denial does. Defaults to throwing `ArcjetDeniedError`.
+   * With `"result"`, a denial resolves to an `ArcjetDenialResult` object that
+   * the model receives as the tool's return value. The model can then inspect
+   * `reason`, `message`, and `retryable` to decide whether to retry, explain
+   * the denial to the user, or try a different approach.
+   *
+   * **Warning:** This is safe only when the locally-executed tool does not
+   * declare an `outputSchema` that would reject it, or when you have verified
+   * the schema accepts the denial result structure. Schema validation in the
+   * AI SDK is deferred to message-persistence boundaries (`validateUIMessages`),
+   * not the tool loop, so a denial object can traverse the tool loop safely;
+   * a later `validateUIMessages()` call over persisted UI history would reject it
+   * if the tool declares an `outputSchema` that does not include `ArcjetDenialResult`.
+   */
+  onDeny?: ((decision: DecisionDeny) => unknown) | "result";
 }
 
 /**
@@ -143,6 +160,9 @@ export function guardTool<TInput, TOutput>(
         if (policy.onDeny === undefined) {
           throw new ArcjetDeniedError(policy.action, decision);
         }
+        if (policy.onDeny === "result") {
+          return denialResult(decision);
+        }
         return policy.onDeny(decision);
       }) as (decision: DecisionDeny) => TOutput,
       onUnavailable: (unavailable) => {
@@ -164,4 +184,32 @@ export function guardTool<TInput, TOutput>(
   };
 
   return wrapped;
+}
+
+function denialResult(decision: DecisionDeny): ArcjetDenialResult {
+  const isRateLimit = decision.reason === "RATE_LIMIT";
+  let retryAfterSecs: number | undefined;
+
+  // Only rate-limit denials are retryable, so only they carry a retry-after.
+  // A co-occurring rule that allowed can still leave a resetAtUnixSeconds in
+  // decision.results; ignore it when the denying reason is not a rate limit.
+  if (isRateLimit) {
+    retryAfterSecs = retryAfterSeconds(decision);
+  }
+
+  const message = deniedReason(decision);
+
+  const result: ArcjetDenialResult = {
+    arcjetDenied: true,
+    reason: decision.reason,
+    message,
+    retryable: isRateLimit,
+  };
+
+  // For RATE_LIMIT, include the computed retry-after if available.
+  if (isRateLimit && retryAfterSecs !== undefined) {
+    result.retryAfterSeconds = retryAfterSecs;
+  }
+
+  return result;
 }

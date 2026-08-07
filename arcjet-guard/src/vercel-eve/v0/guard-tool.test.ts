@@ -6,6 +6,7 @@ import type { ToolDefinition } from "eve/tools";
 import {
   decisionAllow,
   decisionDenyPromptInjection,
+  decisionDenyRateLimit,
   decisionFailOpenAllow,
   fakeRule,
   stubClient,
@@ -616,4 +617,93 @@ test("metadata function receives input as parameter", async () => {
   const call = recorded(guardCalls[0]);
   const metadata = recorded(call.metadata);
   assert.equal(metadata.custom, "value");
+});
+
+test("Task 3: onDeny: 'result' → denial resolves to ArcjetDenialResult with arcjetDenied: true", async () => {
+  const decision = decisionDenyPromptInjection();
+  const { client } = stubClient(decision);
+
+  const tool = createToolWithSymbols<any, any>({
+    execute: async () => ({ result: "should not reach" }),
+  });
+
+  const wrapped = guardTool(client, tool, {
+    action: "test.executed",
+    onDeny: "result",
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = {
+    abortSignal: new AbortController().signal,
+    callId: "call-123",
+    toolName: "my-tool",
+    session: { id: "ses-456" },
+  } as any;
+
+  const result = await wrapped.execute!({}, ctx);
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test checks the result structure
+  assert.ok(typeof result === "object" && result !== null);
+  assert.equal((result as any).arcjetDenied, true);
+  assert.equal((result as any).reason, "PROMPT_INJECTION");
+  assert.ok(typeof (result as any).message === "string");
+  assert.equal((result as any).retryable, false);
+});
+
+test("Task 3: onDeny: 'result' on RATE_LIMIT → includes retryable: true and retryAfterSeconds", async () => {
+  const decision = decisionDenyRateLimit(1693526400);
+  const { client } = stubClient(decision);
+
+  const tool = createToolWithSymbols<any, any>({
+    execute: async () => ({ result: "should not reach" }),
+  });
+
+  const wrapped = guardTool(client, tool, {
+    action: "test.executed",
+    onDeny: "result",
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = {
+    abortSignal: new AbortController().signal,
+    callId: "call-123",
+    toolName: "my-tool",
+    session: { id: "ses-456" },
+  } as any;
+
+  const result = await wrapped.execute!({}, ctx);
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test checks the result structure
+  assert.equal((result as any).retryable, true);
+  assert.ok(typeof (result as any).retryAfterSeconds === "number");
+});
+
+test("Task 3: onDeny: 'result' works even when tool declares outputSchema (guardrail is documentation, not validation)", async () => {
+  const decision = decisionDenyPromptInjection();
+  const { client } = stubClient(decision);
+
+  const tool = createToolWithSymbols<any, any>({
+    description: "strict-tool",
+    outputSchema: { type: "object", properties: { status: { type: "string" } } },
+    execute: async () => ({ result: "ok" }),
+  });
+
+  const wrapped = guardTool(client, tool, {
+    action: "test.executed",
+    onDeny: "result",
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = {
+    abortSignal: new AbortController().signal,
+    callId: "call-123",
+    toolName: "my-tool",
+    session: { id: "ses-456" },
+  } as any;
+
+  // Even though outputSchema exists, result resolves (schema validation happens at message level, not tool level)
+  const result = await wrapped.execute!({}, ctx);
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test checks the result structure
+  assert.equal((result as any).arcjetDenied, true);
 });
