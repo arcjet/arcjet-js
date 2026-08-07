@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/duration",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "description": "Arcjet utilities for parsing duration strings",
   "keywords": [
     "arcjet",

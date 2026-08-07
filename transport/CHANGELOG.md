@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/transport-v1.10.0) (2026-08-07)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/transport:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.9.1 to 1.10.0
+    * @arcjet/logger bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/transport-v1.9.1) (2026-07-15)
 
 
