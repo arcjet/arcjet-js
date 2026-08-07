@@ -107,7 +107,7 @@ test("AC6.2: action.result with status 'completed' captures outcome 'success' an
       sequence: 1,
       stepIndex: 0,
       result: {
-        kind: "something",
+        kind: "tool-result",
         callId: "call_abc",
         toolName: "search",
         output: "SECRET_OUTPUT",
@@ -277,7 +277,7 @@ test("AC6.3: session.started captures session id even when channel is empty", as
 });
 
 // C1: session.started with delegated context correlates to root session ID
-test("C1: action.result with delegated session correlates to root session id", async () => {
+test("AC3.2: action.result with delegated session correlates to root session id", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
@@ -313,7 +313,7 @@ test("C1: action.result with delegated session correlates to root session id", a
 });
 
 // C1: session.started captures the session-derived correlationId
-test("C1: session.started captures the session-derived correlationId", async () => {
+test("AC6.3: session.started captures the session-derived correlationId", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
@@ -334,7 +334,7 @@ test("C1: session.started captures the session-derived correlationId", async () 
 });
 
 // C3a: session.failed captures action, correlationId, outcome, and error.code
-test("C3a: session.failed handler captures action, outcome, and error.code", async () => {
+test("AC6.2: session.failed handler captures action, outcome, and error.code", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
@@ -362,7 +362,7 @@ test("C3a: session.failed handler captures action, outcome, and error.code", asy
 });
 
 // C3b: turn.started handler captures action, correlationId, and eve.turn
-test("C3b: turn.started handler captures action, correlationId, and eve.turn", async () => {
+test("AC6.2: turn.started handler captures action, correlationId, and eve.turn", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
@@ -390,7 +390,7 @@ test("C3b: turn.started handler captures action, correlationId, and eve.turn", a
 });
 
 // C3c: turn.completed handler captures action, correlationId, outcome, and eve.turn
-test("C3c: turn.completed handler captures action, outcome, and eve.turn", async () => {
+test("AC6.2: turn.completed handler captures action, outcome, and eve.turn", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
@@ -419,7 +419,7 @@ test("C3c: turn.completed handler captures action, outcome, and eve.turn", async
 });
 
 // C3d: turn.failed handler captures action, correlationId, outcome, error.code, and eve.turn
-test("C3d: turn.failed handler captures action, outcome, error.code, and eve.turn", async () => {
+test("AC6.2: turn.failed handler captures action, outcome, error.code, and eve.turn", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 

@@ -1,4 +1,5 @@
 import type {
+  HookContext,
   HookDefinition,
   HookEventMap,
   StreamEventHook,
@@ -7,6 +8,13 @@ import type {
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { captureEvent } from "../../agents/capture.ts";
 import { eveAgentContext } from "./context.ts";
+
+/**
+ * The result union carried by `action.result`. Eve does not export this type by
+ * name, but it is reachable structurally through the public hook event map.
+ */
+type RuntimeActionResult = HookEventMap["action.result"]["data"]["result"];
+
 
 /**
  * Which event families `arcjetHooks` captures.
@@ -84,7 +92,7 @@ export function arcjetHooks(
   const events: Record<string, StreamEventHook<any>> = {};
 
   if (enabledFamilies.has("session")) {
-    events["session.started"] = ((event: HookEventMap["session.started"], ctx: any): void => {
+    events["session.started"] = ((_event: HookEventMap["session.started"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
@@ -113,7 +121,7 @@ export function arcjetHooks(
       }
     }) as StreamEventHook<any>;
 
-    events["session.failed"] = ((event: HookEventMap["session.failed"], ctx: any): void => {
+    events["session.failed"] = ((event: HookEventMap["session.failed"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
@@ -139,7 +147,7 @@ export function arcjetHooks(
   }
 
   if (enabledFamilies.has("turn")) {
-    events["turn.started"] = ((event: HookEventMap["turn.started"], ctx: any): void => {
+    events["turn.started"] = ((event: HookEventMap["turn.started"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
@@ -160,7 +168,7 @@ export function arcjetHooks(
       }
     }) as StreamEventHook<any>;
 
-    events["turn.completed"] = ((event: HookEventMap["turn.completed"], ctx: any): void => {
+    events["turn.completed"] = ((event: HookEventMap["turn.completed"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
@@ -184,7 +192,7 @@ export function arcjetHooks(
       }
     }) as StreamEventHook<any>;
 
-    events["turn.failed"] = ((event: HookEventMap["turn.failed"], ctx: any): void => {
+    events["turn.failed"] = ((event: HookEventMap["turn.failed"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
@@ -214,7 +222,7 @@ export function arcjetHooks(
   }
 
   if (enabledFamilies.has("tool")) {
-    events["action.result"] = ((event: HookEventMap["action.result"], ctx: any): void => {
+    events["action.result"] = ((event: HookEventMap["action.result"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = {
@@ -224,22 +232,24 @@ export function arcjetHooks(
 
         const status = event?.data?.status;
         if (status === "completed") {
-          metadata.outcome = "success";
+          metadata["outcome"] = "success";
         } else if (status === "failed") {
-          metadata.outcome = "error";
+          metadata["outcome"] = "error";
           if (typeof event?.data?.error?.code === "string") {
             metadata["error.code"] = event.data.error.code;
           }
         } else if (status === "rejected") {
-          metadata.outcome = "denied";
+          metadata["outcome"] = "denied";
         }
 
-        if (typeof event?.data?.result === "object" && event.data.result !== null) {
-          const result = event.data.result;
+        // Every RuntimeActionResult variant carries `callId`; only the
+        // tool-result variant names the tool.
+        const result: RuntimeActionResult | undefined = event?.data?.result;
+        if (result !== undefined && result !== null) {
           if (typeof result.callId === "string") {
             metadata["eve.call"] = result.callId;
           }
-          if (typeof result.toolName === "string") {
+          if (result.kind === "tool-result" && typeof result.toolName === "string") {
             metadata["eve.tool"] = result.toolName;
           }
         }
@@ -258,7 +268,7 @@ export function arcjetHooks(
   }
 
   if (enabledFamilies.has("subagent")) {
-    events["subagent.called"] = ((event: HookEventMap["subagent.called"], ctx: any): void => {
+    events["subagent.called"] = ((event: HookEventMap["subagent.called"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
@@ -287,7 +297,7 @@ export function arcjetHooks(
       }
     }) as StreamEventHook<any>;
 
-    events["subagent.completed"] = ((event: HookEventMap["subagent.completed"], ctx: any): void => {
+    events["subagent.completed"] = ((event: HookEventMap["subagent.completed"], ctx: HookContext): void => {
       try {
         const agentCtx = eveAgentContext(ctx);
         const metadata: Record<string, unknown> = { ...agentCtx.metadata };
