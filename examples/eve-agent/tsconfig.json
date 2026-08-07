@@ -8,6 +8,7 @@
     "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
     "types": ["node"]
   },
   "include": ["agent/**/*.ts"],
