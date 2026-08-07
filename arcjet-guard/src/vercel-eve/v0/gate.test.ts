@@ -18,6 +18,8 @@ test("AC4.6 + AC4.8: guard threw, failing closed → onUnavailable called, one c
   const { client, captureCalls } = stubClient(error);
 
   let onUnavailableCalls = 0;
+  let receivedKind: string | undefined;
+  let receivedError: unknown;
   const result = await runGate(client, {
     action: "test.action",
     rules: undefined,
@@ -25,8 +27,12 @@ test("AC4.6 + AC4.8: guard threw, failing closed → onUnavailable called, one c
     metadata: {},
     onAllow: () => "allowed",
     onDeny: () => "denied",
-    onUnavailable: () => {
+    onUnavailable: (unavailable) => {
       onUnavailableCalls++;
+      receivedKind = unavailable.kind;
+      if (unavailable.kind === "threw") {
+        receivedError = unavailable.error;
+      }
       return "unavailable";
     },
     onGuardError: "deny",
@@ -34,15 +40,19 @@ test("AC4.6 + AC4.8: guard threw, failing closed → onUnavailable called, one c
 
   assert.equal(result, "unavailable");
   assert.equal(onUnavailableCalls, 1);
+  assert.equal(receivedKind, "threw");
+  assert.strictEqual(receivedError, error);
   assert.equal(captureCalls.length, 1);
   const capture = recorded(captureCalls[0]);
   assert.equal(recorded(capture.metadata).outcome, "unavailable");
 });
 
 test("AC4.6: guard returned fail-open ALLOW, failing closed → onUnavailable called, one capture with outcome: unavailable", async () => {
-  const { client, captureCalls } = stubClient(decisionFailOpenAllow());
+  const decision = decisionFailOpenAllow();
+  const { client, captureCalls } = stubClient(decision);
 
   let onUnavailableCalls = 0;
+  let receivedKind: string | undefined;
   let receivedDecision: DecisionAllow | undefined;
   const result = await runGate(client, {
     action: "test.action",
@@ -53,8 +63,10 @@ test("AC4.6: guard returned fail-open ALLOW, failing closed → onUnavailable ca
     onDeny: () => "denied",
     onUnavailable: (unavailable) => {
       onUnavailableCalls++;
-      assert.equal(unavailable.kind, "failed-open");
-      receivedDecision = unavailable.decision;
+      receivedKind = unavailable.kind;
+      if (unavailable.kind === "failed-open") {
+        receivedDecision = unavailable.decision;
+      }
       return "unavailable";
     },
     onGuardError: "deny",
@@ -62,7 +74,8 @@ test("AC4.6: guard returned fail-open ALLOW, failing closed → onUnavailable ca
 
   assert.equal(result, "unavailable");
   assert.equal(onUnavailableCalls, 1);
-  assert.equal(receivedDecision?.id, "");
+  assert.equal(receivedKind, "failed-open");
+  assert.strictEqual(receivedDecision, decision);
   assert.equal(captureCalls.length, 1);
   const capture = recorded(captureCalls[0]);
   assert.equal(recorded(capture.metadata).outcome, "unavailable");
@@ -207,7 +220,7 @@ test("AC4.8: no capture ever carries outcome: success or error", async () => {
 
   for (const captures of [allowCaptures, denyCaptures, errorCaptures, failOpenCaptures]) {
     for (const capture of captures) {
-      const record = recorded(capture);
+      const record = recorded(recorded(capture).metadata);
       assert.notEqual(record.outcome, "success", "capture should never have outcome: success");
       assert.notEqual(record.outcome, "error", "capture should never have outcome: error");
     }
@@ -370,7 +383,7 @@ test("onGuardError defaults to deny", async () => {
 });
 
 test("with onGuardError: allow, threw guard error → onAllow called", async () => {
-  const { client } = stubClient(new Error("boom"));
+  const { client, captureCalls } = stubClient(new Error("boom"));
 
   let onAllowCalled = false;
   const result = await runGate(client, {
@@ -389,10 +402,13 @@ test("with onGuardError: allow, threw guard error → onAllow called", async () 
 
   assert.equal(result, "allowed");
   assert.equal(onAllowCalled, true);
+  assert.equal(captureCalls.length, 1);
+  const capture = recorded(captureCalls[0]);
+  assert.equal(recorded(capture.metadata).outcome, "allowed");
 });
 
 test("with onGuardError: allow, failed-open → onAllow called", async () => {
-  const { client } = stubClient(decisionFailOpenAllow());
+  const { client, captureCalls } = stubClient(decisionFailOpenAllow());
 
   let onAllowCalled = false;
   const result = await runGate(client, {
@@ -411,4 +427,7 @@ test("with onGuardError: allow, failed-open → onAllow called", async () => {
 
   assert.equal(result, "allowed");
   assert.equal(onAllowCalled, true);
+  assert.equal(captureCalls.length, 1);
+  const capture = recorded(captureCalls[0]);
+  assert.equal(recorded(capture.metadata).outcome, "allowed");
 });

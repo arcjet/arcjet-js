@@ -3,11 +3,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type { ApprovalContext } from "eve/tools";
+import type { DecisionDeny } from "../../types.ts";
 import {
   decisionAllow,
   decisionDenyPromptInjection,
   decisionDenyPromptInjectionWithReset,
   decisionDenyRateLimit,
+  decisionFailOpenAllow,
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
@@ -348,4 +350,201 @@ test("metadata merge order: derived ← policy ← per-call function", async () 
   assert.equal(metadata["policy"], "value");
   // shared key should have policy value (policy wins over derived)
   assert.equal(metadata["shared"], "from-policy");
+});
+
+test("M1: metadata function returns a key that collides — function value wins", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    metadata: (ctx) => ({ shared: `from-function-${ctx.toolName}` }),
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = createApprovalContext({
+    session: {
+      id: "ses_123",
+      auth: { current: { principalId: "user_456" }, initiator: null },
+      turn: { id: "turn_789", sequence: 1 },
+    },
+  } as unknown as ApprovalContext);
+
+  await approval(ctx);
+
+  const call = recorded(guardCalls[0]);
+  const metadata = recorded(call.metadata);
+  // Verify the function's value wins over the derived context
+  assert.equal(metadata["shared"], "from-function-test.tool");
+});
+
+test("I1: ctx.toolName and callId are guarded — empty strings omitted from metadata", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, { action: "resource.read" });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = createApprovalContext({
+    toolName: "",
+    callId: "",
+  } as unknown as ApprovalContext);
+
+  await approval(ctx);
+
+  const call = recorded(guardCalls[0]);
+  const metadata = recorded(call.metadata);
+  // Empty strings should not be written to metadata
+  assert.equal("eve.tool" in metadata, false, "eve.tool should not be present for empty toolName");
+  assert.equal("eve.call" in metadata, false, "eve.call should not be present for empty callId");
+});
+
+test("I2: callback throwing rules → warns and captures with outcome: unavailable", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: Array<{ format: string; args: unknown[] }> = [];
+  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+  console.warn = (format: string, ...args: any[]) => {
+    warnings.push({ format, args });
+  };
+
+  try {
+    const { client, captureCalls } = stubClient(decisionAllow());
+    const approval = guardApproval(client, {
+      action: "resource.read",
+      rules: () => {
+        throw new Error("rule computation failed");
+      },
+      onGuardError: "deny",
+    });
+
+    const ctx = createApprovalContext();
+    const result = await approval(ctx);
+
+    assert.ok(typeof result === "object" && result !== null);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-member-access -- test infrastructure
+    assert.equal((result as any).type, "denied");
+    // Verify warning was emitted
+    const callbackWarning = warnings.find((w) => w.args.includes("resource.read"));
+    assert.ok(callbackWarning, `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`);
+    // Verify capture was emitted with outcome: unavailable
+    assert.equal(captureCalls.length, 1);
+    const capture = recorded(captureCalls[0]);
+    assert.equal(recorded(capture.metadata).outcome, "unavailable");
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
+test("C3/I5: AC4.7 with onGuardError: allow, failed-open signal → resolve to not-applicable, warning matches /fail(ing|ed) open/", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: Array<{ format: string; args: unknown[] }> = [];
+  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+  console.warn = (format: string, ...args: any[]) => {
+    warnings.push({ format, args });
+  };
+
+  try {
+    const { client } = stubClient(decisionFailOpenAllow());
+    const approval = guardApproval(client, {
+      action: "resource.read",
+      onGuardError: "allow",
+    });
+
+    const ctx = createApprovalContext();
+    const result = await approval(ctx);
+
+    assert.strictEqual(result, "not-applicable");
+    const failOpenWarning = warnings.find((w) => /fail(ing|ed) open/.test(w.format));
+    assert.ok(failOpenWarning, `Expected a fail(ing|ed) open warning, got: ${warnings.map((w) => w.format).join(", ")}`);
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
+test("I5/I3: AC4.10 onDeny called with DecisionDeny by reference on actual DENY", async () => {
+  const decision = decisionDenyPromptInjection();
+  const { client } = stubClient(decision);
+  let receivedDecision: DecisionDeny | undefined;
+  let onDenyCalls = 0;
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    onDeny: (d) => {
+      onDenyCalls++;
+      receivedDecision = d;
+      return { type: "denied", reason: "custom: " + d.reason };
+    },
+  });
+
+  const ctx = createApprovalContext();
+  const result = await approval(ctx);
+
+  assert.equal(onDenyCalls, 1);
+  assert.strictEqual(receivedDecision, decision);
+  assert.ok(typeof result === "object" && result !== null);
+  assert.equal((result as any).reason, "custom: PROMPT_INJECTION");
+});
+
+test("I5: AC4.10 onDeny is NOT called on failed-open unavailable signal with onGuardError: deny", async () => {
+  const { client } = stubClient(decisionFailOpenAllow());
+  let onDenyCalls = 0;
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    onGuardError: "deny",
+    onDeny: () => {
+      onDenyCalls++;
+      return { type: "denied", reason: "should not see this" };
+    },
+  });
+
+  const ctx = createApprovalContext();
+  await approval(ctx);
+
+  assert.equal(onDenyCalls, 0);
+});
+
+test("I3: AC4.4 correlationId is session id, eve.turn is asserted", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+  });
+
+  const ctx = createApprovalContext();
+  await approval(ctx);
+
+  const call = recorded(guardCalls[0]);
+  assert.equal(call.correlationId, "ses_123");
+  const metadata = recorded(call.metadata);
+  assert.ok(metadata["eve.turn"], "eve.turn should be present in metadata");
+});
+
+test("I5/AC4.9: AC4.9 context missing session → guard still called, does not throw", async () => {
+  const { client: _client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(_client, { action: "resource.read" });
+
+  // Create a context without session
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = {
+    approvedTools: new Set(),
+    callId: "call_abc",
+    toolName: "test.tool",
+    getSandbox: () => null,
+    getSkill: () => null,
+  } as unknown as ApprovalContext;
+
+  const result = await approval(ctx);
+
+  // Should resolve without throwing
+  assert.ok(result !== undefined);
+  // Guard should still have been called
+  assert.equal(guardCalls.length, 1);
 });

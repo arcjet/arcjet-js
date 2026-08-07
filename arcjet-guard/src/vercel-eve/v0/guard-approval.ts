@@ -1,6 +1,7 @@
 import type { Approval, ApprovalContext, ApprovalStatus } from "eve/tools";
 
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { deniedReason, unavailableReason } from "./denial.ts";
@@ -77,6 +78,8 @@ export function guardApproval<TInput = Record<string, unknown>>(
   policy: GuardApprovalPolicy<TInput>,
 ): Approval<TInput> {
   return async (ctx: ApprovalContext<TInput>): Promise<ApprovalStatus> => {
+    const allowStatus = (): ApprovalStatus => policy.onAllow ?? "not-applicable";
+
     try {
       // Derive context from the Eve SessionContext
       const agentCtx = eveAgentContext(ctx);
@@ -105,9 +108,16 @@ export function guardApproval<TInput = Record<string, unknown>>(
       // If a callback threw, treat as unavailable rather than guarding
       if (ruleResolutionFailed || metadataResolutionFailed) {
         const failClosed = policy.onGuardError !== "allow";
+        const correlation = agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
+        warnCallbackFailure(policy.action, failClosed);
+        captureEvent(client, {
+          action: policy.action,
+          ...correlation,
+          metadata: { ...metadata, outcome: "unavailable" },
+        });
         return failClosed
           ? { type: "denied", reason: unavailableReason() }
-          : policy.onAllow ?? "not-applicable";
+          : allowStatus();
       }
 
       // Add Eve-specific metadata
@@ -115,8 +125,8 @@ export function guardApproval<TInput = Record<string, unknown>>(
       metadata = {
         ...metadata,
         "eve.phase": "approval",
-        "eve.tool": ctx.toolName,
-        "eve.call": ctx.callId,
+        ...(typeof ctx.toolName === "string" && ctx.toolName.length > 0 && { "eve.tool": ctx.toolName }),
+        ...(typeof ctx.callId === "string" && ctx.callId.length > 0 && { "eve.call": ctx.callId }),
       };
 
       // Call runGate with the appropriate handlers
@@ -125,12 +135,12 @@ export function guardApproval<TInput = Record<string, unknown>>(
         rules,
         correlationId: agentCtx.correlationId,
         metadata,
-        onAllow: () => policy.onAllow ?? "not-applicable",
+        onAllow: allowStatus,
         onDeny: (decision) =>
           policy.onDeny?.(decision) ?? { type: "denied", reason: deniedReason(decision) },
         onUnavailable: () =>
           policy.onGuardError === "allow"
-            ? policy.onAllow ?? "not-applicable"
+            ? allowStatus()
             : { type: "denied", reason: unavailableReason() },
         onGuardError: policy.onGuardError ?? "deny",
       });
@@ -138,9 +148,23 @@ export function guardApproval<TInput = Record<string, unknown>>(
       // Last resort: should never reach here if runGate never throws,
       // but if something unforeseen happens, fail closed by default
       const failClosed = policy.onGuardError !== "allow";
+      warnCallbackFailure(policy.action, failClosed);
       return failClosed
         ? { type: "denied", reason: unavailableReason() }
-        : policy.onAllow ?? "not-applicable";
+        : allowStatus();
     }
   };
+}
+
+function warnCallbackFailure(action: string, failClosed: boolean): void {
+  if (!shouldWarn()) {
+    return;
+  }
+  // Constant format string: `action` must not be interpolated into the first argument
+  // (Semgrep requirement for actionable log messages).
+  if (failClosed) {
+    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing closed:', action);
+  } else {
+    console.warn('@arcjet/guard: approval policy for "%s" could not be evaluated; failing open:', action);
+  }
 }
