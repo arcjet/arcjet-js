@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>On behalf of the wrong client</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      main {
+        max-width: 52rem;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem;
+      }
+
+      form,
+      section {
+        margin-block: 1.5rem;
+        padding: 1rem;
+        border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+        border-radius: 0.5rem;
+      }
+
+      select,
+      button {
+        box-sizing: border-box;
+        max-width: 100%;
+        padding: 0.5rem 0.75rem;
+        font: inherit;
+      }
+
+      pre {
+        padding: 0.75rem;
+        overflow-x: auto;
+        border-radius: 0.25rem;
+        background: color-mix(in srgb, currentColor 8%, transparent);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+      }
+
+      .trace-list {
+        display: grid;
+        gap: 0.75rem;
+        padding: 0;
+        list-style: none;
+      }
+
+      .trace-list li {
+        padding: 0.75rem;
+        border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+        border-radius: 0.25rem;
+      }
+
+      .trace-list pre {
+        margin-bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>On behalf of the wrong client</h1>
+      <p>
+        A Vercel AI SDK financial adviser reads a support thread and chooses which tools to call.
+        Arcjet guards the email tool at the boundary before its side effect can run.
+      </p>
+      <form id="form">
+        <p>
+          <label>
+            Client<br />
+            <select name="client" required>
+              <option value="client-a">Client A — Alex Morgan</option>
+              <option value="client-b">Client B — Jamie Taylor</option>
+            </select>
+          </label>
+        </p>
+        <p>
+          <label>
+            Scenario<br />
+            <select name="scenario" required>
+              <option value="benign">Benign request</option>
+              <option value="wrong-recipient">Wrong recipient</option>
+              <option value="pii-leak">Sensitive information leak</option>
+              <option value="injection">Layered defense</option>
+            </select>
+          </label>
+        </p>
+        <p id="model-field" hidden>
+          <label>
+            Model<br />
+            <select name="model">
+              <option value="gpt-4o-mini">GPT-4o mini (2024)</option>
+              <option value="gpt-5-mini">GPT-5 mini (2025)</option>
+              <option value="gpt-5.6-sol">GPT-5.6 Sol (latest)</option>
+            </select>
+          </label>
+        </p>
+        <section id="scenario-details" aria-live="polite">
+          <h2>Run context</h2>
+          <h3>Inbound customer message (untrusted)</h3>
+          <pre id="inbound-message">Loading…</pre>
+          <h3><code>getClientRecord</code> returns</h3>
+          <pre id="client-record">Loading…</pre>
+          <h3>Allowed recipients for this client</h3>
+          <pre id="allowed-recipients">Loading…</pre>
+        </section>
+        <button>Handle latest support request</button>
+      </form>
+      <section id="result" aria-live="polite" hidden></section>
+    </main>
+    <script>
+      const form = document.querySelector("#form");
+      const result = document.querySelector("#result");
+      const inboundMessage = document.querySelector("#inbound-message");
+      const clientRecord = document.querySelector("#client-record");
+      const allowedRecipients = document.querySelector("#allowed-recipients");
+      const modelField = document.querySelector("#model-field");
+      let demoContext;
+
+      function showScenarioDetails() {
+        if (!demoContext) return;
+        const fields = new FormData(form);
+        const client = demoContext.clients[fields.get("client")];
+        const scenario = demoContext.scenarios[fields.get("scenario")];
+        modelField.hidden = fields.get("scenario") !== "injection";
+        inboundMessage.textContent = scenario.message;
+        clientRecord.textContent = JSON.stringify(
+          {
+            clientId: client.actor,
+            record: client.record,
+          },
+          null,
+          2,
+        );
+        allowedRecipients.textContent = JSON.stringify(client.allowedRecipients, null, 2);
+      }
+
+      form.addEventListener("change", showScenarioDetails);
+      fetch("/context")
+        .then((response) => response.json())
+        .then((context) => {
+          demoContext = context;
+          showScenarioDetails();
+        });
+
+      function showResult(data) {
+        const heading = document.createElement("h2");
+        heading.textContent = data.sentEmail ? "Email sent (simulated)" : "No email sent";
+        const description = document.createElement("p");
+        description.textContent = data.message || "The agent did not return a response.";
+        const content = [heading];
+        if (data.model) {
+          const model = document.createElement("p");
+          model.textContent = `Model: ${demoContext?.models[data.model]?.label || data.model}`;
+          content.push(model);
+        }
+        content.push(description);
+
+        if (data.guardResult) {
+          const decisionHeading = document.createElement("h3");
+          decisionHeading.textContent = "Guard result";
+          const decision = document.createElement("p");
+          decision.textContent = data.guardResult.summary;
+          const decisionJson = document.createElement("pre");
+          decisionJson.textContent = JSON.stringify(data.guardResult, null, 2);
+          content.push(decisionHeading, decision, decisionJson);
+        }
+
+        if (data.sentEmail) {
+          const emailHeading = document.createElement("h3");
+          emailHeading.textContent = "Sent email";
+          const emailJson = document.createElement("pre");
+          emailJson.textContent = JSON.stringify(data.sentEmail, null, 2);
+          content.push(emailHeading, emailJson);
+        }
+
+        const traceHeading = document.createElement("h3");
+        traceHeading.textContent = "Tool trace";
+        const list = document.createElement("ul");
+        list.className = "trace-list";
+        for (const event of data.trace || []) {
+          const item = document.createElement("li");
+          const detail = event.type === "tool-call" ? event.input : event.output;
+          const label = document.createElement("strong");
+          label.textContent = `${event.type}: ${event.tool}`;
+          const detailJson = document.createElement("pre");
+          detailJson.textContent = JSON.stringify(detail ?? null, null, 2);
+          item.append(label, detailJson);
+          list.append(item);
+        }
+        content.push(traceHeading, list);
+        result.replaceChildren(...content);
+        result.hidden = false;
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = form.querySelector("button");
+        button.disabled = true;
+        button.textContent = "Generating and evaluating…";
+        try {
+          const fields = new FormData(form);
+          const response = await fetch("/evaluate", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              client: fields.get("client"),
+              scenario: fields.get("scenario"),
+              model: fields.get("model"),
+            }),
+          });
+          showResult(await response.json());
+        } catch (error) {
+          showResult({ message: error instanceof Error ? error.message : "Unknown error" });
+        } finally {
+          button.disabled = false;
+          button.textContent = "Handle latest support request";
+        }
+      });
+    </script>
+  </body>
+</html>

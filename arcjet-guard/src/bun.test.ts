@@ -11,6 +11,7 @@ import {
   localDetectSensitiveInfo,
   defineCustomRule,
   launchArcjetWithTransport,
+  policyInput,
 } from "./bun.ts";
 
 describe("bun entrypoint", () => {
@@ -33,6 +34,10 @@ describe("bun entrypoint", () => {
 
   test("launchArcjetWithTransport is re-exported", () => {
     assert.equal(typeof launchArcjetWithTransport, "function");
+  });
+
+  test("policyInput is re-exported", () => {
+    assert.equal(policyInput.server.string("value").kind, "STRING");
   });
 
   test("launchArcjet returns guard, capture, and flush methods", () => {

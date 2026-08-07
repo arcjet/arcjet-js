@@ -15,6 +15,8 @@ import { type ArcjetMetadata, type LocalWarning, encodeMetadata } from "./metada
 import {
   type Billing as ProtoBilling,
   type GuardRule,
+  type GuardPolicyEvaluation,
+  type GuardPolicyRuleResult as ProtoGuardPolicyRuleResult,
   type GuardRuleResult as ProtoGuardRuleResult,
   type GuardRuleSubmission,
   type GuardResponse as ProtoGuardResponse,
@@ -30,12 +32,16 @@ import {
   RuleLocalSensitiveInfoSchema,
   RuleLocalCustomSchema,
   ResultLocalSensitiveInfoSchema,
+  GuardSensitiveInfoEntitySchema,
   ResultLocalCustomSchema,
   ResultErrorSchema,
   EntityListSchema,
   GuardConclusion,
+  GuardPolicyStatus,
   GuardReason,
   GuardRuleMode,
+  GuardRuleExecution,
+  GuardStringMatchOperator,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
@@ -47,6 +53,8 @@ import type {
   Reason,
   RuleResult,
   RuleResultError,
+  PolicyEvaluation,
+  PolicyRuleResult,
   RuleWithInput,
   SensitiveInfoBackend,
   SensitiveInfoEntityType,
@@ -148,7 +156,7 @@ const knownEntityTypes = new Set<string>([
 ]);
 
 /** Type guard: whether `value` is a declared {@link SensitiveInfoEntityType}. */
-function isSensitiveInfoEntityType(value: string): value is SensitiveInfoEntityType {
+export function isSensitiveInfoEntityType(value: string): value is SensitiveInfoEntityType {
   return knownEntityTypes.has(value);
 }
 
@@ -262,6 +270,8 @@ export function reasonFromProto(r: GuardReason): Reason {
       return "MODERATE_CONTENT";
     case GuardReason.SENSITIVE_INFO:
       return "SENSITIVE_INFO";
+    case GuardReason.INPUT_CONSTRAINT:
+      return "INPUT_CONSTRAINT";
     case GuardReason.CUSTOM:
       return "CUSTOM";
     case GuardReason.ERROR:
@@ -409,6 +419,111 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
   }
 }
 
+function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult {
+  const warnings: readonly Warning[] = [];
+  let result: RuleResult;
+  switch (pr.result.case) {
+    case "promptInjection":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "PROMPT_INJECTION",
+        type: "PROMPT_INJECTION",
+        warnings,
+      };
+      break;
+    case "localSensitiveInfo":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "SENSITIVE_INFO",
+        type: "SENSITIVE_INFO",
+        warnings,
+        detectedEntityTypes: pr.result.value.detectedEntityTypes,
+      };
+      break;
+    case "allowedStringValues":
+    case "deniedStringValues":
+    case "stringLength":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "INPUT_CONSTRAINT",
+        type:
+          pr.result.case === "allowedStringValues"
+            ? "ALLOWED_STRING_VALUES"
+            : pr.result.case === "deniedStringValues"
+              ? "DENIED_STRING_VALUES"
+              : "STRING_LENGTH",
+        ...(pr.result.case === "stringLength"
+          ? {}
+          : {
+              matchOperator:
+                pr.result.value.matchOperator === GuardStringMatchOperator.EMAIL_DOMAIN
+                  ? ("EMAIL_DOMAIN" as const)
+                  : pr.result.value.matchOperator === GuardStringMatchOperator.UNSPECIFIED ||
+                      pr.result.value.matchOperator === GuardStringMatchOperator.EXACT
+                    ? ("EXACT" as const)
+                    : ("UNKNOWN" as const),
+            }),
+        warnings,
+      };
+      break;
+    case "stringListMembership":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "INPUT_CONSTRAINT",
+        type: "STRING_LIST_MEMBERSHIP",
+        matched: pr.result.value.matched,
+        warnings,
+      };
+      break;
+    case "error":
+      result = {
+        conclusion: "ALLOW",
+        reason: "ERROR",
+        type: "RULE_ERROR",
+        warnings,
+        message: pr.result.value.message || "Unknown error",
+        code: pr.result.value.code || "UNKNOWN",
+      };
+      break;
+    case "notRun":
+      result = { conclusion: "ALLOW", reason: "NOT_RUN", type: "NOT_RUN", warnings };
+      break;
+    case undefined:
+      result = { conclusion: "ALLOW", reason: "UNKNOWN", type: "UNKNOWN", warnings };
+  }
+  return {
+    policyId: pr.policyId,
+    policyRevision: pr.policyRevision,
+    ruleId: pr.ruleId,
+    mode: pr.mode === GuardRuleMode.DRY_RUN ? "DRY_RUN" : "LIVE",
+    execution:
+      pr.execution === GuardRuleExecution.SDK
+        ? "SDK"
+        : pr.execution === GuardRuleExecution.SERVER
+          ? "SERVER"
+          : "UNKNOWN",
+    source: "REMOTE",
+    result,
+  };
+}
+
+function policyEvaluationFromProto(
+  evaluation: GuardPolicyEvaluation | undefined,
+): PolicyEvaluation | undefined {
+  if (evaluation === undefined) return undefined;
+  const statuses: Record<number, PolicyEvaluation["status"]> = {
+    [GuardPolicyStatus.NOT_CONFIGURED]: "NOT_CONFIGURED",
+    [GuardPolicyStatus.APPLIED]: "APPLIED",
+    [GuardPolicyStatus.INCOMPLETE]: "INCOMPLETE",
+    [GuardPolicyStatus.UNAVAILABLE]: "UNAVAILABLE",
+  };
+  return {
+    revision: evaluation.revision,
+    status: statuses[evaluation.status] ?? "UNKNOWN",
+    refreshRequired: evaluation.refreshRequired,
+  };
+}
+
 /**
  * Convert a `RuleWithInput` to a proto `GuardRuleSubmission`.
  *
@@ -554,15 +669,34 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         });
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
-        const deniedTypes = result.denied
-          .map((d) => entityToString(d.identifiedType))
-          .filter((t): t is SensitiveInfoEntityType => t !== undefined);
+        const deniedTypes = [
+          ...new Set(
+            result.denied
+              .map((d) => entityToString(d.identifiedType))
+              .filter((t): t is SensitiveInfoEntityType => t !== undefined),
+          ),
+        ];
         localResult = {
           case: "resultComputed" as const,
           value: create(ResultLocalSensitiveInfoSchema, {
             conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
-            detected: result.denied.length > 0 || result.allowed.length > 0,
+            // `detected`, like the evidence below, reports only recognized
+            // denied entities. Allowed findings remain private and do not
+            // affect the projected result.
+            detected: deniedTypes.length > 0,
             detectedEntityTypes: deniedTypes,
+            detectedEntities: result.denied
+              .map((entity) => {
+                const type = entityToString(entity.identifiedType);
+                return type === undefined
+                  ? undefined
+                  : create(GuardSensitiveInfoEntitySchema, {
+                      type,
+                      start: entity.start,
+                      end: entity.end,
+                    });
+              })
+              .filter((entity) => entity !== undefined),
           }),
         };
       } catch (err: unknown) {
@@ -701,6 +835,7 @@ export function decisionMembers(
   conclusion: Conclusion,
   results: readonly RuleResult[],
   warnings: readonly Warning[],
+  additionalErrors: readonly RuleResultError[] = [],
 ): {
   warnings: readonly Warning[];
   errorResults: () => readonly RuleResultError[];
@@ -708,7 +843,10 @@ export function decisionMembers(
   hasError: () => boolean;
 } {
   // Compute once; both accessors close over the same array.
-  const errored = results.filter((r): r is RuleResultError => r.type === "RULE_ERROR");
+  const errored = [
+    ...results.filter((r): r is RuleResultError => r.type === "RULE_ERROR"),
+    ...additionalErrors,
+  ];
   const errorResults = (): readonly RuleResultError[] => errored;
   return {
     warnings,
@@ -772,6 +910,9 @@ export function decisionFromProto(
   }
 
   const results: readonly RuleResult[] = internalResults;
+  const policyErrors = policyErrorsFromProto(proto.policyEvaluation);
+  const policyEvaluation = policyEvaluationFromProto(proto.policyEvaluation);
+  const policyResults = proto.policyRuleResults.map(policyResultFromProto);
 
   const conclusion = conclusionFromProto(proto.conclusion);
   const reason = reasonFromProto(proto.reason);
@@ -782,7 +923,9 @@ export function decisionFromProto(
       reason,
       id: proto.id,
       results,
-      ...decisionMembers("DENY", results, warnings),
+      ...(policyEvaluation !== undefined && { policyEvaluation }),
+      policyResults,
+      ...decisionMembers("DENY", results, warnings, policyErrors),
       [symbolArcjetInternal]: { results: internalResults },
     };
     return d;
@@ -792,8 +935,37 @@ export function decisionFromProto(
     conclusion: "ALLOW" as const,
     id: proto.id,
     results,
-    ...decisionMembers("ALLOW", results, warnings),
+    ...(policyEvaluation !== undefined && { policyEvaluation }),
+    policyResults,
+    ...decisionMembers("ALLOW", results, warnings, policyErrors),
     [symbolArcjetInternal]: { results: internalResults },
   };
   return d;
+}
+
+function policyErrorsFromProto(evaluation: GuardPolicyEvaluation | undefined): RuleResultError[] {
+  if (evaluation === undefined) return [];
+  let message: string | undefined;
+  switch (evaluation.status) {
+    case GuardPolicyStatus.INCOMPLETE:
+      message = "Remote Guard policy could not be fully evaluated";
+      break;
+    case GuardPolicyStatus.UNAVAILABLE:
+      message = "Remote Guard policy is unavailable";
+      break;
+    case GuardPolicyStatus.UNSPECIFIED:
+    case GuardPolicyStatus.NOT_CONFIGURED:
+    case GuardPolicyStatus.APPLIED:
+      return [];
+  }
+  return [
+    {
+      conclusion: "ALLOW",
+      reason: "ERROR",
+      type: "RULE_ERROR",
+      warnings: [],
+      code: "REMOTE_POLICY_UNAVAILABLE",
+      message,
+    },
+  ];
 }

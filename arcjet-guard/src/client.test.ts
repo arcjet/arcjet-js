@@ -19,6 +19,7 @@ import { createRouterTransport, ConnectError, Code } from "@connectrpc/connect";
 
 import { launchArcjetWithTransport } from "./index.ts";
 import type { ArcjetGuard } from "./index.ts";
+import { policyInput } from "./policy-input.ts";
 import {
   DecideService,
   type GuardRequest,
@@ -98,6 +99,34 @@ function guardWithMock(handler: Parameters<typeof mockTransport>[0]): ArcjetGuar
     transport,
   });
 }
+
+test("actor and server string-list values serialize byte-for-byte unchanged", async () => {
+  const actor = "Adviser/İ/../\u0000/客户";
+  const recipients = ["Case@Example.COM", "../../root@example.com", "δοκιμή@παράδειγμα.ελ"];
+  const arcjet = guardWithMock((req) => {
+    assert.equal(req.actor, actor);
+    const input = req.policyInputs["allowed_recipients"];
+    assert.equal(input?.representation.case, "server");
+    if (input?.representation.case === "server") {
+      assert.equal(input.representation.value.value.case, "stringListValue");
+      if (input.representation.value.value.case === "stringListValue") {
+        assert.deepEqual(input.representation.value.value.value.values, recipients);
+      }
+    }
+    return create(GuardResponseSchema, {
+      decision: create(GuardDecisionSchema, {
+        id: "gdec_serialization",
+        conclusion: GuardConclusion.ALLOW,
+      }),
+    });
+  });
+
+  await arcjet.guard({
+    label: "email",
+    actor,
+    inputs: { allowed_recipients: policyInput.server.stringList(recipients) },
+  });
+});
 describe("In-memory server: token bucket", () => {
   test("ALLOW — tokens remaining", async () => {
     const rule = tokenBucket({
@@ -547,7 +576,7 @@ describe("In-memory server: sensitive info", () => {
         if (value.localResult.case === "resultComputed") {
           // Email is allowed so conclusion is ALLOW
           assert.equal(value.localResult.value.conclusion, GuardConclusion.ALLOW);
-          assert.equal(value.localResult.value.detected, true);
+          assert.equal(value.localResult.value.detected, false);
           // detectedEntityTypes only lists denied entities
           assert.deepEqual(value.localResult.value.detectedEntityTypes, []);
         }
@@ -1145,13 +1174,19 @@ describe("In-memory server: request metadata", () => {
     });
 
     assert.ok(request);
-    assert.deepEqual({ ...request.metadataJson }, {
-      user: '{"id":"u_1","roles":["admin"]}',
-      durationMs: "160",
-    });
-    assert.deepEqual({ ...request.ruleSubmissions[0].metadataJson }, {
-      ruleScope: '{"kind":"per-user"}',
-    });
+    assert.deepEqual(
+      { ...request.metadataJson },
+      {
+        user: '{"id":"u_1","roles":["admin"]}',
+        durationMs: "160",
+      },
+    );
+    assert.deepEqual(
+      { ...request.ruleSubmissions[0].metadataJson },
+      {
+        ruleScope: '{"kind":"per-user"}',
+      },
+    );
     // The legacy plain-string map is not dual-written: the server prefers
     // `metadata_json` and only falls back to `metadata` for older SDKs.
     // oxlint-disable-next-line typescript/no-deprecated -- asserting the deprecated field stays empty

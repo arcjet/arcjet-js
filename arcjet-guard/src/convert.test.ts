@@ -42,10 +42,7 @@ import {
   defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
-import type {
-  SensitiveInfoBackend,
-  SensitiveInfoBackendOptions,
-} from "./types.ts";
+import type { SensitiveInfoBackend, SensitiveInfoBackendOptions } from "./types.ts";
 
 describe("conclusionFromProto", () => {
   test("ALLOW maps to 'ALLOW'", () => {
@@ -616,8 +613,11 @@ describe("ruleToProto", () => {
       if (proto.rule.rule.value.localResult.case === "resultComputed") {
         // EMAIL is allowed so no denied entities → ALLOW
         assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.ALLOW);
-        assert.equal(proto.rule.rule.value.localResult.value.detected, true);
+        // Allowed findings remain private: the projected result contains only
+        // denied detection state and evidence.
+        assert.equal(proto.rule.rule.value.localResult.value.detected, false);
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, []);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntities, []);
       }
       assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
     }
@@ -637,6 +637,19 @@ describe("ruleToProto", () => {
         assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
         assert.equal(proto.rule.rule.value.localResult.value.detected, true);
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, ["EMAIL"]);
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntities, [
+          {
+            $typeName: "proto.decide.v2.GuardSensitiveInfoEntity",
+            type: "EMAIL",
+            start: 12,
+            end: 23,
+          },
+        ]);
+        assert.equal(
+          "value" in proto.rule.rule.value.localResult.value.detectedEntities[0],
+          false,
+          "the matched sensitive value must never be sent to Decide",
+        );
       }
     }
   });
@@ -696,6 +709,31 @@ describe("ruleToProto", () => {
         assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, [
           "GIVEN_NAME",
         ]);
+      }
+    }
+  });
+
+  test("deduplicates repeated denied entity types", async () => {
+    const backend: SensitiveInfoBackend = {
+      detect() {
+        return Promise.resolve({
+          allowed: [],
+          denied: [
+            { start: 0, end: 11, identifiedType: { tag: "custom", val: "SSN" } },
+            { start: 16, end: 27, identifiedType: { tag: "custom", val: "SSN" } },
+          ],
+        });
+      },
+    };
+    const rule = localDetectSensitiveInfo({ deny: ["SSN"], backend });
+    const proto = await ruleToProto(rule("431-55-9928 and 623-84-1157"));
+
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+      if (proto.rule.rule.value.localResult.case === "resultComputed") {
+        assert.deepEqual(proto.rule.rule.value.localResult.value.detectedEntityTypes, ["SSN"]);
+        assert.equal(proto.rule.rule.value.localResult.value.detectedEntities.length, 2);
       }
     }
   });
@@ -763,7 +801,11 @@ describe("ruleToProto", () => {
             // A valid declared type is kept...
             { start: 0, end: 4, identifiedType: { tag: "custom" as const, val: "GIVEN_NAME" } },
             // ...but an arbitrary string from a misbehaving backend is dropped.
-            { start: 5, end: 9, identifiedType: { tag: "custom" as const, val: "NOT_A_REAL_TYPE" } },
+            {
+              start: 5,
+              end: 9,
+              identifiedType: { tag: "custom" as const, val: "NOT_A_REAL_TYPE" },
+            },
           ],
         });
       },

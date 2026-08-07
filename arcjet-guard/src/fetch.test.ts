@@ -12,6 +12,7 @@ import {
   localDetectSensitiveInfo,
   defineCustomRule,
   launchArcjetWithTransport,
+  policyInput,
 } from "./fetch.ts";
 
 describe("fetch entrypoint", () => {
@@ -35,6 +36,10 @@ describe("fetch entrypoint", () => {
 
   test("launchArcjetWithTransport is re-exported", () => {
     assert.equal(typeof launchArcjetWithTransport, "function");
+  });
+
+  test("policyInput is re-exported", () => {
+    assert.equal(policyInput.server.string("value").kind, "STRING");
   });
 
   test("launchArcjet returns guard, capture, and flush methods", () => {

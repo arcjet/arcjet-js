@@ -1,16 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import {
-  guardAction,
-  captureAction,
-  ArcjetDeniedError,
-  ArcjetGuardUnavailableError,
-} from "./guard-action.ts";
-import { createAgentContext } from "./context.ts";
 import { setLogLevel } from "../../test/_shared/log-level.ts";
 import { createMockTransport, noRulesAllow } from "../../test/_shared/mock-handlers.ts";
-import { launchArcjetWithTransport } from "../index.ts";
+import { recorded } from "../../test/_shared/source-scan.ts";
 import {
   stubClient,
   decisionAllow,
@@ -18,6 +11,15 @@ import {
   decisionFailOpenAllow,
   fakeRule,
 } from "../../test/_shared/stub-client.ts";
+import { launchArcjetWithTransport } from "../index.ts";
+import { policyInput } from "../policy-input.ts";
+import { createAgentContext } from "./context.ts";
+import {
+  guardAction,
+  captureAction,
+  ArcjetDeniedError,
+  ArcjetGuardUnavailableError,
+} from "./guard-action.ts";
 
 test("AC4.8: ALLOW decision → fn runs once, guardAction resolves with fn's return value", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
@@ -37,6 +39,21 @@ test("AC4.8: ALLOW decision → fn runs once, guardAction resolves with fn's ret
   assert.equal(fnCallCount, 1, "fn should be called once");
   assert.strictEqual(result, sentinel, "result should be the same reference as sentinel");
   assert.equal(guardCalls.length, 1, "guard should be called once");
+});
+
+test("passes actor and typed policy inputs to guard", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const inputs = { resource: policyInput.local.string("private") };
+
+  await guardAction(
+    client,
+    createAgentContext(),
+    { action: "test.action", actor: "user-1", inputs },
+    () => Promise.resolve("done"),
+  );
+
+  assert.equal(recorded(guardCalls[0]).actor, "user-1");
+  assert.strictEqual(recorded(guardCalls[0]).inputs, inputs);
 });
 
 test("AC4.8: DENY decision → ArcjetDeniedError thrown, fn never called", async () => {
@@ -405,7 +422,11 @@ test("AC4.12: guard returns fail-open ALLOW, onGuardError omitted (default deny)
     undefined,
     "cause should be undefined on failed-open path (use === undefined, not in)",
   );
-  assert.strictEqual(caught.decision, failedOpen, "decision should be the DecisionAllow by reference");
+  assert.strictEqual(
+    caught.decision,
+    failedOpen,
+    "decision should be the DecisionAllow by reference",
+  );
   assert.ok(
     !(caught instanceof ArcjetDeniedError),
     "should NOT be an instance of ArcjetDeniedError; proves policy.onDeny is never invoked on failed-open signal",
@@ -427,7 +448,10 @@ test("AC4.12: guard returns fail-open ALLOW, onGuardError omitted (default deny)
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured values
   const captureCall = captureCalls[0] as Record<string, unknown>;
   // Synthesized decisions carry id: "", so no decisionId in capture
-  assert.ok(!("decisionId" in captureCall), "decisionId should be absent on fail-open path (synthesized decision has id: '')");
+  assert.ok(
+    !("decisionId" in captureCall),
+    "decisionId should be absent on fail-open path (synthesized decision has id: '')",
+  );
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured metadata
   const metadata = captureCall.metadata as Record<string, unknown>;

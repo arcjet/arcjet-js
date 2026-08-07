@@ -1,5 +1,5 @@
+import type { PolicyInputMap } from "../policy-input.ts";
 import type { ArcjetMetadata, DecisionAllow, DecisionDeny, RuleWithInput } from "../types.ts";
-
 import { captureEvent } from "./capture.ts";
 import type { ArcjetAgentClient } from "./capture.ts";
 import type { ArcjetAgentContext } from "./context.ts";
@@ -72,11 +72,11 @@ export class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
   readonly decision?: DecisionAllow;
 
-  constructor(
-    action: string,
-    init: { cause: unknown } | { decision: DecisionAllow },
-  ) {
-    super(`policy for "${action}" could not be evaluated`, "cause" in init ? { cause: init.cause } : {});
+  constructor(action: string, init: { cause: unknown } | { decision: DecisionAllow }) {
+    super(
+      `policy for "${action}" could not be evaluated`,
+      "cause" in init ? { cause: init.cause } : {},
+    );
     this.name = "ArcjetGuardUnavailableError";
     this.action = action;
     if ("decision" in init) {
@@ -113,6 +113,26 @@ export interface GuardActionPolicy {
    * decision.
    */
   rules?: RuleWithInput[];
+  /**
+   * Opaque identity asserted by trusted application code. Derive this from an
+   * authenticated server-side identity; never pass user-controlled input — a
+   * policy can be conditioned on the actor, so an attacker who controls it can
+   * escape their own policy scope.
+   */
+  actor?: string;
+  /**
+   * Explicitly typed remote-policy inputs. Build each value with
+   * {@link policyInput}.
+   *
+   * @example
+   * ```ts
+   * inputs: {
+   *   recipient: policyInput.server.string(recipient),
+   *   body: policyInput.local.string(body),
+   * },
+   * ```
+   */
+  inputs?: PolicyInputMap;
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata;
   /**
@@ -175,6 +195,8 @@ export async function guardAction<T>(
   return runGuarded(client, {
     action: policy.action,
     rules: policy.rules,
+    ...(policy.actor !== undefined && { actor: policy.actor }),
+    ...(policy.inputs !== undefined && { inputs: policy.inputs }),
     correlationId: ctx.correlationId,
     metadata: { ...ctx.metadata, ...policy.metadata },
     onDeny: (decision) => {

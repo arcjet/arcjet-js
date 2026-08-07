@@ -826,6 +826,56 @@ export declare type ResultModerateContent = Message<"proto.decide.v2.ResultModer
 export declare const ResultModerateContentSchema: GenMessage<ResultModerateContent>;
 
 /**
+ * ResultStringConstraint is the result of a typed remote-policy string
+ * constraint. The rule type identifies allowed values, denied values, or length.
+ *
+ * @generated from message proto.decide.v2.ResultStringConstraint
+ */
+export declare type ResultStringConstraint = Message<"proto.decide.v2.ResultStringConstraint"> & {
+  /**
+   * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
+   */
+  conclusion: GuardConclusion;
+
+  /**
+   * Set for allowed and denied string-value rules. Unspecified is retained
+   * for string-length results and for exact-match responses from old servers.
+   *
+   * @generated from field: proto.decide.v2.GuardStringMatchOperator match_operator = 2;
+   */
+  matchOperator: GuardStringMatchOperator;
+};
+
+/**
+ * Describes the message proto.decide.v2.ResultStringConstraint.
+ * Use `create(ResultStringConstraintSchema)` to create a new message.
+ */
+export declare const ResultStringConstraintSchema: GenMessage<ResultStringConstraint>;
+
+/**
+ * ResultStringListMembership reports exact membership in a server string list.
+ *
+ * @generated from message proto.decide.v2.ResultStringListMembership
+ */
+export declare type ResultStringListMembership = Message<"proto.decide.v2.ResultStringListMembership"> & {
+  /**
+   * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
+   */
+  conclusion: GuardConclusion;
+
+  /**
+   * @generated from field: bool matched = 2;
+   */
+  matched: boolean;
+};
+
+/**
+ * Describes the message proto.decide.v2.ResultStringListMembership.
+ * Use `create(ResultStringListMembershipSchema)` to create a new message.
+ */
+export declare const ResultStringListMembershipSchema: GenMessage<ResultStringListMembership>;
+
+/**
  * ResultLocalSensitiveInfo contains result details for a sensitive information
  * detection evaluation.
  *
@@ -852,6 +902,14 @@ export declare type ResultLocalSensitiveInfo = Message<"proto.decide.v2.ResultLo
    * @generated from field: repeated string detected_entity_types = 3;
    */
   detectedEntityTypes: string[];
+
+  /**
+   * Safe locations of detected entities. Contains only type and offsets;
+   * matched input values must never cross the SDK boundary.
+   *
+   * @generated from field: repeated proto.decide.v2.GuardSensitiveInfoEntity detected_entities = 4;
+   */
+  detectedEntities: GuardSensitiveInfoEntity[];
 };
 
 /**
@@ -859,6 +917,32 @@ export declare type ResultLocalSensitiveInfo = Message<"proto.decide.v2.ResultLo
  * Use `create(ResultLocalSensitiveInfoSchema)` to create a new message.
  */
 export declare const ResultLocalSensitiveInfoSchema: GenMessage<ResultLocalSensitiveInfo>;
+
+/**
+ * @generated from message proto.decide.v2.GuardSensitiveInfoEntity
+ */
+export declare type GuardSensitiveInfoEntity = Message<"proto.decide.v2.GuardSensitiveInfoEntity"> & {
+  /**
+   * @generated from field: string type = 1;
+   */
+  type: string;
+
+  /**
+   * @generated from field: uint32 start = 2;
+   */
+  start: number;
+
+  /**
+   * @generated from field: uint32 end = 3;
+   */
+  end: number;
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardSensitiveInfoEntity.
+ * Use `create(GuardSensitiveInfoEntitySchema)` to create a new message.
+ */
+export declare const GuardSensitiveInfoEntitySchema: GenMessage<GuardSensitiveInfoEntity>;
 
 /**
  * ResultLocalCustom contains result details for a custom local rule evaluation.
@@ -1004,6 +1088,30 @@ export declare type GuardRuleResult = Message<"proto.decide.v2.GuardRuleResult">
   type: GuardRuleType;
 
   /**
+   * Configuration provenance. Old responses leave this unspecified; SDKs
+   * derive SDK for positional results.
+   *
+   * @generated from field: proto.decide.v2.GuardRuleSource source = 5;
+   */
+  source: GuardRuleSource;
+
+  /**
+   * Evaluation location. Old responses leave this unspecified; SDKs derive it
+   * from the rule type.
+   *
+   * @generated from field: proto.decide.v2.GuardRuleExecution execution = 6;
+   */
+  execution: GuardRuleExecution;
+
+  /**
+   * Evaluation mode. Old responses leave this unspecified; SDKs derive it
+   * from the submitted rule.
+   *
+   * @generated from field: proto.decide.v2.GuardRuleMode mode = 7;
+   */
+  mode: GuardRuleMode;
+
+  /**
    * The typed result. The active variant determines the conclusion and
    * reason — evaluated results carry their own conclusion (ALLOW/DENY),
    * while error results default to ALLOW (fail open) and not_run
@@ -1098,6 +1206,146 @@ export declare type GuardRuleResult = Message<"proto.decide.v2.GuardRuleResult">
 export declare const GuardRuleResultSchema: GenMessage<GuardRuleResult>;
 
 /**
+ * GuardPolicyEvaluation describes remote-policy selection for one Guard call.
+ *
+ * @generated from message proto.decide.v2.GuardPolicyEvaluation
+ */
+export declare type GuardPolicyEvaluation = Message<"proto.decide.v2.GuardPolicyEvaluation"> & {
+  /**
+   * @generated from field: string revision = 1;
+   */
+  revision: string;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardPolicyStatus status = 2;
+   */
+  status: GuardPolicyStatus;
+
+  /**
+   * The SDK should refresh its local projection before retrying once.
+   *
+   * @generated from field: bool refresh_required = 3;
+   */
+  refreshRequired: boolean;
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardPolicyEvaluation.
+ * Use `create(GuardPolicyEvaluationSchema)` to create a new message.
+ */
+export declare const GuardPolicyEvaluationSchema: GenMessage<GuardPolicyEvaluation>;
+
+/**
+ * GuardPolicyRuleResult is a remotely configured rule result. It carries its
+ * own policy identity and never correlates to SDK submissions by position.
+ *
+ * @generated from message proto.decide.v2.GuardPolicyRuleResult
+ */
+export declare type GuardPolicyRuleResult = Message<"proto.decide.v2.GuardPolicyRuleResult"> & {
+  /**
+   * @generated from field: string result_id = 1;
+   */
+  resultId: string;
+
+  /**
+   * @generated from field: string policy_id = 2;
+   */
+  policyId: string;
+
+  /**
+   * @generated from field: string policy_revision = 3;
+   */
+  policyRevision: string;
+
+  /**
+   * @generated from field: string rule_id = 4;
+   */
+  ruleId: string;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardRuleType type = 5;
+   */
+  type: GuardRuleType;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardRuleMode mode = 6;
+   */
+  mode: GuardRuleMode;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardRuleExecution execution = 7;
+   */
+  execution: GuardRuleExecution;
+
+  /**
+   * Always REMOTE for this message; explicit on the wire for unambiguous
+   * evidence and forward-compatible consumers.
+   *
+   * @generated from field: proto.decide.v2.GuardRuleSource source = 8;
+   */
+  source: GuardRuleSource;
+
+  /**
+   * @generated from oneof proto.decide.v2.GuardPolicyRuleResult.result
+   */
+  result: {
+    /**
+     * @generated from field: proto.decide.v2.ResultPromptInjection prompt_injection = 13;
+     */
+    value: ResultPromptInjection;
+    case: "promptInjection";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultStringConstraint allowed_string_values = 15;
+     */
+    value: ResultStringConstraint;
+    case: "allowedStringValues";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultStringConstraint denied_string_values = 16;
+     */
+    value: ResultStringConstraint;
+    case: "deniedStringValues";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultStringConstraint string_length = 17;
+     */
+    value: ResultStringConstraint;
+    case: "stringLength";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultStringListMembership string_list_membership = 18;
+     */
+    value: ResultStringListMembership;
+    case: "stringListMembership";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultLocalSensitiveInfo local_sensitive_info = 20;
+     */
+    value: ResultLocalSensitiveInfo;
+    case: "localSensitiveInfo";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultError error = 30;
+     */
+    value: ResultError;
+    case: "error";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultNotRun not_run = 31;
+     */
+    value: ResultNotRun;
+    case: "notRun";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardPolicyRuleResult.
+ * Use `create(GuardPolicyRuleResultSchema)` to create a new message.
+ */
+export declare const GuardPolicyRuleResultSchema: GenMessage<GuardPolicyRuleResult>;
+
+/**
  * GuardDecision is the aggregate decision from evaluating all guard rules.
  *
  * Identity and conclusion (1–9)
@@ -1132,6 +1380,21 @@ export declare type GuardDecision = Message<"proto.decide.v2.GuardDecision"> & {
    * @generated from field: repeated proto.decide.v2.GuardRuleResult rule_results = 10;
    */
   ruleResults: GuardRuleResult[];
+
+  /**
+   * Remote-policy status. Absent means an old server, not no policy.
+   *
+   * @generated from field: proto.decide.v2.GuardPolicyEvaluation policy_evaluation = 11;
+   */
+  policyEvaluation?: GuardPolicyEvaluation;
+
+  /**
+   * Remote-policy results, identified by policy and rule IDs rather than SDK
+   * submission position.
+   *
+   * @generated from field: repeated proto.decide.v2.GuardPolicyRuleResult policy_rule_results = 12;
+   */
+  policyRuleResults: GuardPolicyRuleResult[];
 };
 
 /**
@@ -1139,6 +1402,205 @@ export declare type GuardDecision = Message<"proto.decide.v2.GuardDecision"> & {
  * Use `create(GuardDecisionSchema)` to create a new message.
  */
 export declare const GuardDecisionSchema: GenMessage<GuardDecision>;
+
+/**
+ * GuardStringList wraps repeated strings for use inside a oneof.
+ *
+ * @generated from message proto.decide.v2.GuardStringList
+ */
+export declare type GuardStringList = Message<"proto.decide.v2.GuardStringList"> & {
+  /**
+   * @generated from field: repeated string values = 1;
+   */
+  values: string[];
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardStringList.
+ * Use `create(GuardStringListSchema)` to create a new message.
+ */
+export declare const GuardStringListSchema: GenMessage<GuardStringList>;
+
+/**
+ * GuardPolicyServerInput carries a raw value sent to Arcjet for evaluation and
+ * evidence retention.
+ *
+ * @generated from message proto.decide.v2.GuardPolicyServerInput
+ */
+export declare type GuardPolicyServerInput = Message<"proto.decide.v2.GuardPolicyServerInput"> & {
+  /**
+   * @generated from oneof proto.decide.v2.GuardPolicyServerInput.value
+   */
+  value: {
+    /**
+     * @generated from field: string string_value = 1;
+     */
+    value: string;
+    case: "stringValue";
+  } | {
+    /**
+     * @generated from field: bool boolean_value = 2;
+     */
+    value: boolean;
+    case: "booleanValue";
+  } | {
+    /**
+     * @generated from field: sint64 integer_value = 3;
+     */
+    value: bigint;
+    case: "integerValue";
+  } | {
+    /**
+     * @generated from field: double number_value = 4;
+     */
+    value: number;
+    case: "numberValue";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.GuardStringList string_list_value = 5;
+     */
+    value: GuardStringList;
+    case: "stringListValue";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardPolicyServerInput.
+ * Use `create(GuardPolicyServerInputSchema)` to create a new message.
+ */
+export declare const GuardPolicyServerInputSchema: GenMessage<GuardPolicyServerInput>;
+
+/**
+ * GuardPolicyLocalInput identifies a value that remains in SDK memory. The
+ * digest is correlation data, not anonymization or a privacy guarantee. For a
+ * LOCAL STRING it is exactly 32 bytes:
+ *
+ * SHA-256(UTF8("arcjet.guard.policy-input.v1\0") ||
+ *        UINT32_BE(byte_length(UTF8(value))) || UTF8(value))
+ *
+ * Other local kinds require a future versioned encoding.
+ *
+ * @generated from message proto.decide.v2.GuardPolicyLocalInput
+ */
+export declare type GuardPolicyLocalInput = Message<"proto.decide.v2.GuardPolicyLocalInput"> & {
+  /**
+   * @generated from field: proto.decide.v2.GuardPolicyInputKind kind = 1;
+   */
+  kind: GuardPolicyInputKind;
+
+  /**
+   * @generated from field: bytes value_sha256 = 2;
+   */
+  valueSha256: Uint8Array;
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardPolicyLocalInput.
+ * Use `create(GuardPolicyLocalInputSchema)` to create a new message.
+ */
+export declare const GuardPolicyLocalInputSchema: GenMessage<GuardPolicyLocalInput>;
+
+/**
+ * GuardPolicyInput has exactly one explicit exposure representation.
+ *
+ * @generated from message proto.decide.v2.GuardPolicyInput
+ */
+export declare type GuardPolicyInput = Message<"proto.decide.v2.GuardPolicyInput"> & {
+  /**
+   * @generated from oneof proto.decide.v2.GuardPolicyInput.representation
+   */
+  representation: {
+    /**
+     * @generated from field: proto.decide.v2.GuardPolicyServerInput server = 1;
+     */
+    value: GuardPolicyServerInput;
+    case: "server";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.GuardPolicyLocalInput local = 2;
+     */
+    value: GuardPolicyLocalInput;
+    case: "local";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardPolicyInput.
+ * Use `create(GuardPolicyInputSchema)` to create a new message.
+ */
+export declare const GuardPolicyInputSchema: GenMessage<GuardPolicyInput>;
+
+/**
+ * GuardLocalPolicyResult is a trusted SDK attestation for one local remote
+ * policy rule and input digest.
+ *
+ * @generated from message proto.decide.v2.GuardLocalPolicyResult
+ */
+export declare type GuardLocalPolicyResult = Message<"proto.decide.v2.GuardLocalPolicyResult"> & {
+  /**
+   * @generated from field: string policy_id = 1;
+   */
+  policyId: string;
+
+  /**
+   * @generated from field: string policy_revision = 2;
+   */
+  policyRevision: string;
+
+  /**
+   * @generated from field: string rule_id = 3;
+   */
+  ruleId: string;
+
+  /**
+   * @generated from field: string input_name = 4;
+   */
+  inputName: string;
+
+  /**
+   * @generated from field: bytes value_sha256 = 5;
+   */
+  valueSha256: Uint8Array;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardRuleType type = 6;
+   */
+  type: GuardRuleType;
+
+  /**
+   * @generated from field: optional uint64 duration_ms = 7;
+   */
+  durationMs?: bigint;
+
+  /**
+   * @generated from oneof proto.decide.v2.GuardLocalPolicyResult.result
+   */
+  result: {
+    /**
+     * @generated from field: proto.decide.v2.ResultLocalSensitiveInfo local_sensitive_info = 20;
+     */
+    value: ResultLocalSensitiveInfo;
+    case: "localSensitiveInfo";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultError error = 30;
+     */
+    value: ResultError;
+    case: "error";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultNotRun not_run = 31;
+     */
+    value: ResultNotRun;
+    case: "notRun";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardLocalPolicyResult.
+ * Use `create(GuardLocalPolicyResultSchema)` to create a new message.
+ */
+export declare const GuardLocalPolicyResultSchema: GenMessage<GuardLocalPolicyResult>;
 
 /**
  * GuardRequest is a request to the Guard RPC.
@@ -1234,6 +1696,43 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
    * @generated from field: repeated proto.decide.v2.Warning local_warnings = 15;
    */
   localWarnings: Warning[];
+
+  /**
+   * Opaque identity asserted by trusted application code. Optional unless the
+   * active remote policy requires it.
+   *
+   * @generated from field: optional string actor = 16;
+   */
+  actor?: string;
+
+  /**
+   * Explicitly typed and exposed named inputs for remote policy evaluation.
+   *
+   * @generated from field: map<string, proto.decide.v2.GuardPolicyInput> policy_inputs = 17;
+   */
+  policyInputs: { [key: string]: GuardPolicyInput };
+
+  /**
+   * Revision used for local remote-policy evaluation.
+   *
+   * @generated from field: string local_policy_revision = 18;
+   */
+  localPolicyRevision: string;
+
+  /**
+   * Trusted SDK attestations for locally evaluated remote rules.
+   *
+   * @generated from field: repeated proto.decide.v2.GuardLocalPolicyResult local_policy_results = 19;
+   */
+  localPolicyResults: GuardLocalPolicyResult[];
+
+  /**
+   * Versioned capability strings, e.g. "guard-policy-v1" and
+   * "local-sensitive-info-v1".
+   *
+   * @generated from field: repeated string policy_capabilities = 20;
+   */
+  policyCapabilities: string[];
 };
 
 /**
@@ -1271,6 +1770,184 @@ export declare type GuardResponse = Message<"proto.decide.v2.GuardResponse"> & {
  * Use `create(GuardResponseSchema)` to create a new message.
  */
 export declare const GuardResponseSchema: GenMessage<GuardResponse>;
+
+/**
+ * GetGuardPolicyRequest requests the SDK-local projection for one exact label.
+ *
+ * @generated from message proto.decide.v2.GetGuardPolicyRequest
+ */
+export declare type GetGuardPolicyRequest = Message<"proto.decide.v2.GetGuardPolicyRequest"> & {
+  /**
+   * @generated from field: string user_agent = 1;
+   */
+  userAgent: string;
+
+  /**
+   * @generated from field: string label = 10;
+   */
+  label: string;
+
+  /**
+   * @generated from field: repeated string policy_capabilities = 11;
+   */
+  policyCapabilities: string[];
+};
+
+/**
+ * Describes the message proto.decide.v2.GetGuardPolicyRequest.
+ * Use `create(GetGuardPolicyRequestSchema)` to create a new message.
+ */
+export declare const GetGuardPolicyRequestSchema: GenMessage<GetGuardPolicyRequest>;
+
+/**
+ * GuardLocalPolicyInputRequirement is a local input required by the projection.
+ *
+ * @generated from message proto.decide.v2.GuardLocalPolicyInputRequirement
+ */
+export declare type GuardLocalPolicyInputRequirement = Message<"proto.decide.v2.GuardLocalPolicyInputRequirement"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardPolicyInputKind kind = 2;
+   */
+  kind: GuardPolicyInputKind;
+
+  /**
+   * @generated from field: bool required = 3;
+   */
+  required: boolean;
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardLocalPolicyInputRequirement.
+ * Use `create(GuardLocalPolicyInputRequirementSchema)` to create a new message.
+ */
+export declare const GuardLocalPolicyInputRequirementSchema: GenMessage<GuardLocalPolicyInputRequirement>;
+
+/**
+ * GuardLocalSensitiveInfoRule configures one SDK-local sensitive-information
+ * evaluation. entities_allow exempts listed types and denies other detected
+ * types; entities_deny denies listed types and allows other detected types. An
+ * absent filter uses the evaluator default. Empty allow denies every detected
+ * type; empty deny allows every type.
+ *
+ * @generated from message proto.decide.v2.GuardLocalSensitiveInfoRule
+ */
+export declare type GuardLocalSensitiveInfoRule = Message<"proto.decide.v2.GuardLocalSensitiveInfoRule"> & {
+  /**
+   * @generated from field: string rule_id = 1;
+   */
+  ruleId: string;
+
+  /**
+   * @generated from field: string input_name = 2;
+   */
+  inputName: string;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardRuleMode mode = 3;
+   */
+  mode: GuardRuleMode;
+
+  /**
+   * @generated from oneof proto.decide.v2.GuardLocalSensitiveInfoRule.entity_filter
+   */
+  entityFilter: {
+    /**
+     * @generated from field: proto.decide.v2.EntityList entities_allow = 10;
+     */
+    value: EntityList;
+    case: "entitiesAllow";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.EntityList entities_deny = 11;
+     */
+    value: EntityList;
+    case: "entitiesDeny";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardLocalSensitiveInfoRule.
+ * Use `create(GuardLocalSensitiveInfoRuleSchema)` to create a new message.
+ */
+export declare const GuardLocalSensitiveInfoRuleSchema: GenMessage<GuardLocalSensitiveInfoRule>;
+
+/**
+ * GuardLocalPolicyProjection is the policy subset an SDK needs for local
+ * evaluation. Server-only rule configuration is deliberately omitted.
+ *
+ * @generated from message proto.decide.v2.GuardLocalPolicyProjection
+ */
+export declare type GuardLocalPolicyProjection = Message<"proto.decide.v2.GuardLocalPolicyProjection"> & {
+  /**
+   * @generated from field: string policy_id = 1;
+   */
+  policyId: string;
+
+  /**
+   * @generated from field: string revision = 2;
+   */
+  revision: string;
+
+  /**
+   * @generated from field: string label = 3;
+   */
+  label: string;
+
+  /**
+   * @generated from field: bool requires_actor = 4;
+   */
+  requiresActor: boolean;
+
+  /**
+   * @generated from field: repeated proto.decide.v2.GuardLocalPolicyInputRequirement inputs = 10;
+   */
+  inputs: GuardLocalPolicyInputRequirement[];
+
+  /**
+   * @generated from field: repeated proto.decide.v2.GuardLocalSensitiveInfoRule sensitive_info_rules = 11;
+   */
+  sensitiveInfoRules: GuardLocalSensitiveInfoRule[];
+};
+
+/**
+ * Describes the message proto.decide.v2.GuardLocalPolicyProjection.
+ * Use `create(GuardLocalPolicyProjectionSchema)` to create a new message.
+ */
+export declare const GuardLocalPolicyProjectionSchema: GenMessage<GuardLocalPolicyProjection>;
+
+/**
+ * GetGuardPolicyResponse returns policy status and, when configured, the
+ * SDK-local projection.
+ *
+ * @generated from message proto.decide.v2.GetGuardPolicyResponse
+ */
+export declare type GetGuardPolicyResponse = Message<"proto.decide.v2.GetGuardPolicyResponse"> & {
+  /**
+   * @generated from field: proto.decide.v2.GuardPolicyLookupStatus status = 1;
+   */
+  status: GuardPolicyLookupStatus;
+
+  /**
+   * @generated from field: proto.decide.v2.GuardLocalPolicyProjection policy = 2;
+   */
+  policy?: GuardLocalPolicyProjection;
+
+  /**
+   * @generated from field: uint64 server_time_unix_ms = 3;
+   */
+  serverTimeUnixMs: bigint;
+};
+
+/**
+ * Describes the message proto.decide.v2.GetGuardPolicyResponse.
+ * Use `create(GetGuardPolicyResponseSchema)` to create a new message.
+ */
+export declare const GetGuardPolicyResponseSchema: GenMessage<GetGuardPolicyResponse>;
 
 /**
  * CaptureEvent is a single fact reported by the application about what it
@@ -1521,6 +2198,13 @@ export enum GuardReason {
    * @generated from enum value: GUARD_REASON_MODERATE_CONTENT = 13;
    */
   MODERATE_CONTENT = 13,
+
+  /**
+   * The conclusion was due to a typed remote-policy input constraint.
+   *
+   * @generated from enum value: GUARD_REASON_INPUT_CONSTRAINT = 14;
+   */
+  INPUT_CONSTRAINT = 14,
 }
 
 /**
@@ -1577,6 +2261,32 @@ export enum GuardRuleType {
   MODERATE_CONTENT = 14,
 
   /**
+   * Remote-policy allowed string values.
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_ALLOWED_STRING_VALUES = 15;
+   */
+  ALLOWED_STRING_VALUES = 15,
+
+  /**
+   * Remote-policy denied string values.
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_DENIED_STRING_VALUES = 16;
+   */
+  DENIED_STRING_VALUES = 16,
+
+  /**
+   * Remote-policy string length constraint.
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_STRING_LENGTH = 17;
+   */
+  STRING_LENGTH = 17,
+
+  /**
+   * @generated from enum value: GUARD_RULE_TYPE_STRING_LIST_MEMBERSHIP = 18;
+   */
+  STRING_LIST_MEMBERSHIP = 18,
+
+  /**
    * Sensitive information detection (evaluated locally by the SDK).
    *
    * @generated from enum value: GUARD_RULE_TYPE_LOCAL_SENSITIVE_INFO = 20;
@@ -1631,6 +2341,203 @@ export enum GuardRuleMode {
 export declare const GuardRuleModeSchema: GenEnum<GuardRuleMode>;
 
 /**
+ * GuardRuleSource identifies where a rule's configuration came from.
+ *
+ * @generated from enum proto.decide.v2.GuardRuleSource
+ */
+export enum GuardRuleSource {
+  /**
+   * @generated from enum value: GUARD_RULE_SOURCE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_RULE_SOURCE_SDK = 1;
+   */
+  SDK = 1,
+
+  /**
+   * @generated from enum value: GUARD_RULE_SOURCE_REMOTE = 2;
+   */
+  REMOTE = 2,
+}
+
+/**
+ * Describes the enum proto.decide.v2.GuardRuleSource.
+ */
+export declare const GuardRuleSourceSchema: GenEnum<GuardRuleSource>;
+
+/**
+ * GuardRuleExecution identifies where a rule was evaluated.
+ *
+ * @generated from enum proto.decide.v2.GuardRuleExecution
+ */
+export enum GuardRuleExecution {
+  /**
+   * @generated from enum value: GUARD_RULE_EXECUTION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_RULE_EXECUTION_SDK = 1;
+   */
+  SDK = 1,
+
+  /**
+   * @generated from enum value: GUARD_RULE_EXECUTION_SERVER = 2;
+   */
+  SERVER = 2,
+}
+
+/**
+ * Describes the enum proto.decide.v2.GuardRuleExecution.
+ */
+export declare const GuardRuleExecutionSchema: GenEnum<GuardRuleExecution>;
+
+/**
+ * GuardStringMatchOperator identifies how a remote-policy string constraint
+ * compared its input. Unspecified responses from older servers mean EXACT for
+ * allowed and denied string-value results.
+ *
+ * @generated from enum proto.decide.v2.GuardStringMatchOperator
+ */
+export enum GuardStringMatchOperator {
+  /**
+   * @generated from enum value: GUARD_STRING_MATCH_OPERATOR_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_STRING_MATCH_OPERATOR_EXACT = 1;
+   */
+  EXACT = 1,
+
+  /**
+   * @generated from enum value: GUARD_STRING_MATCH_OPERATOR_EMAIL_DOMAIN = 2;
+   */
+  EMAIL_DOMAIN = 2,
+}
+
+/**
+ * Describes the enum proto.decide.v2.GuardStringMatchOperator.
+ */
+export declare const GuardStringMatchOperatorSchema: GenEnum<GuardStringMatchOperator>;
+
+/**
+ * GuardPolicyInputKind is the declared wire type of a remote-policy input.
+ *
+ * @generated from enum proto.decide.v2.GuardPolicyInputKind
+ */
+export enum GuardPolicyInputKind {
+  /**
+   * @generated from enum value: GUARD_POLICY_INPUT_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_INPUT_KIND_STRING = 1;
+   */
+  STRING = 1,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_INPUT_KIND_BOOLEAN = 2;
+   */
+  BOOLEAN = 2,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_INPUT_KIND_INTEGER = 3;
+   */
+  INTEGER = 3,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_INPUT_KIND_NUMBER = 4;
+   */
+  NUMBER = 4,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_INPUT_KIND_STRING_LIST = 5;
+   */
+  STRING_LIST = 5,
+}
+
+/**
+ * Describes the enum proto.decide.v2.GuardPolicyInputKind.
+ */
+export declare const GuardPolicyInputKindSchema: GenEnum<GuardPolicyInputKind>;
+
+/**
+ * GuardPolicyStatus reports whether a remote policy was selected and fully
+ * evaluated. An absent GuardPolicyEvaluation means the server predates remote
+ * policy support; it is not equivalent to NOT_CONFIGURED.
+ *
+ * @generated from enum proto.decide.v2.GuardPolicyStatus
+ */
+export enum GuardPolicyStatus {
+  /**
+   * @generated from enum value: GUARD_POLICY_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_STATUS_NOT_CONFIGURED = 1;
+   */
+  NOT_CONFIGURED = 1,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_STATUS_APPLIED = 2;
+   */
+  APPLIED = 2,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_STATUS_INCOMPLETE = 3;
+   */
+  INCOMPLETE = 3,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_STATUS_UNAVAILABLE = 4;
+   */
+  UNAVAILABLE = 4,
+}
+
+/**
+ * Describes the enum proto.decide.v2.GuardPolicyStatus.
+ */
+export declare const GuardPolicyStatusSchema: GenEnum<GuardPolicyStatus>;
+
+/**
+ * GuardPolicyLookupStatus describes local-projection retrieval, not rule
+ * evaluation.
+ *
+ * @generated from enum proto.decide.v2.GuardPolicyLookupStatus
+ */
+export enum GuardPolicyLookupStatus {
+  /**
+   * @generated from enum value: GUARD_POLICY_LOOKUP_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_LOOKUP_STATUS_NOT_CONFIGURED = 1;
+   */
+  NOT_CONFIGURED = 1,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_LOOKUP_STATUS_AVAILABLE = 2;
+   */
+  AVAILABLE = 2,
+
+  /**
+   * @generated from enum value: GUARD_POLICY_LOOKUP_STATUS_UNAVAILABLE = 3;
+   */
+  UNAVAILABLE = 3,
+}
+
+/**
+ * Describes the enum proto.decide.v2.GuardPolicyLookupStatus.
+ */
+export declare const GuardPolicyLookupStatusSchema: GenEnum<GuardPolicyLookupStatus>;
+
+/**
  * DecideService evaluates guard rules into a single decision, and separately
  * records application-reported facts via Capture.
  * Guard and Capture live on DecideService to share infrastructure (auth,
@@ -1648,6 +2555,16 @@ export declare const DecideService: GenService<{
     methodKind: "unary";
     input: typeof GuardRequestSchema;
     output: typeof GuardResponseSchema;
+  },
+  /**
+   * Retrieve the SDK-local projection of the remote policy for an exact label.
+   *
+   * @generated from rpc proto.decide.v2.DecideService.GetGuardPolicy
+   */
+  getGuardPolicy: {
+    methodKind: "unary";
+    input: typeof GetGuardPolicyRequestSchema;
+    output: typeof GetGuardPolicyResponseSchema;
   },
   /**
    * Record facts about what the application did. Fire-and-forget: the ack

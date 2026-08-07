@@ -92,6 +92,12 @@ export {
   type DiagnosticLogger,
   type LaunchOptions,
   type ArcjetGuard,
+  type PolicyEvaluation,
+  type PolicyInput,
+  type PolicyInputMap,
+  type PolicyRuleResult,
+  type RuleResultInputConstraint,
+  type StringMatchOperator,
 
   // Rule config types
   type TokenBucketConfig,
@@ -117,6 +123,7 @@ export {
   detectPromptInjection,
   localDetectSensitiveInfo,
   defineCustomRule,
+  policyInput,
 
   // Transport-agnostic factory
   launchArcjetWithTransport,

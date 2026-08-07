@@ -82,7 +82,12 @@ import {
   type DiagnosticHandler,
   type DiagnosticLogger,
 } from "./diagnostics.ts";
-import type { CaptureOptions, Decision, GuardOptions } from "./types.ts";
+import type {
+  CaptureOptions,
+  Decision,
+  GuardOptions,
+  SensitiveInfoBackend,
+} from "./types.ts";
 // The type of `LaunchOptions.logger`, so a consumer can name what they have
 // to implement. `ArcjetDiagnostic` is deliberately not exported: it is the
 // internal handler payload and appears in no public signature — the logger
@@ -106,6 +111,10 @@ export type {
   RuleResultNotRun,
   RuleResultError,
   RuleResultUnknown,
+  RuleResultInputConstraint,
+  StringMatchOperator,
+  PolicyEvaluation,
+  PolicyRuleResult,
   Decision,
   DecisionAllow,
   DecisionDeny,
@@ -150,6 +159,8 @@ export type {
   CaptureOptions,
   GuardOptions,
 } from "./types.ts";
+export { policyInput } from "./policy-input.ts";
+export type { PolicyInput, PolicyInputMap } from "./policy-input.ts";
 
 export {
   tokenBucket,
@@ -206,6 +217,21 @@ export interface LaunchOptions {
   baseUrl?: string;
 
   /**
+   * Local sensitive-info backend used to evaluate sensitive-info rules that a
+   * remotely configured policy runs on the SDK. Defaults to the built-in
+   * detector; supply an alternative (e.g. an on-device model) to change how
+   * entities are detected.
+   *
+   * @example
+   * ```ts
+   * import { rampart } from "@arcjet/sensitive-info-rampart";
+   *
+   * const arcjet = launchArcjet({ key, sensitiveInfoBackend: rampart() });
+   * ```
+   */
+  sensitiveInfoBackend?: SensitiveInfoBackend;
+
+  /**
    * Receives every local SDK diagnostic.
    *
    * Without a logger, Arcjet writes one console warning per diagnostic code.
@@ -248,6 +274,9 @@ export function launchArcjetWithTransport(
     key: options.key,
     transport: options.transport,
     ...(options.logger === undefined ? {} : { logger: options.logger }),
+    ...(options.sensitiveInfoBackend === undefined
+      ? {}
+      : { sensitiveInfoBackend: options.sensitiveInfoBackend }),
   });
 
   // The diagnostics channel rides along under a symbol so registration can

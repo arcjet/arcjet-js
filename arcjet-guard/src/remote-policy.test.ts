@@ -1,0 +1,333 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { create } from "@bufbuild/protobuf";
+
+import { decisionFromProto } from "./convert.ts";
+import { policyInput } from "./policy-input.ts";
+import {
+  GuardConclusion,
+  GuardDecisionSchema,
+  GetGuardPolicyResponseSchema,
+  GuardPolicyEvaluationSchema,
+  GuardPolicyRuleResultSchema,
+  GuardPolicyStatus,
+  GuardResponseSchema,
+  GuardRuleExecution,
+  GuardRuleMode,
+  GuardRuleSource,
+  GuardRuleType,
+  GuardStringMatchOperator,
+  GuardLocalPolicyProjectionSchema,
+  GuardPolicyLookupStatus,
+  ResultStringConstraintSchema,
+  ResultStringListMembershipSchema,
+} from "./proto/proto/decide/v2/decide_pb.js";
+import { localStringDigest, RemotePolicyRuntime } from "./remote-policy.ts";
+
+test("local policy input digest matches the pinned wire encoding", async () => {
+  const digest = await localStringDigest("hello");
+  assert.equal(
+    Buffer.from(digest).toString("hex"),
+    "344c730291b0156792dbdd8e4528370616e70ba828e9f4c614491b46cbcd4f8a",
+  );
+});
+
+test("server inputs do not fetch a local projection", async () => {
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.reject(new Error("must not fetch"));
+  });
+  const prepared = await runtime.prepare(
+    "email.sent",
+    {
+      recipient: policyInput.server.string("person@example.com"),
+      attempts: policyInput.server.integer(2),
+    },
+    new AbortController().signal,
+  );
+  assert.equal(fetches, 0);
+  assert.equal(prepared.inputs["recipient"]?.representation.case, "server");
+  assert.equal(prepared.inputs["attempts"]?.representation.case, "server");
+});
+
+test("concurrent local inputs coalesce projection retrieval and never put raw values on wire", async () => {
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", async () => {
+    fetches++;
+    await Promise.resolve();
+    return create(GetGuardPolicyResponseSchema, {
+      status: GuardPolicyLookupStatus.AVAILABLE,
+      policy: create(GuardLocalPolicyProjectionSchema, {
+        policyId: "policy-1",
+        revision: "revision-1",
+        label: "email.sent",
+      }),
+    });
+  });
+
+  const inputs = { subject: policyInput.local.string("secret subject") };
+  const signal = new AbortController().signal;
+  const [first, second] = await Promise.all([
+    runtime.prepare("email.sent", inputs, signal),
+    runtime.prepare("email.sent", inputs, signal),
+  ]);
+
+  assert.equal(fetches, 1);
+  assert.equal(first.revision, "revision-1");
+  assert.deepEqual(first.inputs, second.inputs);
+  const representation = first.inputs["subject"]?.representation;
+  assert.equal(representation?.case, "local");
+  if (representation?.case === "local") {
+    assert.equal(representation.value.valueSha256.length, 32);
+    assert.equal(JSON.stringify(representation.value).includes("secret subject"), false);
+  }
+});
+
+test("coalesced projection waiters observe their own cancellation", async () => {
+  let release: (() => void) | undefined;
+  const runtime = new RemotePolicyRuntime("key", "agent", async (_request, options) => {
+    assert.equal(options.signal, undefined);
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    return create(GetGuardPolicyResponseSchema, {
+      status: GuardPolicyLookupStatus.NOT_CONFIGURED,
+    });
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const firstController = new AbortController();
+  const first = runtime.prepare("email.sent", inputs, firstController.signal);
+  const second = runtime.prepare("email.sent", inputs, new AbortController().signal);
+
+  firstController.abort(new Error("caller cancelled"));
+  await assert.rejects(first, /caller cancelled/);
+  release?.();
+  assert.equal((await second).revision, "");
+});
+
+test("transient failure retains an available projection and backs off for five minutes", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    if (fetches > 1) return Promise.reject(new Error("unavailable"));
+    return Promise.resolve(
+      create(GetGuardPolicyResponseSchema, {
+        status: GuardPolicyLookupStatus.AVAILABLE,
+        policy: create(GuardLocalPolicyProjectionSchema, { revision: "revision-1" }),
+      }),
+    );
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  const first = await runtime.prepare("email.sent", inputs, signal);
+  now += 5 * 60 * 1000;
+  const stale = await runtime.prepare("email.sent", inputs, signal, true);
+  now += 5 * 60 * 1000 - 1;
+  const retained = await runtime.prepare("email.sent", inputs, signal);
+
+  assert.equal(fetches, 2);
+  assert.equal(first.revision, "revision-1");
+  assert.equal(stale.revision, "revision-1");
+  assert.equal(retained.revision, "revision-1");
+
+  now++;
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "revision-1");
+  assert.equal(fetches, 3);
+});
+
+test("NOT_CONFIGURED clears an available projection and is cached for five minutes", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.resolve(
+      create(GetGuardPolicyResponseSchema, {
+        status:
+          fetches === 1
+            ? GuardPolicyLookupStatus.AVAILABLE
+            : GuardPolicyLookupStatus.NOT_CONFIGURED,
+        ...(fetches === 1 && {
+          policy: create(GuardLocalPolicyProjectionSchema, { revision: "revision-1" }),
+        }),
+      }),
+    );
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "revision-1");
+  assert.equal((await runtime.prepare("email.sent", inputs, signal, true)).revision, "");
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "");
+  now += 5 * 60 * 1000 - 1;
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "");
+  assert.equal(fetches, 2);
+
+  now++;
+  assert.equal((await runtime.prepare("email.sent", inputs, signal)).revision, "");
+  assert.equal(fetches, 3);
+});
+
+test("force refresh bypasses the cache cadence", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.resolve(
+      create(GetGuardPolicyResponseSchema, {
+        status: GuardPolicyLookupStatus.NOT_CONFIGURED,
+      }),
+    );
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  await runtime.prepare("email.sent", inputs, signal);
+  now++;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 1);
+
+  await runtime.prepare("email.sent", inputs, signal, true);
+  assert.equal(fetches, 2);
+});
+
+test("an initial transient failure has a bounded retry backoff", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  t.mock.method(Math, "random", () => 0.5);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.reject(new Error("unavailable"));
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  await runtime.prepare("email.sent", inputs, signal);
+  now += 4_999;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 1);
+
+  now++;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 2);
+});
+
+test("initial transient retry is jittered across instances", async (t) => {
+  let now = 1_000;
+  t.mock.method(performance, "now", () => now);
+  t.mock.method(Math, "random", () => 1);
+  let fetches = 0;
+  const runtime = new RemotePolicyRuntime("key", "agent", () => {
+    fetches++;
+    return Promise.reject(new Error("unavailable"));
+  });
+  const inputs = { subject: policyInput.local.string("secret") };
+  const signal = new AbortController().signal;
+
+  await runtime.prepare("email.sent", inputs, signal);
+  now += 5_999;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 1);
+  now += 2;
+  await runtime.prepare("email.sent", inputs, signal);
+  assert.equal(fetches, 2);
+});
+
+test("remote policy status and keyed results stay separate from SDK results", () => {
+  const response = create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_policy",
+      conclusion: GuardConclusion.DENY,
+      policyEvaluation: create(GuardPolicyEvaluationSchema, {
+        revision: "revision-1",
+        status: GuardPolicyStatus.APPLIED,
+      }),
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          policyId: "policy-1",
+          policyRevision: "revision-1",
+          ruleId: "allowed-recipient",
+          type: GuardRuleType.ALLOWED_STRING_VALUES,
+          mode: GuardRuleMode.LIVE,
+          execution: GuardRuleExecution.SERVER,
+          source: GuardRuleSource.REMOTE,
+          result: {
+            case: "allowedStringValues",
+            value: create(ResultStringConstraintSchema, {
+              conclusion: GuardConclusion.DENY,
+              matchOperator: GuardStringMatchOperator.EMAIL_DOMAIN,
+            }),
+          },
+        }),
+      ],
+    }),
+  });
+
+  const decision = decisionFromProto(response, []);
+  assert.deepEqual(decision.results, []);
+  assert.equal(decision.policyEvaluation?.status, "APPLIED");
+  assert.equal(decision.policyResults?.[0]?.ruleId, "allowed-recipient");
+  assert.equal(decision.policyResults?.[0]?.result.reason, "INPUT_CONSTRAINT");
+  const result = decision.policyResults?.[0]?.result;
+  assert.equal(
+    result?.type === "ALLOWED_STRING_VALUES" ? result.matchOperator : undefined,
+    "EMAIL_DOMAIN",
+  );
+});
+
+function convertStringMatchOperator(matchOperator: GuardStringMatchOperator): string | undefined {
+  const response = create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          result: {
+            case: "deniedStringValues",
+            value: create(ResultStringConstraintSchema, {
+              conclusion: GuardConclusion.ALLOW,
+              matchOperator,
+            }),
+          },
+        }),
+      ],
+    }),
+  });
+  const result = decisionFromProto(response, []).policyResults?.[0]?.result;
+  return result?.type === "DENIED_STRING_VALUES" ? result.matchOperator : undefined;
+}
+
+test("legacy and unknown string match operators decode safely", () => {
+  assert.equal(convertStringMatchOperator(GuardStringMatchOperator.UNSPECIFIED), "EXACT");
+  assert.equal(convertStringMatchOperator(GuardStringMatchOperator.EXACT), "EXACT");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- exercise an unknown wire enum value
+  assert.equal(convertStringMatchOperator(99 as GuardStringMatchOperator), "UNKNOWN");
+});
+
+test("string-list membership results expose exact match evidence", () => {
+  const response = create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          result: {
+            case: "stringListMembership",
+            value: create(ResultStringListMembershipSchema, {
+              conclusion: GuardConclusion.DENY,
+              matched: false,
+            }),
+          },
+        }),
+      ],
+    }),
+  });
+
+  const result = decisionFromProto(response, []).policyResults?.[0]?.result;
+  assert.equal(result?.reason, "INPUT_CONSTRAINT");
+  assert.equal(result?.type, "STRING_LIST_MEMBERSHIP");
+  if (result?.type === "STRING_LIST_MEMBERSHIP") assert.equal(result.matched, false);
+});

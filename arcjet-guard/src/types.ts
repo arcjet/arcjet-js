@@ -27,6 +27,7 @@ export type Reason =
   | "PROMPT_INJECTION"
   | "MODERATE_CONTENT"
   | "SENSITIVE_INFO"
+  | "INPUT_CONSTRAINT"
   | "CUSTOM"
   | "ERROR"
   | "NOT_RUN"
@@ -390,6 +391,42 @@ export type RuleResultUnknown = {
   readonly warnings: readonly Warning[];
 };
 
+/**
+ * How a remotely configured string constraint compared its value: `"EXACT"`
+ * whole-string match, `"EMAIL_DOMAIN"` match on the domain part of an email, or
+ * `"UNKNOWN"` for an operator this SDK version does not recognise.
+ */
+export type StringMatchOperator = "EXACT" | "EMAIL_DOMAIN" | "UNKNOWN";
+
+/**
+ * Result from a remotely configured typed input constraint (e.g. an allowed- or
+ * denied-value list, a length bound, or list membership). Appears in
+ * {@link PolicyRuleResult.result} for policies that constrain typed inputs.
+ *
+ * @example
+ * ```ts
+ * for (const { result } of decision.policyResults ?? []) {
+ *   if (result.reason === "INPUT_CONSTRAINT" && result.conclusion === "DENY") {
+ *     console.log("blocked by", result.type, result.matchOperator);
+ *   }
+ * }
+ * ```
+ */
+export type RuleResultInputConstraint = {
+  readonly conclusion: Conclusion;
+  readonly reason: "INPUT_CONSTRAINT";
+  readonly type:
+    | "ALLOWED_STRING_VALUES"
+    | "DENIED_STRING_VALUES"
+    | "STRING_LENGTH"
+    | "STRING_LIST_MEMBERSHIP";
+  /** Match semantics for allowed/denied values. Absent for string length. */
+  readonly matchOperator?: StringMatchOperator;
+  /** Whether the string was present in the list. Only set for string-list membership. */
+  readonly matched?: boolean;
+  readonly warnings: readonly Warning[];
+};
+
 /** Union of all possible rule result types. */
 export type RuleResult =
   | RuleResultTokenBucket
@@ -401,12 +438,55 @@ export type RuleResult =
   | RuleResultCustom
   | RuleResultNotRun
   | RuleResultError
+  | RuleResultInputConstraint
   | RuleResultUnknown;
+
+/**
+ * Which remote policy Guard applied and how completely, reported on every
+ * decision once the server supports policies (absent on older servers).
+ *
+ * `status` is `"NOT_CONFIGURED"` when no policy is set for the label,
+ * `"APPLIED"` when every rule ran, `"INCOMPLETE"` when some rules were skipped,
+ * `"UNAVAILABLE"` when the policy could not be fetched, and `"UNKNOWN"` for a
+ * status this SDK version does not recognise. `refreshRequired` signals the
+ * cached projection is stale and will be refetched.
+ */
+export type PolicyEvaluation = {
+  readonly revision: string;
+  readonly status: "NOT_CONFIGURED" | "APPLIED" | "INCOMPLETE" | "UNAVAILABLE" | "UNKNOWN";
+  readonly refreshRequired: boolean;
+};
+
+/**
+ * A single keyed result from a remotely configured policy. Kept in
+ * {@link DecisionBase.policyResults} and never mixed with the positional
+ * {@link DecisionBase.results} from SDK-supplied rules.
+ *
+ * @example
+ * ```ts
+ * const denied = (decision.policyResults ?? []).filter(
+ *   ({ result }) => result.conclusion === "DENY",
+ * );
+ * ```
+ */
+export type PolicyRuleResult = {
+  readonly policyId: string;
+  readonly policyRevision: string;
+  readonly ruleId: string;
+  readonly mode: Mode;
+  readonly execution: "SDK" | "SERVER" | "UNKNOWN";
+  readonly source: "REMOTE";
+  readonly result: RuleResult;
+};
 
 /** Base shape shared by all decisions. */
 export type DecisionBase = {
   /** Per-rule results, one per submission, in submission order. */
   readonly results: readonly RuleResult[];
+  /** Remote-policy status; absent when the server predates policy support. */
+  readonly policyEvaluation?: PolicyEvaluation;
+  /** Keyed remote-policy results. Never mixed with positional SDK results. */
+  readonly policyResults?: readonly PolicyRuleResult[];
   /** Server-generated unique identifier (TypeID, prefix `"gdec"`). */
   readonly id: string;
   /**
@@ -460,6 +540,7 @@ export type DecisionDeny = DecisionBase & {
 /** A guard decision — either `"ALLOW"` or `"DENY"`. */
 export type Decision = DecisionAllow | DecisionDeny;
 
+import type { PolicyInputMap } from "./policy-input.ts";
 import type { symbolArcjetInternal } from "./symbol.ts";
 
 /** @internal */
@@ -1776,7 +1857,35 @@ export interface GuardOptions {
    * pass one only when the call site is worth recording or is expected to be
    * governed server-side.
    */
-  rules: RuleWithInput[];
+  rules?: RuleWithInput[];
+  /**
+   * Opaque identity asserted by trusted application code. Derive this from an
+   * authenticated server-side identity; never pass user-controlled input — a
+   * policy can be conditioned on the actor, so an attacker who controls it can
+   * escape their own policy scope.
+   *
+   * @example
+   * ```ts
+   * await arcjet.guard({ label: "email.sent", actor: session.userId, inputs });
+   * ```
+   */
+  actor?: string;
+  /**
+   * Explicitly typed values made available to a remotely configured policy.
+   * Build each value with {@link policyInput}.
+   *
+   * @example
+   * ```ts
+   * await arcjet.guard({
+   *   label: "email.sent",
+   *   inputs: {
+   *     recipient: policyInput.server.string(recipient),
+   *     body: policyInput.local.string(body),
+   *   },
+   * });
+   * ```
+   */
+  inputs?: PolicyInputMap;
   /**
    * Request-level metadata for correlation and analytics. Sent as a
    * separate field from per-rule metadata — there is no merging or

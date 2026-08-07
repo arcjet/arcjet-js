@@ -1,0 +1,21 @@
+{
+  "name": "example-node-guard-policy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env.local index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@arcjet/guard": "file:../../arcjet-guard",
+    "@arcjet/sensitive-info-rampart": "file:../../sensitive-info-rampart",
+    "@ai-sdk/provider-utils": "5.0.12",
+    "ai": "7.0.36",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.9",
+    "typescript": "^5"
+  }
+}
