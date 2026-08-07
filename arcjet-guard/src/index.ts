@@ -216,7 +216,19 @@ export interface LaunchOptions {
    */
   baseUrl?: string;
 
-  /** Alternative local sensitive-info backend used by remotely configured policies. */
+  /**
+   * Local sensitive-info backend used to evaluate sensitive-info rules that a
+   * remotely configured policy runs on the SDK. Defaults to the built-in
+   * detector; supply an alternative (e.g. an on-device model) to change how
+   * entities are detected.
+   *
+   * @example
+   * ```ts
+   * import { rampart } from "@arcjet/sensitive-info-rampart";
+   *
+   * const arcjet = launchArcjet({ key, sensitiveInfoBackend: rampart() });
+   * ```
+   */
   sensitiveInfoBackend?: SensitiveInfoBackend;
 
   /**

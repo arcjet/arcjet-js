@@ -21,6 +21,12 @@ import {
 import { localDetectSensitiveInfo } from "./rules.ts";
 import type { LocalDetectSensitiveInfoConfig, SensitiveInfoBackend } from "./types.ts";
 
+/**
+ * Capability tokens sent to the server so it knows this SDK can evaluate remote
+ * Guard policies and local sensitive-info rules.
+ *
+ * @internal Exported for use by `client.ts`; not part of the public API.
+ */
 export const policyCapabilities: string[] = ["guard-policy-v1", "local-sensitive-info-v1"];
 
 type FetchPolicy = (
@@ -40,12 +46,25 @@ const policyRefreshIntervalMs = 5 * 60 * 1000;
 const policyUnavailableRetryIntervalMs = 5 * 1000;
 const policyUnavailableJitterRatio = 0.2;
 
+/**
+ * Wire-ready policy payload produced by {@link RemotePolicyRuntime.prepare}: the
+ * encoded inputs to send, the cached projection `revision` they were evaluated
+ * against, and any locally-computed rule results (e.g. sensitive info).
+ *
+ * @internal Not part of the public API.
+ */
 export type PreparedPolicy = {
   inputs: Record<string, ProtoPolicyInput>;
   revision: string;
   results: GuardLocalPolicyResult[];
 };
 
+/**
+ * Fetches and caches SDK-local Guard policy projections, evaluates LOCAL inputs
+ * against the cached projection, and encodes the inputs for transmission.
+ *
+ * @internal Not part of the public API.
+ */
 export class RemotePolicyRuntime {
   readonly #results = new Map<string, CacheResult>();
   readonly #fetches = new Map<string, Promise<CacheResult>>();
@@ -66,6 +85,12 @@ export class RemotePolicyRuntime {
     this.#sensitiveInfoBackend = sensitiveInfoBackend;
   }
 
+  /**
+   * Encodes policy `inputs` for the given `label`: SERVER inputs are wrapped for
+   * transmission, LOCAL inputs are hashed (only their digest leaves the SDK) and
+   * evaluated against the cached projection. Pass `forceRefresh` to bypass the
+   * cache after a revision mismatch.
+   */
   async prepare(
     label: string,
     inputMap: PolicyInputMap | undefined,
@@ -296,6 +321,14 @@ function serverInput(name: string, input: PolicyInput): ProtoPolicyInput {
   });
 }
 
+/**
+ * Computes the domain-separated SHA-256 digest transmitted for a LOCAL string
+ * input. The prefix and length-prefixed value guard against cross-context
+ * collisions. This is correlation data, not anonymization: low-entropy values
+ * remain trivially reversible, so it is not a privacy guarantee.
+ *
+ * @internal Exported for testing; not part of the public API.
+ */
 export async function localStringDigest(value: string): Promise<Uint8Array> {
   const prefix = new TextEncoder().encode("arcjet.guard.policy-input.v1\0");
   const encoded = new TextEncoder().encode(value);

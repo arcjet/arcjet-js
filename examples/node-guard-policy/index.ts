@@ -82,23 +82,36 @@ const scenarios = {
   },
 } as const;
 
-type Scenario = keyof typeof scenarios;
+const keys = <T extends Record<string, unknown>>(value: T) =>
+  Object.keys(value) as [keyof T, ...(keyof T)[]];
+
+const requestSchema = z.object({
+  client: z.enum(keys(clients)),
+  scenario: z.enum(keys(scenarios)),
+  model: z.enum(keys(models)).optional(),
+});
+
+type DenialReason = { reason: string; entities?: string[] };
 
 function denialOutput(decision: DecisionDeny) {
-  const reasons = (decision.policyResults ?? [])
+  const reasons: DenialReason[] = (decision.policyResults ?? [])
     .filter(({ result }) => result.conclusion === "DENY")
-    .map(({ result }) => ({
-      reason: result.type === "STRING_LIST_MEMBERSHIP" ? "MEMBER_OF_LIST" : result.reason,
-      ...(result.type === "SENSITIVE_INFO" && {
-        entities: [...result.detectedEntityTypes],
-      }),
-    }));
+    .map(({ result }) => {
+      if (result.type === "SENSITIVE_INFO") {
+        return { reason: result.reason, entities: [...result.detectedEntityTypes] };
+      }
+      if (result.type === "STRING_LIST_MEMBERSHIP") {
+        return { reason: "MEMBER_OF_LIST" };
+      }
+      return { reason: result.reason };
+    });
+
   const summary = reasons
-    .map(({ reason, ...detail }) => {
-      const entities = "entities" in detail ? detail.entities : undefined;
-      return entities?.length ? `${reason} (${entities.join(", ")})` : reason;
-    })
+    .map(({ reason, entities }) =>
+      entities && entities.length > 0 ? `${reason} (${entities.join(", ")})` : reason,
+    )
     .join("; ");
+
   return {
     arcjetDenied: true,
     conclusion: "DENY",
@@ -150,28 +163,14 @@ const server = createServer(async (request, response) => {
   }
 
   try {
-    const input = await readJson(request);
-    if (
-      typeof input !== "object" ||
-      input === null ||
-      !("client" in input) ||
-      typeof input.client !== "string" ||
-      !("scenario" in input) ||
-      typeof input.scenario !== "string"
-    ) {
-      throw new TypeError("Client and scenario must be strings");
-    }
-    if (!Object.hasOwn(clients, input.client)) throw new TypeError("Unknown client");
-    if (!Object.hasOwn(scenarios, input.scenario)) throw new TypeError("Unknown scenario");
-    const requestedModel =
-      "model" in input && typeof input.model === "string" ? input.model : defaultInjectionModel;
-    if (!Object.hasOwn(models, requestedModel)) throw new TypeError("Unknown model");
+    const input = requestSchema.parse(await readJson(request));
     if (!process.env.AI_GATEWAY_API_KEY) throw new Error("AI_GATEWAY_API_KEY is required");
 
-    const trustedClient = clients[input.client as keyof typeof clients];
-    const scenario = scenarios[input.scenario as Scenario];
+    const trustedClient = clients[input.client];
+    const scenario = scenarios[input.scenario];
+    const requestedModel = input.model ?? defaultInjectionModel;
     const modelId = input.scenario === "injection" ? requestedModel : defaultModel;
-    const selectedModel = models[modelId as keyof typeof models];
+    const selectedModel = models[modelId];
     const requiredToolAttempt =
       input.scenario === "injection"
         ? ""

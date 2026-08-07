@@ -115,10 +115,23 @@ export interface GuardActionPolicy {
   rules?: RuleWithInput[];
   /**
    * Opaque identity asserted by trusted application code. Derive this from an
-   * authenticated server-side identity; never pass user-controlled input.
+   * authenticated server-side identity; never pass user-controlled input — a
+   * policy can be conditioned on the actor, so an attacker who controls it can
+   * escape their own policy scope.
    */
   actor?: string;
-  /** Explicitly typed remote-policy inputs. */
+  /**
+   * Explicitly typed remote-policy inputs. Build each value with
+   * {@link policyInput}.
+   *
+   * @example
+   * ```ts
+   * inputs: {
+   *   recipient: policyInput.server.string(recipient),
+   *   body: policyInput.local.string(body),
+   * },
+   * ```
+   */
   inputs?: PolicyInputMap;
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata;

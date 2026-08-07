@@ -55,7 +55,16 @@ export interface GuardToolPolicy<T extends Tool> {
   /**
    * Trusted actor identity, or a resolver over parsed input and trusted
    * context. Derive it from authenticated server-side context; never trust a
-   * model-produced tool input as the actor identity.
+   * model-produced tool input as the actor identity — a policy can be
+   * conditioned on the actor, so a model-controlled value could escape scope.
+   *
+   * @example
+   * ```ts
+   * // Static, from trusted context set up before the run.
+   * actor: trustedClient.id,
+   * // Or resolved from the agent context (not the model's tool input).
+   * actor: (input, ctx) => ctx?.userId ?? "anonymous",
+   * ```
    */
   actor?:
     | string
@@ -63,7 +72,18 @@ export interface GuardToolPolicy<T extends Tool> {
         input: InferToolInput<T>,
         context: ArcjetAgentContext | undefined,
       ) => string | Promise<string>);
-  /** Typed remote-policy inputs, or a resolver over parsed tool input. */
+  /**
+   * Typed remote-policy inputs, or a resolver over the parsed tool input. Build
+   * each value with {@link policyInput}.
+   *
+   * @example
+   * ```ts
+   * inputs: ({ recipient, body }) => ({
+   *   recipient: policyInput.server.string(recipient),
+   *   body: policyInput.local.string(body),
+   * }),
+   * ```
+   */
   inputs?:
     | PolicyInputMap
     | ((
