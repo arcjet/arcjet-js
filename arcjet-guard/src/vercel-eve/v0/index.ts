@@ -22,4 +22,6 @@ export { guardApproval } from "./guard-approval.ts";
 export type { GuardApprovalPolicy } from "./guard-approval.ts";
 export { guardTool } from "./guard-tool.ts";
 export type { GuardToolPolicy } from "./guard-tool.ts";
+export { guardInbound } from "./guard-inbound.ts";
+export type { GuardInboundOptions, InboundVerdict } from "./guard-inbound.ts";
 export type { ArcjetDenialResult } from "./denial.ts";

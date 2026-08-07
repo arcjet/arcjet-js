@@ -80,12 +80,12 @@ test("Eve namespace is a strict superset of the agents barrel with same identity
     );
   }
 
-  // eve has exactly the agents keys plus guardApproval and guardTool (2 additions)
-  // GuardApprovalPolicy and GuardToolPolicy are type-only and do not appear at runtime
+  // eve has exactly the agents keys plus guardApproval, guardTool, and guardInbound (3 additions)
+  // GuardApprovalPolicy, GuardToolPolicy, GuardInboundOptions, and InboundVerdict are type-only and do not appear at runtime
   assert.equal(
     eveKeys.length,
-    agentKeys.length + 2,
-    `eve namespace must have agents barrel exports plus guardApproval and guardTool (eve has ${eveKeys.length}, agents has ${agentKeys.length}, expected ${agentKeys.length + 2})`,
+    agentKeys.length + 3,
+    `eve namespace must have agents barrel exports plus guardApproval, guardTool, and guardInbound (eve has ${eveKeys.length}, agents has ${agentKeys.length}, expected ${agentKeys.length + 3})`,
   );
 });
 
