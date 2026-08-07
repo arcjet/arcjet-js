@@ -25,9 +25,9 @@ import { guardApproval } from "./guard-approval.ts";
 test("AC4.1: guardApproval is assignable to all three Eve approval slots", () => {
   const { client } = stubClient(decisionAllow());
 
-  // Tool slot: ToolDefinition<TInput, TOutput>["approval"]
-  // TInput is typed, TOutput is unknown
-  const forTool: NonNullable<ToolDefinition<{ id: string }, unknown>["approval"]> = guardApproval(client, {
+  // Tool slot: parameterised as Approval<ApprovalContextInput<TInput>>, unlike
+  // the two connection slots below, which take the unparameterised Approval.
+  const forTool: NonNullable<ToolDefinition<{ id: string }>["approval"]> = guardApproval(client, {
     action: "thing.read",
   });
 
