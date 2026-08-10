@@ -10,12 +10,16 @@
 // `CONNECT` proxy, points `HTTPS_PROXY` at that proxy, and lets the runtime's
 // `fetch` do the tunneling. The production Arcjet API is HTTPS, so this
 // exercises the `CONNECT` path rather than plaintext-HTTP forwarding.
+import http from "node:http";
 import https from "node:https";
 
 import { connectNodeAdapter } from "@connectrpc/connect-node";
 
 import { ElizaService } from "../eliza_pb.ts";
 import { close, createConnectProxy, generateSelfSignedCert, listen } from "../proxy.ts";
+import { within } from "../within.ts";
+
+export { within };
 
 /**
  * A running proxy + origin pair for a single runtime proxy test.
@@ -29,6 +33,16 @@ export interface ProxyFixture {
   close(): Promise<void>;
 }
 
+/**
+ * A running direct HTTP origin for a runtime round-trip test.
+ */
+export interface DirectFixture {
+  /** Base URL of the HTTP origin requests should be made to. */
+  originUrl: string;
+  /** Tear down the origin. */
+  close(): Promise<void>;
+}
+
 function elizaAdapter() {
   return connectNodeAdapter({
     routes(router) {
@@ -39,6 +53,25 @@ function elizaAdapter() {
       });
     },
   });
+}
+
+/**
+ * Start a plain HTTP Eliza origin for a successful unary round trip on the
+ * actual Bun or Deno runtime.
+ *
+ * @returns
+ *   The running fixture.
+ */
+export async function startDirectFixture(): Promise<DirectFixture> {
+  const origin = http.createServer(elizaAdapter());
+  const originUrl = await listen(origin);
+
+  return {
+    originUrl,
+    close: async () => {
+      await close(origin);
+    },
+  };
 }
 
 /**

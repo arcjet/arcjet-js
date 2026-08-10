@@ -13,7 +13,19 @@ import { createClient } from "@connectrpc/connect";
 
 import { createTransport } from "../../dist/deno.js";
 import { ElizaService } from "../eliza_pb.ts";
-import { startProxyFixture } from "./fixture.ts";
+import { startDirectFixture, startProxyFixture, within } from "./fixture.ts";
+
+Deno.test("completes a unary request with Deno's native fetch", async () => {
+  const fixture = await startDirectFixture();
+
+  try {
+    const client = createClient(ElizaService, createTransport(fixture.originUrl));
+    const result = await within(client.say({ sentence: "Hi!" }));
+    assert.equal(result.sentence, "You said `Hi!`");
+  } finally {
+    await fixture.close();
+  }
+});
 
 Deno.test("routes through `HTTPS_PROXY` via Deno's native fetch", async () => {
   const fixture = await startProxyFixture();
@@ -22,7 +34,7 @@ Deno.test("routes through `HTTPS_PROXY` via Deno's native fetch", async () => {
     const client = createClient(ElizaService, createTransport(fixture.originUrl));
     // Expected to reject at the TLS handshake (untrusted self-signed cert); we
     // only care that it was tunneled through the proxy via CONNECT.
-    await client.say({ sentence: "Hi!" }).catch(() => {});
+    await within(client.say({ sentence: "Hi!" }).catch(() => {}));
 
     assert.ok(fixture.connectCount() >= 1);
   } finally {
