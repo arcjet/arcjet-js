@@ -40,6 +40,7 @@ import type { ArcjetMetadata } from "../../types.ts";
  *       agentCtx,
  *       {
  *         action: "model.responded",
+ *         onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *         rules: [detectPromptInjection()(userMessage)],
  *       },
  *       () => model.invoke(userMessage),

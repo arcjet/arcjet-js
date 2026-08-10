@@ -79,7 +79,11 @@ export interface ArcjetAgentContext {
  * const posted = await guardAction(
  *   client,
  *   ctx,
- *   { action: "comment.posted", rules: [limit({ key: userId })] },
+ *   {
+ *     action: "comment.posted",
+ *     onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
+ *     rules: [limit({ key: userId })],
+ *   },
  *   () => postComment(body),
  * );
  * console.log(posted);

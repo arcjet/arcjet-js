@@ -30,6 +30,7 @@ import { runGuarded } from "./guarded.ts";
  *     ctx,
  *     {
  *       action: "github.pr-commented",
+ *       onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *       rules: [commentLimit({ key: userId })],
  *     },
  *     async () => {
@@ -178,7 +179,11 @@ export interface GuardActionPolicy {
  * const result = await guardAction(
  *   arcjet,
  *   ctx,
- *   { action: "database.updated", rules: [limit({ key: userId })] },
+ *   {
+ *     action: "database.updated",
+ *     onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
+ *     rules: [limit({ key: userId })],
+ *   },
  *   async () => {
  *     return await db.update({ id: recordId, data });
  *   },

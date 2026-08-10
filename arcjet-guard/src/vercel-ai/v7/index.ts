@@ -50,6 +50,7 @@
  * const protectedTools = {
  *   searchWeb: guardTool(arcjetClient, searchWebTool, {
  *     action: "search.web",
+ *     onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *     rules: () => [searchLimit({ key: "user-123", requested: 1 })],
  *   }),
  * };

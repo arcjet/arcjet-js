@@ -107,6 +107,7 @@ export interface GuardToolPolicy<TInput> {
  * const protectedEmail: ToolDefinition<{ to: string }, { messageId: string }> =
  *   guardTool(arcjetClient, sendEmail, {
  *     action: "email.sent",
+ *     onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *     rules: (input) => [emailLimit({ key: input.to, requested: 1 })],
  *   });
  *

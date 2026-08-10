@@ -102,7 +102,12 @@ export interface GuardToolPolicy<T extends Tool> {
    * the tool does not execute and the model receives an `ArcjetDenialResult`.
    */
   onGuardError?: OnGuardError;
-  /** Reshape the denial payload the model sees. */
+  /**
+   * Reshape the denial payload the model sees for a real DENY decision.
+   * Unavailable guards take the `onUnavailable` path instead and return the
+   * fixed `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` result;
+   * this callback does not fire for outages.
+   */
   onDeny?: (decision: DecisionDeny) => unknown;
 }
 
@@ -233,6 +238,7 @@ function warnMissingToolsContext(action: string): void {
  *
  * const protectedEmail = guardTool(arcjetClient, sendEmailTool, {
  *   action: "email.sent",
+ *   onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *   rules: () => [emailLimit({ key: userId, requested: 1 })],
  * });
  *
