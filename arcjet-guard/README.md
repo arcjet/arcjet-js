@@ -837,6 +837,7 @@ helper. Currently available:
   const tools = {
     getData: guardTool(arcjet, getDataTool, {
       action: "data.fetched",
+      onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
       actor: (_input, context) => String(context?.metadata?.userId),
       inputs: (input) => ({ query: policyInput.server.string(input.query) }),
       rules: [dataLimit({ key: userId, requested: 1 })],
@@ -849,7 +850,16 @@ helper. Currently available:
     toolsContext: aiToolsContext(ctx, tools),
   });
 
-  await guardAction(arcjet, ctx, { action: "data.updated", rules: [updateLimit({ key: userId })] }, () => updateData());
+  await guardAction(
+    arcjet,
+    ctx,
+    {
+      action: "data.updated",
+      onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
+      rules: [updateLimit({ key: userId })],
+    },
+    () => updateData(),
+  );
   captureAction(arcjet, ctx, { action: "audit.logged" });
   ```
 
@@ -880,6 +890,7 @@ helper. Currently available:
     spec: { /* ... */ },
     approval: guardApproval(arcjet, {
       action: "orders-api.read",
+      onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
       rules: (ctx) => [limit({ key: ctx.session.id, requested: 1 })],
     }),
     operations: { allow: ["GetOrder"] },
@@ -949,6 +960,25 @@ which is the evidence that promotion was waiting on.
 
 ### `onGuardError`: handling evaluation failures
 
+> `guard()` fails **open** by default. It is the lower-level client API: it
+> returns a decision and leaves the application in control of whether to
+> proceed. The agent helpers (`guardTool`, `guardAction`, Eve's `guardInbound`)
+> fail **closed** by default because they are designed to wrap tool calls and
+> actions that are assumed to be sensitive. The core client reports degraded
+> evaluation via `hasFailedOpen()`; the helpers decide to block on it.
+
+| API                                  | Default on Arcjet outage                    | How to flip                        |
+| ------------------------------------ | ------------------------------------------- | ---------------------------------- |
+| `guard()` (core)                     | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
+| `guardTool` / `guardAction`          | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Eve `guardInbound` / `guardApproval` | Deny (fail closed)                          | `onGuardError: "allow"`            |
+
+`onGuardError` is broader than Arcjet Cloud availability. It governs both an
+unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
+is `true`. With the default `"deny"`, either blocks the call; this can also
+happen on a deadline, response parse failure, local rule failure, missing
+decision, or server-returned rule error.
+
 When guard policy evaluation fails (e.g. the Arcjet API is unreachable), the
 SDK still allows the request to proceed — this is the platform's fail-open
 default. The agent-level helpers deliberately flip this default where needed,
@@ -1002,7 +1032,16 @@ const tools = {
     description: "Fetch data",
     inputSchema: z.object({ id: z.string() }),
     execute: async ({ id }) => {
-      return await guardAction(arcjet, ctx, { action: "data.fetched", rules: [dataLimit({ key: `user:${userId}`, requested: 1 })] }, () => fetchData(id));
+      return await guardAction(
+        arcjet,
+        ctx,
+        {
+          action: "data.fetched",
+          onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
+          rules: [dataLimit({ key: `user:${userId}`, requested: 1 })],
+        },
+        () => fetchData(id),
+      );
     },
   }),
 };
@@ -1031,6 +1070,7 @@ computes rules from the tool's parsed input:
 const tools = {
   lookupOrder: guardTool(arcjet, lookupOrderTool, {
     action: "order.looked-up",
+    onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
     rules: ({ orderNumber }) => [
       // Key the rate limit to the specific order being looked up
       orderLimit({ key: `order:${orderNumber}`, requested: 1 }),
@@ -1044,6 +1084,13 @@ certain users or resources. `guardAction` takes a resolved `RuleWithInput[]`,
 so compute the rules at the call site and pass the array.
 
 ## Using the agent helpers
+
+> `guard()` fails **open** by default. It is the lower-level client API: it
+> returns a decision and leaves the application in control of whether to
+> proceed. The agent helpers (`guardTool`, `guardAction`, Eve's `guardInbound`)
+> fail **closed** by default because they are designed to wrap tool calls and
+> actions that are assumed to be sensitive. The core client reports degraded
+> evaluation via `hasFailedOpen()`; the helpers decide to block on it.
 
 ### End-to-end example
 
@@ -1091,6 +1138,7 @@ const sendEmail = guardTool(
   }),
   {
     action: "email.sent",
+    onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
     rules: () => [emailLimit({ key: userId, requested: 1 })],
   },
 );
@@ -1118,6 +1166,7 @@ await guardAction(
   ctx,
   {
     action: "github.pr-commented",
+    onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
     rules: [commentLimit({ key: userId })],
   },
   () => github.createComment({ body: result.text }),
@@ -1194,9 +1243,57 @@ To reshape what the model sees on denial, pass `onDeny` in the tool policy — i
 ```ts
 guardTool(arcjet, lookupOrderTool, {
   action: "order.looked-up",
+  onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
   rules: () => [limit({ key: userId })],
   onDeny: (decision) => ({ error: `blocked: ${decision.reason}` }),
 });
+```
+
+An Arcjet Cloud outage does not take this `onDeny` path. It takes the
+`onUnavailable` path and returns the fixed
+`{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }`; `onDeny` fires
+only for a real DENY decision, not for an unavailable guard.
+
+`reason: "ERROR"` alone does not prove the guard was unavailable: a real DENY
+decision may also use that reason. Capture records distinguish the paths as
+`outcome: "unavailable"` versus `outcome: "denied"`; `guardAction` additionally
+distinguishes them with `ArcjetGuardUnavailableError` and `ArcjetDeniedError`.
+
+A common application pattern is to retry or alert when evaluation was
+unavailable, while handling a real policy denial without retrying the action:
+
+```ts
+import {
+  ArcjetDeniedError,
+  ArcjetGuardUnavailableError,
+  guardAction,
+} from "@arcjet/guard/vercel-ai/v7";
+
+async function guardedRefund(paymentId: string, userId: string): Promise<void> {
+  try {
+    await guardAction(
+      arcjet,
+      ctx,
+      {
+        action: "payment.refunded",
+        onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
+        rules: [refundLimit({ key: userId })],
+      },
+      () => refundPayment(paymentId),
+    );
+  } catch (error) {
+    if (error instanceof ArcjetGuardUnavailableError) {
+      alertOperator(error);
+      await queueForRetry(paymentId);
+      return;
+    }
+    if (error instanceof ArcjetDeniedError) {
+      reportPolicyDenial(error.decision.reason);
+      return;
+    }
+    throw error;
+  }
+}
 ```
 
 When a guard check denies an action, `guardAction` throws `ArcjetDeniedError` carrying the decision. Recommended system prompt line for tools:

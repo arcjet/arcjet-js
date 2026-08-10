@@ -27,6 +27,7 @@ import type { ArcjetAgentContext } from "../../agents/context.ts";
  * const protectedTools = {
  *   sendEmail: guardTool(arcjetClient, sendEmailTool, {
  *     action: "email.sent",
+ *     onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *     rules: [emailLimit({ key: userId, requested: 1 })],
  *   }),
  * };
