@@ -103,6 +103,7 @@ function local(value: string): PolicyInput {
  * ```ts
  * const sendEmail = guardTool(arcjet, emailTool, {
  *   action: "email.sent",
+ *   onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *   inputs: ({ recipient, body }) => ({
  *     recipient: policyInput.server.string(recipient),
  *     allowed_recipients: policyInput.server.stringList(allowlist),

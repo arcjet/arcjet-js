@@ -38,6 +38,7 @@
  *   myTool,
  *   {
  *     action: "tool.invoke",
+ *     onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
  *     rules: () => [
  *       tokenBucket({
  *         refillRate: 10,
