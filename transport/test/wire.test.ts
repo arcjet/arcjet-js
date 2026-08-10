@@ -10,6 +10,7 @@ import { createTransport as createTransportEdge } from "../dist/edge-light.js";
 import { createTransport } from "../dist/index.js";
 import { ElizaService, SayRequestSchema, SayResponseSchema } from "./eliza_pb.ts";
 import { close, listen, trackHttp2Sessions } from "./proxy.ts";
+import { within } from "./within.ts";
 
 interface WireRequest {
   body: Uint8Array;
@@ -26,20 +27,6 @@ interface WireResponse {
 }
 
 type WireHandler = (request: WireRequest) => WireResponse | Promise<WireResponse>;
-
-async function within<T>(promise: Promise<T>, message: string, timeout = 2_000): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error(message)), timeout);
-      }),
-    ]);
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 async function readBody(stream: NodeJS.ReadableStream): Promise<Uint8Array> {
   const chunks: Buffer[] = [];
@@ -122,7 +109,7 @@ function header(
 
 function requestEncoding(request: WireRequest): "json" | "proto" {
   const contentType = header(request.headers, "content-type");
-  if (/^application\/proto$/i.test(contentType ?? "")) {
+  if (/^application\/proto(?:\s*;.*)?$/i.test(contentType ?? "")) {
     return "proto";
   }
   if (/^application\/json(?:;\s*charset=utf-?8)?$/i.test(contentType ?? "")) {
@@ -166,6 +153,7 @@ function emptySuccessfulResponse(request: WireRequest): WireResponse {
 const unaryPath = "/connectrpc.eliza.v1.ElizaService/Say";
 
 test("unary Connect transport contract", async (t) => {
+  const requestTimeout = 60_000;
   const transports = [
     { name: "Node HTTP/2", httpVersion: "2" as const, create: createTransport },
     { name: "Fetch HTTP/1.1", httpVersion: "1.1" as const, create: createTransportEdge },
@@ -184,7 +172,7 @@ test("unary Connect transport contract", async (t) => {
           assert.equal(header(request.headers, "authorization"), "Bearer test-key");
 
           const timeout = Number(header(request.headers, "connect-timeout-ms"));
-          assert.ok(timeout > 0 && timeout <= 9_876);
+          assert.ok(timeout >= 55_000 && timeout <= requestTimeout);
 
           return successfulResponse(request);
         },
@@ -192,7 +180,7 @@ test("unary Connect transport contract", async (t) => {
           const client = createClient(ElizaService, transport.create(url));
           const result = await client.say(
             { sentence: "Hi!" },
-            { headers: { Authorization: "Bearer test-key" }, timeoutMs: 9_876 },
+            { headers: { Authorization: "Bearer test-key" }, timeoutMs: requestTimeout },
           );
           assert.equal(result.sentence, "You said `Hi!`");
         },
@@ -330,6 +318,8 @@ test("unary Connect transport contract", async (t) => {
           const client = createClient(ElizaService, transport.create(url));
           const result = client.say({ sentence: "Hi!" }, { signal: controller.signal });
           await within(requestReceived, "request was not received before cancellation");
+          const closed = requestClosed;
+          assert.ok(closed, "request close signal was not captured");
           controller.abort();
 
           await within(
@@ -340,8 +330,7 @@ test("unary Connect transport contract", async (t) => {
             }),
             "cancellation did not settle the client call",
           );
-          assert.ok(requestClosed);
-          await within(requestClosed, "cancellation did not close the network request");
+          await within(closed, "cancellation did not close the network request");
         },
       );
     });

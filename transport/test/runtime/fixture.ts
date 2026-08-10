@@ -17,6 +17,9 @@ import { connectNodeAdapter } from "@connectrpc/connect-node";
 
 import { ElizaService } from "../eliza_pb.ts";
 import { close, createConnectProxy, generateSelfSignedCert, listen } from "../proxy.ts";
+import { within } from "../within.ts";
+
+export { within };
 
 /**
  * A running proxy + origin pair for a single runtime proxy test.
@@ -38,28 +41,6 @@ export interface DirectFixture {
   originUrl: string;
   /** Tear down the origin. */
   close(): Promise<void>;
-}
-
-/**
- * Bound a runtime request so a broken transport cannot hang the test job.
- *
- * @param promise
- *   Runtime operation.
- * @returns
- *   Result of the operation.
- */
-export async function within<T>(promise: Promise<T>): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error("runtime transport request timed out")), 2_000);
-      }),
-    ]);
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 function elizaAdapter() {
