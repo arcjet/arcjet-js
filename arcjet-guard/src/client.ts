@@ -39,10 +39,21 @@ import {
   CaptureEventSchema,
   CaptureRequestSchema,
   GuardRequestSchema,
+  GuardConclusion,
+  GuardDecisionSchema,
+  GuardPolicyEvaluationSchema,
+  GuardPolicyRuleResultSchema,
+  GuardPolicyStatus,
+  GuardReason,
+  GuardRuleExecution,
+  GuardRuleMode,
+  GuardRuleSource,
+  type GuardRequest,
   type GuardResponse,
+  GuardResponseSchema,
   WarningSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
-import { policyCapabilities, RemotePolicyRuntime } from "./remote-policy.ts";
+import { policyCapabilities, type PreparedPolicy, RemotePolicyRuntime } from "./remote-policy.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
   CaptureOptions,
@@ -162,6 +173,66 @@ export function createGuardClient(options: GuardClientOptions): {
 
       const startMs = performance.now();
 
+      let preparedPolicy: PreparedPolicy;
+      try {
+        // Prepare remote LOCAL policy inputs before touching SDK-supplied rules.
+        // A LIVE local denial must prevent conversion and strip every
+        // plaintext-bearing field before the privacy-safe Guard checkpoint.
+        preparedPolicy = await remotePolicy.prepare(opts.label, opts.inputs, opts.signal);
+      } catch (cause: unknown) {
+        opts.signal?.throwIfAborted();
+        const message = cause instanceof Error ? cause.message : "Policy input preparation failed";
+        return failOpen(message, toWarnings(requestMetadata.localWarnings));
+      }
+      let sanitizePolicyInputs = preparedPolicy.sanitizeInputs;
+
+      const timeoutMs =
+        opts.timeoutSeconds !== undefined && opts.timeoutSeconds !== 0
+          ? opts.timeoutSeconds * 1000
+          : DEFAULT_TIMEOUT_MS;
+
+      const callOptions: {
+        headers: Record<string, string>;
+        timeoutMs: number;
+        signal?: AbortSignal;
+      } = {
+        headers: { Authorization: `Bearer ${key}` },
+        timeoutMs: timeoutMs,
+      };
+
+      if (opts.signal) {
+        callOptions.signal = opts.signal;
+      }
+
+      if (preparedPolicy.deniedLocally) {
+        warnings.push(
+          ...requestMetadata.localWarnings,
+          ...enforceMetadataBudget([requestMetadata.metadataJson]),
+        );
+        const localPolicyWarnings = toWarnings(warnings);
+        const guardRequest = create(GuardRequestSchema, {
+          userAgent,
+          localEvalDurationMs: BigInt(Math.round(performance.now() - startMs)),
+          sentAtUnixMs: BigInt(Date.now()),
+          label: opts.label,
+          metadataJson: requestMetadata.metadataJson,
+          localWarnings: warnings.map((warning) => create(WarningSchema, warning)),
+          correlationId: opts.correlationId ?? "",
+          ...(opts.actor !== undefined && { actor: opts.actor }),
+          policyInputs: localPolicyInputs(preparedPolicy),
+          localPolicyRevision: preparedPolicy.revision,
+          localPolicyResults: preparedPolicy.results,
+          policyCapabilities,
+        });
+        try {
+          const response = await client.guard(guardRequest, callOptions);
+          return decisionFromPrivacySafeResponse(response, preparedPolicy, [], localPolicyWarnings);
+        } catch {
+          opts.signal?.throwIfAborted();
+          return localPolicyDenial(preparedPolicy, localPolicyWarnings);
+        }
+      }
+
       let protoRules;
       try {
         // Rules convert concurrently, so each one collects into its own array and
@@ -196,15 +267,6 @@ export function createGuardClient(options: GuardClientOptions): {
       const localEvalDurationMs = BigInt(Math.round(performance.now() - startMs));
       const sentAtUnixMs = BigInt(Date.now());
 
-      let preparedPolicy;
-      try {
-        preparedPolicy = await remotePolicy.prepare(opts.label, opts.inputs, opts.signal);
-      } catch (cause: unknown) {
-        opts.signal?.throwIfAborted();
-        const message = cause instanceof Error ? cause.message : "Policy input preparation failed";
-        return failOpen(message, toWarnings(warnings));
-      }
-
       // Trim to the SDK ceiling across every metadata map on the request — the
       // envelope plus one per rule — so an oversized blob cannot push the request
       // past the 1 MiB protocol limit and get it rejected. A rejected request is
@@ -229,29 +291,13 @@ export function createGuardClient(options: GuardClientOptions): {
         ruleSubmissions: protoRules,
         correlationId: opts.correlationId ?? "",
         ...(opts.actor !== undefined && { actor: opts.actor }),
-        policyInputs: preparedPolicy.inputs,
+        policyInputs: sanitizePolicyInputs
+          ? localPolicyInputs(preparedPolicy)
+          : preparedPolicy.inputs,
         localPolicyRevision: preparedPolicy.revision,
         localPolicyResults: preparedPolicy.results,
         policyCapabilities,
       });
-
-      const timeoutMs =
-        opts.timeoutSeconds !== undefined && opts.timeoutSeconds !== 0
-          ? opts.timeoutSeconds * 1000
-          : DEFAULT_TIMEOUT_MS;
-
-      const callOptions: {
-        headers: Record<string, string>;
-        timeoutMs: number;
-        signal?: AbortSignal;
-      } = {
-        headers: { Authorization: `Bearer ${key}` },
-        timeoutMs: timeoutMs,
-      };
-
-      if (opts.signal) {
-        callOptions.signal = opts.signal;
-      }
 
       let response: GuardResponse;
       try {
@@ -266,9 +312,26 @@ export function createGuardClient(options: GuardClientOptions): {
               policyEvaluation?.revision !== preparedPolicy.revision));
         if (shouldRefresh) {
           preparedPolicy = await remotePolicy.prepare(opts.label, opts.inputs, opts.signal, true);
-          guardRequest.policyInputs = preparedPolicy.inputs;
+          sanitizePolicyInputs ||= preparedPolicy.sanitizeInputs;
+          guardRequest.policyInputs = sanitizePolicyInputs
+            ? localPolicyInputs(preparedPolicy)
+            : preparedPolicy.inputs;
           guardRequest.localPolicyRevision = preparedPolicy.revision;
           guardRequest.localPolicyResults = preparedPolicy.results;
+          if (preparedPolicy.deniedLocally) {
+            try {
+              response = await client.guard(guardRequest, callOptions);
+              return decisionFromPrivacySafeResponse(
+                response,
+                preparedPolicy,
+                opts.rules ?? [],
+                toWarnings(warnings),
+              );
+            } catch {
+              opts.signal?.throwIfAborted();
+              return localPolicyDenial(preparedPolicy, toWarnings(warnings));
+            }
+          }
           response = await client.guard(guardRequest, callOptions);
         }
       } catch (cause: unknown) {
@@ -595,4 +658,56 @@ function failOpen(message: string, warnings: readonly Warning[] = []): Decision 
     [symbolArcjetInternal]: { results },
   };
   return d;
+}
+
+function localPolicyDenial(preparedPolicy: PreparedPolicy, warnings: readonly Warning[]): Decision {
+  const policyRuleResults = preparedPolicy.results.map((result) =>
+    create(GuardPolicyRuleResultSchema, {
+      policyId: result.policyId,
+      policyRevision: result.policyRevision,
+      ruleId: result.ruleId,
+      type: result.type,
+      mode: preparedPolicy.resultModes[result.ruleId] ?? GuardRuleMode.LIVE,
+      execution: GuardRuleExecution.SDK,
+      source: GuardRuleSource.REMOTE,
+      result: result.result,
+    }),
+  );
+  return decisionFromProto(
+    create(GuardResponseSchema, {
+      decision: create(GuardDecisionSchema, {
+        // No Guard RPC occurred, so there is no server decision to correlate.
+        id: "",
+        conclusion: GuardConclusion.DENY,
+        reason: GuardReason.SENSITIVE_INFO,
+        policyEvaluation: create(GuardPolicyEvaluationSchema, {
+          revision: preparedPolicy.revision,
+          status: GuardPolicyStatus.APPLIED,
+        }),
+        policyRuleResults,
+      }),
+    }),
+    [],
+    warnings,
+  );
+}
+
+function localPolicyInputs(preparedPolicy: PreparedPolicy): GuardRequest["policyInputs"] {
+  return Object.fromEntries(
+    Object.entries(preparedPolicy.inputs).filter(
+      ([, input]) => input.representation.case === "local",
+    ),
+  );
+}
+
+function decisionFromPrivacySafeResponse(
+  response: GuardResponse,
+  preparedPolicy: PreparedPolicy,
+  rules: readonly RuleWithInput[],
+  warnings: readonly Warning[],
+): Decision {
+  if (response.decision === undefined || response.decision.id.length === 0) {
+    return localPolicyDenial(preparedPolicy, warnings);
+  }
+  return decisionFromProto(response, rules, warnings);
 }
