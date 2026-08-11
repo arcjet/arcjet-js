@@ -10,8 +10,12 @@ import {
   GuardPolicyLocalInputSchema,
   GuardPolicyLookupStatus,
   GuardPolicyServerInputSchema,
+  GuardConclusion,
+  GuardRuleMode,
   GuardRuleType,
   GuardStringListSchema,
+  ResultErrorSchema,
+  ResultNotRunSchema,
   type GetGuardPolicyResponse,
   type GuardLocalPolicyProjection,
   type GuardLocalPolicyResult,
@@ -57,6 +61,11 @@ export type PreparedPolicy = {
   inputs: Record<string, ProtoPolicyInput>;
   revision: string;
   results: GuardLocalPolicyResult[];
+  resultModes: Record<string, GuardRuleMode>;
+  /** Any local sensitive-info result denied, so SERVER inputs must be removed. */
+  sanitizeInputs: boolean;
+  /** A LIVE local sensitive-info result denied, so no user data may be sent. */
+  deniedLocally: boolean;
 };
 
 /**
@@ -125,41 +134,81 @@ export class RemotePolicyRuntime {
       }
     }
 
-    if (snapshot === undefined) return { inputs, revision: "", results: [] };
-    const results = await Promise.all(
-      snapshot.sensitiveInfoRules.map(async (rule) => {
-        const local = localValues.get(rule.inputName);
-        if (local === undefined) return null;
-        const config = sensitiveInfoConfig(rule.entityFilter, this.#sensitiveInfoBackend);
-        const submission = await ruleToProto(localDetectSensitiveInfo(config)(local.value), signal);
-        const body = submission.rule?.rule;
-        if (body?.case !== "localSensitiveInfo") return null;
-        const result = body.value.localResult;
-        return create(GuardLocalPolicyResultSchema, {
-          policyId: snapshot.policyId,
-          policyRevision: snapshot.revision,
-          ruleId: rule.ruleId,
-          inputName: rule.inputName,
-          valueSha256: local.digest,
-          type: GuardRuleType.LOCAL_SENSITIVE_INFO,
-          ...(body.value.resultDurationMs !== undefined && {
-            durationMs: body.value.resultDurationMs,
+    if (snapshot === undefined)
+      return {
+        inputs,
+        revision: "",
+        results: [],
+        resultModes: {},
+        sanitizeInputs: false,
+        deniedLocally: false,
+      };
+    const results: GuardLocalPolicyResult[] = [];
+    let sanitizeInputs = false;
+    let deniedLocally = false;
+    for (const rule of snapshot.sensitiveInfoRules) {
+      const local = localValues.get(rule.inputName);
+      if (local === undefined) continue;
+      if (deniedLocally) {
+        results.push(
+          create(GuardLocalPolicyResultSchema, {
+            policyId: snapshot.policyId,
+            policyRevision: snapshot.revision,
+            ruleId: rule.ruleId,
+            inputName: rule.inputName,
+            valueSha256: local.digest,
+            type: GuardRuleType.LOCAL_SENSITIVE_INFO,
+            result: { case: "notRun", value: create(ResultNotRunSchema) },
           }),
-          result:
-            result.case === "resultComputed"
-              ? { case: "localSensitiveInfo", value: result.value }
-              : result.case === "resultError"
-                ? { case: "error", value: result.value }
-                : result.case === "resultNotRun"
-                  ? { case: "notRun", value: result.value }
-                  : { case: undefined },
-        });
-      }),
-    );
+        );
+        continue;
+      }
+      const config = sensitiveInfoConfig(rule.entityFilter, this.#sensitiveInfoBackend);
+      const submission = await ruleToProto(localDetectSensitiveInfo(config)(local.value), signal);
+      const body = submission.rule?.rule;
+      if (body?.case !== "localSensitiveInfo") continue;
+      const localResult = body.value.localResult;
+      const result = create(GuardLocalPolicyResultSchema, {
+        policyId: snapshot.policyId,
+        policyRevision: snapshot.revision,
+        ruleId: rule.ruleId,
+        inputName: rule.inputName,
+        valueSha256: local.digest,
+        type: GuardRuleType.LOCAL_SENSITIVE_INFO,
+        ...(body.value.resultDurationMs !== undefined && {
+          durationMs: body.value.resultDurationMs,
+        }),
+        result:
+          localResult.case === "resultComputed"
+            ? { case: "localSensitiveInfo", value: localResult.value }
+            : localResult.case === "resultError"
+              ? {
+                  case: "error",
+                  value: create(ResultErrorSchema, {
+                    code: "LOCAL_POLICY_ERROR",
+                    message: "local policy evaluation failed",
+                  }),
+                }
+              : localResult.case === "resultNotRun"
+                ? { case: "notRun", value: localResult.value }
+                : { case: undefined },
+      });
+      results.push(result);
+      const denied =
+        result.result.case === "localSensitiveInfo" &&
+        result.result.value.conclusion === GuardConclusion.DENY;
+      sanitizeInputs ||= denied;
+      deniedLocally ||= rule.mode === GuardRuleMode.LIVE && denied;
+    }
     return {
       inputs,
       revision: snapshot.revision,
-      results: results.filter((result): result is GuardLocalPolicyResult => result !== null),
+      results,
+      resultModes: Object.fromEntries(
+        snapshot.sensitiveInfoRules.map((rule) => [rule.ruleId, rule.mode]),
+      ),
+      sanitizeInputs,
+      deniedLocally,
     };
   }
 
