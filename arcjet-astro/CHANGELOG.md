@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/astro-v1.10.0) (2026-08-11)
+
+
+### 🚀 New Features
+
+* expand metadata to nested JSON on guard() and protect() ([#6171](https://github.com/arcjet/arcjet-js/issues/6171)) ([caedefa](https://github.com/arcjet/arcjet-js/commit/caedefa10dc776c45f35977672add3d41b5b0b96))
+* support explicit client IP sources ([#6223](https://github.com/arcjet/arcjet-js/issues/6223)) ([12924e1](https://github.com/arcjet/arcjet-js/commit/12924e1cc16b093ad1c08fcb43af83a9024fb180))
+
+
+### 🧹 Miscellaneous Chores
+
+* adjust Arcjet descriptions ([#6181](https://github.com/arcjet/arcjet-js/issues/6181)) ([c6f3928](https://github.com/arcjet/arcjet-js/commit/c6f3928f1b6a0fe49394104973aa096a0b981020))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump astro from 7.0.9 to 7.1.0 ([#6152](https://github.com/arcjet/arcjet-js/issues/6152)) ([4e7e33c](https://github.com/arcjet/arcjet-js/commit/4e7e33c79a1e611b6aca3ff2eadf27aebbb72427))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.9.1 to 1.10.0
+    * @arcjet/env bumped from 1.9.1 to 1.10.0
+    * @arcjet/headers bumped from 1.9.1 to 1.10.0
+    * @arcjet/ip bumped from 1.9.1 to 1.10.0
+    * @arcjet/logger bumped from 1.9.1 to 1.10.0
+    * @arcjet/protocol bumped from 1.9.1 to 1.10.0
+    * @arcjet/transport bumped from 1.9.1 to 1.10.0
+    * arcjet bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/astro-v1.9.1) (2026-07-15)
 
 

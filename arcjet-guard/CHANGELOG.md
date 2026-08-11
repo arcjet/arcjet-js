@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/guard-v1.10.0) (2026-08-11)
+
+
+### 🚀 New Features
+
+* expand metadata to nested JSON on guard() and protect() ([#6171](https://github.com/arcjet/arcjet-js/issues/6171)) ([caedefa](https://github.com/arcjet/arcjet-js/commit/caedefa10dc776c45f35977672add3d41b5b0b96))
+* expose threat and billing metadata ([#6207](https://github.com/arcjet/arcjet-js/issues/6207)) ([aa94784](https://github.com/arcjet/arcjet-js/commit/aa947842857065465d60a5bcb156205176a20c96))
+* **guard:** add capture client surface ([#6175](https://github.com/arcjet/arcjet-js/issues/6175)) ([95e07ef](https://github.com/arcjet/arcjet-js/commit/95e07efe299256bb76e20ab40c8ea69848237b9e))
+* **guard:** add Eve support as @arcjet/guard/vercel-eve/v0 ([#6208](https://github.com/arcjet/arcjet-js/issues/6208)) ([e3a399d](https://github.com/arcjet/arcjet-js/commit/e3a399d5020bd4ec83cbd823ff53867bc3f8ee78))
+* **guard:** add provider-namespaced AI SDK helpers as @arcjet/guard subpaths ([#6164](https://github.com/arcjet/arcjet-js/issues/6164)) ([90a867a](https://github.com/arcjet/arcjet-js/commit/90a867a32e382d7b049d4a7b0143551c3d82a195))
+* **guard:** batch and flush capture delivery ([#6176](https://github.com/arcjet/arcjet-js/issues/6176)) ([3a3a74a](https://github.com/arcjet/arcjet-js/commit/3a3a74aef119d9b418eb01512b04109c2cd442b3))
+* **guard:** evaluate remote local policies first ([#6222](https://github.com/arcjet/arcjet-js/issues/6222)) ([78183d9](https://github.com/arcjet/arcjet-js/commit/78183d9b3ed84161b85d00246be5737aa0b2e323))
+* **guard:** evaluate remote policies ([#6186](https://github.com/arcjet/arcjet-js/issues/6186)) ([63e6939](https://github.com/arcjet/arcjet-js/commit/63e6939f4a272a4fc12733cf9c9eecd449d5835c))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** pin @connectrpc/* and @bufbuild/protobuf to exact versions ([#6165](https://github.com/arcjet/arcjet-js/issues/6165)) ([a1114c3](https://github.com/arcjet/arcjet-js/commit/a1114c30e2db5843192583fb234775fdcd7bc7fe))
+
+
+### 📝 Documentation
+
+* **guard:** clarify failure defaults ([#6219](https://github.com/arcjet/arcjet-js/issues/6219)) ([d2358ea](https://github.com/arcjet/arcjet-js/commit/d2358ea174881717240aa1dfed3c1c2a51f2ff7d))
+
+
+### 🧹 Miscellaneous Chores
+
+* adjust Arcjet descriptions ([#6181](https://github.com/arcjet/arcjet-js/issues/6181)) ([c6f3928](https://github.com/arcjet/arcjet-js/commit/c6f3928f1b6a0fe49394104973aa096a0b981020))
+* **proto:** sync generated bindings with arcjet monorepo main ([#6163](https://github.com/arcjet/arcjet-js/issues/6163)) ([500a889](https://github.com/arcjet/arcjet-js/commit/500a8895253dc02d74cd3a4d98dc21247f1baf15))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.10.0
+    * @arcjet/logger bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/guard-v1.9.1) (2026-07-15)
 
 

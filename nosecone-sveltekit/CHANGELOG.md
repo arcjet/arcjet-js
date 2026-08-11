@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@nosecone/sveltekit-v1.10.0) (2026-08-11)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@nosecone/sveltekit:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@nosecone/sveltekit-v1.9.1) (2026-07-15)
 
 

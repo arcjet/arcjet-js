@@ -1,5 +1,89 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...v1.10.0) (2026-08-11)
+
+
+### 🚀 New Features
+
+* **example:** add Next.js Guard policy agent ([#6191](https://github.com/arcjet/arcjet-js/issues/6191)) ([c7726c3](https://github.com/arcjet/arcjet-js/commit/c7726c34a0e28592c8ff2d39843ea3f80c2bb7a9))
+* expand metadata to nested JSON on guard() and protect() ([#6171](https://github.com/arcjet/arcjet-js/issues/6171)) ([caedefa](https://github.com/arcjet/arcjet-js/commit/caedefa10dc776c45f35977672add3d41b5b0b96))
+* expose threat and billing metadata ([#6207](https://github.com/arcjet/arcjet-js/issues/6207)) ([aa94784](https://github.com/arcjet/arcjet-js/commit/aa947842857065465d60a5bcb156205176a20c96))
+* **guard:** add capture client surface ([#6175](https://github.com/arcjet/arcjet-js/issues/6175)) ([95e07ef](https://github.com/arcjet/arcjet-js/commit/95e07efe299256bb76e20ab40c8ea69848237b9e))
+* **guard:** add Eve support as @arcjet/guard/vercel-eve/v0 ([#6208](https://github.com/arcjet/arcjet-js/issues/6208)) ([e3a399d](https://github.com/arcjet/arcjet-js/commit/e3a399d5020bd4ec83cbd823ff53867bc3f8ee78))
+* **guard:** add provider-namespaced AI SDK helpers as @arcjet/guard subpaths ([#6164](https://github.com/arcjet/arcjet-js/issues/6164)) ([90a867a](https://github.com/arcjet/arcjet-js/commit/90a867a32e382d7b049d4a7b0143551c3d82a195))
+* **guard:** batch and flush capture delivery ([#6176](https://github.com/arcjet/arcjet-js/issues/6176)) ([3a3a74a](https://github.com/arcjet/arcjet-js/commit/3a3a74aef119d9b418eb01512b04109c2cd442b3))
+* **guard:** evaluate remote local policies first ([#6222](https://github.com/arcjet/arcjet-js/issues/6222)) ([78183d9](https://github.com/arcjet/arcjet-js/commit/78183d9b3ed84161b85d00246be5737aa0b2e323))
+* **guard:** evaluate remote policies ([#6186](https://github.com/arcjet/arcjet-js/issues/6186)) ([63e6939](https://github.com/arcjet/arcjet-js/commit/63e6939f4a272a4fc12733cf9c9eecd449d5835c))
+* support explicit client IP sources ([#6223](https://github.com/arcjet/arcjet-js/issues/6223)) ([12924e1](https://github.com/arcjet/arcjet-js/commit/12924e1cc16b093ad1c08fcb43af83a9024fb180))
+
+
+### 🪲 Bug Fixes
+
+* classify phone numbers with Rampart model ([#6187](https://github.com/arcjet/arcjet-js/issues/6187)) ([b05af68](https://github.com/arcjet/arcjet-js/commit/b05af68ac1c24e3ef560248e58e6197fe713f183))
+* emit Windows-compatible Wasm paths ([#6189](https://github.com/arcjet/arcjet-js/issues/6189)) ([c68b19d](https://github.com/arcjet/arcjet-js/commit/c68b19d26811261e6c993c191c9dcf1902e1906f))
+* **examples:** override sharp to 0.35.x for GHSA-f88m-g3jw-g9cj ([#6185](https://github.com/arcjet/arcjet-js/issues/6185)) ([026af8c](https://github.com/arcjet/arcjet-js/commit/026af8c447ed4fc3136c6566fb25f2a9be77f94f))
+* **guard:** pin @connectrpc/* and @bufbuild/protobuf to exact versions ([#6165](https://github.com/arcjet/arcjet-js/issues/6165)) ([a1114c3](https://github.com/arcjet/arcjet-js/commit/a1114c30e2db5843192583fb234775fdcd7bc7fe))
+* regenerate redact and analyze WebAssembly modules ([#6183](https://github.com/arcjet/arcjet-js/issues/6183)) ([c18c6b3](https://github.com/arcjet/arcjet-js/commit/c18c6b37dc276796dc42a3167b8d41a4c65962c9))
+
+
+### 📝 Documentation
+
+* **guard:** clarify failure defaults ([#6219](https://github.com/arcjet/arcjet-js/issues/6219)) ([d2358ea](https://github.com/arcjet/arcjet-js/commit/d2358ea174881717240aa1dfed3c1c2a51f2ff7d))
+
+
+### 🧹 Miscellaneous Chores
+
+* adjust Arcjet descriptions ([#6181](https://github.com/arcjet/arcjet-js/issues/6181)) ([c6f3928](https://github.com/arcjet/arcjet-js/commit/c6f3928f1b6a0fe49394104973aa096a0b981020))
+* document publishing and fix sensitive-info-rampart peer deps ([#6146](https://github.com/arcjet/arcjet-js/issues/6146)) ([22d48de](https://github.com/arcjet/arcjet-js/commit/22d48de4760190651fb9fe536594c744a8b7565c))
+* **examples:** remove examples migrated to arcjet/examples ([#6217](https://github.com/arcjet/arcjet-js/issues/6217)) ([e69962f](https://github.com/arcjet/arcjet-js/commit/e69962fe6c23ad9ea5f4f3b753d6938029248c9d))
+* pin npm to 12.0.1 in CI and remove unenforced Trunk config ([#6154](https://github.com/arcjet/arcjet-js/issues/6154)) ([ed08ede](https://github.com/arcjet/arcjet-js/commit/ed08ede30df343e1218d1535e78bb2df2ef8ec6a))
+* **proto:** sync generated bindings with arcjet monorepo main ([#6163](https://github.com/arcjet/arcjet-js/issues/6163)) ([500a889](https://github.com/arcjet/arcjet-js/commit/500a8895253dc02d74cd3a4d98dc21247f1baf15))
+
+
+### 📚 Tests
+
+* **transport:** characterize unary Connect behavior ([#6221](https://github.com/arcjet/arcjet-js/issues/6221)) ([4d4f362](https://github.com/arcjet/arcjet-js/commit/4d4f362acfa0cc34a2d23000799000a0b0f4ad76))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump astro from 7.0.9 to 7.1.0 ([#6152](https://github.com/arcjet/arcjet-js/issues/6152)) ([4e7e33c](https://github.com/arcjet/arcjet-js/commit/4e7e33c79a1e611b6aca3ff2eadf27aebbb72427))
+* **deps-dev:** bump fast-uri from 3.1.2 to 3.1.4 in /examples/nestjs ([#6161](https://github.com/arcjet/arcjet-js/issues/6161)) ([7752027](https://github.com/arcjet/arcjet-js/commit/7752027293d0ef5125c5c5ff8ac9cb41b39d18cb))
+* **deps-dev:** bump ip-address from 10.2.0 to 10.4.0 in /examples/express-newman ([#6190](https://github.com/arcjet/arcjet-js/issues/6190)) ([492b221](https://github.com/arcjet/arcjet-js/commit/492b2219a44523824a54c550c8e12af059c068c9))
+* **deps-dev:** bump js-yaml from 4.3.0 to 4.3.1 ([#6210](https://github.com/arcjet/arcjet-js/issues/6210)) ([2c516a5](https://github.com/arcjet/arcjet-js/commit/2c516a5f59986cd198e307f26bfa6fda6c39e36e))
+* **deps-dev:** bump js-yaml from 4.3.0 to 4.3.1 in /examples/nextjs-server-actions ([#6212](https://github.com/arcjet/arcjet-js/issues/6212)) ([86be46f](https://github.com/arcjet/arcjet-js/commit/86be46f142524abadc2234dba8aefb4b3ebf7f33))
+* **deps-dev:** bump js-yaml from 4.3.0 to 4.3.1 in /examples/remix-express ([#6209](https://github.com/arcjet/arcjet-js/issues/6209)) ([12974fe](https://github.com/arcjet/arcjet-js/commit/12974fe258d25735f9616346cb58e7b04611f35b))
+* **deps-dev:** bump next from 16.2.10 to 16.2.11 ([#6169](https://github.com/arcjet/arcjet-js/issues/6169)) ([451ee09](https://github.com/arcjet/arcjet-js/commit/451ee09eb8461c6cccd9dc3dfa1738c0a4cbd0fe))
+* **deps-dev:** bump react-router from 7.18.1 to 8.3.0 ([#6168](https://github.com/arcjet/arcjet-js/issues/6168)) ([775885d](https://github.com/arcjet/arcjet-js/commit/775885d3213f76f0195e2d4e3f1e95166d1b47cf))
+* **deps:** bump @nuxt/devtools from 3.2.4 to 3.4.1 in /examples/nuxt ([#6211](https://github.com/arcjet/arcjet-js/issues/6211)) ([cd362db](https://github.com/arcjet/arcjet-js/commit/cd362db062befcdf86d434d9e99448c70a4ae75f))
+* **deps:** bump astro and @astrojs/node in /examples/astro ([#6182](https://github.com/arcjet/arcjet-js/issues/6182)) ([509c35d](https://github.com/arcjet/arcjet-js/commit/509c35d4ee19b8b26e0ee0cf765b0f42c83a74f6))
+* **deps:** bump body-parser from 1.20.4 to 1.20.6 in /examples/react-router-middleware ([#6153](https://github.com/arcjet/arcjet-js/issues/6153)) ([f8792c3](https://github.com/arcjet/arcjet-js/commit/f8792c394f5c0558635b13ce991d496ee55fb681))
+* **deps:** bump brace-expansion from 2.1.2 to 2.1.4 in /examples/nuxt ([#6196](https://github.com/arcjet/arcjet-js/issues/6196)) ([0e91f70](https://github.com/arcjet/arcjet-js/commit/0e91f70ff4d3a0c739f74876fc42ead78a226bbb))
+* **deps:** bump brace-expansion in /examples/nextjs-ai-agent ([#6195](https://github.com/arcjet/arcjet-js/issues/6195)) ([f7d090c](https://github.com/arcjet/arcjet-js/commit/f7d090c8ca8d5e804ad7387854747b102d3600bc))
+* **deps:** bump brace-expansion, @eslint/compat and eslint in /examples/sveltekit ([#6150](https://github.com/arcjet/arcjet-js/issues/6150)) ([529712b](https://github.com/arcjet/arcjet-js/commit/529712b5516ff89414dee57318a577afd9772c85))
+* **deps:** bump fast-uri in /examples/fastify ([#6188](https://github.com/arcjet/arcjet-js/issues/6188)) ([f118e62](https://github.com/arcjet/arcjet-js/commit/f118e62b7a7774598c861d4fed97075fb1880d80))
+* **deps:** bump find-my-way from 9.6.0 to 9.7.0 in /examples/fastify ([#6170](https://github.com/arcjet/arcjet-js/issues/6170)) ([1e95a4f](https://github.com/arcjet/arcjet-js/commit/1e95a4faddbd1583db2db983d349e963e1ab4375))
+* **deps:** bump js-yaml from 4.3.0 to 4.3.1 in /examples/nextjs-pages-wrap ([#6214](https://github.com/arcjet/arcjet-js/issues/6214)) ([4d7e6c8](https://github.com/arcjet/arcjet-js/commit/4d7e6c872cc9afc9659fccb70554f083a208cf36))
+* **deps:** bump next from 16.2.6 to 16.2.12 in examples ([#6180](https://github.com/arcjet/arcjet-js/issues/6180)) ([fb2eb5e](https://github.com/arcjet/arcjet-js/commit/fb2eb5eaad6b5399c5b103fa6de6ada2f8fd5001))
+* **deps:** bump postcss and next ([#6194](https://github.com/arcjet/arcjet-js/issues/6194)) ([c98714e](https://github.com/arcjet/arcjet-js/commit/c98714eccea6ff1f73915871074cd4ebe302f7b8))
+* **deps:** bump postcss and next in /examples/nextjs-ai-agent ([#6197](https://github.com/arcjet/arcjet-js/issues/6197)) ([dfdf161](https://github.com/arcjet/arcjet-js/commit/dfdf161a7412d3bc993a64eff9cfb8b2db91f09d))
+* **deps:** bump postcss and next in /examples/nextjs-app-dir-rate-limit ([#6204](https://github.com/arcjet/arcjet-js/issues/6204)) ([cd4f5f6](https://github.com/arcjet/arcjet-js/commit/cd4f5f672e4eb4d58dca3cbec9e7eb5f72a59c2a))
+* **deps:** bump postcss and next in /examples/nextjs-app-dir-validate-email ([#6203](https://github.com/arcjet/arcjet-js/issues/6203)) ([1b0f48f](https://github.com/arcjet/arcjet-js/commit/1b0f48fb88542d820495968ccfa354a1a5f285a7))
+* **deps:** bump postcss and next in /examples/nextjs-bot-categories ([#6202](https://github.com/arcjet/arcjet-js/issues/6202)) ([1c15f89](https://github.com/arcjet/arcjet-js/commit/1c15f8926575bf9b1b75995aaea8ec42832bd5a8))
+* **deps:** bump postcss and next in /examples/nextjs-decorate ([#6201](https://github.com/arcjet/arcjet-js/issues/6201)) ([343622b](https://github.com/arcjet/arcjet-js/commit/343622ba9d93dfe639108db8f97639040a6a72ad))
+* **deps:** bump postcss and next in /examples/nextjs-guard-policy ([#6213](https://github.com/arcjet/arcjet-js/issues/6213)) ([a904d7b](https://github.com/arcjet/arcjet-js/commit/a904d7b229d8c59b0e4c6db8650a15f4b04d5faf))
+* **deps:** bump postcss and next in /examples/nextjs-sensitive-info ([#6200](https://github.com/arcjet/arcjet-js/issues/6200)) ([f94f880](https://github.com/arcjet/arcjet-js/commit/f94f880605bcfb7f29a414f85e59776125a9a394))
+* **deps:** bump postcss from 8.5.19 to 8.5.25 in /examples/react-router ([#6193](https://github.com/arcjet/arcjet-js/issues/6193)) ([0d93ce7](https://github.com/arcjet/arcjet-js/commit/0d93ce7c73c29518c46b45db57b8a4ab4144eb73))
+* **deps:** bump svgo from 4.0.1 to 4.0.2 in /examples/astro ([#6155](https://github.com/arcjet/arcjet-js/issues/6155)) ([1e1bc60](https://github.com/arcjet/arcjet-js/commit/1e1bc601f6f5d2fc1383856456ec1a0ef9e6a7ba))
+* **deps:** bump tar from 7.5.20 to 7.5.22 in /examples/nuxt ([#6167](https://github.com/arcjet/arcjet-js/issues/6167)) ([e414bcd](https://github.com/arcjet/arcjet-js/commit/e414bcdb7736364cd8a16accffa5b84458790292))
+* **deps:** bump undici from 6.27.0 to 6.28.0 in /examples/remix-express ([#6192](https://github.com/arcjet/arcjet-js/issues/6192)) ([8c1227b](https://github.com/arcjet/arcjet-js/commit/8c1227be61c36ad432287e85ac83cc8d05ed1302))
+
+
+### ✅ Continuous Integration
+
+* detect vendor SDK version skew and cover node-guard-policy ([#6215](https://github.com/arcjet/arcjet-js/issues/6215)) ([b39316c](https://github.com/arcjet/arcjet-js/commit/b39316c2150cd3f8512a22f64e87d74f89f1710b))
+* **publish:** read npm pkg get output as JSON ([#6205](https://github.com/arcjet/arcjet-js/issues/6205)) ([3298b8a](https://github.com/arcjet/arcjet-js/commit/3298b8a0a6786ec7fe1559617508ee8bf3fcba3f))
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...v1.9.1) (2026-07-15)
 
 

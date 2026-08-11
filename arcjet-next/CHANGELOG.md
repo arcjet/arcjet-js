@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/next-v1.10.0) (2026-08-11)
+
+
+### 🚀 New Features
+
+* expand metadata to nested JSON on guard() and protect() ([#6171](https://github.com/arcjet/arcjet-js/issues/6171)) ([caedefa](https://github.com/arcjet/arcjet-js/commit/caedefa10dc776c45f35977672add3d41b5b0b96))
+* support explicit client IP sources ([#6223](https://github.com/arcjet/arcjet-js/issues/6223)) ([12924e1](https://github.com/arcjet/arcjet-js/commit/12924e1cc16b093ad1c08fcb43af83a9024fb180))
+
+
+### 🧹 Miscellaneous Chores
+
+* adjust Arcjet descriptions ([#6181](https://github.com/arcjet/arcjet-js/issues/6181)) ([c6f3928](https://github.com/arcjet/arcjet-js/commit/c6f3928f1b6a0fe49394104973aa096a0b981020))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump next from 16.2.10 to 16.2.11 ([#6169](https://github.com/arcjet/arcjet-js/issues/6169)) ([451ee09](https://github.com/arcjet/arcjet-js/commit/451ee09eb8461c6cccd9dc3dfa1738c0a4cbd0fe))
+* **deps:** bump postcss and next ([#6194](https://github.com/arcjet/arcjet-js/issues/6194)) ([c98714e](https://github.com/arcjet/arcjet-js/commit/c98714eccea6ff1f73915871074cd4ebe302f7b8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.9.1 to 1.10.0
+    * @arcjet/env bumped from 1.9.1 to 1.10.0
+    * @arcjet/headers bumped from 1.9.1 to 1.10.0
+    * @arcjet/ip bumped from 1.9.1 to 1.10.0
+    * @arcjet/logger bumped from 1.9.1 to 1.10.0
+    * @arcjet/protocol bumped from 1.9.1 to 1.10.0
+    * @arcjet/transport bumped from 1.9.1 to 1.10.0
+    * arcjet bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/next-v1.9.1) (2026-07-15)
 
 

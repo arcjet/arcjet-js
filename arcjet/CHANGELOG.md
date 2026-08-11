@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...arcjet-v1.10.0) (2026-08-11)
+
+
+### 🚀 New Features
+
+* expand metadata to nested JSON on guard() and protect() ([#6171](https://github.com/arcjet/arcjet-js/issues/6171)) ([caedefa](https://github.com/arcjet/arcjet-js/commit/caedefa10dc776c45f35977672add3d41b5b0b96))
+* expose threat and billing metadata ([#6207](https://github.com/arcjet/arcjet-js/issues/6207)) ([aa94784](https://github.com/arcjet/arcjet-js/commit/aa947842857065465d60a5bcb156205176a20c96))
+* support explicit client IP sources ([#6223](https://github.com/arcjet/arcjet-js/issues/6223)) ([12924e1](https://github.com/arcjet/arcjet-js/commit/12924e1cc16b093ad1c08fcb43af83a9024fb180))
+
+
+### 🧹 Miscellaneous Chores
+
+* adjust Arcjet descriptions ([#6181](https://github.com/arcjet/arcjet-js/issues/6181)) ([c6f3928](https://github.com/arcjet/arcjet-js/commit/c6f3928f1b6a0fe49394104973aa096a0b981020))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.10.0
+    * @arcjet/cache bumped from 1.9.1 to 1.10.0
+    * @arcjet/duration bumped from 1.9.1 to 1.10.0
+    * @arcjet/headers bumped from 1.9.1 to 1.10.0
+    * @arcjet/protocol bumped from 1.9.1 to 1.10.0
+    * @arcjet/runtime bumped from 1.9.1 to 1.10.0
+    * @arcjet/stable-hash bumped from 1.9.1 to 1.10.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...arcjet-v1.9.1) (2026-07-15)
 
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/analyze-v1.10.0) (2026-08-11)
+
+
+### 🪲 Bug Fixes
+
+* regenerate redact and analyze WebAssembly modules ([#6183](https://github.com/arcjet/arcjet-js/issues/6183)) ([c18c6b3](https://github.com/arcjet/arcjet-js/commit/c18c6b37dc276796dc42a3167b8d41a4c65962c9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.9.1 to 1.10.0
+    * @arcjet/protocol bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/analyze-v1.9.1) (2026-07-15)
 
 
