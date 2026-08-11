@@ -16,9 +16,9 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "oxfmt": "0.59.0",
-    "oxlint": "1.74.0",
-    "turbo": "2.10.5"
+    "oxfmt": "0.62.0",
+    "oxlint": "1.77.0",
+    "turbo": "2.10.8"
   },
   "overrides": {
     "@bufbuild/protobuf": "2.12.1",
