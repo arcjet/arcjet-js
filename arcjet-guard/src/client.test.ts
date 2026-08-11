@@ -340,7 +340,7 @@ test("an incomplete refreshed privacy-safe response preserves the synthetic loca
     label: "chat.message",
     actor: "refresh-actor",
     correlationId: "refresh-correlation",
-    metadata: { retained: metadataMarker },
+    metadata: { dropped: undefined, retained: metadataMarker },
     inputs: {
       prompt: policyInput.server.string(rawMessage),
       pii: policyInput.local.string(rawMessage),
@@ -357,6 +357,14 @@ test("an incomplete refreshed privacy-safe response preserves the synthetic loca
   assert.equal(guardRequests[1].actor, "refresh-actor");
   assert.equal(guardRequests[1].correlationId, "refresh-correlation");
   assert.deepEqual(guardRequests[1].metadataJson, { retained: JSON.stringify(metadataMarker) });
+  assert.deepEqual(
+    guardRequests[1].localWarnings.map((warning) => warning.code),
+    ["AJ1017"],
+  );
+  assert.deepEqual(
+    decision.warnings.map((warning) => warning.code),
+    ["AJ1017"],
+  );
   assert.equal(JSON.stringify(guardRequests[1], stringifyBigInt).includes(rawMessage), false);
 });
 
