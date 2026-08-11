@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/sensitive-info-rampart-v1.10.0) (2026-08-11)
+
+
+### 🪲 Bug Fixes
+
+* classify phone numbers with Rampart model ([#6187](https://github.com/arcjet/arcjet-js/issues/6187)) ([b05af68](https://github.com/arcjet/arcjet-js/commit/b05af68ac1c24e3ef560248e58e6197fe713f183))
+
+
+### 🧹 Miscellaneous Chores
+
+* document publishing and fix sensitive-info-rampart peer deps ([#6146](https://github.com/arcjet/arcjet-js/issues/6146)) ([22d48de](https://github.com/arcjet/arcjet-js/commit/22d48de4760190651fb9fe536594c744a8b7565c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.10.0
+    * arcjet bumped from 1.9.1 to 1.10.0
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.9.1 to 1.10.0
+    * arcjet bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/sensitive-info-rampart-v1.9.1) (2026-07-15)
 
 

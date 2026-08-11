@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@nosecone/next-v1.10.0) (2026-08-11)
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump next from 16.2.10 to 16.2.11 ([#6169](https://github.com/arcjet/arcjet-js/issues/6169)) ([451ee09](https://github.com/arcjet/arcjet-js/commit/451ee09eb8461c6cccd9dc3dfa1738c0a4cbd0fe))
+* **deps:** bump postcss and next ([#6194](https://github.com/arcjet/arcjet-js/issues/6194)) ([c98714e](https://github.com/arcjet/arcjet-js/commit/c98714eccea6ff1f73915871074cd4ebe302f7b8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@nosecone/next-v1.9.1) (2026-07-15)
 
 

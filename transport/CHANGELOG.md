@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/transport-v1.10.0) (2026-08-11)
+
+
+### 📚 Tests
+
+* **transport:** characterize unary Connect behavior ([#6221](https://github.com/arcjet/arcjet-js/issues/6221)) ([4d4f362](https://github.com/arcjet/arcjet-js/commit/4d4f362acfa0cc34a2d23000799000a0b0f4ad76))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.9.1 to 1.10.0
+    * @arcjet/logger bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/transport-v1.9.1) (2026-07-15)
 
 

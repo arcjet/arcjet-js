@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/inspect-v1.10.0) (2026-08-11)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/inspect:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.9.1 to 1.10.0
+
 ## [1.9.1](https://github.com/arcjet/arcjet-js/compare/v1.9.0...@arcjet/inspect-v1.9.1) (2026-07-15)
 
 
