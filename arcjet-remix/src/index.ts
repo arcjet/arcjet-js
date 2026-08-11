@@ -188,7 +188,14 @@ export interface ArcjetRemix<Props extends PlainObject> {
    */
   protect(
     request: ArcjetRemixRequest,
-    ...props: MaybeProperties<Props & { correlationId?: string; metadata?: ArcjetMetadata }>
+    ...props: MaybeProperties<
+      Props & {
+        correlationId?: string;
+        /** Application-provided client IP address, used instead of automatic detection. */
+        ipSrc?: string;
+        metadata?: ArcjetMetadata;
+      }
+    >
   ): Promise<ArcjetDecision>;
 
   /**
@@ -250,6 +257,7 @@ export default function arcjet<
   function toArcjetRequest<Props extends PlainObject>(
     { request, context }: ArcjetRemixRequest,
     props: Props,
+    ipSrc?: string,
   ): ArcjetRequest<Props> {
     const cookies = request.headers.get("cookie") ?? "";
 
@@ -259,6 +267,7 @@ export default function arcjet<
     const url = new URL(request.url);
     const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
     let ip =
+      ipSrc ||
       xArcjetIp ||
       findIp(
         {
@@ -305,9 +314,9 @@ export default function arcjet<
         // `correlationId` and `metadata` are request-independent options, not rule
         // props, so pull them out before building the request from the rule
         // properties.
-        const { correlationId, metadata, ...properties } = props ?? {};
+        const { correlationId, ipSrc, metadata, ...properties } = props ?? {};
         // Cast of `{}` because here we switch from `undefined` to `Properties`.
-        const req = toArcjetRequest(details, (properties || {}) as Properties);
+        const req = toArcjetRequest(details, (properties || {}) as Properties, ipSrc);
 
         const getBody = async () => {
           const clonedRequest = details.request.clone();

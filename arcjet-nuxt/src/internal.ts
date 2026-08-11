@@ -155,7 +155,13 @@ export interface ArcjetNuxt<Properties extends Record<PropertyKey, unknown>> {
    */
   protect(
     event: ArcjetH3Event,
-    ...props: MaybeProperties<Properties & { metadata?: ArcjetMetadata }>
+    ...props: MaybeProperties<
+      Properties & {
+        /** Application-provided client IP address, used instead of automatic detection. */
+        ipSrc?: string;
+        metadata?: ArcjetMetadata;
+      }
+    >
   ): Promise<ArcjetDecision>;
 
   /**
@@ -295,14 +301,16 @@ export default function arcjet<
         const context: ArcjetAdapterContext = {
           getBody: createGetBody(state, details),
         };
+        const { ipSrc, metadata, ...ruleProps } = properties ?? {};
         const request = toArcjetRequest(
           state,
           details,
           // Cast of `{}` because here we switch from `undefined` to `Properties`.
-          properties ?? ({} as Properties),
+          ruleProps as Properties,
+          ipSrc,
         );
 
-        return baseClient.protect(context, request);
+        return baseClient.protect(context, { ...request, metadata });
       },
       withRule(rule) {
         return withClient(baseClient.withRule(rule));
@@ -394,10 +402,12 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   state: State,
   event: ArcjetH3Event,
   properties: Properties,
+  ipSrc?: string,
 ): ArcjetRequest<Properties> {
   const headers = new ArcjetHeaders(event.node.req.headers);
   const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
   let ip =
+    ipSrc ||
     xArcjetIp ||
     findIp(event.node.req, {
       platform: platform(process.env),

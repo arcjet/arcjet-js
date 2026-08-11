@@ -449,6 +449,59 @@ test("`arcjetNode`", async function (t) {
     ]);
   });
 
+  await t.test("should prefer and strip an explicit `ipSrc`", async function () {
+    const restore = capture();
+    let request: ArcjetRequestDetails | undefined;
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [
+        [
+          {
+            mode: "LIVE",
+            priority: 1,
+            async protect(_context, details) {
+              request = details;
+              return new ArcjetRuleResult({
+                conclusion: "ALLOW",
+                fingerprint: "",
+                reason: new ArcjetReason(),
+                ruleId: "",
+                state: "RUN",
+                ttl: 0,
+              });
+            },
+            validate() {},
+            version: 0,
+            type: "",
+          },
+        ],
+      ],
+    });
+    const { server, url } = await createSimpleServer({
+      decide(request) {
+        return arcjet.protect(request, {
+          correlationId: "wf_ip_src",
+          ipSrc: " application-owned:not-an-ip ",
+          metadata: { integration: "custom-ip" },
+        });
+      },
+    });
+
+    await fetch(url, { headers: { "x-forwarded-for": "185.199.108.1" } });
+    assert.equal(request?.ip, " application-owned:not-an-ip ");
+    assert.equal(request?.correlationId, "wf_ip_src");
+    assert.deepEqual(request?.extra, {});
+    assert.deepEqual(request?.metadata, { integration: "custom-ip" });
+
+    await arcjet.protect({ headers: { "x-forwarded-for": "185.199.108.1" } }, { ipSrc: "" });
+    await server.close();
+    restore();
+
+    assert.equal(request?.ip, "185.199.108.1");
+    assert.deepEqual(request?.extra, {});
+  });
+
   await t.test("should prefer `x-arcjet-ip` in development", async function () {
     const restore = capture();
 

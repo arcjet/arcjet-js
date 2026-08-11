@@ -196,7 +196,13 @@ export interface ArcjetAstro<Props extends PlainObject> {
    */
   protect(
     request: Request,
-    ...props: MaybeProperties<Props & { metadata?: ArcjetMetadata }>
+    ...props: MaybeProperties<
+      Props & {
+        /** Application-provided client IP address, used instead of automatic detection. */
+        ipSrc?: string;
+        metadata?: ArcjetMetadata;
+      }
+    >
   ): Promise<ArcjetDecision>;
 
   /**
@@ -252,9 +258,10 @@ export function createArcjetClient<
   function toArcjetRequest<Props extends PlainObject>(
     request: Request,
     props: Props,
+    ipSrc?: string,
   ): ArcjetRequest<Props> {
-    const clientAddress = Reflect.get(request, ipSymbol);
-    if (!clientAddress) {
+    const clientAddress = ipSrc ? undefined : Reflect.get(request, ipSymbol);
+    if (!ipSrc && !clientAddress) {
       throw new Error("`protect()` cannot be used in prerendered pages");
     }
 
@@ -266,7 +273,9 @@ export function createArcjetClient<
     const url = new URL(request.url);
     const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
     let ip =
-      xArcjetIp || findIp({ ip: clientAddress, headers }, { platform: platform(env), proxies });
+      ipSrc ||
+      xArcjetIp ||
+      findIp({ ip: clientAddress, headers }, { platform: platform(env), proxies });
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
@@ -301,8 +310,9 @@ export function createArcjetClient<
         return withClient(client);
       },
       async protect(request, props?) {
+        const { ipSrc, metadata, ...properties } = props ?? {};
         // Cast of `{}` because here we switch from `undefined` to `Properties`.
-        const req = toArcjetRequest(request, props || ({} as Properties));
+        const req = toArcjetRequest(request, properties as Properties, ipSrc);
 
         const getBody = async () => {
           const clonedRequest = request.clone();
@@ -327,7 +337,7 @@ export function createArcjetClient<
           return readBodyWeb(clonedRequest.body, { expectedLength });
         };
 
-        return aj.protect({ getBody }, req);
+        return aj.protect({ getBody }, { ...req, metadata });
       },
     };
 
