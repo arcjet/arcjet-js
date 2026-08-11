@@ -112,7 +112,14 @@ export interface ArcjetReactRouter<Properties extends Record<PropertyKey, unknow
    */
   protect(
     details: ArcjetReactRouterRequest,
-    ...rest: MaybeProperties<Properties & { correlationId?: string; metadata?: ArcjetMetadata }>
+    ...rest: MaybeProperties<
+      Properties & {
+        correlationId?: string;
+        /** Application-provided client IP address, used instead of automatic detection. */
+        ipSrc?: string;
+        metadata?: ArcjetMetadata;
+      }
+    >
   ): Promise<ArcjetDecision>;
 
   /**
@@ -222,12 +229,13 @@ export default function arcjet<
         // `correlationId` and `metadata` are request-independent options, not rule
         // props, so pull them out before building the request from the rule
         // properties.
-        const { correlationId, metadata, ...ruleProps } = properties ?? {};
+        const { correlationId, ipSrc, metadata, ...ruleProps } = properties ?? {};
         const request = toArcjetRequest(
           state,
           details,
           // Cast of `{}` because here we switch from `undefined` to `Properties`.
           ruleProps as Properties,
+          ipSrc,
         );
 
         return baseClient.protect(context, { ...request, correlationId, metadata });
@@ -319,14 +327,16 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   state: State,
   details: ArcjetReactRouterRequest,
   properties: Properties,
+  ipSrc?: string,
 ): ArcjetRequest<Properties> {
   const headers = new ArcjetHeaders(details.request.headers);
-  let ip: string | undefined;
+  let ip: string | undefined = ipSrc || undefined;
 
   // Get the IP from non-middleware context (no `future.v8_middleware` flag).
   // Users *themselves* must provide this `ip` field if they use a particular
   // adapter.
   if (
+    !ip &&
     details.context &&
     typeof details.context === "object" &&
     "ip" in details.context &&
@@ -337,7 +347,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
 
   const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
 
-  if (xArcjetIp) {
+  if (!ip && xArcjetIp) {
     ip = xArcjetIp;
   }
 

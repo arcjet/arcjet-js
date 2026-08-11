@@ -164,7 +164,14 @@ export interface ArcjetFastify<Props> {
    */
   protect(
     request: ArcjetFastifyRequest,
-    ...properties: MaybeProperties<Props & { correlationId?: string; metadata?: ArcjetMetadata }>
+    ...properties: MaybeProperties<
+      Props & {
+        correlationId?: string;
+        /** Application-provided client IP address, used instead of automatic detection. */
+        ipSrc?: string;
+        metadata?: ArcjetMetadata;
+      }
+    >
   ): Promise<ArcjetDecision>;
 
   /**
@@ -248,13 +255,14 @@ export default function arcjet<
         // `correlationId` and `metadata` are request-independent options, not rule
         // props, so pull them out before building the request from the rule
         // properties.
-        const { correlationId, metadata, ...ruleProps } = properties ?? {};
+        const { correlationId, ipSrc, metadata, ...ruleProps } = properties ?? {};
         const arcjetRequest = toArcjetRequest(
           fastifyRequest,
           log,
           proxies,
           // Cast of `{}` because here we switch from `undefined` to `Properties`.
           ruleProps as Properties,
+          ipSrc,
         );
 
         return arcjetCore.protect({ getBody }, { ...arcjetRequest, correlationId, metadata });
@@ -303,6 +311,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   log: ArcjetLogger,
   proxies: ReadonlyArray<Cidr | string | ProxyService> | undefined,
   properties: Properties,
+  ipSrc?: string,
 ): ArcjetRequest<Properties> {
   const requestHeaders = request.headers || {};
   // Extract cookies from original headers.
@@ -315,6 +324,7 @@ function toArcjetRequest<Properties extends PlainObject>(
 
   const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
   let ip =
+    ipSrc ||
     xArcjetIp ||
     findIp({ headers, socket: request.socket }, { platform: platform(process.env), proxies });
 

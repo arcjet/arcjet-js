@@ -383,6 +383,27 @@ Objects with a `toJSON()` method, including `Date`, are serialized by their
 `toJSON()` result. The Python SDK has no equivalent protocol and drops such values
 with a warning, so convert explicitly if both SDKs must agree on a value.
 
+## Overriding the client IP
+
+All framework adapters accept an application-owned `ipSrc` override:
+
+```ts
+const decision = await aj.protect(request, {
+  ipSrc: "185.191.171.15",
+});
+```
+
+> [!WARNING]
+> `ipSrc` is a dangerous override. Arcjet trusts and forwards the value without
+> validating it. You must verify that it is a valid client IP from a trusted
+> source. Passing a client-controlled header directly can let an attacker evade
+> IP-based security controls and rate limits.
+
+A non-empty `ipSrc` takes precedence over framework, platform, header, socket,
+and development fallback IP detection and is forwarded unchanged. Arcjet does
+not require it to be publicly routable. An empty string is not an override and
+preserves automatic detection.
+
 ## Inspecting decisions
 
 The `decision` object returned by `aj.protect()` provides information about
