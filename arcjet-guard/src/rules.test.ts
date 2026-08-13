@@ -6,6 +6,7 @@ import {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  moderateContent,
   experimental_moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
@@ -236,22 +237,22 @@ describe("detectPromptInjection", () => {
   });
 });
 
-describe("experimental_moderateContent", () => {
+describe("moderateContent", () => {
   test("returns a callable with type discriminant", () => {
-    const rule = experimental_moderateContent();
+    const rule = moderateContent();
 
     assert.equal(rule.type, "MODERATE_CONTENT");
     assert.equal(typeof rule, "function");
   });
 
   test("default config is empty", () => {
-    const rule = experimental_moderateContent();
+    const rule = moderateContent();
 
     assert.deepEqual(rule.config, {});
   });
 
   test("normalizes a bare string to the input object", () => {
-    const rule = experimental_moderateContent();
+    const rule = moderateContent();
     const input = rule("some text");
 
     assert.equal(input.type, "MODERATE_CONTENT");
@@ -259,14 +260,14 @@ describe("experimental_moderateContent", () => {
   });
 
   test("preserves mode in config", () => {
-    const rule = experimental_moderateContent({ mode: "DRY_RUN" });
+    const rule = moderateContent({ mode: "DRY_RUN" });
     const input = rule("text");
 
     assert.equal(input.config.mode, "DRY_RUN");
   });
 
   test("attaches call-time metadata to the input", () => {
-    const rule = experimental_moderateContent();
+    const rule = moderateContent();
     const input = rule({
       inputText: "text",
       metadata: { expectedResponse: "pass" },
@@ -276,10 +277,15 @@ describe("experimental_moderateContent", () => {
   });
 
   test("a bare string input carries no metadata", () => {
-    const rule = experimental_moderateContent();
+    const rule = moderateContent();
     const input = rule("text");
 
     assert.equal("metadata" in input.input, false);
+  });
+
+  test("experimental_moderateContent is a deprecated alias of moderateContent", () => {
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated alias
+    assert.equal(experimental_moderateContent, moderateContent);
   });
 });
 
@@ -772,7 +778,7 @@ describe("errorResult() and the error/non-error split", () => {
       fixedWindow({ maxRequests: 100, windowSeconds: 60 })({ key: "u" }),
       slidingWindow({ maxRequests: 100, intervalSeconds: 60 })({ key: "u" }),
       detectPromptInjection()("text"),
-      experimental_moderateContent()("text"),
+      moderateContent()("text"),
       localDetectSensitiveInfo()("text"),
       defineCustomRule({ evaluate: () => ({ conclusion: "ALLOW" as const }) })({
         data: {},

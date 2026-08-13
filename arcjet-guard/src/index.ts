@@ -82,12 +82,7 @@ import {
   type DiagnosticHandler,
   type DiagnosticLogger,
 } from "./diagnostics.ts";
-import type {
-  CaptureOptions,
-  Decision,
-  GuardOptions,
-  SensitiveInfoBackend,
-} from "./types.ts";
+import type { CaptureOptions, Decision, GuardOptions, SensitiveInfoBackend } from "./types.ts";
 // The type of `LaunchOptions.logger`, so a consumer can name what they have
 // to implement. `ArcjetDiagnostic` is deliberately not exported: it is the
 // internal handler payload and appears in no public signature — the logger
@@ -143,6 +138,8 @@ export type {
   SlidingWindowInput,
   DetectPromptInjectionConfig,
   DetectPromptInjectionInput,
+  ModerateContentConfig,
+  ModerateContentInput,
   ExperimentalModerateContentConfig,
   ExperimentalModerateContentInput,
   LocalDetectSensitiveInfoConfig,
@@ -167,10 +164,12 @@ export {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
-  experimental_moderateContent,
+  moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
 } from "./rules.ts";
+// oxlint-disable-next-line typescript/no-deprecated -- public deprecated alias
+export { experimental_moderateContent } from "./rules.ts";
 
 // Optional registration, and the free calls it enables. Nothing here takes
 // effect until an application calls `registerArcjet()` — `launchArcjet()`

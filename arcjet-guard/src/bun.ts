@@ -76,6 +76,7 @@ export {
   type RuleResultFixedWindow,
   type RuleResultSlidingWindow,
   type RuleResultPromptInjection,
+  type RuleResultModerateContent,
   type RuleResultSensitiveInfo,
   type RuleResultCustom,
   type RuleResultNotRun,
@@ -107,6 +108,10 @@ export {
   type SlidingWindowConfig,
   type SlidingWindowInput,
   type DetectPromptInjectionConfig,
+  type ModerateContentConfig,
+  type ModerateContentInput,
+  type ExperimentalModerateContentConfig,
+  type ExperimentalModerateContentInput,
   type LocalDetectSensitiveInfoConfig,
   type SensitiveInfoEntityType,
   type SensitiveInfoBackend,
@@ -121,6 +126,7 @@ export {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
   policyInput,
@@ -138,6 +144,8 @@ export {
   // Internal
   _launchWithTransportFactory,
 } from "./index.ts";
+// oxlint-disable-next-line typescript/no-deprecated -- public deprecated alias
+export { experimental_moderateContent } from "./index.ts";
 
 import { _launchWithTransportFactory } from "./index.ts";
 import type { LaunchOptions, ArcjetGuard } from "./index.ts";

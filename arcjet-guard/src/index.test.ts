@@ -13,6 +13,7 @@ import {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  moderateContent,
   experimental_moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
@@ -63,9 +64,37 @@ describe("re-exports", () => {
     assert.equal(typeof fixedWindow, "function");
     assert.equal(typeof slidingWindow, "function");
     assert.equal(typeof detectPromptInjection, "function");
+    assert.equal(typeof moderateContent, "function");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated alias
     assert.equal(typeof experimental_moderateContent, "function");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated alias
+    assert.equal(experimental_moderateContent, moderateContent);
     assert.equal(typeof localDetectSensitiveInfo, "function");
     assert.equal(typeof defineCustomRule, "function");
+  });
+
+  test("rule factories are exported from every entrypoint", () => {
+    // bun previously omitted experimental_moderateContent; GA must be on all
+    // runtime conditions of the "." export.
+    for (const [specifier, entrypoint] of entrypoints) {
+      for (const name of [
+        "tokenBucket",
+        "fixedWindow",
+        "slidingWindow",
+        "detectPromptInjection",
+        "moderateContent",
+        "experimental_moderateContent",
+        "localDetectSensitiveInfo",
+        "defineCustomRule",
+      ]) {
+        assert.equal(typeof entrypoint[name], "function", `${specifier} must export ${name}`);
+      }
+      assert.equal(
+        entrypoint["experimental_moderateContent"],
+        entrypoint.moderateContent,
+        `${specifier} experimental_moderateContent must alias moderateContent`,
+      );
+    }
   });
 
   test("launchArcjetWithTransport is exported", () => {

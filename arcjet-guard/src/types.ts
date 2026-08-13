@@ -294,7 +294,8 @@ export type RuleResultPromptInjection = {
 /**
  * Result from a content moderation evaluation.
  *
- * Experimental — see {@link experimental_moderateContent}.
+ * See {@link moderateContent}. The public result shape is `detected` plus
+ * optional {@link Billing}; per-category scores are not part of this type.
  */
 export type RuleResultModerateContent = {
   /** Whether the request was allowed or denied by this rule. */
@@ -990,9 +991,9 @@ export interface DetectPromptInjectionConfig {
 /**
  * Content moderation config.
  *
- * Experimental — see {@link experimental_moderateContent}.
+ * See {@link moderateContent}.
  */
-export interface ExperimentalModerateContentConfig {
+export interface ModerateContentConfig {
   /**
    * Evaluation mode. `"LIVE"` enforces the rule; `"DRY_RUN"` evaluates
    * without blocking.
@@ -1023,6 +1024,11 @@ export interface ExperimentalModerateContentConfig {
 }
 
 /**
+ * Alias of {@link ModerateContentConfig}.
+ */
+export type ExperimentalModerateContentConfig = ModerateContentConfig;
+
+/**
  * Prompt injection detection input.
  *
  * Bind it by passing the object to the configured rule. A bare string is
@@ -1051,12 +1057,12 @@ export interface DetectPromptInjectionInput {
 }
 
 /**
- * Content moderation input (experimental).
+ * Content moderation input.
  *
  * Bind it by passing the object to the configured rule. A bare string is
  * accepted as shorthand for `{ inputText }`.
  */
-export interface ExperimentalModerateContentInput {
+export interface ModerateContentInput {
   /** The text to moderate. */
   inputText: string;
   /**
@@ -1077,6 +1083,11 @@ export interface ExperimentalModerateContentInput {
    */
   metadata?: ArcjetMetadata;
 }
+
+/**
+ * Alias of {@link ModerateContentInput}.
+ */
+export type ExperimentalModerateContentInput = ModerateContentInput;
 
 /**
  * Sensitive info detection input.
@@ -1489,13 +1500,13 @@ export type RuleWithConfigPromptInjection = {
 /**
  * A configured content moderation rule.
  *
- * Experimental — see {@link experimental_moderateContent}.
+ * See {@link moderateContent}.
  */
 export type RuleWithConfigModerateContent = {
   /** Discriminant — always `"MODERATE_CONTENT"`. */
   readonly type: "MODERATE_CONTENT";
   /** The content moderation configuration for this rule instance. */
-  readonly config: ExperimentalModerateContentConfig;
+  readonly config: ModerateContentConfig;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string };
   /**
@@ -1503,7 +1514,7 @@ export type RuleWithConfigModerateContent = {
    * `RuleWithInputModerateContent`. A bare string is shorthand for
    * `{ inputText }`; pass an object to also attach per-request metadata.
    */
-  (input: string | ExperimentalModerateContentInput): RuleWithInputModerateContent;
+  (input: string | ModerateContentInput): RuleWithInputModerateContent;
   /** Extract all content moderation results from a decision. */
   results(decision: Decision): RuleResultModerateContent[];
   /** Return the first content moderation result regardless of conclusion, or `null` if none. */
@@ -1682,15 +1693,15 @@ export type RuleWithInputPromptInjection = {
 /**
  * A content moderation rule with bound input.
  *
- * Experimental — see {@link experimental_moderateContent}.
+ * See {@link moderateContent}.
  */
 export type RuleWithInputModerateContent = {
   /** Discriminant — always `"MODERATE_CONTENT"`. */
   readonly type: "MODERATE_CONTENT";
   /** The content moderation configuration for this rule instance. */
-  readonly config: ExperimentalModerateContentConfig;
+  readonly config: ModerateContentConfig;
   /** The bound content moderation input. */
-  readonly input: ExperimentalModerateContentInput;
+  readonly input: ModerateContentInput;
   /** @internal */
   readonly [symbolArcjetInternal]: { readonly configId: string; readonly inputId: string };
   /** Find this submission's results as an array (empty or single-element). */

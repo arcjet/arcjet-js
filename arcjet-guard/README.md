@@ -65,6 +65,7 @@ non-HTTP contexts. Here's what's available where:
 | ------------------------------- | :----------: | :-------------: |
 | Rate Limiting                   |      ✅      |       ✅        |
 | Prompt Injection Detection      |      ✅      |       ✅        |
+| Content Moderation              |      —       |       ✅        |
 | Sensitive Information Detection |      ✅      |       ✅        |
 | Custom Rules                    |      —       |       ✅        |
 | Bot Protection                  |      ✅      |        —        |
@@ -77,6 +78,8 @@ non-HTTP contexts. Here's what's available where:
   window algorithms; model AI token budgets per user.
 - 🛡️ [Prompt Injection Detection](#prompt-injection-detection) — detect and
   block prompt injection attacks before they reach your LLM.
+- 🧹 [Content Moderation](#content-moderation) — detect and block harmful
+  content in user text, tool results, or model outputs.
 - 🕵️ [Sensitive Information Detection](#sensitive-information-detection) —
   block PII, credit cards, and custom patterns from entering your AI pipeline.
 - 🔧 [Custom Rules](#custom-rules) — define your own local evaluation logic
@@ -264,6 +267,34 @@ const result = piRule.result(decision);
 console.log(result?.billing?.unit, result?.billing?.count);
 
 // Forward to your AI model...
+```
+
+## Content moderation
+
+Detect and block harmful content in user-supplied text before it is stored,
+displayed, or forwarded to another service. Also useful for scanning tool
+call results or model outputs.
+
+```ts
+import { launchArcjet, moderateContent } from "@arcjet/guard";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const moderate = moderateContent();
+
+const decision = await arcjet.guard({
+  label: "tools.chat",
+  rules: [moderate(userMessage)],
+});
+
+if (decision.conclusion === "DENY" && decision.reason === "MODERATE_CONTENT") {
+  throw new Error("Harmful content detected — please rephrase your message");
+}
+
+const result = moderate.result(decision);
+// `detected` is true when harmful content was found. Billing is undefined
+// when the service does not report usage. Content moderation uses text_units.
+console.log(result?.detected, result?.billing?.unit, result?.billing?.count);
 ```
 
 ## Sensitive information detection

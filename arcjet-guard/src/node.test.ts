@@ -8,6 +8,7 @@ import {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  moderateContent,
   experimental_moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
@@ -29,7 +30,11 @@ describe("node entrypoint", () => {
     assert.equal(typeof fixedWindow, "function");
     assert.equal(typeof slidingWindow, "function");
     assert.equal(typeof detectPromptInjection, "function");
+    assert.equal(typeof moderateContent, "function");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated alias
     assert.equal(typeof experimental_moderateContent, "function");
+    // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated alias
+    assert.equal(experimental_moderateContent, moderateContent);
     assert.equal(typeof localDetectSensitiveInfo, "function");
     assert.equal(typeof defineCustomRule, "function");
   });

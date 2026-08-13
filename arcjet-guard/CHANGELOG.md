@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+
+### 🚀 New Features
+
+* **guard:** graduate moderateContent from experimental
+
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/guard-v1.10.0) (2026-08-11)
 
 

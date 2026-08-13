@@ -37,7 +37,7 @@ import {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
-  experimental_moderateContent,
+  moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
 } from "./rules.ts";
@@ -112,6 +112,10 @@ describe("reasonFromProto", () => {
 
   test("PROMPT_INJECTION maps to 'PROMPT_INJECTION'", () => {
     assert.equal(reasonFromProto(GuardReason.PROMPT_INJECTION), "PROMPT_INJECTION");
+  });
+
+  test("MODERATE_CONTENT maps to 'MODERATE_CONTENT'", () => {
+    assert.equal(reasonFromProto(GuardReason.MODERATE_CONTENT), "MODERATE_CONTENT");
   });
 
   test("SENSITIVE_INFO maps to 'SENSITIVE_INFO'", () => {
@@ -268,6 +272,32 @@ describe("resultFromProto", () => {
     if (result.type === "MODERATE_CONTENT") {
       assert.equal(result.detected, true);
       assert.deepEqual(result.billing, { unit: "text_units", count: 456n });
+      assert.equal("scores" in result, false);
+    }
+  });
+
+  test("moderateContent ALLOW result freezes detected + billing", () => {
+    const pr = create(GuardRuleResultSchema, {
+      resultId: "gres_1",
+      type: GuardRuleType.MODERATE_CONTENT,
+      result: {
+        case: "moderateContent",
+        value: create(ResultModerateContentSchema, {
+          conclusion: GuardConclusion.ALLOW,
+          detected: false,
+          billing: create(BillingSchema, { unit: "text_units", count: 12n }),
+        }),
+      },
+    });
+
+    const result = resultFromProto(pr);
+    assert.equal(result.type, "MODERATE_CONTENT");
+    assert.equal(result.reason, "MODERATE_CONTENT");
+    assert.equal(result.conclusion, "ALLOW");
+    if (result.type === "MODERATE_CONTENT") {
+      assert.equal(result.detected, false);
+      assert.deepEqual(result.billing, { unit: "text_units", count: 12n });
+      assert.equal("scores" in result, false);
     }
   });
 
@@ -559,7 +589,7 @@ describe("ruleToProto", () => {
   });
 
   test("converts moderate content rule to proto", async () => {
-    const rule = experimental_moderateContent();
+    const rule = moderateContent();
     const input = rule("please moderate this");
     const proto = await ruleToProto(input);
 
@@ -570,7 +600,7 @@ describe("ruleToProto", () => {
   });
 
   test("merges moderate content config and call-time metadata into proto", async () => {
-    const rule = experimental_moderateContent({ metadata: { env: "test", expectedResponse: "x" } });
+    const rule = moderateContent({ metadata: { env: "test", expectedResponse: "x" } });
     const input = rule({
       inputText: "please moderate this",
       metadata: { expectedResponse: "pass" },
