@@ -291,6 +291,7 @@ export const EXPECTED_ROOT_KEYS = [
   ".",
   "./bun",
   "./fetch",
+  "./mastra/v1",
   "./node",
   // The in-memory client for application tests. Deliberately a single entry
   // rather than a runtime-conditional one: it has no transport, so there is

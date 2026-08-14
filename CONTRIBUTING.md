@@ -35,8 +35,9 @@ New adapters are added to the root of this monorepo in the format of
 For example, `arcjet-sveltekit` is the directory for the `@arcjet/sveltekit`
 package.
 
-Each new adapter should come with an example application in this repository. See
-[Examples](#examples) for guidance on creating an example.
+Each new adapter should come with an example application in
+[`arcjet/examples`](https://github.com/arcjet/examples), not in this
+repository. See [Examples](#examples).
 
 New adapters (and any other new package) must also be wired into our release and
 publish pipeline before they can ship. See [Adding a new
@@ -59,6 +60,9 @@ change them:
   filesystem-first, with one `defineTool` per file and no author-controlled call
   site, so its enforcement points are a channel-boundary screen and a
   connection-level approval gate that `vercel-ai/v7` has no equivalent of.
+  `mastra/v1` is the same idea on a different SDK: Mastra already runs
+  channels through `processInput` and treats `requireApproval` as human HITL,
+  so its helpers are `guardTool`, `guardProcessor`, and `guardHooks`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would
@@ -114,15 +118,15 @@ is picked up with its structure preserved.
 
 ## Examples
 
-Examples should be scaffolded using the scaffolding tool recommended by the
-framework. Generally, we choose all defaults for the example applications in
-this repository, but that is not a strict rule.
+Do not add application examples under `examples/` in this repository. They
+live in [`arcjet/examples`](https://github.com/arcjet/examples) (moved in
+[#6217](https://github.com/arcjet/arcjet-js/pull/6217); remaining examples
+are landing in [arcjet/examples#193](https://github.com/arcjet/examples/pull/193)).
+Agents: see the root [AGENTS.md](./AGENTS.md) for the same rule.
 
-When adding an example, it needs to be added to the
-[dependabot.yml](./.github/dependabot.yml) file and the
-[reusable-examples.yml](./.github/workflows/reusable-examples.yml) workflow. If
-the example does not have a build process to run in CI, it can be excluded from
-the workflow file.
+Scaffold new examples in that repo with the framework's recommended tool,
+following its CONTRIBUTING.md and the canonical example pattern. Do not
+restore `.github/workflows/reusable-examples.yml` here.
 
 ## Publish
 

@@ -108,6 +108,21 @@ jobs:
           node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
+      # The mastra namespace imports @mastra/core for types only. A static scan
+      # proves the imports are written `import type`; this proves the
+      # consequence, catching a build step that re-emits one as a value import.
+      #
+      # Runs before the eve-absent step because that one deletes a different
+      # optional peer. Typecheck legitimately fails without @mastra/core.
+      - name: Unit tests with mastra absent
+        run: |
+          rm -rf node_modules/@mastra/core arcjet-guard/node_modules/@mastra/core
+          node -e "try { require.resolve('@mastra/core', { paths: ['arcjet-guard/src/mastra/v1'] }); console.error('mastra still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
+          count=$(find arcjet-guard/src/mastra -name '*.test.ts' | wc -l)
+          test "$count" -ge 5 || { echo "only $count mastra test files matched; the glob has gone stale" >&2; exit 1; }
+          node --test 'arcjet-guard/src/mastra/**/*.test.ts'
+        working-directory: ${{ github.workspace }}
+
       # The vercel-eve namespace imports eve for types only, which is what lets
       # guard support Node 22 at all — eve declares engines.node ">=24". A static
       # scan proves the imports are written `import type`; this proves the

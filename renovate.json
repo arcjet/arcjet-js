@@ -53,6 +53,13 @@
       "matchPackageNames": ["eve"],
       "automerge": false,
       "allowedVersions": "<1"
+    },
+    {
+      "description": "Never automerge @mastra/core majors. `@arcjet/guard/mastra/v1` types against Processor, createTool, ToolHooks, and RequestContext reserved keys. A green typecheck is necessary but not sufficient. Keep the range on 1.x; mastra/v2 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@mastra/core"],
+      "automerge": false,
+      "allowedVersions": "<2"
     }
   ],
   "lockFileMaintenance": {
