@@ -120,7 +120,11 @@ export const lookupOrder = guardTool(
   }),
   {
     action: "order.looked-up",
-    rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 }), detectPii(input.note)],
+    rules: (input) => [
+      lookupLimit({ key: input.orderId, requested: 1 }),
+      // Right: factory already bound above; pass free text, not orderId.
+      detectPii(input.note),
+    ],
   },
 );
 ```

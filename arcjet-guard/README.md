@@ -559,7 +559,7 @@ before the event exists.
 <details>
 <summary>Without <code>using</code> — Node.js 22, or no TypeScript compile step</summary>
 
-The `using` *syntax* needs Node.js 24 to run natively, or compilation through
+The `using` _syntax_ needs Node.js 24 to run natively, or compilation through
 TypeScript. Node.js 22 defines `Symbol.dispose` but cannot parse `using`. Call
 `unregister()` from a `finally` instead:
 
@@ -734,7 +734,12 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   }
   const decision = await getArcjet().guard({
     label: "tools.chat",
-    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+    rules: [
+      tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({
+        key: userId,
+        requested: 1,
+      }),
+    ],
   });
   ```
 
@@ -744,7 +749,12 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
   const decision = await arcjet.guard({
     label: "tools.chat",
-    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+    rules: [
+      tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({
+        key: userId,
+        requested: 1,
+      }),
+    ],
   });
   ```
 
@@ -802,7 +812,10 @@ const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 const decision = await arcjet.guard({
   label: "tools.chat",
   rules: [
-    tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 }),
+    tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({
+      key: userId,
+      requested: 1,
+    }),
     detectPromptInjection()(userMessage),
   ],
 });
@@ -870,10 +883,7 @@ helper. Currently available:
 
   ```ts
   import { launchArcjet, tokenBucket } from "@arcjet/guard";
-  import {
-    guardApproval,
-    arcjetHooks,
-  } from "@arcjet/guard/vercel-eve/v0";
+  import { guardApproval, arcjetHooks } from "@arcjet/guard/vercel-eve/v0";
   import { defineOpenAPIConnection } from "eve/connections";
   import { defineHook } from "eve/hooks";
 
@@ -887,7 +897,7 @@ helper. Currently available:
   // Gate a connection's operations
   export const ordersConnection = defineOpenAPIConnection({
     description: "Orders API",
-    spec: { /* ... */ },
+    spec: {/* ... */},
     approval: guardApproval(arcjet, {
       action: "orders-api.read",
       onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
@@ -991,11 +1001,25 @@ importing only core guards are not forced to install unneeded packages:
 `--strict-peer-dependencies` enabled. If `pnpm install` fails with missing
 peers, either install them explicitly or relax strict peer checking:
 
+Install only the peer for the integration you use — not a combined set.
+Users pick one of these; Eve and Mastra are not installed together:
+
 ```sh
-# Install only the peer for the integration you use:
-pnpm install ai @ai-sdk/provider-utils   # @arcjet/guard/vercel-ai/v7
-pnpm install eve                         # @arcjet/guard/vercel-eve/v0 (Node.js >= 24)
-pnpm install @mastra/core                # @arcjet/guard/mastra/v1
+# @arcjet/guard/vercel-ai/v7
+pnpm install ai @ai-sdk/provider-utils
+```
+
+```sh
+# @arcjet/guard/vercel-eve/v0 (Node.js >= 24)
+pnpm install eve
+```
+
+```sh
+# @arcjet/guard/mastra/v1
+pnpm install @mastra/core
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1022,12 +1046,12 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 > actions that are assumed to be sensitive. The core client reports degraded
 > evaluation via `hasFailedOpen()`; the helpers decide to block on it.
 
-| API                                  | Default on Arcjet outage                    | How to flip                        |
-| ------------------------------------ | ------------------------------------------- | ---------------------------------- |
-| `guard()` (core)                     | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
-| `guardTool` / `guardAction`          | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Eve `guardInbound` / `guardApproval` | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Mastra `guardProcessor` / `guardHooks` | Deny (fail closed)                        | `onGuardError: "allow"`            |
+| API                                    | Default on Arcjet outage                    | How to flip                        |
+| -------------------------------------- | ------------------------------------------- | ---------------------------------- |
+| `guard()` (core)                       | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
+| `guardTool` / `guardAction`            | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Eve `guardInbound` / `guardApproval`   | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Mastra `guardProcessor` / `guardHooks` | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1070,8 +1094,8 @@ what happens:
     human cost of rejecting a legitimate message exceeds the security cost.
 
 The layering resolves a potential confusion: the core `@arcjet/guard` client
-still fails open by construction and *reports* it via `hasFailedOpen()`; the
-agent-level helpers *decide* to block on it.
+still fails open by construction and _reports_ it via `hasFailedOpen()`; the
+agent-level helpers _decide_ to block on it.
 
 ### The explicit-call alternative
 
@@ -1203,8 +1227,7 @@ const sendEmail = guardTool(
 const tools = { sendEmail };
 const result = await generateText({
   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
-  instructions:
-    "If a tool is denied by Arcjet, explain to the user instead of retrying.",
+  instructions: "If a tool is denied by Arcjet, explain to the user instead of retrying.",
   tools,
   toolsContext: aiToolsContext(ctx, tools),
   prompt: userMessage, // User input or conversation context
@@ -1245,11 +1268,11 @@ The `action` is the guard label: use `resource.verb` past tense (e.g. `order.loo
 
 ### Which helper?
 
-| Scenario | Helper | Guard | Model Sees |
-|----------|--------|-------|-----------|
-| LLM decided to call a tool | `guardTool()` | Always | `ArcjetDenialResult` on DENY |
-| Your app invokes an action | `guardAction()` | Always | Throws `ArcjetDeniedError` on DENY |
-| Record that something happened | `captureAction()` | No | — (fire-and-forget) |
+| Scenario                       | Helper            | Guard  | Model Sees                         |
+| ------------------------------ | ----------------- | ------ | ---------------------------------- |
+| LLM decided to call a tool     | `guardTool()`     | Always | `ArcjetDenialResult` on DENY       |
+| Your app invokes an action     | `guardAction()`   | Always | Throws `ArcjetDeniedError` on DENY |
+| Record that something happened | `captureAction()` | No     | — (fire-and-forget)                |
 
 `guardTool` and `guardAction` call `guard()` on every invocation, including when
 `rules` is omitted or resolves to `[]`. Submitting no rules is not the same as
@@ -1360,15 +1383,15 @@ When a guard check denies an action, `guardAction` throws `ArcjetDeniedError` ca
 
 Use `securityMetadata()` keys consistently across your app:
 
-| Key | Meaning | Example |
-|-----|---------|---------|
-| `user` | Whose authority (opaque ID, not PII) | `"user_alice"`, `"org_123"` |
-| `agent` | Type or identity of the AI actor | `"support-agent"`, `"code-reviewer"` |
-| `workflow` | Process name this request belongs to | `"support-request"`, `"pr-review"` |
-| `dataClass` | Data sensitivity level | `"public"`, `"confidential"`, `"regulated"` |
-| `destination` | Where effects are sent | `"github"`, `"slack"`, `"email"` |
-| `reversibility` | Whether the action can be undone | `"reversible"`, `"compensable"`, `"irreversible"` |
-| `resource` | What's being acted on | `"order:12345"`, `"repo:owner/name"` |
+| Key             | Meaning                              | Example                                           |
+| --------------- | ------------------------------------ | ------------------------------------------------- |
+| `user`          | Whose authority (opaque ID, not PII) | `"user_alice"`, `"org_123"`                       |
+| `agent`         | Type or identity of the AI actor     | `"support-agent"`, `"code-reviewer"`              |
+| `workflow`      | Process name this request belongs to | `"support-request"`, `"pr-review"`                |
+| `dataClass`     | Data sensitivity level               | `"public"`, `"confidential"`, `"regulated"`       |
+| `destination`   | Where effects are sent               | `"github"`, `"slack"`, `"email"`                  |
+| `reversibility` | Whether the action can be undone     | `"reversible"`, `"compensable"`, `"irreversible"` |
+| `resource`      | What's being acted on                | `"order:12345"`, `"repo:owner/name"`              |
 
 ## Example
 
@@ -1380,7 +1403,7 @@ For an example with Mastra, see [`mastra-agent`](https://github.com/arcjet/examp
 
 ## Agent skill
 
-For integration help in Claude Code or other AI coding agents, two skill files are packaged with `@arcjet/guard`:
+For integration help in Claude Code or other AI coding agents, three skill files are packaged with `@arcjet/guard`:
 
 **For Vercel AI SDK:**
 

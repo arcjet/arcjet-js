@@ -122,6 +122,7 @@ Do not add application examples under `examples/` in this repository. They
 live in [`arcjet/examples`](https://github.com/arcjet/examples) (moved in
 [#6217](https://github.com/arcjet/arcjet-js/pull/6217); remaining examples
 are landing in [arcjet/examples#193](https://github.com/arcjet/examples/pull/193)).
+Agents: see the root [AGENTS.md](./AGENTS.md) for the same rule.
 
 Scaffold new examples in that repo with the framework's recommended tool,
 following its CONTRIBUTING.md and the canonical example pattern. Do not
