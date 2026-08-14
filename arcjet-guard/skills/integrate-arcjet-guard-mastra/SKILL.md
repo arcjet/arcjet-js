@@ -98,22 +98,28 @@ const lookupLimit = tokenBucket({
   intervalSeconds: 60,
   maxTokens: 10,
 });
+// Factory then text — same shape as `detectPromptInjection()(text)`.
+// Scan free-text args (a note, reason, body), not an opaque id.
+const detectPii = localDetectSensitiveInfo();
 
 export const lookupOrder = guardTool(
   arcjet,
   createTool({
     id: "lookup-order",
     description: "Look up an order by ID",
-    inputSchema: z.object({ orderId: z.string() }),
-    async execute({ orderId }) {
-      return { orderId, status: "shipped" };
+    inputSchema: z.object({
+      orderId: z.string(),
+      note: z.string(),
+    }),
+    async execute({ orderId, note }) {
+      return { orderId, note, status: "shipped" };
     },
   }),
   {
     action: "order.looked-up",
     rules: (input) => [
       lookupLimit({ key: input.orderId, requested: 1 }),
-      localDetectSensitiveInfo()(input.orderId),
+      detectPii(input.note),
     ],
   },
 );

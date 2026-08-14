@@ -992,8 +992,11 @@ importing only core guards are not forced to install unneeded packages:
 peers, either install them explicitly or relax strict peer checking:
 
 ```sh
-pnpm install ai @ai-sdk/provider-utils eve @mastra/core
-# or
+# Install only the peer for the integration you use:
+pnpm install ai @ai-sdk/provider-utils   # @arcjet/guard/vercel-ai/v7
+pnpm install eve                         # @arcjet/guard/vercel-eve/v0 (Node.js >= 24)
+pnpm install @mastra/core                # @arcjet/guard/mastra/v1
+# or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
 
@@ -1369,11 +1372,11 @@ Use `securityMetadata()` keys consistently across your app:
 
 ## Example
 
-For a complete working example integrating `@arcjet/guard` with the Vercel AI SDK, see [examples/nextjs-ai-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/nextjs-ai-agent), which demonstrates wrapping agent tools with guard checks, enforcing rules on application-invoked actions, and emitting audit events joined by correlation ID.
+For a complete working example integrating `@arcjet/guard` with the Vercel AI SDK, see [`nextjs-ai-agent`](https://github.com/arcjet/examples/tree/main/examples/nextjs-ai-agent) in [`arcjet/examples`](https://github.com/arcjet/examples), which demonstrates wrapping agent tools with guard checks, enforcing rules on application-invoked actions, and emitting audit events joined by correlation ID.
 
-For an example with Vercel Eve, see [examples/eve-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/eve-agent), which shows how to protect tools, connections, and channels with Arcjet guards, and record agent lifecycle events with hooks.
+For an example with Vercel Eve, see [`eve-agent`](https://github.com/arcjet/examples/tree/main/examples/eve-agent), which shows how to protect tools, connections, and channels with Arcjet guards, and record agent lifecycle events with hooks.
 
-For an example with Mastra, see [examples/mastra-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/mastra-agent), which shows inbound prompt-injection screening, guarded tools (deny, PII on args, rate limit, fail-closed), hooks for unwrapped tools, and thread/resource correlation.
+For an example with Mastra, see [`mastra-agent`](https://github.com/arcjet/examples/tree/main/examples/mastra-agent), which shows inbound prompt-injection screening, guarded tools (deny, PII on args, rate limit, fail-closed), hooks for unwrapped tools, and thread/resource correlation. These Guard examples land with [arcjet/examples#193](https://github.com/arcjet/examples/pull/193).
 
 ## Agent skill
 
