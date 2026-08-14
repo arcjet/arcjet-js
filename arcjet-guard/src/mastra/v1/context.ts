@@ -82,9 +82,10 @@ function readContextValue(
   }
 }
 
-function firstValidId(
-  candidates: ReadonlyArray<{ value: unknown; label: string }>,
-): { id: string | undefined; rejected: string | undefined } {
+function firstValidId(candidates: ReadonlyArray<{ value: unknown; label: string }>): {
+  id: string | undefined;
+  rejected: string | undefined;
+} {
   let rejected: string | undefined;
   for (const candidate of candidates) {
     if (typeof candidate.value !== "string") {

@@ -59,7 +59,11 @@ test("type-only import scanner works on @mastra/core fixtures", () => {
     if (fixture.shouldHaveMastraImport === false) {
       assert.equal(mastraImports.length, 0, `${fixture.name}: should not have mastra imports`);
     } else {
-      assert.equal(mastraImports.length, 1, `${fixture.name}: should have exactly one mastra import`);
+      assert.equal(
+        mastraImports.length,
+        1,
+        `${fixture.name}: should have exactly one mastra import`,
+      );
       assert.equal(
         mastraImports[0]?.typeOnly,
         fixture.shouldBeTypeOnly ?? true,

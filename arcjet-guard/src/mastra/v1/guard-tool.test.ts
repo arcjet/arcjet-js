@@ -2,6 +2,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import type { ToolAction } from "@mastra/core/tools";
+
 import { asDenial, recorded } from "../../../test/_shared/source-scan.ts";
 import {
   decisionAllow,
@@ -11,8 +13,8 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import type { ToolAction } from "@mastra/core/tools";
-
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import type { DecisionDeny } from "../../types.ts";
 import { MASTRA_THREAD_ID_KEY } from "./context.ts";
 import type { ArcjetDenialResult } from "./denial.ts";
 import { guardTool } from "./guard-tool.ts";
@@ -26,9 +28,7 @@ function createMastraTool<TInput = unknown, TOutput = { ok: boolean }>(overrides
   const tool = {
     id: overrides?.id ?? "test-tool",
     description: "test tool",
-    execute:
-      overrides?.execute ??
-      (async () => ({ ok: true }) as TOutput),
+    execute: overrides?.execute ?? (async () => ({ ok: true }) as TOutput),
     [TOOL_MARKER]: true,
   };
   Object.defineProperty(tool, Symbol.for("mastra.hidden"), {
@@ -113,7 +113,11 @@ test("ALLOW → capture outcome is success and correlation comes from the thread
   assert.equal(guardCalls.length, 1);
   assert.equal(recorded(guardCalls[0])["correlationId"], "thread-99");
   assert.equal(captureCalls.length, 1);
-  assert.equal(recorded(captureCalls[0])["metadata"] && (recorded(captureCalls[0])["metadata"] as Record<string, unknown>)["outcome"], "success");
+  assert.equal(
+    recorded(captureCalls[0])["metadata"] &&
+      (recorded(captureCalls[0])["metadata"] as Record<string, unknown>)["outcome"],
+    "success",
+  );
 });
 
 test("DENY → execute is not called and a structured result is returned (no throw)", async () => {
@@ -202,4 +206,173 @@ test("does not mint a correlation id when Mastra provided none", async () => {
   const wrapped = guardTool(client, tool, { action: "order.looked-up" });
   await wrapped.execute!({}, {} as never);
   assert.equal("correlationId" in recorded(guardCalls[0]), false);
+});
+
+test("DENY + throwing onDeny still denies and does not throw", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let calls = 0;
+  const tool = createMastraTool({
+    execute: async () => {
+      calls += 1;
+      return { ok: true };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    onDeny: () => {
+      throw new Error("onDeny exploded");
+    },
+  });
+
+  const result = asDenial<ArcjetDenialResult>(await wrapped.execute!({}, threadContext("t")));
+  assert.equal(calls, 0);
+  assert.equal(result.arcjetDenied, true);
+  assert.equal(result.reason, "PROMPT_INJECTION");
+});
+
+test("onDeny reshape is returned and execute is not called", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let received: DecisionDeny | undefined;
+  const tool = createMastraTool({ execute: async () => ({ ok: true }) });
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    onDeny: (decision) => {
+      received = decision;
+      return { blocked: decision.reason };
+    },
+  });
+
+  const result = await wrapped.execute!({}, threadContext("t"));
+  assert.equal(received?.reason, "PROMPT_INJECTION");
+  assert.deepEqual(result, { blocked: "PROMPT_INJECTION" });
+});
+
+test("onDeny is not called on unavailable", async () => {
+  const { client } = stubClient(decisionFailOpenAllow());
+  let onDenyCalls = 0;
+  const tool = createMastraTool({ execute: async () => ({ ok: true }) });
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    onDeny: () => {
+      onDenyCalls += 1;
+      return { blocked: true };
+    },
+  });
+
+  const result = asDenial<ArcjetDenialResult>(await wrapped.execute!({}, threadContext("t")));
+  assert.equal(onDenyCalls, 0);
+  assert.equal(result.reason, "ERROR");
+});
+
+test("guard throw with default fail-closed does not execute", async () => {
+  const { client } = stubClient(new Error("transport down"));
+  let calls = 0;
+  const tool = createMastraTool({
+    execute: async () => {
+      calls += 1;
+      return { ok: true };
+    },
+  });
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  const result = asDenial<ArcjetDenialResult>(await wrapped.execute!({}, threadContext("t")));
+  assert.equal(calls, 0);
+  assert.equal(result.reason, "ERROR");
+});
+
+test("omitted rules still submit an empty guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createMastraTool({ execute: async () => ({ ok: true }) });
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  await wrapped.execute!({}, threadContext("t"));
+  assert.deepEqual(recorded(guardCalls[0])["rules"], []);
+});
+
+test("metadata callback is merged over derived context", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createMastraTool<{ id: string }, { ok: boolean }>({
+    execute: async () => ({ ok: true }),
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "thing.read",
+    metadata: (input) => ({ "app.item": input.id }),
+  });
+  await wrapped.execute!({ id: "item-9" }, threadContext("thread-meta"));
+  const metadata = recorded(recorded(guardCalls[0])["metadata"]);
+  assert.equal(metadata["app.item"], "item-9");
+  assert.equal(metadata["mastra.tool"], "test-tool");
+});
+
+test("static metadata is merged", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createMastraTool({ id: "", execute: async () => ({ ok: true }) });
+  const wrapped = guardTool(client, tool, {
+    action: "thing.read",
+    metadata: { "app.static": "yes" },
+  });
+  await wrapped.execute!({}, threadContext("t"));
+  const metadata = recorded(recorded(guardCalls[0])["metadata"]);
+  assert.equal(metadata["app.static"], "yes");
+  assert.equal("mastra.tool" in metadata, false);
+});
+
+test("rejects a second wrap (mastra or vercel-ai brand)", async () => {
+  const { client } = stubClient(decisionAllow());
+  const tool = createMastraTool();
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  assert.equal(arcjetProtectedTool in wrapped, true);
+  assert.throws(() => guardTool(client, wrapped, { action: "order.looked-up" }), /already guarded/);
+
+  const branded = createMastraTool();
+  Object.defineProperty(branded, arcjetProtectedTool, { value: true });
+  assert.throws(() => guardTool(client, branded, { action: "order.looked-up" }), /already guarded/);
+});
+
+test("execute throw is rethrown after capture", async () => {
+  const { client, captureCalls } = stubClient(decisionAllow());
+  const tool = createMastraTool({
+    execute: async () => {
+      throw new Error("tool failed");
+    },
+  });
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  await assert.rejects(async () => wrapped.execute!({}, threadContext("t")), /tool failed/);
+  assert.equal(recorded(recorded(captureCalls[0])["metadata"])["outcome"], "error");
+});
+
+test("non-object context does not mint an id", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createMastraTool({ execute: async () => ({ ok: true }) });
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  await wrapped.execute!({}, "not-context" as never);
+  assert.equal("correlationId" in recorded(guardCalls[0]), false);
+});
+
+test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+
+  try {
+    const { client } = stubClient(decisionDenyPromptInjection());
+    const tool = createMastraTool({ execute: async () => ({ ok: true }) });
+    const wrapped = guardTool(client, tool, {
+      action: "order.looked-up",
+      onDeny: () => {
+        throw new Error("onDeny exploded");
+      },
+    });
+    await wrapped.execute!({}, threadContext("t"));
+    assert.ok(warnings.length > 0);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
 });

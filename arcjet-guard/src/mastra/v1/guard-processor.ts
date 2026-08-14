@@ -1,6 +1,8 @@
 import type {
   ProcessInputArgs,
   ProcessInputResult,
+  ProcessInputStepArgs,
+  ProcessInputStepResult,
   ProcessOutputResultArgs,
   Processor,
 } from "@mastra/core/processors";
@@ -59,34 +61,58 @@ function isRequestContextLike(value: unknown): value is MastraRequestContextLike
   );
 }
 
+function textFromPart(part: unknown): string {
+  if (typeof part !== "object" || part === null) {
+    return "";
+  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- message parts are untyped Mastra content
+  const typed = part as { type?: unknown; text?: unknown };
+  if (typed.type === "text" && typeof typed.text === "string") {
+    return typed.text;
+  }
+  return "";
+}
+
+function textFromParts(parts: unknown): string {
+  if (!Array.isArray(parts)) {
+    return "";
+  }
+  let text = "";
+  for (const part of parts) {
+    text += textFromPart(part);
+  }
+  return text;
+}
+
 function messageText(message: unknown): string {
   if (typeof message !== "object" || message === null) {
     return "";
   }
-  const content = (message as { content?: unknown }).content;
-  if (typeof content === "string") {
-    return content;
-  }
-  if (typeof content !== "object" || content === null) {
-    return "";
-  }
-  const rec = content as { parts?: unknown; content?: unknown };
-  let text = "";
-  if (Array.isArray(rec.parts)) {
-    for (const part of rec.parts) {
-      if (typeof part === "object" && part !== null) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- message parts are untyped Mastra content
-        const typed = part as { type?: unknown; text?: unknown };
-        if (typed.type === "text" && typeof typed.text === "string") {
-          text += typed.text;
-        }
-      }
-    }
-  }
-  if (text === "" && typeof rec.content === "string") {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Mastra messages are structurally typed
+  const rec = message as { content?: unknown; parts?: unknown };
+  if (typeof rec.content === "string") {
     return rec.content;
   }
-  return text;
+  if (Array.isArray(rec.content)) {
+    return textFromParts(rec.content);
+  }
+  const fromTopLevel = textFromParts(rec.parts);
+  if (fromTopLevel.length > 0) {
+    return fromTopLevel;
+  }
+  if (typeof rec.content !== "object" || rec.content === null) {
+    return "";
+  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nested Mastra content envelope
+  const nested = rec.content as { parts?: unknown; content?: unknown };
+  const fromNested = textFromParts(nested.parts);
+  if (fromNested.length > 0) {
+    return fromNested;
+  }
+  if (typeof nested.content === "string") {
+    return nested.content;
+  }
+  return "";
 }
 
 function collectText(messages: unknown[], roles?: ReadonlyArray<string>): string {
@@ -107,6 +133,41 @@ function collectText(messages: unknown[], roles?: ReadonlyArray<string>): string
     }
   }
   return parts.join("\n");
+}
+
+function idsFromMessages(messages: unknown[]): {
+  threadId?: string;
+  resourceId?: string;
+} {
+  for (const message of messages) {
+    if (typeof message !== "object" || message === null) {
+      continue;
+    }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- MastraDBMessage carries optional thread/resource
+    const rec = message as { threadId?: unknown; resourceId?: unknown };
+    const threadId = typeof rec.threadId === "string" ? rec.threadId : undefined;
+    const resourceId = typeof rec.resourceId === "string" ? rec.resourceId : undefined;
+    if (threadId !== undefined || resourceId !== undefined) {
+      return {
+        ...(threadId === undefined ? {} : { threadId }),
+        ...(resourceId === undefined ? {} : { resourceId }),
+      };
+    }
+  }
+  return {};
+}
+
+/**
+ * Call Mastra's `abort()` and, if a buggy implementation returns, still deny.
+ * Returning after a DENY would fail the turn open.
+ */
+function denyTurn(
+  abort: (reason?: string, options?: { retry?: boolean }) => never,
+  reason: string,
+  options?: { retry?: boolean },
+): never {
+  abort(reason, options);
+  throw new Error("@arcjet/guard: processor abort() returned; denying the turn");
 }
 
 /**
@@ -147,6 +208,9 @@ function collectText(messages: unknown[], roles?: ReadonlyArray<string>): string
 export type GuardProcessor = Processor & {
   readonly id: string;
   processInput: (args: ProcessInputArgs) => Promise<ProcessInputResult>;
+  processInputStep: (
+    args: ProcessInputStepArgs,
+  ) => Promise<ProcessInputStepResult | ProcessInputStepArgs["messages"]>;
   processOutputResult: (
     args: ProcessOutputResultArgs,
   ) => Promise<ProcessOutputResultArgs["messages"]>;
@@ -166,7 +230,10 @@ export function guardProcessor(
     phase: "input" | "output",
     extraText?: string,
   ): Promise<void> {
-    const roles = phase === "input" ? (["user"] as const) : (["assistant"] as const);
+    // Input screens every conversation message. Restricting to `user` would
+    // let a hostile client skip the gate by spoofing `role: "assistant"`.
+    // System prompts live on `systemMessages`, not `messages`.
+    const roles = phase === "input" ? undefined : (["assistant"] as const);
     const fromMessages = collectText(messages, roles);
     const text =
       extraText !== undefined && extraText.length > 0
@@ -174,9 +241,13 @@ export function guardProcessor(
         : fromMessages;
 
     const requestCtx = isRequestContextLike(requestContext) ? requestContext : undefined;
-    const agentCtx = mastraAgentContext(
-      requestCtx === undefined ? undefined : { requestContext: requestCtx },
-    );
+    const fromMessagesIds = idsFromMessages(messages);
+    const agentCtx = mastraAgentContext({
+      ...(requestCtx === undefined ? {} : { requestContext: requestCtx }),
+      ...(fromMessagesIds.threadId === undefined && fromMessagesIds.resourceId === undefined
+        ? {}
+        : { agent: fromMessagesIds }),
+    });
 
     const input: GuardProcessorInput = {
       text,
@@ -202,8 +273,8 @@ export function guardProcessor(
         /* allow the turn to continue */
       },
       onDeny: (decision) =>
-        abort(deniedReason(decision), { retry: decision.reason === "RATE_LIMIT" }),
-      onUnavailable: () => abort(unavailableReason()),
+        denyTurn(abort, deniedReason(decision), { retry: decision.reason === "RATE_LIMIT" }),
+      onUnavailable: () => denyTurn(abort, unavailableReason()),
       onGuardError: policy.onGuardError ?? "deny",
     });
   }
@@ -212,6 +283,20 @@ export function guardProcessor(
     id: processorId,
     name: processorName,
     async processInput(args: ProcessInputArgs): Promise<ProcessInputResult> {
+      await screen(args.messages, args.abort, args.requestContext, "input");
+      if (args.state !== undefined && args.state !== null) {
+        args.state["arcjet.inputScreened"] = true;
+      }
+      return args.messages;
+    },
+    async processInputStep(
+      args: ProcessInputStepArgs,
+    ): Promise<ProcessInputStepResult | ProcessInputStepArgs["messages"]> {
+      // processInput already screened step 0. Later steps (tool continuations)
+      // would otherwise skip the inbound gate.
+      if (args.stepNumber === 0 && args.state?.["arcjet.inputScreened"] === true) {
+        return args.messages;
+      }
       await screen(args.messages, args.abort, args.requestContext, "input");
       return args.messages;
     },

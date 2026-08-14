@@ -102,7 +102,10 @@ test("Mastra namespace is a strict superset of the agents barrel with same ident
   const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
-    assert.ok(mastraKeys.includes(key), `agents barrel key "${key}" must be present in mastra namespace`);
+    assert.ok(
+      mastraKeys.includes(key),
+      `agents barrel key "${key}" must be present in mastra namespace`,
+    );
     assert.strictEqual(
       (mastraNamespace as Record<string, unknown>)[key],
       (agentsBarrel as Record<string, unknown>)[key],
@@ -145,8 +148,29 @@ test("export map has no unversioned ./mastra and no wildcard mastra subpaths", (
 
   for (const key of exportKeys) {
     if (key.startsWith("./mastra/")) {
-      assert.equal(key, "./mastra/v1", `export map must not have wildcard mastra subpaths; found "${key}"`);
+      assert.equal(
+        key,
+        "./mastra/v1",
+        `export map must not have wildcard mastra subpaths; found "${key}"`,
+      );
     }
+  }
+});
+
+test("does not export Eve-only APIs onto the Mastra namespace", () => {
+  const forbidden = [
+    "eveAgentContext",
+    "guardInbound",
+    "guardApproval",
+    "arcjetHooks",
+    "guardConnection",
+  ];
+  for (const key of forbidden) {
+    assert.equal(
+      (mastraNamespace as Record<string, unknown>)[key],
+      undefined,
+      `mastra namespace must not export Eve API "${key}"`,
+    );
   }
 });
 

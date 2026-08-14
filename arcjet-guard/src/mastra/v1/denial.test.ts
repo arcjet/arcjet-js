@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { decisionDenyPromptInjection, decisionDenyRateLimit } from "../../../test/_shared/stub-client.ts";
+import {
+  decisionDenyError,
+  decisionDenyPromptInjection,
+  decisionDenyPromptInjectionWithReset,
+  decisionDenyRateLimit,
+  decisionDenyRateLimitNoReset,
+} from "../../../test/_shared/stub-client.ts";
 import {
   denialResult,
   deniedReason,
@@ -38,5 +44,29 @@ describe("mastra/v1/denial", () => {
     assert.equal(result.retryable, true);
     assert.equal(result.retryAfterSeconds, UNAVAILABLE_RETRY_AFTER_SECONDS);
     assert.equal(result.message, unavailableReason());
+  });
+
+  test("RATE_LIMIT without reset is retryable without retryAfterSeconds", () => {
+    const decision = decisionDenyRateLimitNoReset();
+    const result = denialResult(decision);
+    assert.equal(result.retryable, true);
+    assert.equal(result.retryAfterSeconds, undefined);
+    assert.match(deniedReason(decision), /retried later/);
+  });
+
+  test("non-rate-limit denial ignores a co-occurring reset time", () => {
+    const decision = decisionDenyPromptInjectionWithReset(Math.floor(Date.now() / 1000) + 30);
+    const result = denialResult(decision);
+    assert.equal(result.retryable, false);
+    assert.equal(result.retryAfterSeconds, undefined);
+    assert.match(deniedReason(decision), /Do not retry/);
+  });
+
+  test("ERROR denial is not treated as unavailable", () => {
+    const decision = decisionDenyError();
+    const result = denialResult(decision);
+    assert.equal(result.reason, "ERROR");
+    assert.equal(result.retryable, false);
+    assert.match(deniedReason(decision), /Do not retry/);
   });
 });

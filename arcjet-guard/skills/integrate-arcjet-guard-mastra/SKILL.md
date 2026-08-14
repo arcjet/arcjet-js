@@ -17,6 +17,7 @@ decision rule:
   structured tool result. Do not throw.
 - **Inbound / outbound text** (`inputProcessors` / `outputProcessors`) →
   `guardProcessor()`. `processInput` + `abort()` on DENY raises a tripwire.
+  `processInputStep` screens later agentic steps (tool continuations).
   Channels already hit `processInput`, so there is no `guardInbound`.
 - **MCP / workspace / toolsets you did not wrap** → `guardHooks()`.
   `beforeToolCall` can return `{ proceed: false, output }`.
@@ -57,11 +58,12 @@ Ask only what you cannot infer from the code; suggest defaults.
    Sequence. `mastraAgentContext` reads thread / resource / run and omits
    `correlationId` when none of those is a valid id.
 5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.** Mastra tools
-   are `createTool`, not AI SDK `tool()`. Using both adapters on the same
-   call stacks two guard round-trips.
+   are `createTool`, not AI SDK `tool()`. `guardTool` throws if the tool
+   already carries the Arcjet protection brand.
 6. **A denial from `guardTool` is a structured result**, not a throw. Prefer
    omitting `outputSchema` on guarded tools, or verify the schema accepts
-   `ArcjetDenialResult`.
+   `ArcjetDenialResult`. If `onDeny` throws, the tool still does not run
+   and the model still receives the default denial object.
 
 ## Step 1: Install and find the guard client
 
@@ -99,7 +101,8 @@ const lookupLimit = tokenBucket({
   maxTokens: 10,
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
-// Scan free-text args (a note, reason, body), not an opaque id.
+// Scan free-text args (a note, reason, body). An opaque `orderId` will
+// not trip EMAIL / phone / card / IP, so do not pass it here.
 const detectPii = localDetectSensitiveInfo();
 
 export const lookupOrder = guardTool(
@@ -117,10 +120,7 @@ export const lookupOrder = guardTool(
   }),
   {
     action: "order.looked-up",
-    rules: (input) => [
-      lookupLimit({ key: input.orderId, requested: 1 }),
-      detectPii(input.note),
-    ],
+    rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 }), detectPii(input.note)],
   },
 );
 ```
@@ -143,6 +143,10 @@ const inbound = guardProcessor(arcjet, {
   action: "message.received",
   rules: ({ text }) => [detectPromptInjection()(text)],
 });
+const outbound = guardProcessor(arcjet, {
+  action: "message.completed",
+  rules: ({ text }) => [detectPromptInjection()(text)],
+});
 
 export const agent = new Agent({
   id: "support-agent",
@@ -150,13 +154,15 @@ export const agent = new Agent({
   instructions: "Help the user.",
   model: "openai/gpt-4o",
   inputProcessors: [inbound],
-  outputProcessors: [inbound],
+  outputProcessors: [outbound],
 });
 ```
 
-- On DENY, `processInput` calls `abort()` and Mastra raises a tripwire.
+- On DENY, `processInput` / `processInputStep` call `abort()` and Mastra
+  raises a tripwire. If `abort()` were to return, the processor still
+  throws so the turn cannot fail open.
 - The same processor implements `processOutputResult` so it can sit on
-  `outputProcessors` as well.
+  `outputProcessors` as well. Use a separate action name for outbound.
 - Default `onGuardError: "deny"` — if the guard cannot be evaluated, the
   turn is aborted. Use `"allow"` when the human cost of rejecting a
   legitimate message exceeds the security cost of an outage.
@@ -195,7 +201,11 @@ Set Mastra's reserved keys on `RequestContext` before `generate` / `stream`.
 `mastraAgentContext` reads them; it never calls `createAgentContext`.
 
 ```ts
-import { RequestContext, MASTRA_THREAD_ID_KEY, MASTRA_RESOURCE_ID_KEY } from "@mastra/core/request-context";
+import {
+  RequestContext,
+  MASTRA_THREAD_ID_KEY,
+  MASTRA_RESOURCE_ID_KEY,
+} from "@mastra/core/request-context";
 
 const requestContext = new RequestContext();
 requestContext.set(MASTRA_THREAD_ID_KEY, conversationId);
@@ -216,6 +226,11 @@ rather than joined to a generated id nobody has.
 3. Confirm in the Arcjet dashboard that decisions share the thread id as
    their correlation id.
 4. Manual E2E with a real `ARCJET_KEY` is still-to-verify until you run it.
+
+A full working demo lives in
+[`arcjet/examples` `mastra-agent`](https://github.com/arcjet/examples/tree/main/examples/mastra-agent)
+(lands with [arcjet/examples#193](https://github.com/arcjet/examples/pull/193)).
+Do not add an example under `examples/` in the JS SDK repo.
 
 Note: capture events are fire-and-forget and batched, so events can lag the
 decisions they accompany by a few seconds. A dropped event is diagnosed,

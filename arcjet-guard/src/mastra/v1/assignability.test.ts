@@ -15,9 +15,9 @@ import type {
 import type { ToolAction, ToolHooks } from "@mastra/core/tools";
 
 import { decisionAllow, stubClient } from "../../../test/_shared/stub-client.ts";
-import { guardHooks } from "./hooks.ts";
 import { guardProcessor } from "./guard-processor.ts";
 import { guardTool } from "./guard-tool.ts";
+import { guardHooks } from "./hooks.ts";
 
 test("helpers are assignable to Mastra Agent / Processor / Tool slots", () => {
   const { client } = stubClient(decisionAllow());
@@ -39,6 +39,7 @@ test("helpers are assignable to Mastra Agent / Processor / Tool slots", () => {
   const inputProcessors: InputProcessorOrWorkflow[] = [processor];
   const outputProcessors: OutputProcessorOrWorkflow[] = [processor];
   const agentHooks: NonNullable<AgentConfig["hooks"]> = hooks;
+  const step: NonNullable<Processor["processInputStep"]> = processor.processInputStep;
 
-  void [asProcessor, hooks, wrapped, inputProcessors, outputProcessors, agentHooks];
+  void [asProcessor, hooks, wrapped, inputProcessors, outputProcessors, agentHooks, step];
 });

@@ -1,8 +1,10 @@
 import type { ToolAction } from "@mastra/core/tools";
 
+import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
@@ -12,16 +14,13 @@ import { denialResult, unavailableResult } from "./denial.ts";
  * Input type of a Mastra `ToolAction`. Used so `guardTool` can keep the
  * concrete tool type while still typing `policy.rules` against the tool input.
  */
-export type MastraToolInput<TTool> = TTool extends ToolAction<infer TInput, any>
-  ? TInput
-  : never;
+export type MastraToolInput<TTool> = TTool extends ToolAction<infer TInput, any> ? TInput : never;
 
 /**
  * Output type of a Mastra `ToolAction`.
  */
-export type MastraToolOutput<TTool> = TTool extends ToolAction<any, infer TOutput>
-  ? TOutput
-  : never;
+export type MastraToolOutput<TTool> =
+  TTool extends ToolAction<any, infer TOutput> ? TOutput : never;
 
 /**
  * Policy for `guardTool()` — how to guard a Mastra `createTool({ execute })`.
@@ -116,6 +115,11 @@ export function guardTool<TTool extends ToolAction<any, any>>(
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with an execute function");
   }
+  if (arcjetProtectedTool in tool) {
+    throw new Error(
+      "@arcjet/guard: guardTool() cannot wrap a tool that is already guarded; do not double-wrap with @arcjet/guard/mastra/v1 or @arcjet/guard/vercel-ai/v7",
+    );
+  }
 
   const originalExecute = tool.execute.bind(tool);
 
@@ -159,7 +163,18 @@ export function guardTool<TTool extends ToolAction<any, any>>(
         if (policy.onDeny === undefined) {
           return denialResult(decision);
         }
-        return policy.onDeny(decision);
+        try {
+          return policy.onDeny(decision);
+        } catch (error) {
+          if (shouldWarn()) {
+            console.warn(
+              '@arcjet/guard: onDeny for "%s" threw; returning the default denial:',
+              policy.action,
+              error,
+            );
+          }
+          return denialResult(decision);
+        }
       }) as (decision: DecisionDeny) => MastraToolOutput<TTool>,
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- unavailable result is a structured denial object, not TOutput
       onUnavailable: () => unavailableResult() as MastraToolOutput<TTool>,
@@ -176,6 +191,12 @@ export function guardTool<TTool extends ToolAction<any, any>>(
 
     return result;
   };
+
+  Object.defineProperty(wrapped, arcjetProtectedTool, {
+    value: true,
+    enumerable: false,
+    configurable: true,
+  });
 
   return wrapped;
 }

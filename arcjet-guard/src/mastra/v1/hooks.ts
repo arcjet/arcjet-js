@@ -95,37 +95,47 @@ function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
  */
 export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy = {}): ToolHooks {
   const hooks: ToolHooks = {
-    beforeToolCall(hookContext: ToolHookContext): Promise<void | ToolBeforeHookResult> {
-      const call: GuardHooksCall = {
-        toolName: typeof hookContext.toolName === "string" ? hookContext.toolName : "",
-        input: hookContext.input,
-      };
-      const action = resolveAction(policy, call);
-      const source = isContextSource(hookContext.context) ? hookContext.context : undefined;
-      const agentCtx = mastraAgentContext(source);
+    async beforeToolCall(hookContext: ToolHookContext): Promise<void | ToolBeforeHookResult> {
+      try {
+        const call: GuardHooksCall = {
+          toolName: typeof hookContext.toolName === "string" ? hookContext.toolName : "",
+          input: hookContext.input,
+        };
+        const action = resolveAction(policy, call);
+        const source = isContextSource(hookContext.context) ? hookContext.context : undefined;
+        const agentCtx = mastraAgentContext(source);
 
-      const rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-      const policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-      const metadata: ArcjetMetadata = {
-        ...agentCtx.metadata,
-        "mastra.phase": "before",
-        ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
-        ...policyMetadata,
-      };
+        const rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
+        const policyMetadata =
+          typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
+        const metadata: ArcjetMetadata = {
+          ...agentCtx.metadata,
+          "mastra.phase": "before",
+          ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
+          ...policyMetadata,
+        };
 
-      return runGate<void | ToolBeforeHookResult>(client, {
-        action,
-        rules,
-        correlationId: agentCtx.correlationId,
-        metadata,
-        onAllow: () => {
-          /* allow the tool to proceed */
-        },
-        onDeny: (decision) => ({ proceed: false, output: denialResult(decision) }),
-        onUnavailable: () => ({ proceed: false, output: unavailableResult() }),
-        onGuardError: policy.onGuardError ?? "deny",
-      });
+        return await runGate<void | ToolBeforeHookResult>(client, {
+          action,
+          rules,
+          correlationId: agentCtx.correlationId,
+          metadata,
+          onAllow: () => {
+            /* allow the tool to proceed */
+          },
+          onDeny: (decision) => ({ proceed: false, output: denialResult(decision) }),
+          onUnavailable: () => ({ proceed: false, output: unavailableResult() }),
+          onGuardError: policy.onGuardError ?? "deny",
+        });
+      } catch {
+        // A throw from beforeToolCall skips execute (Mastra rethrows), but a
+        // structured `{ proceed: false }` is the documented deny path and
+        // cannot be mistaken for "retry the tool".
+        if (policy.onGuardError === "allow") {
+          return;
+        }
+        return { proceed: false, output: unavailableResult() };
+      }
     },
     afterToolCall(hookContext: ToolAfterHookContext): void {
       try {

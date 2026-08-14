@@ -20,7 +20,9 @@
  *   returns a structured tool result; it does not throw.
  * - **Inbound / outbound text** → `guardProcessor()` on `inputProcessors` /
  *   `outputProcessors`. `processInput` + `abort()` on DENY raises a tripwire.
- *   Channels already hit `processInput`, so there is no `guardInbound`.
+ *   `processInputStep` screens later agentic steps so a tool continuation
+ *   cannot skip the inbound gate. Channels already hit `processInput`, so
+ *   there is no `guardInbound`.
  * - **MCP / workspace / toolsets you did not wrap** → `guardHooks()`.
  *   `beforeToolCall` can return `{ proceed: false, output }`.
  * - **Correlation** → `mastraAgentContext()` reads `MASTRA_THREAD_ID_KEY`,
@@ -77,7 +79,11 @@
  */
 
 export { mastraAgentContext, MASTRA_THREAD_ID_KEY, MASTRA_RESOURCE_ID_KEY } from "./context.ts";
-export type { MastraAgentContext, MastraContextSource, MastraRequestContextLike } from "./context.ts";
+export type {
+  MastraAgentContext,
+  MastraContextSource,
+  MastraRequestContextLike,
+} from "./context.ts";
 export { guardTool } from "./guard-tool.ts";
 export type { GuardToolPolicy, MastraToolInput, MastraToolOutput } from "./guard-tool.ts";
 export { guardProcessor } from "./guard-processor.ts";
