@@ -47,8 +47,8 @@ export interface MastraAgentContext {
 
 function isRequestContextLike(value: unknown): value is MastraRequestContextLike {
   return (
-    typeof value === "object" &&
     value !== null &&
+    typeof value === "object" &&
     "get" in value &&
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural `get` check without importing Mastra
     typeof (value as { get?: unknown }).get === "function"
@@ -152,19 +152,19 @@ export function mastraAgentContext(
 
   const derivedMetadata: ArcjetMetadata = {};
 
-  if (typeof threadFromKey === "string") {
+  if (typeof threadFromKey === "string" && threadFromKey.length > 0) {
     derivedMetadata["mastra.thread"] = threadFromKey;
-  } else if (typeof threadFromAgent === "string") {
+  } else if (typeof threadFromAgent === "string" && threadFromAgent.length > 0) {
     derivedMetadata["mastra.thread"] = threadFromAgent;
   }
 
-  if (typeof resourceFromKey === "string") {
+  if (typeof resourceFromKey === "string" && resourceFromKey.length > 0) {
     derivedMetadata["mastra.resource"] = resourceFromKey;
-  } else if (typeof resourceFromAgent === "string") {
+  } else if (typeof resourceFromAgent === "string" && resourceFromAgent.length > 0) {
     derivedMetadata["mastra.resource"] = resourceFromAgent;
   }
 
-  if (typeof runFromWorkflow === "string") {
+  if (typeof runFromWorkflow === "string" && runFromWorkflow.length > 0) {
     derivedMetadata["mastra.run"] = runFromWorkflow;
   }
 

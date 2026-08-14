@@ -330,7 +330,7 @@ test("rejects a second wrap (mastra or vercel-ai brand)", async () => {
 test("execute throw is rethrown after capture", async () => {
   const { client, captureCalls } = stubClient(decisionAllow());
   const tool = createMastraTool({
-    execute: async () => {
+    execute: async (): Promise<{ ok: boolean }> => {
       throw new Error("tool failed");
     },
   });

@@ -7,7 +7,7 @@
  * framework-agnostic layer they build on, so a Mastra agent needs one import
  * path and no notion of layering.
  *
- * **Requires the optional peer dependency `@mastra/core@^1`**. Nothing in this
+ * **Requires the optional peer dependency `@mastra/core` (`>=1 <2`)**. Nothing in this
  * module imports `@mastra/core` at runtime: every Mastra type arrives through
  * `import type`, so installing `@arcjet/guard` never pulls Mastra in.
  *

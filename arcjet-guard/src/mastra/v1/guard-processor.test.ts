@@ -403,6 +403,40 @@ test("processInputStep skips step 0 after processInput and screens later steps",
   assert.equal(guardCalls.length, 2);
 });
 
+test("processInputStep re-screens step 0 when state is a fresh object", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const processor = guardProcessor(client, { action: "message.received" });
+  const { abort } = abortSpy();
+  const messages = [userMessage("first")];
+
+  await processor.processInput!({
+    messages,
+    abort,
+    requestContext: requestContext("thread-1"),
+    systemMessages: [],
+    state: {},
+    messageList: {} as never,
+    retryCount: 0,
+  } as never);
+  assert.equal(guardCalls.length, 1);
+
+  // Documents the Processor contract we rely on: skip only works when Mastra
+  // hands back the same state object. A clone re-screens (fail closed).
+  await processor.processInputStep!({
+    messages,
+    abort,
+    requestContext: requestContext("thread-1"),
+    systemMessages: [],
+    state: {},
+    messageList: {} as never,
+    retryCount: 0,
+    stepNumber: 0,
+    steps: [],
+    model: {} as never,
+  } as never);
+  assert.equal(guardCalls.length, 2);
+});
+
 test("processInputStep screens step 0 when processInput has not run", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const processor = guardProcessor(client, { action: "message.received" });

@@ -25,7 +25,7 @@ test("@mastra/core is an optional peer and not a dependency", () => {
 
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies);
-  assert.equal(peerDependencies["@mastra/core"], "^1");
+  assert.equal(peerDependencies["@mastra/core"], ">=1 <2");
 
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
   assert.ok(peerDependenciesMeta);

@@ -5,7 +5,7 @@ import type {
   ToolHooks,
 } from "@mastra/core/tools";
 
-import { captureEvent } from "../../agents/capture.ts";
+import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
@@ -44,7 +44,7 @@ export interface GuardHooksPolicy {
 }
 
 function isContextSource(value: unknown): value is MastraContextSource {
-  return typeof value === "object" && value !== null;
+  return value !== null && typeof value === "object";
 }
 
 function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
@@ -127,10 +127,15 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           onUnavailable: () => ({ proceed: false, output: unavailableResult() }),
           onGuardError: policy.onGuardError ?? "deny",
         });
-      } catch {
+      } catch (error) {
         // A throw from beforeToolCall skips execute (Mastra rethrows), but a
         // structured `{ proceed: false }` is the documented deny path and
-        // cannot be mistaken for "retry the tool".
+        // cannot be mistaken for "retry the tool". runGate already handles
+        // guard errors; this catch is for unexpected throws (e.g. a buggy
+        // policy callback).
+        if (shouldWarn()) {
+          console.warn("@arcjet/guard: guardHooks beforeToolCall threw; denying the tool:", error);
+        }
         if (policy.onGuardError === "allow") {
           return;
         }

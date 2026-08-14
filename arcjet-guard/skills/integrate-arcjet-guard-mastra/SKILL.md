@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-mastra
 description: Integrate Arcjet security into a Mastra agent using @arcjet/guard — wrap createTool execute, screen input/output with a Processor tripwire, and gate unwrapped MCP/workspace tools with hooks. Use when asked to add Arcjet to a Mastra agent, rate limit its tools, screen inbound messages, or block prompt injection / PII.
 license: Apache-2.0
-compatibility: Requires the target app to use Mastra (@mastra/core ^1) on Node.js >= 22.
+compatibility: Requires the target app to use Mastra (@mastra/core >=1 <2) on Node.js >= 22.
 metadata:
   author: arcjet
 ---

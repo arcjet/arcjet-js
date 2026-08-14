@@ -984,7 +984,7 @@ importing only core guards are not forced to install unneeded packages:
   which is higher than `@arcjet/guard`'s own floor of >= 22. If you are using
   Eve, ensure your deployment environment and CI both run Node 24 or later.
 - **`@arcjet/guard/mastra/v1`** requires `@mastra/core` (optional peer,
-  installed only to use `@arcjet/guard/mastra/v1`). The peer range is `^1`.
+  installed only to use `@arcjet/guard/mastra/v1`). The peer range is `>=1 <2`.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with

@@ -57,7 +57,7 @@ export interface GuardToolPolicy<TInput> {
 }
 
 function isContextSource(value: unknown): value is MastraContextSource {
-  return typeof value === "object" && value !== null;
+  return value !== null && typeof value === "object";
 }
 
 /**

@@ -137,17 +137,36 @@ test("onGuardError allow lets beforeToolCall proceed on fail-open", async () => 
 });
 
 test("rules throw still returns proceed: false (fail closed)", async () => {
-  const { client } = stubClient(decisionAllow());
-  const hooks = guardHooks(client, {
-    rules: () => {
-      throw new Error("rules exploded");
-    },
-  });
-  const result = await hooks.beforeToolCall!(hookContext());
-  assert.ok(result);
-  assert.equal(result.proceed, false);
-  const output = asDenial<ArcjetDenialResult>(result.output);
-  assert.equal(output.reason, "ERROR");
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+
+  try {
+    const { client } = stubClient(decisionAllow());
+    const hooks = guardHooks(client, {
+      rules: () => {
+        throw new Error("rules exploded");
+      },
+    });
+    const result = await hooks.beforeToolCall!(hookContext());
+    assert.ok(result);
+    assert.equal(result.proceed, false);
+    const output = asDenial<ArcjetDenialResult>(result.output);
+    assert.equal(output.reason, "ERROR");
+    assert.ok(warnings.length > 0);
+    assert.match(String(warnings[0]?.[0]), /beforeToolCall threw/);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
 });
 
 test("rules throw with onGuardError allow proceeds", async () => {

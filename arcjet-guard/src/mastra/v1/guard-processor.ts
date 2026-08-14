@@ -53,13 +53,16 @@ export interface GuardProcessorPolicy {
 
 function isRequestContextLike(value: unknown): value is MastraRequestContextLike {
   return (
-    typeof value === "object" &&
     value !== null &&
+    typeof value === "object" &&
     "get" in value &&
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural `get` check without importing Mastra
     typeof (value as { get?: unknown }).get === "function"
   );
 }
+
+/** Module-scoped so it cannot collide with a Mastra-owned string key or leak if `state` is serialised. */
+const inputScreened = Symbol("arcjet.inputScreened");
 
 function textFromPart(part: unknown): string {
   if (typeof part !== "object" || part === null) {
@@ -285,7 +288,8 @@ export function guardProcessor(
     async processInput(args: ProcessInputArgs): Promise<ProcessInputResult> {
       await screen(args.messages, args.abort, args.requestContext, "input");
       if (args.state !== undefined && args.state !== null) {
-        args.state["arcjet.inputScreened"] = true;
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- module-scoped Symbol marker on Mastra's shared state bag
+        (args.state as Record<PropertyKey, unknown>)[inputScreened] = true;
       }
       return args.messages;
     },
@@ -294,7 +298,16 @@ export function guardProcessor(
     ): Promise<ProcessInputStepResult | ProcessInputStepArgs["messages"]> {
       // processInput already screened step 0. Later steps (tool continuations)
       // would otherwise skip the inbound gate.
-      if (args.stepNumber === 0 && args.state?.["arcjet.inputScreened"] === true) {
+      //
+      // Relies on Mastra passing the same `state` object from processInput
+      // into processInputStep (Processor contract). A cloned or fresh state
+      // re-screens step 0 — fail closed, not open.
+      const state =
+        args.state === undefined || args.state === null
+          ? undefined
+          : // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- read the module-scoped Symbol marker
+            (args.state as Record<PropertyKey, unknown>);
+      if (args.stepNumber === 0 && state?.[inputScreened] === true) {
         return args.messages;
       }
       await screen(args.messages, args.abort, args.requestContext, "input");

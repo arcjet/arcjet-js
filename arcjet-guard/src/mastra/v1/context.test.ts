@@ -71,7 +71,7 @@ test("never mints an id when the only candidate is invalid", () => {
   const result = mastraAgentContext(contextFrom({ [MASTRA_THREAD_ID_KEY]: "" }));
 
   assert.equal(result.correlationId, undefined);
-  assert.equal(result.metadata?.["mastra.thread"], "");
+  assert.equal("mastra.thread" in (result.metadata ?? {}), false);
 });
 
 test("skips an invalid thread id and uses resource instead of minting", () => {
@@ -181,10 +181,11 @@ test("non-printable thread id is rejected and does not mint", () => {
   assert.equal(result.metadata?.["mastra.thread"], "bad\nid");
 });
 
-test("empty resource id is not copied onto user", () => {
+test("empty resource id is not copied onto user or mastra.resource", () => {
   const result = mastraAgentContext(contextFrom({ [MASTRA_RESOURCE_ID_KEY]: "" }));
   assert.equal(result.correlationId, undefined);
   assert.equal("user" in (result.metadata ?? {}), false);
+  assert.equal("mastra.resource" in (result.metadata ?? {}), false);
 });
 
 test("agent.resourceId can populate user when the reserved key is empty", () => {
@@ -193,6 +194,7 @@ test("agent.resourceId can populate user when the reserved key is empty", () => 
     agent: { resourceId: "agent-user" },
   });
   assert.equal(result.metadata?.user, "agent-user");
+  assert.equal(result.metadata?.["mastra.resource"], "agent-user");
 });
 
 test("object without get is treated as a context source", () => {
