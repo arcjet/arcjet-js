@@ -900,6 +900,56 @@ helper. Currently available:
   export default defineHook(arcjetHooks(arcjet));
   ```
 
+- **`@arcjet/guard/mastra/v1`** — Mastra v1 integration. Exports `guardTool`,
+  `guardProcessor`, `guardHooks`, and `mastraAgentContext`. There is no
+  `guardInbound` (channels already hit `processInput`) and no `guardApproval`
+  (Mastra `requireApproval` is human HITL, not policy):
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardTool, guardProcessor, guardHooks } from "@arcjet/guard/mastra/v1";
+  import { Agent } from "@mastra/core/agent";
+  import { createTool } from "@mastra/core/tools";
+  import { z } from "zod";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const lookupOrder = guardTool(
+    arcjet,
+    createTool({
+      id: "lookup-order",
+      description: "Look up an order",
+      inputSchema: z.object({ orderNumber: z.string() }),
+      execute: async ({ orderNumber }) => ({ orderNumber, status: "shipped" }),
+    }),
+    {
+      action: "order.looked-up",
+      onGuardError: "deny",
+      rules: (input) => [limit({ key: input.orderNumber, requested: 1 })],
+    },
+  );
+
+  export const agent = new Agent({
+    id: "support-agent",
+    name: "support-agent",
+    instructions: "Help the user.",
+    model: "openai/gpt-4o",
+    tools: { lookupOrder },
+    inputProcessors: [
+      guardProcessor(arcjet, {
+        action: "message.received",
+        rules: ({ text }) => [detectPromptInjection()(text)],
+      }),
+    ],
+    hooks: guardHooks(arcjet),
+  });
+  ```
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -933,6 +983,8 @@ importing only core guards are not forced to install unneeded packages:
   only to use `@arcjet/guard/vercel-eve/v0`). **Eve requires Node.js >= 24**,
   which is higher than `@arcjet/guard`'s own floor of >= 22. If you are using
   Eve, ensure your deployment environment and CI both run Node 24 or later.
+- **`@arcjet/guard/mastra/v1`** requires `@mastra/core` (optional peer,
+  installed only to use `@arcjet/guard/mastra/v1`). The peer range is `^1`.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -940,7 +992,7 @@ importing only core guards are not forced to install unneeded packages:
 peers, either install them explicitly or relax strict peer checking:
 
 ```sh
-pnpm install ai @ai-sdk/provider-utils eve
+pnpm install ai @ai-sdk/provider-utils eve @mastra/core
 # or
 pnpm install --no-strict-peer-dependencies
 ```
@@ -952,11 +1004,11 @@ are not tied to any AI SDK, and internally they are kept that way — nothing
 they import reaches `ai`. They are published on each vendor namespace, so there
 is one path to learn and no layering to reason about.
 
-Both `@arcjet/guard/vercel-ai/v7` and `@arcjet/guard/vercel-eve/v0` now export
-these helpers. The open next step is promoting them to the root `@arcjet/guard`
-export so a caller can get the agnostic layer without installing a vendor peer.
-Eve was the second integration and exercised the shape without changing it,
-which is the evidence that promotion was waiting on.
+`@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`, and
+`@arcjet/guard/mastra/v1` now export these helpers. The open next step is
+promoting them to the root `@arcjet/guard` export so a caller can get the
+agnostic layer without installing a vendor peer. That change is a follow-up
+with its own ADR; there is still no public `@arcjet/guard/agents`.
 
 ### `onGuardError`: handling evaluation failures
 
@@ -972,6 +1024,7 @@ which is the evidence that promotion was waiting on.
 | `guard()` (core)                     | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
 | `guardTool` / `guardAction`          | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Eve `guardInbound` / `guardApproval` | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Mastra `guardProcessor` / `guardHooks` | Deny (fail closed)                        | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1320,6 +1373,8 @@ For a complete working example integrating `@arcjet/guard` with the Vercel AI SD
 
 For an example with Vercel Eve, see [examples/eve-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/eve-agent), which shows how to protect tools, connections, and channels with Arcjet guards, and record agent lifecycle events with hooks.
 
+For an example with Mastra, see [examples/mastra-agent](https://github.com/arcjet/arcjet-js/tree/main/examples/mastra-agent), which shows inbound prompt-injection screening, guarded tools (deny, PII on args, rate limit, fail-closed), hooks for unwrapped tools, and thread/resource correlation.
+
 ## Agent skill
 
 For integration help in Claude Code or other AI coding agents, two skill files are packaged with `@arcjet/guard`:
@@ -1346,7 +1401,17 @@ ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-eve ~/.c
 
 In Claude Code, use `/integrate-arcjet-guard-eve` to start an integration session.
 
-Each skill guides you through wrapping tools, gating connections, screening inbound messages, and recording lifecycle events joined by correlation ID.
+**For Mastra:**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-mastra ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-mastra ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-mastra` to start an integration session.
+
+Each skill guides you through wrapping tools, screening inbound messages, and recording lifecycle events joined by correlation ID.
 
 Note: `npx skills add arcjet/skills` refers to the separate Anthropic skills marketplace, not the packaged file.
 

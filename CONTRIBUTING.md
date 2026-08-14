@@ -59,6 +59,9 @@ change them:
   filesystem-first, with one `defineTool` per file and no author-controlled call
   site, so its enforcement points are a channel-boundary screen and a
   connection-level approval gate that `vercel-ai/v7` has no equivalent of.
+  `mastra/v1` is the same idea on a different SDK: Mastra already runs
+  channels through `processInput` and treats `requireApproval` as human HITL,
+  so its helpers are `guardTool`, `guardProcessor`, and `guardHooks`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would

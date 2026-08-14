@@ -93,7 +93,14 @@ function walkForForbiddenImports(
   for (const spec of importSpecifiers) {
     // Check for 'ai' package, '@ai-sdk/*' scoped packages, and 'eve' or 'eve/*'
     // Must match the actual import specifier, not JSDoc prose or identifiers
-    if (spec === "ai" || spec.startsWith("@ai-sdk/") || spec === "eve" || spec.startsWith("eve/")) {
+    if (
+      spec === "ai" ||
+      spec.startsWith("@ai-sdk/") ||
+      spec === "eve" ||
+      spec.startsWith("eve/") ||
+      spec === "@mastra/core" ||
+      spec.startsWith("@mastra/core/")
+    ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }
 

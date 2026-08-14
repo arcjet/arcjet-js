@@ -24,6 +24,12 @@ jobs:
     permissions:
       contents: read
 
+  examples:
+    name: Build examples
+    uses: ./.github/workflows/reusable-examples.yml
+    permissions:
+      contents: read
+
   release:
     runs-on: ubuntu-latest
     # Only run Release Please on `main`. It pushes to

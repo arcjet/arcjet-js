@@ -5,12 +5,10 @@
  * guard/capture functions that never reach an AI SDK.
  *
  * @internal This barrel has no export map entry. Every symbol below reaches
- * users re-exported from a vendor namespace — `@arcjet/guard/vercel-ai/v7`
- * and `@arcjet/guard/vercel-eve/v0`. The layer stays agnostic so multiple
- * vendor namespaces can share the same code. A second vendor namespace now
- * exists, which was the evidence the subpath-namespaces ADR wanted before
- * promoting the layer to the root export; making that change is a follow-up
- * with its own ADR, so until then there is no public `@arcjet/guard/agents`.
+ * users re-exported from a vendor namespace — `@arcjet/guard/vercel-ai/v7`,
+ * `@arcjet/guard/vercel-eve/v0`, and `@arcjet/guard/mastra/v1`. The layer
+ * stays agnostic so multiple vendor namespaces can share the same code. A
+ * public `@arcjet/guard/agents` path is still a follow-up with its own ADR.
  */
 
 export { createAgentContext } from "./context.ts";
