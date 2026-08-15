@@ -35,9 +35,8 @@ and Claude Code erases the prompt.
 ## canUseTool is not a policy gate
 
 Claude's docs say `canUseTool` is skipped by `allowedTools`, allow rules,
-and `bypassPermissions` / `acceptEdits`. Same trap as Eve approval and
-Mastra `requireApproval`. There is no `guardCanUseTool`. Do not put Arcjet
-policy on `canUseTool`.
+and `bypassPermissions` / `acceptEdits`. There is no `guardCanUseTool`.
+Do not put Arcjet policy on `canUseTool`.
 
 ## PreToolUse is the only deny for unwrapped tools
 

@@ -1491,8 +1491,6 @@ For an example with Vercel Eve, see [`eve-agent`](https://github.com/arcjet/exam
 
 For an example with Mastra, see [`mastra-agent`](https://github.com/arcjet/examples/tree/main/examples/mastra-agent), which shows inbound prompt-injection screening, guarded tools (deny, PII on args, rate limit, fail-closed), hooks for unwrapped tools, and thread/resource correlation. These Guard examples land with [arcjet/examples#193](https://github.com/arcjet/examples/pull/193).
 
-A Claude Agent SDK demo belongs in [`arcjet/examples`](https://github.com/arcjet/examples) as a follow-up; do not add one under `examples/` in this repository.
-
 ## Agent skill
 
 For integration help in Claude Code or other AI coding agents, four skill files are packaged with `@arcjet/guard`:
