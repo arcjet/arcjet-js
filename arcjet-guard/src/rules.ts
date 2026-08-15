@@ -32,8 +32,8 @@ import type {
   SlidingWindowInput,
   DetectPromptInjectionConfig,
   DetectPromptInjectionInput,
-  ExperimentalModerateContentConfig,
-  ExperimentalModerateContentInput,
+  ModerateContentConfig,
+  ModerateContentInput,
   LocalDetectSensitiveInfoConfig,
   LocalDetectSensitiveInfoInput,
   SensitiveInfoEntityType,
@@ -436,25 +436,28 @@ export function detectPromptInjection(
 }
 
 /**
- * Create a content moderation rule (experimental).
+ * Create a content moderation rule.
  *
- * Mirrors {@link detectPromptInjection}: returns a configured rule that can be
- * called with user-supplied text to produce a `RuleWithInput` ready for
- * `.guard()`. The text is sent to the Arcjet Cloud API for analysis.
+ * Use this when your application accepts user-supplied text and you want
+ * to block harmful content before it is stored, displayed, or forwarded
+ * to another service. Also useful for scanning tool call results or
+ * model outputs that should not contain disallowed content.
  *
- * **Experimental.** The rule name and result shape may change. This
- * functionality may not be available yet, so while this rule is experimental
- * a call may simply return an error result. Errors are fail open, so the
- * conclusion stays `"ALLOW"` and `decision.hasFailedOpen()` reports `true`
- * (inspect the errored result with `decision.errorResults()`). Check the
- * latest version of this SDK to see whether the rule is now stable.
+ * Returns a configured rule that can be called with user-supplied text
+ * to produce a `RuleWithInput` ready for `.guard()`. The text is sent
+ * to the Arcjet Cloud API for analysis.
  *
- * Per-request metadata can be attached at call time and is merged with any
- * config-level metadata (call-time wins on key conflict).
+ * A successful result includes `detected` (whether harmful content was
+ * found) and optional `billing`. Transport errors follow the `guard()`
+ * fail-open convention.
+ *
+ * Per-request metadata is attached on the input object
+ * (`{ inputText, metadata }`), not as a second argument, and is merged
+ * with any config-level metadata (call-time wins on key conflict).
  *
  * @example
  * ```ts
- * const moderate = experimental_moderateContent();
+ * const moderate = moderateContent();
  * const decision = await arcjet.guard({
  *   label: "tools.chat",
  *   rules: [moderate(userMessage)],
@@ -464,20 +467,18 @@ export function detectPromptInjection(
  * @example
  * ```ts
  * // Attach per-request metadata for analytics/correlation.
- * const moderate = experimental_moderateContent({ metadata: { variant: "new" } });
+ * const moderate = moderateContent({ metadata: { variant: "new" } });
  * const decision = await arcjet.guard({
  *   label: "tools.chat",
- *   rules: [moderate(userMessage, { metadata: { expectedResponse: "pass" } })],
+ *   rules: [moderate({ inputText: userMessage, metadata: { expectedResponse: "pass" } })],
  * });
  * ```
  */
-export function experimental_moderateContent(
-  config: ExperimentalModerateContentConfig = {},
-): RuleWithConfigModerateContent {
+export function moderateContent(config: ModerateContentConfig = {}): RuleWithConfigModerateContent {
   const configId = randomId();
 
   const rule = Object.assign(
-    (input: string | ExperimentalModerateContentInput): RuleWithInputModerateContent => {
+    (input: string | ModerateContentInput): RuleWithInputModerateContent => {
       const inputId = randomId();
       return {
         type: "MODERATE_CONTENT" as const,
@@ -521,6 +522,13 @@ export function experimental_moderateContent(
 
   return rule;
 }
+
+/**
+ * Create a content moderation rule.
+ *
+ * @deprecated Use {@link moderateContent} instead.
+ */
+export const experimental_moderateContent: typeof moderateContent = moderateContent;
 
 /**
  * Throw if the config lists entity types the configured backend cannot detect.

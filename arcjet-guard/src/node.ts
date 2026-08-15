@@ -110,6 +110,8 @@ export {
   type SlidingWindowInput,
   type DetectPromptInjectionConfig,
   type DetectPromptInjectionInput,
+  type ModerateContentConfig,
+  type ModerateContentInput,
   type ExperimentalModerateContentConfig,
   type ExperimentalModerateContentInput,
   type LocalDetectSensitiveInfoConfig,
@@ -127,7 +129,7 @@ export {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
-  experimental_moderateContent,
+  moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
   policyInput,
@@ -145,6 +147,8 @@ export {
   // Internal
   _launchWithTransportFactory,
 } from "./index.ts";
+// oxlint-disable-next-line typescript/no-deprecated -- public deprecated alias
+export { experimental_moderateContent } from "./index.ts";
 
 import { _launchWithTransportFactory } from "./index.ts";
 import type { LaunchOptions, ArcjetGuard } from "./index.ts";

@@ -8,6 +8,7 @@ import {
   fixedWindow,
   slidingWindow,
   detectPromptInjection,
+  moderateContent,
   localDetectSensitiveInfo,
   defineCustomRule,
   launchArcjetWithTransport,
@@ -28,6 +29,7 @@ describe("bun entrypoint", () => {
     assert.equal(typeof fixedWindow, "function");
     assert.equal(typeof slidingWindow, "function");
     assert.equal(typeof detectPromptInjection, "function");
+    assert.equal(typeof moderateContent, "function");
     assert.equal(typeof localDetectSensitiveInfo, "function");
     assert.equal(typeof defineCustomRule, "function");
   });
