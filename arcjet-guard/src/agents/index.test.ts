@@ -99,7 +99,9 @@ function walkForForbiddenImports(
       spec === "eve" ||
       spec.startsWith("eve/") ||
       spec === "@mastra/core" ||
-      spec.startsWith("@mastra/core/")
+      spec.startsWith("@mastra/core/") ||
+      spec === "@anthropic-ai/claude-agent-sdk" ||
+      spec.startsWith("@anthropic-ai/claude-agent-sdk/")
     ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }

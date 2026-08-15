@@ -931,6 +931,64 @@ helper. Currently available:
   export default defineHook(arcjetHooks(arcjet));
   ```
 
+- **`@arcjet/guard/claude-agent-sdk/v0`** — Claude Agent SDK v0 integration.
+  Exports `guardTool`, `guardHooks`, and `claudeAgentContext`. There is no
+  `guardInbound` (inbound is `UserPromptSubmit` on `guardHooks`) and no
+  `canUseTool` helper (`canUseTool` is skipped by `allowedTools`, allow
+  rules, and `bypassPermissions` / `acceptEdits`):
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardTool, guardHooks } from "@arcjet/guard/claude-agent-sdk/v0";
+  import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
+  import { z } from "zod";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const lookupOrder = guardTool(
+    arcjet,
+    tool(
+      "lookup_order",
+      "Look up an order",
+      { orderNumber: z.string() },
+      async ({ orderNumber }) => ({
+        content: [{ type: "text", text: `${orderNumber}: shipped` }],
+      }),
+    ),
+    {
+      action: "order.looked-up",
+      onGuardError: "deny",
+      rules: (input) => [limit({ key: input.orderNumber, requested: 1 })],
+    },
+  );
+
+  const sessionId = conversationId;
+
+  for await (const message of query({
+    prompt: userText,
+    options: {
+      sessionId,
+      mcpServers: {
+        app: createSdkMcpServer({ name: "app", tools: [lookupOrder] }),
+      },
+      hooks: guardHooks(arcjet, {
+        sessionId,
+        inbound: {
+          action: "message.received",
+          rules: ({ prompt }) => [detectPromptInjection()(prompt)],
+        },
+      }),
+    },
+  })) {
+    void message;
+  }
+  ```
+
 - **`@arcjet/guard/mastra/v1`** — Mastra v1 integration. Exports `guardTool`,
   `guardProcessor`, `guardHooks`, and `mastraAgentContext`. There is no
   `guardInbound` (channels already hit `processInput`) and no `guardApproval`
@@ -1016,6 +1074,9 @@ importing only core guards are not forced to install unneeded packages:
   Eve, ensure your deployment environment and CI both run Node 24 or later.
 - **`@arcjet/guard/mastra/v1`** requires `@mastra/core` (optional peer,
   installed only to use `@arcjet/guard/mastra/v1`). The peer range is `>=1 <2`.
+- **`@arcjet/guard/claude-agent-sdk/v0`** requires
+  `@anthropic-ai/claude-agent-sdk` (optional peer, installed only to use
+  `@arcjet/guard/claude-agent-sdk/v0`). The peer range is `>=0.1.0 <1`.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -1041,6 +1102,11 @@ pnpm install @mastra/core
 ```
 
 ```sh
+# @arcjet/guard/claude-agent-sdk/v0
+pnpm install @anthropic-ai/claude-agent-sdk
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1052,8 +1118,9 @@ are not tied to any AI SDK, and internally they are kept that way — nothing
 they import reaches `ai`. They are published on each vendor namespace, so there
 is one path to learn and no layering to reason about.
 
-`@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`, and
-`@arcjet/guard/mastra/v1` now export these helpers. The open next step is
+`@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`,
+`@arcjet/guard/mastra/v1`, and `@arcjet/guard/claude-agent-sdk/v0` now export
+these helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
 agnostic layer without installing a vendor peer. That change is a follow-up
 with its own ADR; there is still no public `@arcjet/guard/agents`.
@@ -1073,6 +1140,7 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 | `guardTool` / `guardAction`          | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Eve `guardInbound` / `guardApproval` | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Mastra `guardProcessor` / `guardHooks` | Deny (fail closed)                        | `onGuardError: "allow"`            |
+| Claude `guardTool` / `guardHooks`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1423,9 +1491,11 @@ For an example with Vercel Eve, see [`eve-agent`](https://github.com/arcjet/exam
 
 For an example with Mastra, see [`mastra-agent`](https://github.com/arcjet/examples/tree/main/examples/mastra-agent), which shows inbound prompt-injection screening, guarded tools (deny, PII on args, rate limit, fail-closed), hooks for unwrapped tools, and thread/resource correlation. These Guard examples land with [arcjet/examples#193](https://github.com/arcjet/examples/pull/193).
 
+A Claude Agent SDK demo belongs in [`arcjet/examples`](https://github.com/arcjet/examples) as a follow-up; do not add one under `examples/` in this repository.
+
 ## Agent skill
 
-For integration help in Claude Code or other AI coding agents, three skill files are packaged with `@arcjet/guard`:
+For integration help in Claude Code or other AI coding agents, four skill files are packaged with `@arcjet/guard`:
 
 **For Vercel AI SDK:**
 
@@ -1458,6 +1528,16 @@ ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-mastra ~
 ```
 
 In Claude Code, use `/integrate-arcjet-guard-mastra` to start an integration session.
+
+**For the Claude Agent SDK:**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-claude-agent-sdk ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-claude-agent-sdk ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-claude-agent-sdk` to start an integration session.
 
 Each skill guides you through wrapping tools, screening inbound messages, and recording lifecycle events joined by correlation ID.
 

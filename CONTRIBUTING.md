@@ -63,6 +63,9 @@ change them:
   `mastra/v1` is the same idea on a different SDK: Mastra already runs
   channels through `processInput` and treats `requireApproval` as human HITL,
   so its helpers are `guardTool`, `guardProcessor`, and `guardHooks`.
+  `claude-agent-sdk/v0` is the same idea again: authored tools are `tool()`
+  handlers, inbound is `UserPromptSubmit`, and unwrapped built-ins are
+  `PreToolUse` — `canUseTool` is not a policy gate.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would
