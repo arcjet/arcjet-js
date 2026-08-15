@@ -164,12 +164,35 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
     Object.getOwnPropertyDescriptors(tool),
   ) as TTool;
 
-  wrapped.handler = async (
+  const newHandler = async (
     input: ClaudeToolInput<TTool>,
     extra: unknown,
   ): Promise<ClaudeCallToolResult> => {
     const source = isContextSource(extra) ? extra : undefined;
-    const sessionId = resolveSessionId(policy, input);
+
+    let sessionId: string | undefined;
+    let rules: RuleWithInput[] | undefined;
+    let policyMetadata: ArcjetMetadata | undefined;
+    try {
+      sessionId = resolveSessionId(policy, input);
+      rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
+      policyMetadata =
+        typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+    } catch (error) {
+      if (shouldWarn()) {
+        console.warn(
+          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
+          policy.action,
+          error,
+        );
+      }
+      if (policy.onGuardError === "allow") {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- original handler returns the SDK CallToolResult
+        return Promise.resolve(originalHandler(input, extra)) as Promise<ClaudeCallToolResult>;
+      }
+      return unavailableCallToolResult();
+    }
+
     const agentCtx = claudeAgentContext(
       source,
       sessionId === undefined ? undefined : { sessionId },
@@ -183,9 +206,6 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
         }),
     };
 
-    const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
     const mergedMetadata = { ...metadata, ...policyMetadata };
 
     const result = await runGuarded<ClaudeCallToolResult>(client, {
@@ -221,6 +241,13 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
 
     return result;
   };
+
+  Object.defineProperty(wrapped, "handler", {
+    value: newHandler,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
 
   Object.defineProperty(wrapped, arcjetProtectedTool, {
     value: true,

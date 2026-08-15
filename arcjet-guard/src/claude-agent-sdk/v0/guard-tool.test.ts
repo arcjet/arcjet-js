@@ -380,6 +380,113 @@ test("non-object extra does not mint an id", async () => {
   assert.equal("correlationId" in recorded(guardCalls[0]), false);
 });
 
+test("rules factory throw fail-closes and does not execute the handler", async () => {
+  const { client } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createClaudeTool({
+    handler: async () => {
+      calls += 1;
+      return { content: [{ type: "text", text: "ok" }] };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    rules: () => {
+      throw new Error("rules exploded");
+    },
+  });
+  const result = asToolResult(await wrapped.handler({}, sessionExtra("s")));
+  assert.equal(calls, 0);
+  assert.equal(result.isError, true);
+  assert.equal(denialFromResult(result).reason, "ERROR");
+});
+
+test("metadata factory throw fail-closes", async () => {
+  const { client } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createClaudeTool({
+    handler: async () => {
+      calls += 1;
+      return { content: [{ type: "text", text: "ok" }] };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    metadata: () => {
+      throw new Error("metadata exploded");
+    },
+  });
+  const result = asToolResult(await wrapped.handler({}, sessionExtra("s")));
+  assert.equal(calls, 0);
+  assert.equal(denialFromResult(result).reason, "ERROR");
+});
+
+test("sessionId factory throw fail-closes", async () => {
+  const { client } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createClaudeTool({
+    handler: async () => {
+      calls += 1;
+      return { content: [{ type: "text", text: "ok" }] };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    sessionId: () => {
+      throw new Error("sessionId exploded");
+    },
+  });
+  const result = asToolResult(await wrapped.handler({}, sessionExtra("s")));
+  assert.equal(calls, 0);
+  assert.equal(denialFromResult(result).reason, "ERROR");
+});
+
+test("rules factory throw with onGuardError allow still executes", async () => {
+  const { client } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createClaudeTool({
+    handler: async () => {
+      calls += 1;
+      return { content: [{ type: "text", text: "ok" }] };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    onGuardError: "allow",
+    rules: () => {
+      throw new Error("rules exploded");
+    },
+  });
+  const result = await wrapped.handler({}, sessionExtra("s"));
+  assert.equal(calls, 1);
+  assert.deepEqual(result, { content: [{ type: "text", text: "ok" }] });
+});
+
+test("wraps a tool whose handler descriptor is non-writable", async () => {
+  const { client } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool: ClaudeToolDefinition = {
+    name: "frozen-handler",
+    description: "x",
+    inputSchema: {},
+    handler: async () => {
+      calls += 1;
+      return { content: [{ type: "text" as const, text: "ok" }] };
+    },
+  };
+  Object.defineProperty(tool, "handler", {
+    value: tool.handler,
+    writable: false,
+    enumerable: true,
+    configurable: true,
+  });
+
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  const result = await wrapped.handler({}, sessionExtra("s"));
+  assert.equal(calls, 1);
+  assert.deepEqual(result, { content: [{ type: "text", text: "ok" }] });
+});
+
 test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
   const previous = process.env["ARCJET_LOG_LEVEL"];
   process.env["ARCJET_LOG_LEVEL"] = "warn";
