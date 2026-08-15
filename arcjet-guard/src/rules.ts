@@ -451,8 +451,9 @@ export function detectPromptInjection(
  * found) and optional `billing`. Transport errors follow the `guard()`
  * fail-open convention.
  *
- * Per-request metadata can be attached at call time and is merged with any
- * config-level metadata (call-time wins on key conflict).
+ * Per-request metadata is attached on the input object
+ * (`{ inputText, metadata }`), not as a second argument, and is merged
+ * with any config-level metadata (call-time wins on key conflict).
  *
  * @example
  * ```ts

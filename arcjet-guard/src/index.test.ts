@@ -74,8 +74,8 @@ describe("re-exports", () => {
   });
 
   test("rule factories are exported from every entrypoint", () => {
-    // bun previously omitted experimental_moderateContent; GA must be on all
-    // runtime conditions of the "." export.
+    // Single source of truth for runtime entrypoints (node/bun/fetch).
+    // The index barrel is covered by "rule factories are exported" above.
     for (const [specifier, entrypoint] of entrypoints) {
       for (const name of [
         "tokenBucket",
