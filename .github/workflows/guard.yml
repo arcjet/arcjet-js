@@ -108,6 +108,21 @@ jobs:
           node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
+      # The claude-agent-sdk namespace imports the SDK for types only. A static
+      # scan proves the imports are written `import type`; this proves the
+      # consequence, catching a build step that re-emits one as a value import.
+      #
+      # Runs before the eve-absent step because that one deletes a different
+      # optional peer. Typecheck legitimately fails without the SDK.
+      - name: Unit tests with claude-agent-sdk absent
+        run: |
+          rm -rf node_modules/@anthropic-ai/claude-agent-sdk arcjet-guard/node_modules/@anthropic-ai/claude-agent-sdk
+          node -e "try { require.resolve('@anthropic-ai/claude-agent-sdk', { paths: ['arcjet-guard/src/claude-agent-sdk/v0'] }); console.error('claude-agent-sdk still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
+          count=$(find arcjet-guard/src/claude-agent-sdk -name '*.test.ts' | wc -l)
+          test "$count" -ge 5 || { echo "only $count claude-agent-sdk test files matched; the glob has gone stale" >&2; exit 1; }
+          node --test 'arcjet-guard/src/claude-agent-sdk/**/*.test.ts'
+        working-directory: ${{ github.workspace }}
+
       # The mastra namespace imports @mastra/core for types only. A static scan
       # proves the imports are written `import type`; this proves the
       # consequence, catching a build step that re-emits one as a value import.

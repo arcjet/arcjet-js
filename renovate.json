@@ -60,6 +60,13 @@
       "matchPackageNames": ["@mastra/core"],
       "automerge": false,
       "allowedVersions": "<2"
+    },
+    {
+      "description": "Never automerge @anthropic-ai/claude-agent-sdk. It is pre-1.0 and tracks Claude Code patch-for-patch, so a minor release may break. `@arcjet/guard/claude-agent-sdk/v0` types against SdkMcpToolDefinition, Options.hooks, HookCallback, and HookJSONOutput. Keep the range below 1.0; claude-agent-sdk/v1 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@anthropic-ai/claude-agent-sdk"],
+      "automerge": false,
+      "allowedVersions": "<1"
     }
   ],
   "lockFileMaintenance": {
