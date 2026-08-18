@@ -60,6 +60,13 @@
       "matchPackageNames": ["@mastra/core"],
       "automerge": false,
       "allowedVersions": "<2"
+    },
+    {
+      "description": "Never automerge @langchain/langgraph or @langchain/core majors. `@arcjet/guard/langgraph/v1` types against ToolNode, StructuredTool, and RunnableConfig. A green typecheck is necessary but not sufficient. Keep the range on 1.x; langgraph/v2 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@langchain/langgraph", "@langchain/core"],
+      "automerge": false,
+      "allowedVersions": "<2"
     }
   ],
   "lockFileMaintenance": {

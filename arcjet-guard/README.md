@@ -981,6 +981,66 @@ helper. Currently available:
   });
   ```
 
+- **`@arcjet/guard/langgraph/v1`** — LangGraph Graph API (`StateGraph` +
+  `ToolNode`) integration. Exports `guardTool`, `guardToolNode`, and
+  `langgraphAgentContext`. This is **not** LangChain `createAgent` /
+  `wrapToolCall`, and `createReactAgent` is deprecated in LangGraph JS v1
+  — do not build on it. There is no `guardInbound` (screen before
+  `invoke` or at the first graph node) and no `guardInterrupt` /
+  `guardApproval` (`interrupt()` is human HITL, not policy):
+
+  ```ts
+  import { launchArcjet, tokenBucket } from "@arcjet/guard";
+  import { guardTool, guardToolNode } from "@arcjet/guard/langgraph/v1";
+  import { ToolNode } from "@langchain/langgraph/prebuilt";
+  import { tool } from "@langchain/core/tools";
+  import { z } from "zod";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const lookupOrder = guardTool(
+    arcjet,
+    tool(
+      async ({ orderNumber }) => ({ orderNumber, status: "shipped" }),
+      {
+        name: "lookup_order",
+        description: "Look up an order",
+        schema: z.object({ orderNumber: z.string() }),
+      },
+    ),
+    {
+      action: "order.looked-up",
+      onGuardError: "deny",
+      rules: (input) => [limit({ key: input.orderNumber, requested: 1 })],
+    },
+  );
+
+  export const tools = guardToolNode(arcjet, new ToolNode([lookupOrder]));
+  ```
+
+#### Screen inbound before `invoke` (or at the first graph node)
+
+LangGraph has no first-class inbound channel, so there is no
+`guardInbound`. Put prompt-injection (and other inbound rules) in the
+application before `graph.invoke`, or in the graph's first node.
+
+#### `interrupt()` is not a policy gate
+
+`interrupt()` / `interrupt_before=["tools"]` is human-in-the-loop, not
+policy. Same trap as Mastra `requireApproval` and Claude `canUseTool`.
+There is no `guardInterrupt`.
+
+#### `ToolNode` is the deny point for tools; hooks / HITL cannot enforce
+
+Unwrapped and MCP tools run inside `ToolNode`. Graph hooks and HITL
+pauses cannot stop `tool.invoke`. Use `guardToolNode` (or `guardTool` for
+authored tools you invoke yourself).
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -1016,6 +1076,9 @@ importing only core guards are not forced to install unneeded packages:
   Eve, ensure your deployment environment and CI both run Node 24 or later.
 - **`@arcjet/guard/mastra/v1`** requires `@mastra/core` (optional peer,
   installed only to use `@arcjet/guard/mastra/v1`). The peer range is `>=1 <2`.
+- **`@arcjet/guard/langgraph/v1`** requires `@langchain/langgraph` and
+  `@langchain/core` (optional peers, installed only to use
+  `@arcjet/guard/langgraph/v1`). The peer range is `>=1 <2` for both.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -1041,6 +1104,11 @@ pnpm install @mastra/core
 ```
 
 ```sh
+# @arcjet/guard/langgraph/v1
+pnpm install @langchain/langgraph @langchain/core
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1052,8 +1120,9 @@ are not tied to any AI SDK, and internally they are kept that way — nothing
 they import reaches `ai`. They are published on each vendor namespace, so there
 is one path to learn and no layering to reason about.
 
-`@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`, and
-`@arcjet/guard/mastra/v1` now export these helpers. The open next step is
+`@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`,
+`@arcjet/guard/mastra/v1`, and `@arcjet/guard/langgraph/v1` now export these
+helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
 agnostic layer without installing a vendor peer. That change is a follow-up
 with its own ADR; there is still no public `@arcjet/guard/agents`.
@@ -1073,6 +1142,7 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 | `guardTool` / `guardAction`          | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Eve `guardInbound` / `guardApproval` | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Mastra `guardProcessor` / `guardHooks` | Deny (fail closed)                        | `onGuardError: "allow"`            |
+| LangGraph `guardTool` / `guardToolNode` | Deny (fail closed)                       | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1423,9 +1493,11 @@ For an example with Vercel Eve, see [`eve-agent`](https://github.com/arcjet/exam
 
 For an example with Mastra, see [`mastra-agent`](https://github.com/arcjet/examples/tree/main/examples/mastra-agent), which shows inbound prompt-injection screening, guarded tools (deny, PII on args, rate limit, fail-closed), hooks for unwrapped tools, and thread/resource correlation. These Guard examples land with [arcjet/examples#193](https://github.com/arcjet/examples/pull/193).
 
+For an example with LangGraph, see [`langgraph-agent`](https://github.com/arcjet/examples/tree/main/examples/langgraph-agent) (follow-up on that same PR): inbound screening before `invoke`, `guardTool` / `guardToolNode` (deny, PII on args, rate limit, fail-closed), and `thread_id` correlation. `interrupt()` is HITL, not a policy gate; `ToolNode` is the deny point for tools.
+
 ## Agent skill
 
-For integration help in Claude Code or other AI coding agents, three skill files are packaged with `@arcjet/guard`:
+For integration help in Claude Code or other AI coding agents, skill files are packaged with `@arcjet/guard`:
 
 **For Vercel AI SDK:**
 
@@ -1458,6 +1530,16 @@ ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-mastra ~
 ```
 
 In Claude Code, use `/integrate-arcjet-guard-mastra` to start an integration session.
+
+**For LangGraph:**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langgraph ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langgraph ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-langgraph` to start an integration session.
 
 Each skill guides you through wrapping tools, screening inbound messages, and recording lifecycle events joined by correlation ID.
 

@@ -99,7 +99,11 @@ function walkForForbiddenImports(
       spec === "eve" ||
       spec.startsWith("eve/") ||
       spec === "@mastra/core" ||
-      spec.startsWith("@mastra/core/")
+      spec.startsWith("@mastra/core/") ||
+      spec === "@langchain/langgraph" ||
+      spec.startsWith("@langchain/langgraph/") ||
+      spec === "@langchain/core" ||
+      spec.startsWith("@langchain/core/")
     ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }
