@@ -80,6 +80,10 @@
       "types": "./dist/mastra/v1/index.d.ts",
       "import": "./dist/mastra/v1/index.js"
     },
+    "./claude-agent-sdk/v0": {
+      "types": "./dist/claude-agent-sdk/v0/index.d.ts",
+      "import": "./dist/claude-agent-sdk/v0/index.js"
+    },
     "./langgraph/v1": {
       "types": "./dist/langgraph/v1/index.d.ts",
       "import": "./dist/langgraph/v1/index.js"
@@ -112,6 +116,7 @@
   },
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.13",
+    "@anthropic-ai/claude-agent-sdk": "0.3.221",
     "@langchain/core": "1.2.8",
     "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.58.0",
@@ -125,6 +130,7 @@
   },
   "peerDependencies": {
     "@ai-sdk/provider-utils": ">=5 <6",
+    "@anthropic-ai/claude-agent-sdk": ">=0.1.0 <1",
     "@langchain/core": ">=1 <2",
     "@langchain/langgraph": ">=1 <2",
     "@mastra/core": ">=1 <2",
@@ -142,6 +148,9 @@
       "optional": true
     },
     "@mastra/core": {
+      "optional": true
+    },
+    "@anthropic-ai/claude-agent-sdk": {
       "optional": true
     },
     "@langchain/core": {

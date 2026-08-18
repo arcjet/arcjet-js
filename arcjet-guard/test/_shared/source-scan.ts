@@ -290,6 +290,7 @@ export function asDenial<TResult>(value: unknown): TResult {
 export const EXPECTED_ROOT_KEYS = [
   ".",
   "./bun",
+  "./claude-agent-sdk/v0",
   "./fetch",
   "./langgraph/v1",
   "./mastra/v1",
