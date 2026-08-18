@@ -66,6 +66,10 @@ change them:
   `claude-agent-sdk/v0` is the same idea again: authored tools are `tool()`
   handlers, inbound is `UserPromptSubmit`, and unwrapped built-ins are
   `PreToolUse` — `canUseTool` is not a policy gate.
+  `langgraph/v1` is Graph API (`StateGraph` + `ToolNode`): authored tools
+  are `guardTool`, unwrapped / MCP tools go through `guardToolNode`, and
+  `interrupt()` is HITL not policy. `createReactAgent` is deprecated; do not
+  build on it or on LangChain `createAgent`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would

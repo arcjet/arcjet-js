@@ -101,7 +101,11 @@ function walkForForbiddenImports(
       spec === "@mastra/core" ||
       spec.startsWith("@mastra/core/") ||
       spec === "@anthropic-ai/claude-agent-sdk" ||
-      spec.startsWith("@anthropic-ai/claude-agent-sdk/")
+      spec.startsWith("@anthropic-ai/claude-agent-sdk/") ||
+      spec === "@langchain/langgraph" ||
+      spec.startsWith("@langchain/langgraph/") ||
+      spec === "@langchain/core" ||
+      spec.startsWith("@langchain/core/")
     ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }

@@ -292,6 +292,7 @@ export const EXPECTED_ROOT_KEYS = [
   "./bun",
   "./claude-agent-sdk/v0",
   "./fetch",
+  "./langgraph/v1",
   "./mastra/v1",
   "./node",
   // The in-memory client for application tests. Deliberately a single entry

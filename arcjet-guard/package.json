@@ -83,6 +83,10 @@
     "./claude-agent-sdk/v0": {
       "types": "./dist/claude-agent-sdk/v0/index.d.ts",
       "import": "./dist/claude-agent-sdk/v0/index.js"
+    },
+    "./langgraph/v1": {
+      "types": "./dist/langgraph/v1/index.d.ts",
+      "import": "./dist/langgraph/v1/index.js"
     }
   },
   "publishConfig": {
@@ -95,7 +99,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts'",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/langgraph/**/*.test.ts'",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
     "test-runtime-deno": "npm run build && deno test --no-check --allow-all test/runtime/deno.test.ts",
@@ -113,6 +117,8 @@
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.13",
     "@anthropic-ai/claude-agent-sdk": "0.3.221",
+    "@langchain/core": "1.2.8",
+    "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.58.0",
     "@types/node": "22.20.1",
     "ai": "7.0.38",
@@ -125,6 +131,8 @@
   "peerDependencies": {
     "@ai-sdk/provider-utils": ">=5 <6",
     "@anthropic-ai/claude-agent-sdk": ">=0.1.0 <1",
+    "@langchain/core": ">=1 <2",
+    "@langchain/langgraph": ">=1 <2",
     "@mastra/core": ">=1 <2",
     "ai": ">=7 <8",
     "eve": ">=0.25.1 <1"
@@ -143,6 +151,12 @@
       "optional": true
     },
     "@anthropic-ai/claude-agent-sdk": {
+      "optional": true
+    },
+    "@langchain/core": {
+      "optional": true
+    },
+    "@langchain/langgraph": {
       "optional": true
     }
   },
