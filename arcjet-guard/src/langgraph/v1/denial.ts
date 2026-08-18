@@ -4,10 +4,26 @@ import type { DecisionDeny } from "../../types.ts";
 /**
  * Structured tool result returned to the model when a call is denied.
  *
- * Intentionally structurally identical to `vercel-ai/v7`'s ArcjetDenialResult
- * so the model trained on denial objects sees the same shape regardless of
- * which integration is in use. Both declarations exist to avoid putting the
- * `ai` SDK in this namespace's import graph.
+ * Intentionally structurally identical to `vercel-ai/v7`'s and `mastra/v1`'s
+ * ArcjetDenialResult so the model trained on denial objects sees the same
+ * shape regardless of which integration is in use. Each declaration exists
+ * separately to avoid putting another vendor's SDK in this namespace's import
+ * graph.
+ *
+ * **Why this is not a `ToolMessage`.** `ToolNode` returns a tool's output
+ * unchanged when `isBaseMessage(output)` holds, and otherwise wraps it in a
+ * real `ToolMessage` carrying the tool call id. Passing that check needs a
+ * `_getType` method, and an object that fakes it is then handed to
+ * `messagesStateReducer`, which forwards anything `isBaseMessage` accepts and
+ * assigns `m.lc_kwargs.id` — throwing on a duck-typed message and taking the
+ * graph down. Constructing a genuine `ToolMessage` would need a value import
+ * of `@langchain/core`, which this namespace must not have. So a denial is a
+ * plain object: `ToolNode` wraps it, the model reads these fields as the tool
+ * result content, and no graph internals are faked.
+ *
+ * A consequence worth knowing: because the tool does not throw, the
+ * `ToolMessage` `ToolNode` builds carries `status: "success"`. The denial is
+ * in the payload (`arcjetDenied: true`), not the envelope.
  */
 export interface ArcjetDenialResult {
   arcjetDenied: true;
@@ -19,25 +35,6 @@ export interface ArcjetDenialResult {
   retryable: boolean;
   /** Seconds until a rate-limited call may be retried. */
   retryAfterSeconds?: number;
-}
-
-/**
- * Tool-result shape `ToolNode` / the model can read on DENY.
- *
- * LangGraph's `ToolNode` treats a returned object with `getType() === "tool"`
- * as a `ToolMessage` and otherwise wraps the value in one with
- * `status: "success"`. This object carries `status: "error"` plus the
- * structured denial so either path is readable. We do not construct a
- * `@langchain/core` `ToolMessage` — that would be a value import, and CI
- * must pass with the peer absent.
- */
-export interface LangGraphToolResult extends ArcjetDenialResult {
-  status: "error";
-  content: string;
-  type: "tool";
-  name: string;
-  tool_call_id: string;
-  getType: () => "tool";
 }
 
 /** Model- and user-readable explanation of a denial. */
@@ -101,76 +98,4 @@ export function unavailableResult(): ArcjetDenialResult {
     retryable: true,
     retryAfterSeconds: UNAVAILABLE_RETRY_AFTER_SECONDS,
   };
-}
-
-export function denialToolResult(
-  decision: DecisionDeny,
-  extras?: { name?: string; toolCallId?: string },
-): LangGraphToolResult {
-  return asToolResult(denialResult(decision), extras);
-}
-
-export function unavailableToolResult(extras?: {
-  name?: string;
-  toolCallId?: string;
-}): LangGraphToolResult {
-  return asToolResult(unavailableResult(), extras);
-}
-
-/**
- * Lift a denial payload (or a caller `onDeny` object) into the tool-result
- * shape. A value that already looks like a tool result is returned as-is.
- */
-export function asToolResult(
-  value: unknown,
-  extras?: { name?: string; toolCallId?: string },
-): LangGraphToolResult {
-  if (isToolResult(value)) {
-    return value;
-  }
-
-  const denial = isDenialResult(value)
-    ? value
-    : {
-        arcjetDenied: true as const,
-        reason: "ERROR",
-        message: typeof value === "string" ? value : unavailableReason(),
-        retryable: false,
-      };
-
-  const name = extras?.name ?? "";
-  const toolCallId = extras?.toolCallId ?? "";
-
-  return {
-    ...denial,
-    status: "error",
-    content: denial.message,
-    type: "tool",
-    name,
-    tool_call_id: toolCallId,
-    getType: () => "tool",
-  };
-}
-
-function isDenialResult(value: unknown): value is ArcjetDenialResult {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    "arcjetDenied" in value &&
-    (value as { arcjetDenied?: unknown }).arcjetDenied === true &&
-    "reason" in value &&
-    typeof (value as { reason?: unknown }).reason === "string" &&
-    "message" in value &&
-    typeof (value as { message?: unknown }).message === "string"
-  );
-}
-
-function isToolResult(value: unknown): value is LangGraphToolResult {
-  return (
-    isDenialResult(value) &&
-    "status" in value &&
-    (value as { status?: unknown }).status === "error" &&
-    "getType" in value &&
-    typeof (value as { getType?: unknown }).getType === "function"
-  );
 }

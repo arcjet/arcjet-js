@@ -50,10 +50,13 @@ export interface GuardToolNodePolicy {
  * Structural `ToolNode` surface this helper wraps. Matches
  * `@langchain/langgraph/prebuilt` `ToolNode` (`tools` + `invoke`) without
  * constructing one — CI must pass with the peer absent.
+ *
+ * `invoke` uses method syntax so a real `ToolNode`, whose `invoke` is
+ * generic, stays assignable; see the note on {@link LangGraphTool}.
  */
 export interface LangGraphToolNodeLike {
   tools: LangGraphTool[];
-  invoke: (input: unknown, config?: unknown) => unknown;
+  invoke?(input: unknown, config?: unknown): unknown;
 }
 
 function isToolNodeLike(value: unknown): value is LangGraphToolNodeLike {
@@ -106,28 +109,47 @@ function wrapUnbrandedTool(
   return guardTool(client, tool, policyForTool(tool, policy));
 }
 
-function ensureToolsGuarded(
+/**
+ * Replace every unguarded entry of `tools` with a guarded one, in place.
+ *
+ * In place is the whole point. `ToolNode`'s constructor registers
+ * `func: (input, config) => this.run(input, config)` — an arrow bound to the
+ * instance being constructed — and `run` reads `this.tools`. Assigning a new
+ * array to a copied node therefore changes nothing the node actually
+ * executes: the captured closure keeps reaching the original array. Mutating
+ * the array the node already holds is what the running graph observes, and it
+ * also means a caller holding the same node (or the same array) cannot
+ * bypass Guard through a stale reference.
+ */
+function guardToolsInPlace(
   client: ArcjetAgentClient,
   tools: LangGraphTool[],
   policy: GuardToolNodePolicy,
-): LangGraphTool[] {
-  let changed = false;
-  const next = tools.map((tool) => {
-    if (arcjetProtectedTool in tool) {
-      return tool;
+): void {
+  for (let index = 0; index < tools.length; index += 1) {
+    const tool = tools[index];
+    if (tool === undefined || arcjetProtectedTool in tool) {
+      continue;
     }
-    changed = true;
-    return wrapUnbrandedTool(client, tool, policy);
-  });
-  return changed ? next : tools;
+    tools[index] = guardTool(client, tool, policyForTool(tool, policy));
+  }
 }
 
 /**
- * Wraps a LangGraph `ToolNode` (or the tools you will pass to one) so MCP /
+ * Guards the tools a LangGraph `ToolNode` executes, so MCP /
  * runtime-discovered / unwrapped tools still hit Guard before execute.
  *
- * Already-branded tools (`guardTool`) are left alone so Guard is not
- * double-called. Wrapping a `ToolNode` that is already branded throws.
+ * Given a `ToolNode`, the node's tools are guarded **in place** and the same
+ * node is returned: `ToolNode` resolves tools through a closure captured at
+ * construction, so a copy with a fresh tools array would leave the original
+ * tools running unguarded. Mutating in place also means a caller still
+ * holding that node cannot bypass Guard. Given an array of tools, a new
+ * array of guarded tools is returned and the input array is left alone.
+ *
+ * Already-branded tools (`guardTool`) are left as they are, so Guard is not
+ * double-called. Wrapping a `ToolNode` that is already guarded throws. Tools
+ * appended after wrapping — MCP discovered mid-run — are guarded on the next
+ * `invoke`.
  *
  * Prefer this for tools that only run through `ToolNode`. Use `guardTool`
  * for authored tools invoked outside `ToolNode`.
@@ -184,44 +206,47 @@ export function guardToolNode(
     throw new Error("@arcjet/guard: guardToolNode() requires a ToolNode or an array of tools");
   }
 
-  if (arcjetProtectedTool in toolsOrNode) {
+  const node = toolsOrNode;
+
+  if (arcjetProtectedTool in node) {
     throw new Error(
       "@arcjet/guard: guardToolNode() cannot wrap a ToolNode that is already guarded; do not double-wrap with @arcjet/guard/langgraph/v1",
     );
   }
 
-  const originalInvoke = toolsOrNode.invoke;
+  // A frozen array cannot be guarded in place, and silently returning the
+  // node would leave every tool ungated. Fail at wrap time instead.
+  if (Object.isFrozen(node.tools)) {
+    throw new Error(
+      "@arcjet/guard: guardToolNode() cannot guard a ToolNode with a frozen tools array; pass the tools through guardToolNode() before constructing the ToolNode",
+    );
+  }
 
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
-  const proto = Object.getPrototypeOf(toolsOrNode) as object | null;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
-  const wrapped = Object.defineProperties(
-    Object.create(proto),
-    Object.getOwnPropertyDescriptors(toolsOrNode),
-  ) as LangGraphToolNodeLike;
+  guardToolsInPlace(client, node.tools, policy);
 
-  wrapped.tools = ensureToolsGuarded(client, wrapped.tools, policy);
+  // oxlint-disable-next-line typescript/unbound-method -- deliberately unbound: it is re-applied to `node` below so the guarded tools array is the one it reads
+  const originalInvoke = node.invoke;
+  if (originalInvoke !== undefined) {
+    const ownInvoke = Object.getOwnPropertyDescriptor(node, "invoke");
+    const newInvoke = (input: unknown, config?: unknown): unknown => {
+      // Tools discovered after wrapping (MCP, runtime registration) are
+      // guarded here, before the node resolves the call.
+      guardToolsInPlace(client, node.tools, policy);
+      return originalInvoke.call(node, input, config);
+    };
+    Object.defineProperty(node, "invoke", {
+      value: newInvoke,
+      writable: true,
+      enumerable: ownInvoke?.enumerable ?? false,
+      configurable: true,
+    });
+  }
 
-  const newInvoke = (input: unknown, config?: unknown): unknown => {
-    wrapped.tools = ensureToolsGuarded(client, wrapped.tools, policy);
-    // Real ToolNode.runTool reads `this.tools`. Bind to the wrapped node so
-    // MCP tools added after wrap (and the replaced tools array) are the ones
-    // that execute.
-    return originalInvoke.call(wrapped, input, config);
-  };
-
-  Object.defineProperty(wrapped, "invoke", {
-    value: newInvoke,
-    writable: true,
-    enumerable: true,
-    configurable: true,
-  });
-
-  Object.defineProperty(wrapped, arcjetProtectedTool, {
+  Object.defineProperty(node, arcjetProtectedTool, {
     value: true,
     enumerable: false,
     configurable: true,
   });
 
-  return wrapped;
+  return node;
 }

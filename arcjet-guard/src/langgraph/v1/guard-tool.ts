@@ -6,15 +6,22 @@ import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { langgraphAgentContext } from "./context.ts";
 import type { LangGraphContextSource } from "./context.ts";
-import { denialToolResult, unavailableToolResult } from "./denial.ts";
-import type { LangGraphToolResult } from "./denial.ts";
+import { denialResult, unavailableResult } from "./denial.ts";
 
 /**
  * Structural LangChain `tool()` / `StructuredTool` / `RunnableToolLike`.
  * Declared here so `guardTool` does not value-import `@langchain/core`.
  *
- * LangGraph Graph API tools are invoked via `invoke` (`ToolNode.runTool`)
- * and authored `tool()` wrappers also expose `func`. There is no `execute`.
+ * LangGraph Graph API tools are invoked through `invoke` (that is what
+ * `ToolNode.runTool` calls) and authored `tool()` wrappers also expose `func`.
+ * There is no `execute`.
+ *
+ * `invoke` and `func` are declared with method syntax, not as property types.
+ * Method parameters are bivariant, which is what lets a real
+ * `DynamicStructuredTool` — whose `invoke` is generic over
+ * `StructuredToolCallInput` — satisfy this interface. Written as property
+ * types they are contravariant under `strictFunctionTypes`, and every real
+ * LangChain tool is rejected at the call site.
  *
  * `createReactAgent` is deprecated in LangGraph JS v1 in favor of LangChain
  * `createAgent`. This helper targets Graph API tools, not that middleware.
@@ -22,8 +29,8 @@ import type { LangGraphToolResult } from "./denial.ts";
 export interface LangGraphTool<TInput = unknown> {
   name: string;
   description?: string;
-  invoke?: (input: unknown, config?: unknown) => unknown;
-  func?: (input: TInput, runtime?: unknown) => unknown;
+  invoke?(input: unknown, config?: unknown): unknown;
+  func?(input: TInput, runtime?: unknown): unknown;
 }
 
 /**
@@ -32,7 +39,7 @@ export interface LangGraphTool<TInput = unknown> {
  * the tool args (not opaque call ids).
  */
 export type LangGraphToolInput<TTool> = TTool extends {
-  func?: (input: infer TInput, runtime?: unknown) => unknown;
+  func?(input: infer TInput, runtime?: unknown): unknown;
 }
   ? TInput
   : unknown;
@@ -63,10 +70,13 @@ export interface GuardToolPolicy<TInput> {
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
   onGuardError?: OnGuardError;
   /**
-   * Reshape the denial payload the model sees for a real DENY decision.
-   * Return a `ToolMessage`-shaped object (`status: "error"` recommended) or
-   * a plain object. Unavailable guards take the `onUnavailable` path
-   * instead; this callback does not fire for outages.
+   * Reshape the denial payload the model sees for a real DENY decision. The
+   * value is returned to the caller as-is, so `ToolNode` treats it exactly
+   * as it treats the default denial: a non-message object becomes the
+   * content of the `ToolMessage` it builds. Unavailable guards take the
+   * `onUnavailable` path instead and return the fixed
+   * `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` result;
+   * this callback does not fire for outages.
    */
   onDeny?: (decision: DecisionDeny) => unknown;
 }
@@ -75,12 +85,7 @@ function isContextSource(value: unknown): value is LangGraphContextSource {
   return value !== null && typeof value === "object";
 }
 
-function isToolCall(input: unknown): input is {
-  args: unknown;
-  id?: string;
-  name?: string;
-  type: "tool_call";
-} {
+function isToolCall(input: unknown): input is { args: unknown; type: "tool_call" } {
   return (
     input !== null &&
     typeof input === "object" &&
@@ -90,15 +95,13 @@ function isToolCall(input: unknown): input is {
   );
 }
 
+/**
+ * The model-produced arguments. `ToolNode` invokes a tool with the whole
+ * `ToolCall`, so rules must see `args` rather than the envelope — scanning
+ * the envelope would feed an opaque `tool_call_id` to the detectors.
+ */
 function toolArgs(input: unknown): unknown {
   return isToolCall(input) ? input.args : input;
-}
-
-function toolCallId(input: unknown): string | undefined {
-  if (isToolCall(input) && typeof input.id === "string" && input.id.length > 0) {
-    return input.id;
-  }
-  return undefined;
 }
 
 /**
@@ -106,21 +109,22 @@ function toolCallId(input: unknown): string | undefined {
  * runs on DENY.
  *
  * Always runs `guard()` before the tool, submitting `policy.rules` or none;
- * on DENY the original function never executes and the model receives a
- * tool result with `status: "error"` (or the result of `policy.onDeny`).
- * This helper does not throw on DENY.
+ * on DENY the original function never executes and the model receives an
+ * `ArcjetDenialResult` (or the result of `policy.onDeny`). This helper does
+ * not throw on DENY. Through `ToolNode` the denial arrives as the content of
+ * a real `ToolMessage`; see {@link ArcjetDenialResult} for why the denial is
+ * in the payload rather than the message status.
  *
  * Guard API errors depend on `policy.onGuardError` (defaults to `"deny"`):
- * - `"deny"` (default): Tool does not execute; the model receives
- *   `status: "error"` with `reason: "ERROR"`.
+ * - `"deny"` (default): Tool does not execute; the model receives an
+ *   `ArcjetDenialResult` with `reason: "ERROR"`.
  * - `"allow"`: Tool still runs, with a warning gated on `ARCJET_LOG_LEVEL`.
  *
  * Correlation is read from the invoke `config` / `ToolRuntime`
  * (`configurable.thread_id`). No id is minted.
  *
- * Do not also wrap the same tool with `@arcjet/guard/vercel-ai/v7` or pass
- * it through `guardToolNode` after wrapping — the shared
- * `arcjetProtectedTool` brand throws on a second `guardTool` wrap.
+ * Do not also wrap the same tool with `@arcjet/guard/vercel-ai/v7`. The
+ * shared `arcjetProtectedTool` brand throws on a second `guardTool` wrap, and
  * `guardToolNode` skips already-branded tools so Guard is not double-called.
  *
  * This is Graph API (`StateGraph` + `ToolNode`). `createReactAgent` is
@@ -163,9 +167,11 @@ export function guardTool<TTool extends LangGraphTool<any>>(
   tool: TTool,
   policy: GuardToolPolicy<LangGraphToolInput<TTool>>,
 ): TTool {
-  const hasFunc = typeof tool.func === "function";
-  const hasInvoke = typeof tool.invoke === "function";
-  if (!hasFunc && !hasInvoke) {
+  // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
+  const func = typeof tool.func === "function" ? tool.func : undefined;
+  // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
+  const invoke = typeof tool.invoke === "function" ? tool.invoke : undefined;
+  if (func === undefined && invoke === undefined) {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with a func or invoke function");
   }
@@ -175,10 +181,13 @@ export function guardTool<TTool extends LangGraphTool<any>>(
     );
   }
 
-  const func = tool.func;
-  const invoke = tool.invoke;
-  const originalFunc = hasFunc && func !== undefined ? func.bind(tool) : undefined;
-  const originalInvoke = hasInvoke && invoke !== undefined ? invoke.bind(tool) : undefined;
+  // Bound to the original tool, so the guarded `invoke` below reaches the
+  // original `func` rather than the guarded one. That is what keeps a single
+  // call from evaluating the guard twice, without any shared re-entry state:
+  // `ToolNode` fans parallel tool calls out through `Promise.all`, and a
+  // shared flag would let one of those calls skip the guard entirely.
+  const originalFunc = func?.bind(tool);
+  const originalInvoke = invoke?.bind(tool);
 
   // Preserve class prototype and non-enumerable markers.
   // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
@@ -189,27 +198,11 @@ export function guardTool<TTool extends LangGraphTool<any>>(
     Object.getOwnPropertyDescriptors(tool),
   ) as TTool;
 
-  let inFlight = false;
-
-  const run = async (
-    input: unknown,
-    config: unknown,
-    execute: () => Promise<unknown>,
-  ): Promise<unknown> => {
-    if (inFlight) {
-      return execute();
-    }
-    inFlight = true;
-    try {
-      return await runGuardedTool(client, tool, policy, input, config, execute);
-    } finally {
-      inFlight = false;
-    }
-  };
-
   if (originalFunc !== undefined) {
-    const newFunc = (input: LangGraphToolInput<TTool>, runtime?: unknown): Promise<unknown> =>
-      run(input, runtime, () => Promise.resolve(originalFunc(input, runtime)));
+    const newFunc = (input: unknown, runtime?: unknown): Promise<unknown> =>
+      runGuardedTool(client, tool, policy, input, runtime, () =>
+        Promise.resolve(originalFunc(input, runtime)),
+      );
     Object.defineProperty(wrapped, "func", {
       value: newFunc,
       writable: true,
@@ -220,7 +213,9 @@ export function guardTool<TTool extends LangGraphTool<any>>(
 
   if (originalInvoke !== undefined) {
     const newInvoke = (input: unknown, config?: unknown): Promise<unknown> =>
-      run(input, config, () => Promise.resolve(originalInvoke(input, config)));
+      runGuardedTool(client, tool, policy, input, config, () =>
+        Promise.resolve(originalInvoke(input, config)),
+      );
     Object.defineProperty(wrapped, "invoke", {
       value: newInvoke,
       writable: true,
@@ -247,13 +242,6 @@ function runGuardedTool<TTool extends LangGraphTool<any>>(
   execute: () => Promise<unknown>,
 ): Promise<unknown> {
   const args = toolArgs(input);
-  const extras: { name: string; toolCallId?: string } = {
-    name: typeof tool.name === "string" ? tool.name : "",
-  };
-  const callId = toolCallId(input);
-  if (callId !== undefined) {
-    extras.toolCallId = callId;
-  }
 
   let action: string;
   let rules: RuleWithInput[] | undefined;
@@ -277,7 +265,7 @@ function runGuardedTool<TTool extends LangGraphTool<any>>(
     if (policy.onGuardError === "allow") {
       return execute();
     }
-    return Promise.resolve(unavailableToolResult(extras));
+    return Promise.resolve(unavailableResult());
   }
 
   const source = isContextSource(config) ? config : undefined;
@@ -298,9 +286,8 @@ function runGuardedTool<TTool extends LangGraphTool<any>>(
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
     onDeny: (decision: DecisionDeny) => {
-      const fallback = denialToolResult(decision, extras);
       if (policy.onDeny === undefined) {
-        return fallback;
+        return denialResult(decision);
       }
       try {
         return policy.onDeny(decision);
@@ -312,15 +299,11 @@ function runGuardedTool<TTool extends LangGraphTool<any>>(
             error,
           );
         }
-        return fallback;
+        return denialResult(decision);
       }
     },
-    onUnavailable: () => unavailableToolResult(extras),
+    onUnavailable: () => unavailableResult(),
     execute,
     onGuardError: policy.onGuardError ?? "deny",
   });
 }
-
-// oxlint-disable-next-line typescript/no-unused-vars -- keeps the async keyword so callers can await a rejected guard path
-
-export type { LangGraphToolResult };

@@ -75,10 +75,10 @@ function readConfigurable(
   if (source === undefined) {
     return undefined;
   }
-  if (source.configurable !== undefined && typeof source.configurable === "object") {
+  if (source.configurable !== null && typeof source.configurable === "object") {
     return source.configurable;
   }
-  if (source.config?.configurable !== undefined && typeof source.config.configurable === "object") {
+  if (source.config?.configurable !== null && typeof source.config?.configurable === "object") {
     return source.config.configurable;
   }
   if (source.thread_id !== undefined || source.checkpoint_ns !== undefined) {
@@ -101,9 +101,9 @@ function readConfigurable(
  * Preference order for `correlationId`:
  * 1. `configurable.thread_id` — the checkpointer thread, what the graph
  *    already has
- * 2. `configurable.checkpoint_ns` — subgraph namespace (`""` for the parent
- *    is skipped as empty)
- * 3. `runId` / `configurable.run_id` — only if the graph already set one
+ * 2. `runId` / `configurable.run_id` — only if the graph already set one
+ * 3. `configurable.checkpoint_ns` — subgraph namespace, a last resort
+ *    (`""` for the parent graph is skipped as empty)
  *
  * An invalid candidate is skipped (and warned when `ARCJET_LOG_LEVEL` asks
  * for warnings). If nothing valid remains, `correlationId` is omitted so the
@@ -129,10 +129,15 @@ export function langgraphAgentContext(
   const checkpointNs = configurable?.["checkpoint_ns"];
   const runId = ctx?.runId ?? ctx?.config?.runId ?? configurable?.["run_id"];
 
+  // Run id before checkpoint namespace: `checkpoint_ns` names a subgraph
+  // (`"node_name:uuid"`, `""` for the parent), so sibling subgraphs of one
+  // run would land under different correlation ids. A run id covers the whole
+  // run, which is what a Sequence should join. The namespace stays as a last
+  // resort and as metadata.
   const { id: correlationId, rejected } = firstValidId([
     { value: threadId, label: "thread_id" },
-    { value: checkpointNs, label: "checkpoint_ns" },
     { value: runId, label: "run id" },
+    { value: checkpointNs, label: "checkpoint_ns" },
   ]);
 
   if (rejected !== undefined && correlationId === undefined && shouldWarn()) {

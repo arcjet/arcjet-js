@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion, eslint/strict-boolean-expressions -- test infrastructure and mocks
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion, eslint/strict-boolean-expressions, typescript/unbound-method -- test infrastructure and mocks
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -13,7 +13,7 @@ import {
 } from "../../../test/_shared/stub-client.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { DecisionDeny } from "../../types.ts";
-import type { LangGraphToolResult } from "./denial.ts";
+import type { ArcjetDenialResult } from "./denial.ts";
 import type { LangGraphTool } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 
@@ -54,8 +54,8 @@ function threadConfig(threadId: string) {
   return { configurable: { thread_id: threadId } };
 }
 
-function asToolResult(value: unknown): LangGraphToolResult {
-  return asDenial<LangGraphToolResult>(value);
+function asToolResult(value: unknown): ArcjetDenialResult {
+  return asDenial<ArcjetDenialResult>(value);
 }
 
 test("throws when the tool has no func or invoke", () => {
@@ -154,7 +154,7 @@ test("ALLOW → capture outcome is success and correlation comes from thread_id"
   );
 });
 
-test("DENY → func is not called and a status:error result is returned (no throw)", async () => {
+test("DENY → func is not called and a structured denial is returned (no throw)", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   let calls = 0;
   const tool = createLangGraphTool({
@@ -167,7 +167,7 @@ test("DENY → func is not called and a status:error result is returned (no thro
   const result = asToolResult(await wrapped.func!({}, threadConfig("t")));
 
   assert.equal(calls, 0);
-  assert.equal(result.status, "error");
+  assert.equal(result.arcjetDenied, true);
   assert.equal(result.arcjetDenied, true);
   assert.equal(result.reason, "PROMPT_INJECTION");
   assert.equal(result.retryable, false);
@@ -200,7 +200,7 @@ test("rules callback receives the tool input", async () => {
   assert.deepEqual(recorded(guardCalls[0])["rules"], [fakeRule]);
 });
 
-test("fail-closed unavailable → ERROR result, func not called", async () => {
+test("fail-closed unavailable → ERROR denial, func not called", async () => {
   const { client } = stubClient(decisionFailOpenAllow());
   let calls = 0;
   const tool = createLangGraphTool({
@@ -213,7 +213,7 @@ test("fail-closed unavailable → ERROR result, func not called", async () => {
   const result = asToolResult(await wrapped.func!({}, threadConfig("t")));
 
   assert.equal(calls, 0);
-  assert.equal(result.status, "error");
+  assert.equal(result.arcjetDenied, true);
   assert.equal(result.reason, "ERROR");
 });
 
@@ -261,7 +261,7 @@ test("DENY + throwing onDeny still denies and does not throw", async () => {
 
   const result = asToolResult(await wrapped.func!({}, threadConfig("t")));
   assert.equal(calls, 0);
-  assert.equal(result.status, "error");
+  assert.equal(result.arcjetDenied, true);
   assert.equal(result.reason, "PROMPT_INJECTION");
 });
 
@@ -399,7 +399,7 @@ test("rules factory throw fail-closes and does not execute", async () => {
   });
   const result = asToolResult(await wrapped.func!({}, threadConfig("t")));
   assert.equal(calls, 0);
-  assert.equal(result.status, "error");
+  assert.equal(result.arcjetDenied, true);
   assert.equal(result.reason, "ERROR");
 });
 
@@ -491,19 +491,29 @@ test("invoke-only tool (no func) is still gated", async () => {
   const wrapped = guardTool(client, tool, { action: "order.looked-up" });
   const result = asToolResult(await wrapped.invoke!({}, threadConfig("t")));
   assert.equal(calls, 0);
-  assert.equal(result.status, "error");
+  assert.equal(result.arcjetDenied, true);
 });
 
-test("DENY invoke with a tool_call copies tool_call_id onto the result", async () => {
+test("DENY through a tool_call envelope returns the denial and scans only args", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   const tool = createLangGraphTool({ func: async () => ({ ok: true }) });
-  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  let scanned: unknown;
+  const wrapped = guardTool(client, tool, {
+    action: "order.looked-up",
+    rules: (input) => {
+      scanned = input;
+      return [];
+    },
+  });
   const result = asToolResult(
     await wrapped.invoke!(
       { name: "test-tool", args: { note: "x" }, id: "call-9", type: "tool_call" },
       threadConfig("t"),
     ),
   );
-  assert.equal(result.tool_call_id, "call-9");
-  assert.equal(result.status, "error");
+  // The opaque call id must not reach the detectors; ToolNode puts the id on
+  // the ToolMessage it builds from this denial.
+  assert.deepEqual(scanned, { note: "x" });
+  assert.equal(result.arcjetDenied, true);
+  assert.equal(result.reason, "PROMPT_INJECTION");
 });

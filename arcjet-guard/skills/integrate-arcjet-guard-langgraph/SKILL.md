@@ -14,12 +14,13 @@ client. It never talks to the Arcjet API itself. Two surfaces, one
 decision rule:
 
 - **An authored tool** (`tool()` / `StructuredTool`) → `guardTool()`. DENY
-  is a tool result with `status: "error"`. Do not throw.
+  returns a structured `ArcjetDenialResult`. Do not throw.
 - **MCP / runtime-discovered / unwrapped tools** → `guardToolNode()`.
-  Wraps `ToolNode` from `@langchain/langgraph/prebuilt` so execute still
-  hits Guard. Already-branded tools are skipped (no double-call).
+  Guards the tools a `ToolNode` from `@langchain/langgraph/prebuilt`
+  executes, in place, so execute still hits Guard. Already-branded tools
+  are skipped (no double-call).
 - **Correlation** → `langgraphAgentContext()` reads
-  `configurable.thread_id`, then `checkpoint_ns`, then run id. It never
+  `configurable.thread_id`, then the run id, then `checkpoint_ns`. It never
   mints a new id.
 
 This namespace is LangGraph **Graph API** (`StateGraph` + `ToolNode`).
@@ -45,6 +46,13 @@ Guard.
 Unwrapped and MCP tools run inside `ToolNode`. Graph hooks and HITL
 pauses cannot stop `tool.invoke`. Use `guardToolNode` (or `guardTool` for
 authored tools you invoke yourself).
+
+`guardToolNode` guards the node's tools **in place** and returns the same
+node. `ToolNode`'s constructor captures
+`func: (input, config) => this.run(input, config)` and `run` reads
+`this.tools`, so guarding a copy would leave the original node running
+unguarded tools. This also means a caller still holding the pre-wrap node
+cannot bypass Guard.
 
 ## Questions to ask the human first
 
@@ -79,9 +87,14 @@ Ask only what you cannot infer from the code; suggest defaults.
    tools are LangChain `tool()`, but this namespace brands them. `guardTool`
    throws if the tool already carries the Arcjet protection brand.
    `guardToolNode` skips already-branded tools so Guard is not double-called.
-6. **A denial from `guardTool` is a tool result with `status: "error"`**,
-   not a throw. If `onDeny` throws, the tool still does not run and the
-   model still receives the default denial result.
+6. **A denial from `guardTool` is a structured object, not a throw.**
+   `ToolNode` turns it into a real `ToolMessage`. Because the tool did not
+   throw, that message's `status` is `success` — the denial is in the
+   payload (`arcjetDenied: true`). Do not fabricate a `ToolMessage`
+   yourself to force `status: "error"`: an object that only looks like a
+   message reaches the graph's message reducer and crashes it. If `onDeny`
+   throws, the tool still does not run and the model still receives the
+   default denial.
 
 ## Step 1: Install and find the guard client
 
@@ -143,7 +156,10 @@ export const lookupOrder = guardTool(
 
 - Omit `rules` to submit none. The guard call still happens.
 - On DENY the tool's `func` / `invoke` never runs. The model receives
-  `{ status: "error", arcjetDenied: true, reason, message, retryable }`.
+  `{ arcjetDenied: true, reason, message, retryable }` as the tool result
+  content. If you invoke a guarded tool outside `ToolNode`, read that
+  object and build your own `ToolMessage` rather than pushing it into
+  `messages`.
 - Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
 
 ## Step 3: Screen inbound before invoke
@@ -194,10 +210,12 @@ export const tools = guardToolNode(arcjet, new ToolNode(mcpTools), {
 });
 ```
 
-Pass the wrapped node to `StateGraph.addNode("tools", tools)`. Use this
+Pass the wrapped node to `StateGraph.addNode("tools", tools)`. It is the
+same node object you passed in, with its tools guarded in place. Use this
 for tools you did **not** pass through `guardTool`. `guardToolNode` skips
-already-branded tools so applying both to the same authored tool does not
-double-call the guard.
+already-branded tools, so applying both to the same authored tool does not
+double-call the guard. Tools discovered after wrapping are guarded on the
+next `invoke`.
 
 ## Step 5: Correlation
 
@@ -210,8 +228,10 @@ const config = { configurable: { thread_id: conversationId } };
 await graph.invoke({ messages }, config);
 ```
 
-Preference order: `configurable.thread_id`, then
-`configurable.checkpoint_ns`, then run id. If none is a valid 1–256
+Preference order: `configurable.thread_id`, then the run id, then
+`configurable.checkpoint_ns`. The namespace is last because it names one
+subgraph (`""` for the parent), so preferring it would split sibling
+subgraphs of a single run across correlation ids. If none is a valid 1–256
 printable-ASCII string, the call is uncorrelated rather than joined to a
 generated id nobody has.
 

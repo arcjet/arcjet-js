@@ -20,7 +20,20 @@ test("prefers configurable.thread_id", () => {
   assert.equal(result.metadata?.["langgraph.run"], "run-1");
 });
 
-test("falls back to checkpoint_ns when thread_id is absent", () => {
+// A run id covers the whole run; `checkpoint_ns` names one subgraph, so
+// preferring it would split sibling subgraphs of a single run across
+// correlation ids.
+test("prefers the run id over checkpoint_ns when thread_id is absent", () => {
+  const result = langgraphAgentContext({
+    configurable: { checkpoint_ns: "subgraph:1", run_id: "run-555" },
+  });
+
+  assert.equal(result.correlationId, "run-555");
+  assert.equal(result.metadata?.["langgraph.run"], "run-555");
+  assert.equal(result.metadata?.["langgraph.checkpoint_ns"], "subgraph:1");
+});
+
+test("falls back to checkpoint_ns when thread and run ids are absent", () => {
   const result = langgraphAgentContext({
     configurable: { checkpoint_ns: "subgraph:1" },
   });
@@ -38,6 +51,12 @@ test("skips empty checkpoint_ns (parent graph) and uses run id", () => {
   assert.equal(result.correlationId, "run-555");
   assert.equal(result.metadata?.["langgraph.run"], "run-555");
   assert.equal("langgraph.checkpoint_ns" in (result.metadata ?? {}), false);
+});
+
+test("a null configurable does not throw and does not mint", () => {
+  const result = langgraphAgentContext({ configurable: null as never });
+  assert.equal(result.correlationId, undefined);
+  assert.equal(result.metadata, undefined);
 });
 
 test("reads runId from the config object when configurable has none", () => {
@@ -72,7 +91,7 @@ test("never mints an id when the only candidate is invalid", () => {
   assert.equal("langgraph.thread" in (result.metadata ?? {}), false);
 });
 
-test("skips an invalid thread id and uses checkpoint_ns instead of minting", () => {
+test("skips an invalid thread id and uses the next candidate instead of minting", () => {
   const result = langgraphAgentContext({
     configurable: { thread_id: "", checkpoint_ns: "ns-ok" },
   });

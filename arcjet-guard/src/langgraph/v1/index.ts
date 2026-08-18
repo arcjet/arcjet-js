@@ -23,12 +23,14 @@
  * Two surfaces, and three things this namespace does not build:
  *
  * - **An authored tool** (`tool()` / `StructuredTool`) → `guardTool()`.
- *   DENY returns a tool result with `status: "error"`; it does not throw.
+ *   DENY returns a structured `ArcjetDenialResult`; it does not throw.
+ *   `ToolNode` turns that into a real `ToolMessage` the model reads.
  * - **MCP / runtime-discovered / unwrapped tools** → `guardToolNode()`.
- *   Wraps `ToolNode` from `@langchain/langgraph/prebuilt` so execute still
- *   hits Guard. Already-branded tools are skipped (no double-call).
+ *   Guards the tools a `ToolNode` from `@langchain/langgraph/prebuilt`
+ *   executes, in place, so execute still hits Guard. Already-branded tools
+ *   are skipped (no double-call).
  * - **Correlation** → `langgraphAgentContext()` reads
- *   `configurable.thread_id`, then `checkpoint_ns`, then run id. It never
+ *   `configurable.thread_id`, then the run id, then `checkpoint_ns`. It never
  *   mints a new id.
  *
  * ## Screen inbound before `invoke` (or at the first graph node)
@@ -107,5 +109,5 @@ export type {
   GuardToolNodePolicy,
   LangGraphToolNodeLike,
 } from "./guard-tool-node.ts";
-export type { ArcjetDenialResult, LangGraphToolResult } from "./denial.ts";
+export type { ArcjetDenialResult } from "./denial.ts";
 export * from "../../agents/index.ts";

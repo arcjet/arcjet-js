@@ -9,13 +9,10 @@ import {
   decisionDenyRateLimitNoReset,
 } from "../../../test/_shared/stub-client.ts";
 import {
-  asToolResult,
   denialResult,
-  denialToolResult,
   deniedReason,
   unavailableReason,
   unavailableResult,
-  unavailableToolResult,
   UNAVAILABLE_RETRY_AFTER_SECONDS,
 } from "./denial.ts";
 
@@ -73,37 +70,36 @@ describe("langgraph/v1/denial", () => {
     assert.match(deniedReason(decision), /Do not retry/);
   });
 
-  test("denialToolResult is a status:error tool result the model can read", () => {
-    const result = denialToolResult(decisionDenyPromptInjection(), {
-      name: "lookup_order",
-      toolCallId: "call-1",
+  // A denial must stay a plain object. Faking `_getType` would satisfy
+  // `isBaseMessage`, which makes `ToolNode` hand it straight to
+  // `messagesStateReducer` — and that assigns `m.lc_kwargs.id`, throwing on a
+  // duck-typed message and taking the graph down.
+  test("a denial does not pretend to be a BaseMessage", () => {
+    const results: Array<Record<string, unknown>> = [
+      { ...denialResult(decisionDenyPromptInjection()) },
+      { ...unavailableResult() },
+    ];
+
+    for (const result of results) {
+      for (const messageField of ["_getType", "getType", "lc_kwargs", "lc_serializable"]) {
+        assert.equal(
+          messageField in result,
+          false,
+          `a denial must not carry the message field "${messageField}"`,
+        );
+      }
+    }
+  });
+
+  test("a denial is JSON-serializable, which is how ToolNode passes it on", () => {
+    const decoded: unknown = JSON.parse(
+      JSON.stringify(denialResult(decisionDenyPromptInjection())),
+    );
+    assert.deepEqual(decoded, {
+      arcjetDenied: true,
+      reason: "PROMPT_INJECTION",
+      message: deniedReason(decisionDenyPromptInjection()),
+      retryable: false,
     });
-    assert.equal(result.status, "error");
-    assert.equal(result.type, "tool");
-    assert.equal(result.getType(), "tool");
-    assert.equal(result.name, "lookup_order");
-    assert.equal(result.tool_call_id, "call-1");
-    assert.equal(result.arcjetDenied, true);
-    assert.equal(result.content, result.message);
-  });
-
-  test("unavailableToolResult is a status:error tool result", () => {
-    const result = unavailableToolResult({ name: "lookup_order" });
-    assert.equal(result.status, "error");
-    assert.equal(result.reason, "ERROR");
-    assert.equal(result.retryable, true);
-  });
-
-  test("asToolResult passes through an existing tool result", () => {
-    const first = unavailableToolResult({ name: "a", toolCallId: "id-1" });
-    assert.equal(asToolResult(first), first);
-  });
-
-  test("asToolResult lifts a denial object", () => {
-    const denial = denialResult(decisionDenyPromptInjection());
-    const result = asToolResult(denial, { name: "t", toolCallId: "c" });
-    assert.equal(result.status, "error");
-    assert.equal(result.reason, "PROMPT_INJECTION");
-    assert.equal(result.name, "t");
   });
 });

@@ -113,6 +113,10 @@ jobs:
       # written `import type`; this proves the consequence, catching a build
       # step that re-emits one as a value import.
       #
+      # Only `src/langgraph` is globbed. The suite that exercises the real
+      # ToolNode value-imports both peers, so it lives in `test/langgraph`
+      # and runs in the unit-test step above, where the peers are installed.
+      #
       # Runs before the eve-absent step because that one deletes a different
       # optional peer. Typecheck legitimately fails without the peers.
       - name: Unit tests with langgraph absent

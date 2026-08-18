@@ -11,7 +11,7 @@ import {
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { LangGraphToolResult } from "./denial.ts";
+import type { ArcjetDenialResult } from "./denial.ts";
 import type { LangGraphToolNodeLike } from "./guard-tool-node.ts";
 import { guardToolNode } from "./guard-tool-node.ts";
 import type { LangGraphTool } from "./guard-tool.ts";
@@ -30,12 +30,20 @@ function createTool(
   };
 }
 
+/**
+ * Stand-in for `ToolNode`. `invoke` reads `this.tools` through a closure
+ * captured up front, exactly as the real class does
+ * (`func: (input, config) => this.run(input, config)` in its constructor), so
+ * this fake cannot report success where the real class would run unguarded
+ * tools. `test/langgraph/real-tool-node.test.ts` asserts the same behaviour
+ * against the real class.
+ */
 function createNode(tools: LangGraphTool[]): LangGraphToolNodeLike {
   const node: LangGraphToolNodeLike = {
     tools,
-    invoke: async function (this: LangGraphToolNodeLike, input: unknown, config?: unknown) {
+    invoke: async (input: unknown, config?: unknown) => {
       const results = [];
-      for (const tool of this.tools) {
+      for (const tool of node.tools) {
         results.push(await tool.invoke?.(input, config));
       }
       return { messages: results };
@@ -44,54 +52,68 @@ function createNode(tools: LangGraphTool[]): LangGraphToolNodeLike {
   return node;
 }
 
+function threadConfig(threadId: string) {
+  return { configurable: { thread_id: threadId } };
+}
+
+async function invokeNode(node: LangGraphToolNodeLike, input: unknown = {}): Promise<unknown[]> {
+  const output = await node.invoke?.(input, threadConfig("t"));
+  return (output as { messages: unknown[] }).messages;
+}
+
 test("wraps a tools array and brands each unwrapped tool", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const raw = createTool("lookup");
   const wrapped = guardToolNode(client, [raw], { action: "tool.invoked" });
 
   assert.equal(wrapped.length, 1);
-  assert.notStrictEqual(wrapped[0], raw);
+  assert.notStrictEqual(wrapped[0], raw, "the array form returns guarded copies");
   assert.equal(arcjetProtectedTool in wrapped[0]!, true);
-  await wrapped[0]!.func!({}, { configurable: { thread_id: "t" } });
+  assert.equal(arcjetProtectedTool in raw, false, "the input array is left alone");
+  await wrapped[0]!.func!({}, threadConfig("t"));
   assert.equal(guardCalls.length, 1);
 });
 
-test("wraps a ToolNode, leaving already-guarded tools unwrapped a second time", async () => {
+test("guards a node's tools in place and returns the same node", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const authored = guardTool(client, createTool("authored"), { action: "order.looked-up" });
   const mcp = createTool("mcp_search");
-  const node = createNode([authored, mcp]);
+  const tools = [authored, mcp];
+  const node = createNode(tools);
 
   const wrapped = guardToolNode(client, node, {
     action: ({ toolName }) => `${toolName}.invoked`,
   });
 
-  assert.notStrictEqual(wrapped, node);
+  // The real ToolNode resolves tools through a closure captured at
+  // construction, so the node and its array must be the ones we guarded.
+  assert.strictEqual(wrapped, node);
+  assert.strictEqual(wrapped.tools, tools);
   assert.equal(arcjetProtectedTool in wrapped, true);
-  assert.equal(wrapped.tools[0], authored);
+  assert.strictEqual(wrapped.tools[0], authored, "an already-guarded tool is left as-is");
   assert.notStrictEqual(wrapped.tools[1], mcp);
   assert.equal(arcjetProtectedTool in wrapped.tools[1]!, true);
 
-  await wrapped.tools[0]!.func!({}, { configurable: { thread_id: "t" } });
-  await wrapped.tools[1]!.func!({}, { configurable: { thread_id: "t" } });
+  await wrapped.tools[0]!.func!({}, threadConfig("t"));
+  await wrapped.tools[1]!.func!({}, threadConfig("t"));
   assert.equal(guardCalls.length, 2);
   assert.equal(recorded(guardCalls[0])["label"], "order.looked-up");
   assert.equal(recorded(guardCalls[1])["label"], "mcp_search.invoked");
 });
 
-test("authored guardTool + ToolNode wrap is one guard call, not two", async () => {
+test("authored guardTool + node wrap is one guard call, not two", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const authored = guardTool(client, createTool("authored"), { action: "order.looked-up" });
   const wrapped = guardToolNode(client, createNode([authored]), {
     action: "node.invoked",
   });
 
-  await wrapped.invoke({ orderNumber: "A-1" }, { configurable: { thread_id: "t" } });
+  await invokeNode(wrapped, { orderNumber: "A-1" });
   assert.equal(guardCalls.length, 1);
   assert.equal(recorded(guardCalls[0])["label"], "order.looked-up");
 });
 
-test("unwrapped tool through ToolNode is denied and does not execute", async () => {
+test("unwrapped tool through the node is denied and does not execute", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   let calls = 0;
   const mcp = createTool("mcp_search", async () => {
@@ -99,19 +121,40 @@ test("unwrapped tool through ToolNode is denied and does not execute", async () 
     return { ok: true };
   });
   const wrapped = guardToolNode(client, createNode([mcp]), { action: "mcp.invoked" });
-  const result = asDenial<LangGraphToolResult>(
-    ((await wrapped.invoke({}, { configurable: { thread_id: "t" } })) as { messages: unknown[] })
-      .messages[0],
-  );
+  const result = asDenial<ArcjetDenialResult>((await invokeNode(wrapped))[0]);
+
   assert.equal(calls, 0);
-  assert.equal(result.status, "error");
+  assert.equal(result.arcjetDenied, true);
   assert.equal(result.reason, "PROMPT_INJECTION");
 });
 
-test("throws when wrapping a ToolNode that is already guarded", () => {
+test("a pre-wrap reference to the node cannot bypass the guard", async () => {
+  const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
+  let calls = 0;
+  const mcp = createTool("mcp_search", async () => {
+    calls += 1;
+    return { ok: true };
+  });
+  const node = createNode([mcp]);
+  guardToolNode(client, node, { action: "mcp.invoked" });
+
+  await invokeNode(node);
+
+  assert.equal(calls, 0);
+  assert.equal(guardCalls.length, 1);
+});
+
+test("throws when wrapping a node that is already guarded", () => {
   const { client } = stubClient(decisionAllow());
   const wrapped = guardToolNode(client, createNode([createTool("a")]));
   assert.throws(() => guardToolNode(client, wrapped), /already guarded/);
+});
+
+test("throws rather than silently ungating a frozen tools array", () => {
+  const { client } = stubClient(decisionAllow());
+  const node = createNode([createTool("a")]);
+  Object.freeze(node.tools);
+  assert.throws(() => guardToolNode(client, node), /frozen tools array/);
 });
 
 test("skips branded tools in a tools array (no second wrap)", async () => {
@@ -119,12 +162,12 @@ test("skips branded tools in a tools array (no second wrap)", async () => {
   const authored = guardTool(client, createTool("authored"), { action: "order.looked-up" });
   const [again] = guardToolNode(client, [authored], { action: "node.invoked" });
   assert.equal(again, authored);
-  await again!.func!({}, { configurable: { thread_id: "t" } });
+  await again!.func!({}, threadConfig("t"));
   assert.equal(guardCalls.length, 1);
   assert.equal(recorded(guardCalls[0])["label"], "order.looked-up");
 });
 
-test("invoke re-wraps tools added after the initial wrap", async () => {
+test("invoke guards tools added after the initial wrap", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   let calls = 0;
   const node = createNode([]);
@@ -135,12 +178,10 @@ test("invoke re-wraps tools added after the initial wrap", async () => {
       return { ok: true };
     }),
   );
-  const result = asDenial<LangGraphToolResult>(
-    ((await wrapped.invoke({}, { configurable: { thread_id: "t" } })) as { messages: unknown[] })
-      .messages[0],
-  );
+  const result = asDenial<ArcjetDenialResult>((await invokeNode(wrapped))[0]);
+
   assert.equal(calls, 0);
-  assert.equal(result.status, "error");
+  assert.equal(result.arcjetDenied, true);
   assert.equal(arcjetProtectedTool in wrapped.tools[0]!, true);
 });
 
@@ -155,9 +196,22 @@ test("node policy rules receive the tool name and free-text args", async () => {
       return [fakeRule];
     },
   });
-  await wrapped[0]!.func!({ q: "free text" }, { configurable: { thread_id: "t" } });
+  await wrapped[0]!.func!({ q: "free text" }, threadConfig("t"));
   assert.deepEqual(recorded(guardCalls[0])["rules"], [fakeRule]);
   assert.equal(recorded(guardCalls[0])["label"], "mcp_search.invoked");
+});
+
+test("node metadata policy is merged over the derived context", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const mcp = createTool("mcp_search", async () => ({ ok: true }));
+  const wrapped = guardToolNode(client, [mcp], {
+    action: "mcp.invoked",
+    metadata: ({ toolName }) => ({ "app.tool": toolName }),
+  });
+  await wrapped[0]!.func!({}, threadConfig("thread-node"));
+  const metadata = recorded(recorded(guardCalls[0])["metadata"]);
+  assert.equal(metadata["app.tool"], "mcp_search");
+  assert.equal(metadata["langgraph.thread"], "thread-node");
 });
 
 test("node-level fail-closed does not execute an unwrapped tool", async () => {
@@ -168,14 +222,39 @@ test("node-level fail-closed does not execute an unwrapped tool", async () => {
     return { ok: true };
   });
   const wrapped = guardToolNode(client, [mcp], { action: "mcp.invoked" });
-  const result = asDenial<LangGraphToolResult>(
-    await wrapped[0]!.func!({}, { configurable: { thread_id: "t" } }),
-  );
+  const result = asDenial<ArcjetDenialResult>(await wrapped[0]!.func!({}, threadConfig("t")));
   assert.equal(calls, 0);
   assert.equal(result.reason, "ERROR");
 });
 
-test("throws when the argument is neither a ToolNode nor a tools array", () => {
+test("node-level onGuardError allow still executes on fail-open", async () => {
+  const { client } = stubClient(decisionFailOpenAllow());
+  let calls = 0;
+  const mcp = createTool("mcp_search", async () => {
+    calls += 1;
+    return { ok: true };
+  });
+  const wrapped = guardToolNode(client, [mcp], {
+    action: "mcp.invoked",
+    onGuardError: "allow",
+  });
+  const result = await wrapped[0]!.func!({}, threadConfig("t"));
+  assert.equal(calls, 1);
+  assert.deepEqual(result, { ok: true });
+});
+
+test("node-level onDeny reshapes the denial", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const mcp = createTool("mcp_search", async () => ({ ok: true }));
+  const wrapped = guardToolNode(client, [mcp], {
+    action: "mcp.invoked",
+    onDeny: (decision) => ({ blocked: decision.reason }),
+  });
+  const result = await wrapped[0]!.func!({}, threadConfig("t"));
+  assert.deepEqual(result, { blocked: "PROMPT_INJECTION" });
+});
+
+test("throws when the argument is neither a node nor a tools array", () => {
   const { client } = stubClient(decisionAllow());
   assert.throws(
     () => guardToolNode(client, { name: "not-a-node" } as never),

@@ -590,7 +590,7 @@ before the event exists.
 <details>
 <summary>Without <code>using</code> — Node.js 22, or no TypeScript compile step</summary>
 
-The `using` *syntax* needs Node.js 24 to run natively, or compilation through
+The `using` _syntax_ needs Node.js 24 to run natively, or compilation through
 TypeScript. Node.js 22 defines `Symbol.dispose` but cannot parse `using`. Call
 `unregister()` from a `finally` instead:
 
@@ -765,7 +765,12 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   }
   const decision = await getArcjet().guard({
     label: "tools.chat",
-    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+    rules: [
+      tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({
+        key: userId,
+        requested: 1,
+      }),
+    ],
   });
   ```
 
@@ -775,7 +780,12 @@ Methods available on both `RuleWithConfig` and `RuleWithInput`:
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
   const decision = await arcjet.guard({
     label: "tools.chat",
-    rules: [tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 })],
+    rules: [
+      tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({
+        key: userId,
+        requested: 1,
+      }),
+    ],
   });
   ```
 
@@ -833,7 +843,10 @@ const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 const decision = await arcjet.guard({
   label: "tools.chat",
   rules: [
-    tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({ key: userId, requested: 1 }),
+    tokenBucket({ refillRate: 10, intervalSeconds: 60, maxTokens: 100 })({
+      key: userId,
+      requested: 1,
+    }),
     detectPromptInjection()(userMessage),
   ],
 });
@@ -901,10 +914,7 @@ helper. Currently available:
 
   ```ts
   import { launchArcjet, tokenBucket } from "@arcjet/guard";
-  import {
-    guardApproval,
-    arcjetHooks,
-  } from "@arcjet/guard/vercel-eve/v0";
+  import { guardApproval, arcjetHooks } from "@arcjet/guard/vercel-eve/v0";
   import { defineOpenAPIConnection } from "eve/connections";
   import { defineHook } from "eve/hooks";
 
@@ -918,7 +928,7 @@ helper. Currently available:
   // Gate a connection's operations
   export const ordersConnection = defineOpenAPIConnection({
     description: "Orders API",
-    spec: { /* ... */ },
+    spec: {/* ... */},
     approval: guardApproval(arcjet, {
       action: "orders-api.read",
       onGuardError: "deny", // default — blocks the call if Arcjet is unreachable
@@ -987,7 +997,16 @@ helper. Currently available:
   `wrapToolCall`, and `createReactAgent` is deprecated in LangGraph JS v1
   — do not build on it. There is no `guardInbound` (screen before
   `invoke` or at the first graph node) and no `guardInterrupt` /
-  `guardApproval` (`interrupt()` is human HITL, not policy):
+  `guardApproval` (`interrupt()` is human HITL, not policy).
+
+  On DENY a guarded tool does not run and does not throw: it returns a
+  structured `ArcjetDenialResult`, which `ToolNode` turns into a real
+  `ToolMessage` the model reads. Because the tool did not throw, that
+  message's `status` is `success` — the denial is in the payload
+  (`arcjetDenied: true`), not the envelope. `guardToolNode` guards a
+  `ToolNode`'s tools **in place** and returns the same node, because
+  `ToolNode` resolves its tools through a closure captured when it was
+  constructed:
 
   ```ts
   import { launchArcjet, tokenBucket } from "@arcjet/guard";
@@ -1005,14 +1024,11 @@ helper. Currently available:
 
   const lookupOrder = guardTool(
     arcjet,
-    tool(
-      async ({ orderNumber }) => ({ orderNumber, status: "shipped" }),
-      {
-        name: "lookup_order",
-        description: "Look up an order",
-        schema: z.object({ orderNumber: z.string() }),
-      },
-    ),
+    tool(async ({ orderNumber }) => ({ orderNumber, status: "shipped" }), {
+      name: "lookup_order",
+      description: "Look up an order",
+      schema: z.object({ orderNumber: z.string() }),
+    }),
     {
       action: "order.looked-up",
       onGuardError: "deny",
@@ -1040,6 +1056,21 @@ There is no `guardInterrupt`.
 Unwrapped and MCP tools run inside `ToolNode`. Graph hooks and HITL
 pauses cannot stop `tool.invoke`. Use `guardToolNode` (or `guardTool` for
 authored tools you invoke yourself).
+
+`guardToolNode` guards the node's tools in place and hands the same node
+back. That is not an optimisation: `ToolNode`'s constructor captures
+`func: (input, config) => this.run(input, config)`, and `run` reads
+`this.tools`, so a copy holding a fresh tools array would leave the original
+node executing unguarded tools. Guarding in place also means a caller that
+still holds the pre-wrap node cannot bypass Guard. Passing an array of tools
+instead returns guarded copies and leaves your array untouched. Tools
+appended after wrapping — MCP discovered mid-run — are guarded on the next
+`invoke`.
+
+If you invoke a guarded tool yourself rather than through `ToolNode`, read
+the denial and build your own `ToolMessage`; do not push the denial object
+straight into `messages`, because the graph's message reducer only accepts
+real messages.
 
 ### Naming and versions
 
@@ -1136,13 +1167,13 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 > actions that are assumed to be sensitive. The core client reports degraded
 > evaluation via `hasFailedOpen()`; the helpers decide to block on it.
 
-| API                                  | Default on Arcjet outage                    | How to flip                        |
-| ------------------------------------ | ------------------------------------------- | ---------------------------------- |
-| `guard()` (core)                     | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
-| `guardTool` / `guardAction`          | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Eve `guardInbound` / `guardApproval` | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Mastra `guardProcessor` / `guardHooks` | Deny (fail closed)                        | `onGuardError: "allow"`            |
-| LangGraph `guardTool` / `guardToolNode` | Deny (fail closed)                       | `onGuardError: "allow"`            |
+| API                                     | Default on Arcjet outage                    | How to flip                        |
+| --------------------------------------- | ------------------------------------------- | ---------------------------------- |
+| `guard()` (core)                        | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
+| `guardTool` / `guardAction`             | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Eve `guardInbound` / `guardApproval`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Mastra `guardProcessor` / `guardHooks`  | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| LangGraph `guardTool` / `guardToolNode` | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1185,8 +1216,8 @@ what happens:
     human cost of rejecting a legitimate message exceeds the security cost.
 
 The layering resolves a potential confusion: the core `@arcjet/guard` client
-still fails open by construction and *reports* it via `hasFailedOpen()`; the
-agent-level helpers *decide* to block on it.
+still fails open by construction and _reports_ it via `hasFailedOpen()`; the
+agent-level helpers _decide_ to block on it.
 
 ### The explicit-call alternative
 
@@ -1318,8 +1349,7 @@ const sendEmail = guardTool(
 const tools = { sendEmail };
 const result = await generateText({
   model: languageModel, // Use a real language model, e.g., from @ai-sdk/openai
-  instructions:
-    "If a tool is denied by Arcjet, explain to the user instead of retrying.",
+  instructions: "If a tool is denied by Arcjet, explain to the user instead of retrying.",
   tools,
   toolsContext: aiToolsContext(ctx, tools),
   prompt: userMessage, // User input or conversation context
@@ -1360,11 +1390,11 @@ The `action` is the guard label: use `resource.verb` past tense (e.g. `order.loo
 
 ### Which helper?
 
-| Scenario | Helper | Guard | Model Sees |
-|----------|--------|-------|-----------|
-| LLM decided to call a tool | `guardTool()` | Always | `ArcjetDenialResult` on DENY |
-| Your app invokes an action | `guardAction()` | Always | Throws `ArcjetDeniedError` on DENY |
-| Record that something happened | `captureAction()` | No | — (fire-and-forget) |
+| Scenario                       | Helper            | Guard  | Model Sees                         |
+| ------------------------------ | ----------------- | ------ | ---------------------------------- |
+| LLM decided to call a tool     | `guardTool()`     | Always | `ArcjetDenialResult` on DENY       |
+| Your app invokes an action     | `guardAction()`   | Always | Throws `ArcjetDeniedError` on DENY |
+| Record that something happened | `captureAction()` | No     | — (fire-and-forget)                |
 
 `guardTool` and `guardAction` call `guard()` on every invocation, including when
 `rules` is omitted or resolves to `[]`. Submitting no rules is not the same as
@@ -1475,15 +1505,15 @@ When a guard check denies an action, `guardAction` throws `ArcjetDeniedError` ca
 
 Use `securityMetadata()` keys consistently across your app:
 
-| Key | Meaning | Example |
-|-----|---------|---------|
-| `user` | Whose authority (opaque ID, not PII) | `"user_alice"`, `"org_123"` |
-| `agent` | Type or identity of the AI actor | `"support-agent"`, `"code-reviewer"` |
-| `workflow` | Process name this request belongs to | `"support-request"`, `"pr-review"` |
-| `dataClass` | Data sensitivity level | `"public"`, `"confidential"`, `"regulated"` |
-| `destination` | Where effects are sent | `"github"`, `"slack"`, `"email"` |
-| `reversibility` | Whether the action can be undone | `"reversible"`, `"compensable"`, `"irreversible"` |
-| `resource` | What's being acted on | `"order:12345"`, `"repo:owner/name"` |
+| Key             | Meaning                              | Example                                           |
+| --------------- | ------------------------------------ | ------------------------------------------------- |
+| `user`          | Whose authority (opaque ID, not PII) | `"user_alice"`, `"org_123"`                       |
+| `agent`         | Type or identity of the AI actor     | `"support-agent"`, `"code-reviewer"`              |
+| `workflow`      | Process name this request belongs to | `"support-request"`, `"pr-review"`                |
+| `dataClass`     | Data sensitivity level               | `"public"`, `"confidential"`, `"regulated"`       |
+| `destination`   | Where effects are sent               | `"github"`, `"slack"`, `"email"`                  |
+| `reversibility` | Whether the action can be undone     | `"reversible"`, `"compensable"`, `"irreversible"` |
+| `resource`      | What's being acted on                | `"order:12345"`, `"repo:owner/name"`              |
 
 ## Example
 
