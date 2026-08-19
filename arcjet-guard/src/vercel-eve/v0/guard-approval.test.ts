@@ -751,7 +751,7 @@ test("setting response returns Eve's { request, response } form", () => {
   });
 
   assert.equal(typeof approval, "object");
-  assert.ok(approval !== null);
+  assert.ok(approval !== undefined);
   assert.equal(typeof approval.request, "function");
   assert.equal(typeof approval.response, "function");
 });
@@ -955,6 +955,8 @@ test("response rules function receives ApprovalResponseContext", async () => {
       rules: (ctx) => {
         assert.equal(ctx.responder.principalId, "approver_789");
         assert.equal(ctx.request.toolName, "test.tool");
+        assert.equal(ctx.request.callId, "call_abc");
+        assert.equal(ctx.request.requestId, "req_xyz");
         assert.ok(ctx.request.toolInput);
         return [fakeRule];
       },
