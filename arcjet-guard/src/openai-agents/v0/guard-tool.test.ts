@@ -477,6 +477,100 @@ test("policy.sessionId is used when runContext.context has none", async () => {
   assert.equal(recorded(guardCalls[0])["correlationId"], "policy-sess");
 });
 
+test("an already-parsed object input is scanned as-is", async () => {
+  const { client } = stubClient(decisionAllow());
+  let scanned: unknown;
+  const tool = createFunctionTool();
+  const wrapped = guardTool<{ note: string }>(client, tool, {
+    action: "note.read",
+    rules: (input) => {
+      scanned = input;
+      return [];
+    },
+  });
+  // The runner always passes `toolCall.arguments` as a JSON string, but a
+  // caller invoking the tool directly may hand over the parsed object.
+  await wrapped.invoke(runContext("t"), { note: "hello" } as unknown as string);
+  assert.deepEqual(scanned, { note: "hello" });
+});
+
+test("a non-string, non-object input is scanned as empty rather than coerced", async () => {
+  const { client } = stubClient(decisionAllow());
+  let scanned: unknown;
+  const tool = createFunctionTool();
+  const wrapped = guardTool(client, tool, {
+    action: "note.read",
+    rules: (input) => {
+      scanned = input;
+      return [];
+    },
+  });
+  await wrapped.invoke(runContext("t"), undefined as unknown as string);
+  assert.deepEqual(scanned, {});
+});
+
+test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+
+  try {
+    const { client } = stubClient(decisionDenyPromptInjection());
+    const tool = createFunctionTool();
+    const wrapped = guardTool(client, tool, {
+      action: "order.looked-up",
+      onDeny: () => {
+        throw new Error("onDeny exploded");
+      },
+    });
+    const result = asToolResult(await wrapped.invoke(runContext("t"), "{}"));
+    assert.equal(result.arcjetDenied, true);
+    assert.ok(warnings.length > 0);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
+});
+
+test("policy factory throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+
+  try {
+    const { client } = stubClient(decisionAllow());
+    const tool = createFunctionTool();
+    const wrapped = guardTool(client, tool, {
+      action: "order.looked-up",
+      rules: () => {
+        throw new Error("rules exploded");
+      },
+    });
+    const result = asToolResult(await wrapped.invoke(runContext("t"), "{}"));
+    assert.equal(result.reason, "ERROR");
+    assert.ok(warnings.length > 0);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
+});
+
 test("wraps invoke when the descriptor is non-writable", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   let calls = 0;

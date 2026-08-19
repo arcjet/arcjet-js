@@ -63,10 +63,10 @@ export interface GuardToolPolicy<TInput> {
    * result; this callback does not fire for outages.
    *
    * **Warning:** A tool created with `outputSchema` validates `execute`'s
-   * return. This wrapper returns from `invoke` (after `tool()` closed over
-   * `execute`), so a default denial is not schema-checked. Prefer omitting
-   * `outputSchema` on guarded tools, or verify the schema accepts
-   * `ArcjetDenialResult` / your `onDeny` shape.
+   * return. That validation lives inside the `invoke` this wrapper replaces,
+   * so a denial is not schema-checked. Prefer omitting `outputSchema` on
+   * guarded tools, or verify the schema accepts `ArcjetDenialResult` / your
+   * `onDeny` shape.
    */
   onDeny?: (decision: DecisionDeny) => unknown;
 }
@@ -79,6 +79,12 @@ function isContextSource(value: unknown): value is OpenAIAgentsContextSource {
  * The model-produced arguments. The runner invokes with
  * `toolCall.arguments` (a JSON string). Scan the parsed args, not
  * `details.toolCall.callId`.
+ *
+ * Every tool from `tool()` has an object parameter schema — `tool()` rejects
+ * `parameters: undefined` at construction even though the type admits it — so
+ * a parse failure means malformed model output, not a free-text tool whose
+ * arguments were dropped. Rules see `{}` for it, and the original `invoke`
+ * then raises the SDK's own invalid-input failure.
  */
 function toolArgs(input: unknown): unknown {
   if (typeof input === "string") {
@@ -130,6 +136,13 @@ function resolveSessionId<TInput>(
  * Correlation is read from `runContext.context` (and documented copies
  * on the envelope). No id is minted. `session.getSessionId()` is never
  * called.
+ *
+ * The runner treats whatever this returns as the tool's output, so two
+ * per-tool options see a denial as they would any other result: a
+ * `timeoutMs` race covers the guard round trip as well as `execute`, and
+ * `outputGuardrails` / `customDataExtractor` receive the denial object.
+ * Keep `timeoutMs` wide enough for a guard call, and do not assume your own
+ * output shape in those callbacks.
  *
  * Hosted tools, MCP (`mcpToFunctionTool`), handoffs, `agent.asTool()`,
  * and computer / shell / apply_patch are not on this path. Do not also

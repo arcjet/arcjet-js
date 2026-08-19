@@ -36,6 +36,8 @@ test("@openai/agents is an optional peer and not a dependency", () => {
   const dependencies = objectField(packageJson, "dependencies");
   assert.ok(!(dependencies && "@openai/agents" in dependencies));
 
-  const peers = objectField(packageJson, "peerDependencies");
-  assert.ok(!(peers && "zod" in (peers ?? {})));
+  // Zod is the OpenAI Agents peer, not ours: nothing in this namespace types
+  // against it, and adding it would force it on every `@arcjet/guard` user.
+  assert.ok(!("zod" in peerDependencies));
+  assert.ok(!(dependencies && "zod" in dependencies));
 });

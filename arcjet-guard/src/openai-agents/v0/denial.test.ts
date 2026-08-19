@@ -70,7 +70,13 @@ describe("openai-agents/v0/denial", () => {
     assert.match(deniedReason(decision), /Do not retry/);
   });
 
-  test("a denial does not pretend to be an SDK tool message", () => {
+  // `type` is the load-bearing one here. Without an `outputSchema` the runner
+  // passes the tool output through `normalizeStructuredToolOutputs`, which
+  // reinterprets any object carrying `type: "text"` (or another content type)
+  // as a structured content item. A denial that grew a `type` field would be
+  // rewritten into content instead of being stringified, losing the payload
+  // the model is meant to read.
+  test("a denial does not pretend to be an SDK tool message or content item", () => {
     const results: Array<Record<string, unknown>> = [
       { ...denialResult(decisionDenyPromptInjection()) },
       { ...unavailableResult() },

@@ -161,6 +161,10 @@ export const lookupOrder = guardTool(
   `{ arcjetDenied: true, reason, message, retryable }` as the tool
   result (stringified by the runner).
 - Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- The runner treats the denial as the tool's output. If the tool sets
+  `timeoutMs`, that race now covers the guard round trip too, so leave
+  headroom for it; if it sets `outputGuardrails` or `customDataExtractor`,
+  those receive the denial object and must not assume the tool's own shape.
 
 ## Step 3: Screen inbound before run
 

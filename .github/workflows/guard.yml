@@ -149,9 +149,10 @@ jobs:
       # the consequence, catching a build step that re-emits one as a value
       # import.
       #
-      # Only `src/openai-agents` is globbed. The suite that exercises the real
-      # `tool()` value-imports the peer, so it lives in `test/openai-agents`
-      # and runs in the unit-test step above, where the peer is installed.
+      # Only `src/openai-agents` is globbed. The suites that exercise the real
+      # `tool()` and the real `run()` loop value-import the peer, so they live
+      # in `test/openai-agents` and run in the unit-test step above, where the
+      # peer is installed.
       #
       # Runs before the eve-absent step because that one deletes a different
       # optional peer. Typecheck legitimately fails without the peer.
