@@ -254,7 +254,19 @@ export default defineChannel({
       });
 
       if (!verdict.allowed) {
-        return new Response(JSON.stringify({ error: verdict.message }), { status: 403 });
+        // `verdict.outcome` is "DENY" | "UNAVAILABLE" — a policy denial versus
+        // an Arcjet outage. The rule category that fired ("PROMPT_INJECTION")
+        // is `verdict.decision?.reason`, matching every other Arcjet surface.
+        // `verdict.reason` is a deprecated alias for `outcome`; do not return
+        // it as if it were the category.
+        return new Response(
+          JSON.stringify({
+            error: verdict.message,
+            outcome: verdict.outcome,
+            reason: verdict.decision?.reason ?? "UNKNOWN",
+          }),
+          { status: 403 },
+        );
       }
 
       // Message passed; create a session and run the agent.
@@ -272,6 +284,9 @@ export default defineChannel({
 
 - `guardInbound` is the only place in the agent's lifecycle where a turn can be
   declined _before_ it starts. Hooks are observe-only.
+- A guarded tool can be invoked directly (no Eve execution context) for
+  verification: `tool.execute(input, undefined)` runs the guard and skips
+  `execute` on DENY.
 - The `correlationId` is passed explicitly and should be a value the app already
   has (request ID, session ID, a derived identifier). Pass it to `args.from()` to
   join the inbound decision with the agent's session in the Arcjet Console.

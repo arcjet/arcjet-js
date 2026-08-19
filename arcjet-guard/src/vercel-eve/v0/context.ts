@@ -55,12 +55,14 @@ import type { ArcjetMetadata } from "../../types.ts";
  * }
  * ```
  *
- * @param ctx - Eve's SessionContext, carrying the session ID, auth principal, and turn
+ * @param ctx - Eve's SessionContext, carrying the session ID, auth principal,
+ *   and turn. Accepts `undefined` so a guarded tool invoked outside Eve — with
+ *   no execution context — still produces a context rather than throwing.
  * @param init - Optional initialization object with metadata
  * @returns An ArcjetAgentContext suitable for passing to guard
  */
 export function eveAgentContext(
-  ctx: SessionContext,
+  ctx: SessionContext | undefined,
   init?: { metadata?: ArcjetMetadata },
 ): ArcjetAgentContext {
   // Step 1: Choose correlation ID (root for delegated sessions, self for root)

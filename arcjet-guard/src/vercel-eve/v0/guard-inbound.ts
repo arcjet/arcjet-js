@@ -51,14 +51,28 @@ export interface GuardInboundOptions {
  * Verdict returned by `guardInbound()` — whether inbound text passed screening.
  *
  * - `{ allowed: true }` when all rules passed
- * - `{ allowed: false, reason: "DENY", decision, message }` when a rule denied
- * - `{ allowed: false, reason: "UNAVAILABLE", message }` when the guard could not
- *   be evaluated and is configured to fail closed
+ * - `{ allowed: false, outcome: "DENY", decision, message }` when a rule denied
+ * - `{ allowed: false, outcome: "UNAVAILABLE", message }` when the guard could
+ *   not be evaluated and is configured to fail closed
+ *
+ * `outcome` separates a policy denial from an Arcjet outage. It is deliberately
+ * not called `reason`: everywhere else in the SDK `reason` is the rule category
+ * that fired (`"PROMPT_INJECTION"`, `"RATE_LIMIT"`, …), and a channel that
+ * echoed this field to its caller reported `"DENY"` where the rule category was
+ * expected. Read the category from `decision.reason` instead.
  */
 export type InboundVerdict =
   | { allowed: true }
   | {
       allowed: false;
+      /** Whether a rule denied, or the guard could not be evaluated. */
+      outcome: "DENY" | "UNAVAILABLE";
+      /**
+       * Same value as {@link outcome}.
+       *
+       * @deprecated Use `outcome` for denial-vs-outage, or `decision.reason`
+       *   for the rule category that fired. Removed in the next major.
+       */
       reason: "DENY" | "UNAVAILABLE";
       message: string;
       decision?: Decision;
@@ -103,9 +117,11 @@ export type InboundVerdict =
  *   });
  *
  *   if (!verdict.allowed) {
- *     // `verdict.reason` distinguishes a policy denial from an Arcjet outage,
- *     // and on a DENY `verdict.decision` is the real decision, so a rule's own
- *     // `results()` can classify it further.
+ *     // `verdict.outcome` distinguishes a policy denial from an Arcjet outage.
+ *     // The rule category that fired is `verdict.decision?.reason`
+ *     // ("PROMPT_INJECTION", "SENSITIVE_INFO", …), and on a DENY
+ *     // `verdict.decision` is the real decision, so a rule's own `results()`
+ *     // can classify it further.
  *     return `Your message was not processed: ${verdict.message}`;
  *   }
  *
@@ -145,12 +161,14 @@ export async function guardInbound(
       onAllow: (): InboundVerdict => ({ allowed: true }),
       onDeny: (decision: DecisionDeny): InboundVerdict => ({
         allowed: false,
+        outcome: "DENY",
         reason: "DENY",
         decision,
         message: deniedReason(decision),
       }),
       onUnavailable: (): InboundVerdict => ({
         allowed: false,
+        outcome: "UNAVAILABLE",
         reason: "UNAVAILABLE",
         message: unavailableReason(),
       }),
@@ -163,6 +181,7 @@ export async function guardInbound(
     return failClosed
       ? {
           allowed: false,
+          outcome: "UNAVAILABLE",
           reason: "UNAVAILABLE",
           message: unavailableReason(),
         }

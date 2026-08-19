@@ -54,6 +54,18 @@ export interface GuardHooksInboundPolicy {
 }
 
 /**
+ * A tool `PreToolUse` must not gate, because `guardTool` already guards it.
+ *
+ * Either the exact name the hook reports (`"Bash"`,
+ * `"mcp__support__lookup_order"`), or the authored tool plus the SDK MCP server
+ * it was registered under, which resolves to `mcp__<server>__<name>`. The
+ * object form exists so an authored tool can be excluded without hand-writing
+ * the prefix — and so a bare name never accidentally matches another server's
+ * tool of the same name.
+ */
+export type GuardHooksExclusion = string | { server: string; name: string };
+
+/**
  * Policy for `guardHooks()` — PreToolUse (deny unwrapped / built-in tools),
  * UserPromptSubmit (inbound), and PostToolUse (capture only).
  *
@@ -96,8 +108,66 @@ export interface GuardHooksPolicy {
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /** How to respond when a tool-gate evaluation is unavailable. Default `"deny"`. */
   onGuardError?: OnGuardError;
+  /**
+   * Tools that `PreToolUse` must not gate, because they are already wrapped
+   * with `guardTool`. Without this the wrapped tool is guarded twice for one
+   * invocation — two round trips, two quota units — since `PreToolUse` fires
+   * for every tool and the hook input carries only a name, never the Arcjet
+   * brand `guardTool` applies.
+   *
+   * Entries match the reported tool name **exactly**. An authored tool reaches
+   * hooks as `mcp__<server>__<tool>`, so name its server with
+   * `{ server, name }` and the qualified name is built for you. A bare string
+   * is matched as-is, which is what you want for a built-in such as `"Bash"` —
+   * it does **not** match `mcp__support__Bash`.
+   *
+   * `PostToolUse` capture is unaffected: excluding a tool stops the gate, not
+   * the audit trail.
+   *
+   * @example
+   * ```ts
+   * guardHooks(arcjet, {
+   *   exclude: [
+   *     { server: "support", name: "lookup_order" },
+   *     { server: "support", name: "issue_refund" },
+   *   ],
+   * })
+   * ```
+   */
+  exclude?: readonly GuardHooksExclusion[];
   /** Inbound screen on `UserPromptSubmit`. Defaults to action `"message.received"`. */
   inbound?: GuardHooksInboundPolicy;
+}
+
+/**
+ * Resolve one exclusion to the exact tool name `PreToolUse` reports.
+ *
+ * An authored tool reaches hooks as `mcp__<server>__<tool>`, so the object form
+ * builds that name from the server it was registered under rather than asking
+ * the caller to hand-write the prefix.
+ */
+function exclusionToolName(exclusion: GuardHooksExclusion): string {
+  return typeof exclusion === "string" ? exclusion : `mcp__${exclusion.server}__${exclusion.name}`;
+}
+
+/**
+ * Whether `PreToolUse` should skip this tool because `guardTool` already guards
+ * it.
+ *
+ * Matching is **exact** against the name the hook reports. It deliberately does
+ * not treat a bare authored name as matching every MCP-qualified tool ending in
+ * it: two servers can expose the same tool name, and only one of them may be
+ * wrapped, so a loose match would silently drop the gate on an unprotected
+ * tool. Name the server with `{ server, name }` when excluding an authored tool.
+ */
+export function isExcludedTool(
+  toolName: string,
+  exclude: readonly GuardHooksExclusion[] | undefined,
+): boolean {
+  if (exclude === undefined || exclude.length === 0 || toolName.length === 0) {
+    return false;
+  }
+  return exclude.some((exclusion) => exclusionToolName(exclusion) === toolName);
 }
 
 function isContextSource(value: unknown): value is ClaudeContextSource {
@@ -206,6 +276,11 @@ export function guardHooks(
         toolName: stringField(hookInput.tool_name),
         input: hookInput.tool_input,
       };
+      // A tool already wrapped with `guardTool` guards itself; gating it here
+      // too would call Arcjet twice for one invocation.
+      if (isExcludedTool(call.toolName, policy.exclude)) {
+        return {};
+      }
       const action = resolveToolAction(policy, call);
       const source = isContextSource(hookInput) ? hookInput : undefined;
       const agentCtx = claudeAgentContext(

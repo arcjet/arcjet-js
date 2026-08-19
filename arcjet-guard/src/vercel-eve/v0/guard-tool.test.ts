@@ -707,3 +707,41 @@ test("onDeny: 'result' works even when tool declares outputSchema (guardrail is 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test checks the result structure
   assert.equal((result as any).arcjetDenied, true);
 });
+
+// The wrapper used to read `ctx.toolName` unguarded, so invoking a guarded tool
+// directly — a unit test, or the "invoke the protected function" verification
+// step the docs describe — threw before the guard ever ran.
+test("a guarded tool can be invoked with no execution context", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createToolWithSymbols<{ id: string }, { ok: boolean }>({
+    // oxlint-disable-next-line eslint/require-await -- test helper
+    execute: async (input) => ({ ok: input.id === "a" }),
+  });
+
+  const wrapped = guardTool(client, tool, { action: "thing.read" });
+
+  const result = await wrapped.execute({ id: "a" }, undefined as never);
+
+  assert.deepEqual(result, { ok: true });
+  assert.equal(guardCalls.length, 1, "the guard still ran");
+});
+
+test("a guarded tool invoked with no context still denies", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let called = false;
+  const tool = createToolWithSymbols<{ id: string }, { ok: boolean }>({
+    // oxlint-disable-next-line eslint/require-await -- test helper
+    execute: async () => {
+      called = true;
+      return { ok: true };
+    },
+  });
+
+  const wrapped = guardTool(client, tool, { action: "thing.read" });
+
+  await assert.rejects(async () => {
+    // `execute` may return an AsyncIterable, so await it inside the callback.
+    await wrapped.execute({ id: "a" }, undefined as never);
+  }, /denied/i);
+  assert.equal(called, false, "execute never runs on DENY");
+});

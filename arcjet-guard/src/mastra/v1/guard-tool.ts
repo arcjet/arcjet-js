@@ -1,5 +1,3 @@
-import type { ToolAction } from "@mastra/core/tools";
-
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -11,16 +9,47 @@ import type { MastraContextSource } from "./context.ts";
 import { denialResult, unavailableResult } from "./denial.ts";
 
 /**
- * Input type of a Mastra `ToolAction`. Used so `guardTool` can keep the
- * concrete tool type while still typing `policy.rules` against the tool input.
+ * Structural shape of a Mastra tool.
+ *
+ * Declared here rather than constraining `guardTool` to Mastra's
+ * `ToolAction<any, any>`, because a real `createTool()` result is not
+ * assignable to it under `exactOptionalPropertyTypes`: Mastra types `execute`,
+ * `requireApproval` and friends as `?: T | undefined`, while `ToolAction`
+ * declares them as `?: T`, and an optional property that may be present-and-
+ * undefined does not unify with one that may only be absent. Every optional
+ * member here spells `| undefined` explicitly, and members `guardTool` does not
+ * touch are simply omitted, so a tool from any `@mastra/core` 1.x fits.
+ *
+ * This mirrors `ClaudeToolDefinition` in the Claude Agent SDK namespace, which
+ * exists for the same reason.
  */
-export type MastraToolInput<TTool> = TTool extends ToolAction<infer TInput, any> ? TInput : never;
+export interface MastraToolDefinition<TInput = unknown, TOutput = unknown> {
+  /** Tool id, recorded as `mastra.tool` metadata. */
+  id?: string | undefined;
+  /** The tool body. `guardTool` throws at wrap time when it is missing. */
+  execute?: ((input: TInput, context: never) => Promise<TOutput>) | undefined;
+}
 
 /**
- * Output type of a Mastra `ToolAction`.
+ * Input type of a Mastra tool, read off its `execute` signature so it resolves
+ * for a `createTool()` result and not only for a hand-written `ToolAction`.
+ * Used so `guardTool` can keep the concrete tool type while still typing
+ * `policy.rules` against the tool input.
  */
-export type MastraToolOutput<TTool> =
-  TTool extends ToolAction<any, infer TOutput> ? TOutput : never;
+export type MastraToolInput<TTool> = TTool extends {
+  execute?: ((input: infer TInput, ...rest: never[]) => unknown) | undefined;
+}
+  ? TInput
+  : never;
+
+/**
+ * Output type of a Mastra tool, read off its `execute` signature.
+ */
+export type MastraToolOutput<TTool> = TTool extends {
+  execute?: ((...args: never[]) => Promise<infer TOutput>) | undefined;
+}
+  ? TOutput
+  : never;
 
 /**
  * Policy for `guardTool()` — how to guard a Mastra `createTool({ execute })`.
@@ -106,7 +135,7 @@ function isContextSource(value: unknown): value is MastraContextSource {
  * );
  * ```
  */
-export function guardTool<TTool extends ToolAction<any, any>>(
+export function guardTool<TTool extends MastraToolDefinition<any, any>>(
   client: ArcjetAgentClient,
   tool: TTool,
   policy: GuardToolPolicy<MastraToolInput<TTool>>,

@@ -977,17 +977,29 @@ helper. Currently available:
     },
   );
 
-  const sessionId = conversationId;
+  // The Claude CLI requires `sessionId` to be a UUID and refuses to create the
+  // same one twice: a non-UUID exits with "Invalid session ID", and reusing an
+  // id on a second `query()` exits with "already in use". So mint a UUID for
+  // the conversation, then continue it with `resume` — which keeps the id the
+  // adapter reads, so every turn lands on one Sequence.
+  const sessionId = conversationId; // a UUID, e.g. crypto.randomUUID()
 
   for await (const message of query({
     prompt: userText,
     options: {
+      // First turn: `sessionId`. Later turns in the same conversation:
+      // `resume: sessionId` instead.
       sessionId,
       mcpServers: {
         app: createSdkMcpServer({ name: "app", tools: [lookupOrder] }),
       },
       hooks: guardHooks(arcjet, {
         sessionId,
+        // `lookupOrder` guards itself through `guardTool`, so exclude it here
+        // or PreToolUse gates it a second time — two round trips, two quota
+        // units, for one invocation. Naming the server keeps the match exact,
+        // so another server's tool of the same name stays gated.
+        exclude: [{ server: "app", name: "lookup_order" }],
         inbound: {
           action: "message.received",
           rules: ({ prompt }) => [detectPromptInjection()(prompt)],
