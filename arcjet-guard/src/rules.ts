@@ -546,10 +546,8 @@ function validateSensitiveInfoBackendSupport(config: LocalDetectSensitiveInfoCon
     return;
   }
 
-  const entities = config.deny ?? config.allow ?? [];
-  const unsupported = [...new Set(entities)].filter(
-    (entity): entity is SensitiveInfoEntityType => !nativeEntityTypes.has(entity),
-  );
+  const entities: SensitiveInfoEntityType[] = config.deny ?? config.allow ?? [];
+  const unsupported = [...new Set(entities)].filter((entity) => !nativeEntityTypes.has(entity));
   if (unsupported.length === 0) {
     return;
   }

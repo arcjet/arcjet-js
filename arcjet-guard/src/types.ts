@@ -52,6 +52,23 @@ export type Warning = {
 };
 
 /**
+ * The sensitive information entity types the default backend — the bundled WASM
+ * analyzer — detects without any extra configuration.
+ *
+ * Every other {@link SensitiveInfoEntityType} needs a
+ * {@link SensitiveInfoBackend} that supports it, which is why
+ * {@link LocalDetectSensitiveInfoConfig} narrows `allow` / `deny` to this
+ * union when no `backend` is configured: listing one of the others without a
+ * backend produces a rule that can never match, and is a compile error rather
+ * than a throw at module load.
+ */
+export type NativeSensitiveInfoEntityType =
+  | "EMAIL"
+  | "PHONE_NUMBER"
+  | "IP_ADDRESS"
+  | "CREDIT_CARD_NUMBER";
+
+/**
  * Sensitive information entity types.
  *
  * Custom entity types are not supported in `@arcjet/guard` — use a custom rule
@@ -89,10 +106,7 @@ export type Warning = {
  * - `"ZIP_CODE"` — Postal/ZIP codes
  */
 export type SensitiveInfoEntityType =
-  | "EMAIL"
-  | "PHONE_NUMBER"
-  | "IP_ADDRESS"
-  | "CREDIT_CARD_NUMBER"
+  | NativeSensitiveInfoEntityType
   | "GIVEN_NAME"
   | "SURNAME"
   | "SSN"
@@ -1129,7 +1143,9 @@ export interface LocalDetectSensitiveInfoInput {
  * localDetectSensitiveInfo({ allow: ["EMAIL"] })
  * ```
  */
-export interface LocalDetectSensitiveInfoConfigAllow {
+export interface LocalDetectSensitiveInfoConfigAllow<
+  TEntity extends SensitiveInfoEntityType = SensitiveInfoEntityType,
+> {
   /**
    * Evaluation mode. `"LIVE"` enforces the rule; `"DRY_RUN"` evaluates
    * without blocking.
@@ -1173,7 +1189,7 @@ export interface LocalDetectSensitiveInfoConfigAllow {
    * Only built-in entity types are supported. For custom entity
    * detection, use a custom rule instead.
    */
-  allow: SensitiveInfoEntityType[];
+  allow: TEntity[];
   deny?: never;
   /**
    * Experimental: detection backend to use (default: bundled WebAssembly
@@ -1201,7 +1217,9 @@ export interface LocalDetectSensitiveInfoConfigAllow {
  * localDetectSensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"] })
  * ```
  */
-export interface LocalDetectSensitiveInfoConfigDeny {
+export interface LocalDetectSensitiveInfoConfigDeny<
+  TEntity extends SensitiveInfoEntityType = SensitiveInfoEntityType,
+> {
   /**
    * Evaluation mode. `"LIVE"` enforces the rule; `"DRY_RUN"` evaluates
    * without blocking.
@@ -1246,7 +1264,7 @@ export interface LocalDetectSensitiveInfoConfigDeny {
    * Only built-in entity types are supported. For custom entity
    * detection, use a custom rule instead.
    */
-  deny: SensitiveInfoEntityType[];
+  deny: TEntity[];
   /**
    * Experimental: detection backend to use (default: bundled WebAssembly
    * engine).
@@ -1279,10 +1297,46 @@ export interface LocalDetectSensitiveInfoConfigDeny {
  * // Default: deny all detected entity types
  * localDetectSensitiveInfo()
  * ```
+ *
+ * A `backend` held in an optional variable (`SensitiveInfoBackend | undefined`)
+ * satisfies neither half of this union, by design: which entity list is safe
+ * depends on whether a backend is actually there, and the runtime check throws
+ * for a non-native type when it is not. Choose both together in one branch:
+ *
+ * ```ts
+ * const rule = backend
+ *   ? localDetectSensitiveInfo({ deny: ["SSN", "EMAIL"], backend })
+ *   : localDetectSensitiveInfo({ deny: ["EMAIL"] });
+ * ```
  */
 export type LocalDetectSensitiveInfoConfig =
-  | LocalDetectSensitiveInfoConfigAllow
-  | LocalDetectSensitiveInfoConfigDeny
+  // A conditionally-supplied backend does not type-check as one object, because
+  // the entity set depends on whether it is present:
+  //
+  //   // Rejected: `backend` may be undefined, and "SSN" needs one.
+  //   const backend = useRampart ? rampart() : undefined;
+  //   localDetectSensitiveInfo({ deny: ["SSN"], backend });
+  //
+  //   // Pick the entity list in the branch that decides the backend. This is
+  //   // what the runtime requires anyway: with no backend supporting it, "SSN"
+  //   // can never match.
+  //   const rule = useRampart
+  //     ? localDetectSensitiveInfo({ deny: ["SSN", "EMAIL"], backend: rampart() })
+  //     : localDetectSensitiveInfo({ deny: ["EMAIL"] });
+  //
+  // With a backend, every entity type is available — the backend decides what
+  // it can detect.
+  | (LocalDetectSensitiveInfoConfigAllow & { backend: SensitiveInfoBackend })
+  | (LocalDetectSensitiveInfoConfigDeny & { backend: SensitiveInfoBackend })
+  // Without one, only what the bundled WASM analyzer detects. Listing any other
+  // type here is a rule that can never match, so it is rejected at compile time
+  // instead of throwing at module load.
+  | (LocalDetectSensitiveInfoConfigAllow<NativeSensitiveInfoEntityType> & {
+      backend?: never;
+    })
+  | (LocalDetectSensitiveInfoConfigDeny<NativeSensitiveInfoEntityType> & {
+      backend?: never;
+    })
   | {
       mode?: Mode;
       label?: string;

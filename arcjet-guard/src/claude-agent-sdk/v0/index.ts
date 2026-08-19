@@ -110,6 +110,7 @@ export { guardHooks } from "./hooks.ts";
 export type {
   GuardHooksPolicy,
   GuardHooksCall,
+  GuardHooksExclusion,
   GuardHooksInbound,
   GuardHooksInboundPolicy,
 } from "./hooks.ts";

@@ -26,6 +26,31 @@ function preToolInput(input?: unknown): HookInput {
   };
 }
 
+function namedPreToolInput(toolName: string): HookInput {
+  return {
+    hook_event_name: "PreToolUse",
+    session_id: "session-hooks",
+    transcript_path: "/tmp/t.jsonl",
+    cwd: "/tmp",
+    tool_name: toolName,
+    tool_input: { command: "ls" },
+    tool_use_id: "tu-1",
+  };
+}
+
+function namedPostToolInput(toolName: string): HookInput {
+  return {
+    hook_event_name: "PostToolUse",
+    session_id: "session-hooks",
+    transcript_path: "/tmp/t.jsonl",
+    cwd: "/tmp",
+    tool_name: toolName,
+    tool_input: { command: "ls" },
+    tool_response: { ok: true },
+    tool_use_id: "tu-1",
+  };
+}
+
 function userPromptInput(prompt = "hello"): HookInput {
   return {
     hook_event_name: "UserPromptSubmit",
@@ -326,4 +351,112 @@ test("default inbound action is message.received", async () => {
   const hooks = guardHooks(client);
   await runHook(hooks.UserPromptSubmit, userPromptInput());
   assert.equal(recorded(guardCalls[0])["label"], "message.received");
+});
+
+// `exclude` exists because a tool wrapped with `guardTool` guards itself, and
+// PreToolUse fires for every tool with only a name to go on — so without it one
+// invocation of a wrapped tool costs two guard calls and two quota units.
+test("PreToolUse skips an excluded tool without calling the guard", async () => {
+  const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    action: "mcp.invoked",
+    rules: [fakeRule],
+    exclude: ["lookup_order"],
+  });
+
+  const result = await runHook(hooks.PreToolUse, namedPreToolInput("lookup_order"));
+
+  assert.deepEqual(result, {}, "the tool proceeds to its own guardTool wrapper");
+  assert.equal(guardCalls.length, 0, "no second guard call for a self-guarding tool");
+  assert.equal(captureCalls.length, 0);
+});
+
+test("the server form excludes exactly that server's tool", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    exclude: [{ server: "support", name: "lookup_order" }],
+  });
+
+  // Authored tools reach hooks as `mcp__<server>__<tool>`; the object form
+  // builds that name so the caller does not hand-write the prefix.
+  await runHook(hooks.PreToolUse, namedPreToolInput("mcp__support__lookup_order"));
+
+  assert.equal(guardCalls.length, 0);
+});
+
+// The guardrail this replaces: a bare authored name used to match every
+// MCP-qualified tool ending in it, so a second server's unwrapped tool of the
+// same name lost its PreToolUse gate.
+test("a bare authored name does not exclude any server's tool of that name", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, { exclude: ["lookup_order"] });
+
+  await runHook(hooks.PreToolUse, namedPreToolInput("mcp__support__lookup_order"));
+
+  assert.equal(guardCalls.length, 1, "qualified names are not matched by a bare name");
+});
+
+test("excluding one server's tool leaves another server's namesake gated", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    exclude: [{ server: "support", name: "lookup_order" }],
+  });
+
+  await runHook(hooks.PreToolUse, namedPreToolInput("mcp__billing__lookup_order"));
+
+  assert.equal(guardCalls.length, 1);
+});
+
+test("a bare name does not match a server-qualified built-in", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, { exclude: ["Bash"] });
+
+  await runHook(hooks.PreToolUse, namedPreToolInput("mcp__shell__Bash"));
+
+  assert.equal(guardCalls.length, 1, "only the real built-in is excluded");
+});
+
+test("PreToolUse still gates a tool that is not excluded", async () => {
+  const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
+  const hooks = guardHooks(client, { exclude: ["lookup_order"] });
+
+  const result = await runHook(hooks.PreToolUse, namedPreToolInput("Bash"));
+
+  assert.equal(guardCalls.length, 1);
+  assert.equal(
+    (result as { hookSpecificOutput?: { permissionDecision?: string } }).hookSpecificOutput
+      ?.permissionDecision,
+    "deny",
+  );
+});
+
+test("a qualified string excludes only that tool", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, { exclude: ["mcp__support__lookup_order"] });
+
+  await runHook(hooks.PreToolUse, namedPreToolInput("mcp__billing__lookup_order"));
+
+  assert.equal(guardCalls.length, 1, "excluding a qualified name excludes only that tool");
+});
+
+test("PostToolUse still captures an excluded tool", async () => {
+  const { client, captureCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    exclude: [{ server: "support", name: "lookup_order" }],
+  });
+
+  await runHook(hooks.PostToolUse, namedPostToolInput("mcp__support__lookup_order"));
+
+  assert.equal(captureCalls.length, 1, "exclude stops the gate, not the audit trail");
+});
+
+test("exclude is inert when empty or absent", async () => {
+  for (const exclude of [undefined, []]) {
+    const { client, guardCalls } = stubClient(decisionAllow());
+    const hooks = guardHooks(client, exclude === undefined ? {} : { exclude });
+
+    await runHook(hooks.PreToolUse, namedPreToolInput("lookup_order"));
+
+    assert.equal(guardCalls.length, 1);
+  }
 });

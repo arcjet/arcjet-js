@@ -71,6 +71,13 @@ export interface GuardToolPolicy<TInput> {
  * (`defineDynamic`) are not, because their `execute` functions are hoisted by
  * a compiler pass that would not see through the wrapper.
  *
+ * The execution context is forwarded exactly as received. Eve always supplies
+ * one; a direct invocation (a unit test, or the "invoke the protected function"
+ * verification step) may not, and the wrapper no longer throws on that — but it
+ * does not invent a context either, so a tool that derives authorization or
+ * tenant scope from `ctx` must handle its absence rather than read it as
+ * permissive. The guard runs either way.
+ *
  * @param client - Guard client from `launchArcjet()`
  * @param tool - The authored tool to wrap; must have an `execute` function
  * @param policy - Execution policy: `action` (required), `rules`, `metadata`, `onGuardError`, `onDeny`
@@ -135,17 +142,27 @@ export function guardTool<TInput, TOutput>(
 
   // Override execute with the guarded version
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- ToolDefinition.execute may return AsyncIterable, but wrapping ensures Promise; onDeny may return custom types via policy override
-  wrapped.execute = async (input: TInput, ctx: ToolContext): Promise<TOutput> => {
+  // Eve always supplies the context, but a guarded tool invoked directly — from
+  // a unit test, or the "invoke the protected function" verification step the
+  // docs describe — may not. Everything below treats it as optional so that
+  // call reaches the guard instead of throwing on a property read.
+  wrapped.execute = async (input: TInput, ctx?: ToolContext): Promise<TOutput> => {
     const agentCtx = eveAgentContext(ctx);
+
+    // The context is forwarded exactly as received; a direct invocation without
+    // one passes `undefined` through rather than inventing a context the tool
+    // would then trust. Eve always supplies it.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- forwarded as received; the tool's own signature requires it
+    const forwardedCtx = ctx as ToolContext;
 
     // Build metadata with eve-specific keys
     const metadata: ArcjetMetadata = {
       ...agentCtx.metadata,
-      ...(typeof ctx.toolName === "string" &&
+      ...(typeof ctx?.toolName === "string" &&
         ctx.toolName.length > 0 && {
           "eve.tool": ctx.toolName,
         }),
-      ...(typeof ctx.callId === "string" &&
+      ...(typeof ctx?.callId === "string" &&
         ctx.callId.length > 0 && {
           "eve.call": ctx.callId,
         }),
@@ -184,7 +201,7 @@ export function guardTool<TInput, TOutput>(
         });
       },
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolDefinition.execute may return AsyncIterable, but cast to Promise
-      execute: () => Promise.resolve(originalExecute(input, ctx)) as Promise<TOutput>,
+      execute: () => Promise.resolve(originalExecute(input, forwardedCtx)) as Promise<TOutput>,
       onGuardError: policy.onGuardError ?? "deny",
     });
 

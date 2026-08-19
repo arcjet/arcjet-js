@@ -23,7 +23,8 @@ decision rule:
   not run). `PostToolUse` is capture only.
 - **Correlation** → `claudeAgentContext()` reads `session_id` from hook
   input or `options.sessionId`. Subagents have `agent_id` (metadata only).
-  It never mints a new id.
+  It never mints a new id. **`options.sessionId` must be a UUID and can only
+  be created once** — see Step 5.
 
 ## Screen inbound with UserPromptSubmit
 
@@ -62,7 +63,7 @@ Ask only what you cannot infer from the code; suggest defaults.
    for the duration of the outage, so `"allow"` is a routine and legitimate
    choice at that one call site.
 
-## The six things readers get wrong
+## The seven things readers get wrong
 
 1. **There is no `guardInbound`.** Screen prompt injection on
    `guardHooks({ inbound })` via `UserPromptSubmit`.
@@ -72,17 +73,20 @@ Ask only what you cannot infer from the code; suggest defaults.
 3. **The import path is versioned and there is no alias.**
    `@arcjet/guard/claude-agent-sdk/v0`. `@arcjet/guard/claude-agent-sdk`
    does not resolve.
-4. **Correlation is read, never minted.** Do not call `createAgentContext`
+4. **`options.sessionId` is a UUID, and only once.** A non-UUID exits with
+   "Invalid session ID"; reusing one exits with "already in use". Mint a
+   UUID for the conversation and `resume` it on later turns.
+5. **Correlation is read, never minted.** Do not call `createAgentContext`
    inside a Claude callback — that generates a second id and splits the
    Sequence. `claudeAgentContext` reads `session_id` / `options.sessionId`
    and omits `correlationId` when neither is a valid id. Subagent
    `agent_id` is metadata, not the correlation id.
-5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
+6. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
    `@arcjet/guard/agents`.** Claude tools are `tool()`, not AI SDK
    `tool()`. `guardTool` throws if the tool already carries the Arcjet
    protection brand. Applying `guardTool` and `guardHooks` PreToolUse to
    the same authored tool double-calls the guard.
-6. **A denial from `guardTool` is a `CallToolResult` with `isError: true`**,
+7. **A denial from `guardTool` is a `CallToolResult` with `isError: true`**,
    not a throw. If `onDeny` throws, the handler still does not run and the
    model still receives the default denial result.
 
@@ -203,6 +207,9 @@ export const hooks = guardHooks(arcjet, {
   sessionId: conversationId,
   action: ({ toolName }) => `${toolName}.invoked`,
   rules: ({ toolName }) => [mcpLimit({ key: toolName, requested: 1 })],
+  // Tools that already guard themselves via `guardTool`. Without this they
+  // are guarded twice per invocation.
+  exclude: [{ server: "support", name: "lookup_order" }],
   inbound: {
     action: "message.received",
     rules: ({ prompt }) => [detectPromptInjection()(prompt)],
@@ -214,38 +221,76 @@ Pass `hooks` to `query({ options.hooks })`. `PreToolUse` returns
 `permissionDecision: "deny"` so Bash / Write / unwrapped MCP never
 execute. `PostToolUse` is observe-only.
 
-Use this for tools you did **not** pass through `guardTool`. Applying both
-to the same authored tool double-calls the guard.
+Use this for tools you did **not** pass through `guardTool`. `PreToolUse`
+fires for _every_ tool and the hook input carries only a name, never the
+Arcjet brand `guardTool` applies — so list your wrapped tools in
+`exclude`, or each one costs two guard calls and two quota units per
+invocation.
+
+Entries match the reported name **exactly**. A bare string matches only that
+name, which is what you want for a built-in like `"Bash"`. An authored tool
+arrives as `mcp__<server>__<tool>`, so exclude it with `{ server, name }` —
+or the full reported name — and never with the bare authored name: two
+servers can expose the same tool name with only one of them wrapped, so a
+loose match would drop the gate on the unprotected one. Excluding a tool
+stops the gate, not the `PostToolUse` capture.
 
 ## Step 5: Correlation
 
-Set `options.sessionId` on `query()` to a conversation identity you already
-have. `claudeAgentContext` reads hook `session_id` first, then
-`options.sessionId`. It never calls `createAgentContext`.
+Two Claude CLI constraints decide the shape of this, and neither is
+Arcjet's:
+
+1. **`options.sessionId` must be a UUID.** Anything else exits the CLI with
+   `Error: Invalid session ID. Must be a valid UUID.`
+2. **A session id can only be _created_ once.** Passing the same id to a
+   second `query()` exits with `Error: Session ID <id> is already in use.`
+   Continue the conversation with `options.resume` instead.
+
+So the conversation identity is a UUID, minted once, and every later turn
+resumes it. That is also the only shape that keeps a multi-turn
+conversation on one Sequence: `claudeAgentContext` reads the hook's
+`session_id` first, so a fresh UUID per turn silently splits correlation
+instead of erroring.
 
 ```ts
-const sessionId = conversationId;
+import { randomUUID } from "node:crypto";
 
-for await (const message of query({
-  prompt: userText,
-  options: { sessionId, hooks: guardHooks(arcjet, { sessionId }) },
-})) {
-  void message;
+// Store this with the conversation; do not generate one per turn.
+const sessionId = conversationId ?? randomUUID();
+
+async function turn(userText: string, firstTurn: boolean) {
+  for await (const message of query({
+    prompt: userText,
+    options: {
+      ...(firstTurn ? { sessionId } : { resume: sessionId }),
+      hooks: guardHooks(arcjet, { sessionId }),
+    },
+  })) {
+    void message;
+  }
 }
 ```
 
-If neither is a valid 1–256 printable-ASCII string, the call is
+Pass `sessionId` to `guardHooks` either way: on a resumed turn the hook
+input carries the same id, and the policy value is the fallback when it
+does not. If neither is a valid 1–256 printable-ASCII string, the call is
 uncorrelated rather than joined to a generated id nobody has. Subagent
 `agent_id` is recorded as `claude.agent` metadata only.
+
+A single `query()` with a streaming-input prompt is the other supported
+multi-turn shape, and needs no `resume`.
 
 ## Verify the integration
 
 1. `npm run typecheck` passes.
 2. Exercise inbound PI, a tool deny, PII on args, a rate limit, a built-in
    deny (Bash / Write), and fail-closed (an unreachable guard).
-3. Confirm in the Arcjet dashboard that decisions share the session id as
+3. Confirm a wrapped tool produces **one** guard decision per invocation,
+   not two — a second decision under the `PreToolUse` action means a
+   missing `exclude` entry.
+4. Confirm in the Arcjet dashboard that decisions share the session id as
    their correlation id.
-4. Manual E2E with a real `ARCJET_KEY` is still-to-verify until you run it.
+5. Manual E2E with a real `ARCJET_KEY` is still-to-verify until you run it.
 
 A full working demo belongs in
 [`arcjet/examples`](https://github.com/arcjet/examples)

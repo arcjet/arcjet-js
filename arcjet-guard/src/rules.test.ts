@@ -12,7 +12,22 @@ import {
   defineCustomRule,
 } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
-import type { Decision, InternalResult, SensitiveInfoBackend } from "./types.ts";
+import type {
+  Decision,
+  InternalResult,
+  LocalDetectSensitiveInfoConfig,
+  SensitiveInfoBackend,
+} from "./types.ts";
+
+/**
+ * Bypass the compile-time narrowing of sensitive-info entity types so the
+ * runtime guard can be exercised — the path a JavaScript caller, or anyone who
+ * casts, still takes.
+ */
+function unnarrowed(config: unknown): LocalDetectSensitiveInfoConfig {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- see above
+  return config as LocalDetectSensitiveInfoConfig;
+}
 
 describe("tokenBucket", () => {
   test("returns a callable with type discriminant", () => {
@@ -338,25 +353,40 @@ describe("localDetectSensitiveInfo", () => {
     );
   });
 
+  // TypeScript now rejects a non-native entity type without a `backend`, so
+  // these reach the runtime check only through a cast. They still matter: the
+  // guard is the last line for JavaScript callers and for anyone who casts.
   test("throws when a deny type needs a backend that is not configured", () => {
     assert.throws(
-      () => localDetectSensitiveInfo({ deny: ["GIVEN_NAME"] }),
+      () =>
+        localDetectSensitiveInfo(unnarrowed({ deny: ["GIVEN_NAME"] })),
       /config error: the "GIVEN_NAME" type is only detected when a `backend`/,
     );
   });
 
   test("throws when an allow type needs a backend that is not configured", () => {
     assert.throws(
-      () => localDetectSensitiveInfo({ allow: ["SSN"] }),
+      () =>
+        localDetectSensitiveInfo(unnarrowed({ allow: ["SSN"] })),
       /config error: the "SSN" type is only detected when a `backend`/,
     );
   });
 
   test("lists every unsupported type in the error, without duplicates", () => {
     assert.throws(
-      () => localDetectSensitiveInfo({ deny: ["GIVEN_NAME", "SURNAME", "GIVEN_NAME"] }),
+      () =>
+        localDetectSensitiveInfo(unnarrowed({ deny: ["GIVEN_NAME", "SURNAME", "GIVEN_NAME"] })),
       /the "GIVEN_NAME", "SURNAME" types are only detected/,
     );
+  });
+
+  test("accepts a non-native entity type when a backend is configured", () => {
+    const backend: SensitiveInfoBackend = {
+      detect() {
+        return Promise.resolve({ allowed: [], denied: [] });
+      },
+    };
+    assert.doesNotThrow(() => localDetectSensitiveInfo({ deny: ["SSN", "GIVEN_NAME"], backend }));
   });
 
   test("does not throw for backend-only types when a backend is configured", () => {
@@ -791,4 +821,29 @@ describe("errorResult() and the error/non-error split", () => {
       assert.equal(input.result(decision), null);
     }
   });
+});
+
+// Compile-time half of the sensitive-info entity contract. `@ts-expect-error`
+// fails the typecheck if the line stops erroring, so these assert the narrowing
+// stays in place rather than merely documenting it.
+test("the entity type narrows to the native set when no backend is configured", () => {
+  const native: LocalDetectSensitiveInfoConfig = {
+    deny: ["EMAIL", "PHONE_NUMBER", "IP_ADDRESS", "CREDIT_CARD_NUMBER"],
+  };
+
+  const backend: SensitiveInfoBackend = {
+    detect() {
+      return Promise.resolve({ allowed: [], denied: [] });
+    },
+  };
+  const withBackend: LocalDetectSensitiveInfoConfig = { deny: ["SSN", "GIVEN_NAME"], backend };
+
+  // @ts-expect-error -- "SSN" needs a backend that supports it, so a config without one is rejected up front.
+  const denyNeedsBackend: LocalDetectSensitiveInfoConfig = { deny: ["SSN"] };
+
+  // @ts-expect-error -- same rule applies to the allowlist form.
+  const allowNeedsBackend: LocalDetectSensitiveInfoConfig = { allow: ["GIVEN_NAME"] };
+
+  void [native, withBackend, denyNeedsBackend, allowNeedsBackend];
+  assert.ok(true);
 });
