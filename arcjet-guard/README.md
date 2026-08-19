@@ -1201,6 +1201,14 @@ real messages.
     rules: [inbound(userText)],
     ...openaiAgentsContext({ context: appContext, conversationId }),
   });
+
+  if (decision.conclusion === "DENY") {
+    throw new Error("message blocked");
+  }
+  // `guard()` fails open, so an ALLOW is not proof the rules ran. Gate on
+  // `decision.hasFailedOpen()` here if this call site must fail closed; the
+  // agent helpers below already default to that.
+  await run(agent, userText, { context: appContext });
   ```
 
 #### Screen inbound before `run()` (SDK `inputGuardrails` are not Arcjet)

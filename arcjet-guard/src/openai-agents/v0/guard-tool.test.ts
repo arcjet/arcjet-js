@@ -509,6 +509,43 @@ test("a non-string, non-object input is scanned as empty rather than coerced", a
   assert.deepEqual(scanned, {});
 });
 
+test("an input shape the runner cannot produce warns instead of silently scanning nothing", async () => {
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+
+  try {
+    const { client } = stubClient(decisionAllow());
+    const tool = createFunctionTool();
+    const wrapped = guardTool(client, tool, { action: "note.read" });
+
+    // A JSON string is the runner's shape and must stay quiet, including when
+    // the model produced malformed JSON.
+    await wrapped.invoke(runContext("t"), "not-json");
+    assert.equal(warnings.length, 0);
+
+    await wrapped.invoke(runContext("t"), 12 as unknown as string);
+    assert.equal(warnings.length, 1);
+    assert.match(String(warnings[0]?.[0]), /no arguments were scanned/);
+    assert.equal(warnings[0]?.[2], "number");
+
+    await wrapped.invoke(runContext("t"), null as unknown as string);
+    assert.equal(warnings.length, 2);
+    assert.equal(warnings[1]?.[2], "null");
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
+});
+
 test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
   const previous = process.env["ARCJET_LOG_LEVEL"];
   process.env["ARCJET_LOG_LEVEL"] = "warn";

@@ -84,9 +84,10 @@ function isContextSource(value: unknown): value is OpenAIAgentsContextSource {
  * `parameters: undefined` at construction even though the type admits it — so
  * a parse failure means malformed model output, not a free-text tool whose
  * arguments were dropped. Rules see `{}` for it, and the original `invoke`
- * then raises the SDK's own invalid-input failure.
+ * then raises the SDK's own invalid-input failure. Anything that is neither a
+ * string nor an object cannot come from the runner at all, so it warns.
  */
-function toolArgs(input: unknown): unknown {
+function toolArgs(input: unknown, action: string): unknown {
   if (typeof input === "string") {
     try {
       return JSON.parse(input) as unknown;
@@ -96,6 +97,16 @@ function toolArgs(input: unknown): unknown {
   }
   if (input !== null && typeof input === "object") {
     return input;
+  }
+  // The runner never invokes with this shape, so it means a caller invoked the
+  // tool directly with something unexpected. Rules would silently see `{}` and
+  // scan nothing, which is worth saying out loud.
+  if (shouldWarn()) {
+    console.warn(
+      '@arcjet/guard: guardTool() for "%s" was invoked with a %s input; expected the JSON string the runner passes, so no arguments were scanned.',
+      action,
+      input === null ? "null" : typeof input,
+    );
   }
   return {};
 }
@@ -215,6 +226,13 @@ export function guardTool<TInput = unknown, TTool extends OpenAIAgentsTool = Ope
       Promise.resolve(originalInvoke(runContext, input, details)),
     );
 
+  // Writable and configurable, matching the descriptors `tool()` produces for
+  // its own object literal, so a spy or tracing wrapper can still re-wrap
+  // `invoke` and `Object.defineProperties` copies of the guarded tool keep
+  // working. Freezing these (and the brand below) would not buy protection:
+  // anything holding a reference in this process already closed over the
+  // unguarded original, so the brand is a double-wrap guard rather than a
+  // security boundary. Do not tighten it without replacing the guarantee.
   Object.defineProperty(wrapped, "invoke", {
     value: newInvoke,
     writable: true,
@@ -239,7 +257,7 @@ function runGuardedTool<TInput>(
   input: unknown,
   execute: () => Promise<unknown>,
 ): Promise<unknown> {
-  const args = toolArgs(input);
+  const args = toolArgs(input, policy.action);
 
   let sessionId: string | undefined;
   let rules: RuleWithInput[] | undefined;
