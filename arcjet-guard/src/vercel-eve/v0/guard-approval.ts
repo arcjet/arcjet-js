@@ -214,6 +214,14 @@ function responsePhaseMetadata<TInput>(ctx: ApprovalResponseContext<TInput>): Ar
   };
 }
 
+function responseSessionId<TInput>(ctx: ApprovalResponseContext<TInput>): string | undefined {
+  const id = ctx?.session?.id;
+  if (typeof id !== "string" || id === "") {
+    return undefined;
+  }
+  return id;
+}
+
 /**
  * Map Eve's response-time context onto the session shape `eveAgentContext`
  * already understands. The responder is `auth.current`, so the existing
@@ -226,15 +234,23 @@ function responseAgentContext<TInput>(
   // ApprovalResponseContext is not a SessionContext. Map the responder onto
   // auth.current so eveAgentContext's existing `user` / session correlation
   // apply to the person answering the parked request.
-  const session: SessionContext["session"] = {
-    id: typeof ctx?.session?.id === "string" ? ctx.session.id : "",
+  //
+  // SessionContext requires `id: string`. Keep that shape, but omit a missing
+  // or empty id so eveAgentContext generates a ULID and does not capture
+  // `eve.session: ""` or `correlationId: ""`.
+  const sessionId = responseSessionId(ctx);
+  const session = {
+    ...(sessionId === undefined ? {} : { id: sessionId }),
     auth: {
       current: ctx?.responder ?? null,
       initiator: ctx?.session?.initiator ?? null,
     },
     turn: ctx?.session?.turn ?? { id: "", sequence: 0 },
     ...(ctx?.session?.parent === undefined ? {} : { parent: ctx.session.parent }),
-  };
+  } as SessionContext["session"];
+  // eveAgentContext is expected not to invoke getSandbox / getSkill during
+  // metadata derivation. If that helper later starts calling them, this
+  // response-time adapter would throw.
   const sessionContext: SessionContext = {
     session,
     getSandbox() {
@@ -247,80 +263,104 @@ function responseAgentContext<TInput>(
   return eveAgentContext(sessionContext);
 }
 
+type ApprovalPolicyOptions<TResult> = {
+  deriveAgentContext: () => ReturnType<typeof eveAgentContext>;
+  extraMetadata: () => ArcjetMetadata;
+  onAllow: () => TResult;
+  onDeny: (decision: DecisionDeny) => TResult;
+  onUnavailable: () => TResult;
+  warnKind: "approval" | "approval-response";
+};
+
+type ApprovalPolicyConfig<TCtx> = {
+  action: string;
+  rules?: RuleWithInput[] | ((ctx: TCtx) => RuleWithInput[]);
+  metadata?: ArcjetMetadata | ((ctx: TCtx) => ArcjetMetadata);
+  onGuardError?: OnGuardError;
+};
+
+type CallbackResolution<TResult> =
+  | { status: "resolved"; rules: RuleWithInput[] | undefined; metadata: ArcjetMetadata }
+  | { status: "failed"; result: TResult };
+
+function resolveApprovalCallbacks<TCtx, TResult>(
+  client: ArcjetAgentClient,
+  policy: ApprovalPolicyConfig<TCtx>,
+  ctx: TCtx,
+  options: ApprovalPolicyOptions<TResult>,
+  agentCtx: ReturnType<typeof eveAgentContext>,
+  metadata: ArcjetMetadata,
+): CallbackResolution<TResult> {
+  // Resolve both callbacks independently so a throw in one cannot skip
+  // the other. Merge extra metadata only when the metadata callback resolves.
+  let ruleResolutionFailed = false;
+  let ruleResolutionError: unknown;
+  let rules: RuleWithInput[] | undefined;
+  try {
+    rules = typeof policy.rules === "function" ? policy.rules(ctx) : policy.rules;
+  } catch (error) {
+    ruleResolutionFailed = true;
+    ruleResolutionError = error;
+  }
+
+  let metadataResolutionFailed = false;
+  let metadataResolutionError: unknown;
+  let resolvedMetadata = metadata;
+  try {
+    const policyMetadata =
+      typeof policy.metadata === "function" ? policy.metadata(ctx) : policy.metadata;
+    resolvedMetadata = { ...metadata, ...policyMetadata };
+  } catch (error) {
+    metadataResolutionFailed = true;
+    metadataResolutionError = error;
+  }
+
+  if (ruleResolutionFailed || metadataResolutionFailed) {
+    const failClosed = policy.onGuardError !== "allow";
+    const correlation =
+      agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
+    const error = ruleResolutionFailed ? ruleResolutionError : metadataResolutionError;
+    warnCallbackFailure(options.warnKind, policy.action, failClosed, error);
+    captureEvent(client, {
+      action: policy.action,
+      ...correlation,
+      metadata: { ...resolvedMetadata, outcome: "unavailable" },
+    });
+    return {
+      status: "failed",
+      result: failClosed ? options.onUnavailable() : options.onAllow(),
+    };
+  }
+
+  return { status: "resolved", rules, metadata: resolvedMetadata };
+}
+
 async function evaluateApprovalPolicy<TCtx, TResult>(
   client: ArcjetAgentClient,
-  policy: {
-    action: string;
-    rules?: RuleWithInput[] | ((ctx: TCtx) => RuleWithInput[]);
-    metadata?: ArcjetMetadata | ((ctx: TCtx) => ArcjetMetadata);
-    onGuardError?: OnGuardError;
-  },
+  policy: ApprovalPolicyConfig<TCtx>,
   ctx: TCtx,
-  options: {
-    deriveAgentContext: () => ReturnType<typeof eveAgentContext>;
-    extraMetadata: () => ArcjetMetadata;
-    onAllow: () => TResult;
-    onDeny: (decision: DecisionDeny) => TResult;
-    onUnavailable: () => TResult;
-    warnKind: "approval" | "approval-response";
-  },
+  options: ApprovalPolicyOptions<TResult>,
 ): Promise<TResult> {
   try {
     const agentCtx = options.deriveAgentContext();
 
     // Create base metadata with derived context and eve-specific keys.
     // eve.phase is written by guardApproval, not by runGate (which is shared with guardInbound).
-    let metadata: ArcjetMetadata = {
+    const metadata: ArcjetMetadata = {
       ...agentCtx.metadata,
       ...options.extraMetadata(),
     };
 
-    // Resolve rules — may be a function.
-    // A throwing rules callback is a caller defect; treat as unavailable.
-    let ruleResolutionFailed = false;
-    let ruleResolutionError: unknown;
-    let rules: RuleWithInput[] | undefined;
-    try {
-      rules = typeof policy.rules === "function" ? policy.rules(ctx) : policy.rules;
-    } catch (error) {
-      ruleResolutionFailed = true;
-      ruleResolutionError = error;
+    const resolved = resolveApprovalCallbacks(client, policy, ctx, options, agentCtx, metadata);
+    if (resolved.status === "failed") {
+      return resolved.result;
     }
 
-    // Resolve metadata — may be a function.
-    // A throwing metadata callback is a caller defect; treat as unavailable.
-    let metadataResolutionFailed = false;
-    let metadataResolutionError: unknown;
-    try {
-      const policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(ctx) : policy.metadata;
-      metadata = { ...metadata, ...policyMetadata };
-    } catch (error) {
-      metadataResolutionFailed = true;
-      metadataResolutionError = error;
-    }
-
-    // If a callback threw, treat as unavailable rather than guarding
-    if (ruleResolutionFailed || metadataResolutionFailed) {
-      const failClosed = policy.onGuardError !== "allow";
-      const correlation =
-        agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
-      const error = ruleResolutionFailed ? ruleResolutionError : metadataResolutionError;
-      warnCallbackFailure(options.warnKind, policy.action, failClosed, error);
-      captureEvent(client, {
-        action: policy.action,
-        ...correlation,
-        metadata: { ...metadata, outcome: "unavailable" },
-      });
-      return failClosed ? options.onUnavailable() : options.onAllow();
-    }
-
-    // Call runGate with the appropriate handlers
     return await runGate(client, {
       action: policy.action,
-      rules,
+      rules: resolved.rules,
       correlationId: agentCtx.correlationId,
-      metadata,
+      metadata: resolved.metadata,
       onAllow: options.onAllow,
       onDeny: options.onDeny,
       onUnavailable: options.onUnavailable,

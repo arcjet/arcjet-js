@@ -1010,6 +1010,30 @@ test("response missing session → guard still called, does not throw", async ()
 
   assert.ok(result !== undefined);
   assert.equal(guardCalls.length, 1);
+  const call = recorded(guardCalls[0]);
+  assert.notEqual(call.correlationId, "");
+  assert.ok(typeof call.correlationId === "string" && call.correlationId.length > 0);
+  const metadata = recorded(call.metadata);
+  assert.notEqual(metadata["eve.session"], "");
+  assert.equal(metadata["eve.session"], undefined);
+});
+
+test("response empty session id is omitted from correlation and eve.session", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  await requireResponse(approval)(createApprovalResponseContext({ session: { id: "" } }));
+
+  assert.equal(guardCalls.length, 1);
+  const call = recorded(guardCalls[0]);
+  assert.notEqual(call.correlationId, "");
+  assert.ok(typeof call.correlationId === "string" && call.correlationId.length > 0);
+  const metadata = recorded(call.metadata);
+  assert.notEqual(metadata["eve.session"], "");
+  assert.equal(metadata["eve.session"], undefined);
 });
 
 test("response last-resort catch fails open when extra evaluation throws with onGuardError: allow", async () => {
@@ -1031,6 +1055,8 @@ test("response last-resort catch fails open when extra evaluation throws with on
 
     // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
     const ctx: any = createApprovalResponseContext();
+    // Throws from `responsePhaseMetadata` via `options.extraMetadata()` when
+    // that helper reads `ctx.request`.
     Object.defineProperty(ctx, "request", {
       get() {
         throw new Error("request getter threw unexpectedly");
