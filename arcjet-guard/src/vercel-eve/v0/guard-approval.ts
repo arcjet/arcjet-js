@@ -235,19 +235,18 @@ function responseAgentContext<TInput>(
   // auth.current so eveAgentContext's existing `user` / session correlation
   // apply to the person answering the parked request.
   //
-  // SessionContext requires `id: string`. Keep that shape, but omit a missing
-  // or empty id so eveAgentContext generates a ULID and does not capture
-  // `eve.session: ""` or `correlationId: ""`.
+  // SessionContext requires `id: string`. Keep that shape for the helper, but
+  // do not pass a missing or empty id through as `eve.session` / correlation.
   const sessionId = responseSessionId(ctx);
-  const session = {
-    ...(sessionId === undefined ? {} : { id: sessionId }),
+  const session: SessionContext["session"] = {
+    id: sessionId ?? "",
     auth: {
       current: ctx?.responder ?? null,
       initiator: ctx?.session?.initiator ?? null,
     },
     turn: ctx?.session?.turn ?? { id: "", sequence: 0 },
     ...(ctx?.session?.parent === undefined ? {} : { parent: ctx.session.parent }),
-  } as SessionContext["session"];
+  };
   // eveAgentContext is expected not to invoke getSandbox / getSkill during
   // metadata derivation. If that helper later starts calling them, this
   // response-time adapter would throw.
@@ -260,7 +259,26 @@ function responseAgentContext<TInput>(
       throw new Error("@arcjet/guard: approval response context has no skill");
     },
   };
-  return eveAgentContext(sessionContext);
+  return omitBlankSessionCapture(eveAgentContext(sessionContext), sessionId);
+}
+
+function omitBlankSessionCapture(
+  agent: ReturnType<typeof eveAgentContext>,
+  sessionId: string | undefined,
+): ReturnType<typeof eveAgentContext> {
+  if (sessionId !== undefined) {
+    return agent;
+  }
+  const metadata = agent.metadata;
+  if (metadata === undefined || metadata["eve.session"] !== "") {
+    return agent;
+  }
+  const rest: ArcjetMetadata = { ...metadata };
+  delete rest["eve.session"];
+  return {
+    correlationId: agent.correlationId,
+    ...(Object.keys(rest).length > 0 ? { metadata: rest } : {}),
+  };
 }
 
 type ApprovalPolicyOptions<TResult> = {

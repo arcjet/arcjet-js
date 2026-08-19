@@ -1025,7 +1025,11 @@ test("response empty session id is omitted from correlation and eve.session", as
     response: { action: "resource.approved" },
   });
 
-  await requireResponse(approval)(createApprovalResponseContext({ session: { id: "" } }));
+  await requireResponse(approval)(
+    createApprovalResponseContext({
+      session: { id: "", initiator: null, turn: { id: "turn_789", sequence: 1 } },
+    }),
+  );
 
   assert.equal(guardCalls.length, 1);
   const call = recorded(guardCalls[0]);
