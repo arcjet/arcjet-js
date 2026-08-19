@@ -1,7 +1,9 @@
 /**
- * Compile-time assignability test: `guardApproval` returns an `Approval` function
- * assignable to Eve's three approval slots — `ToolDefinition.approval`,
- * `OpenAPIConnectionDefinition.approval`, and `McpClientConnectionDefinition.approval`.
+ * Compile-time assignability test: `guardApproval` returns Eve's `Approval`
+ * — a function (`ApprovalPolicy`) or `{ request, response }`
+ * (`ApprovalConfiguration`) — assignable to Eve's three approval slots:
+ * `ToolDefinition.approval`, `OpenAPIConnectionDefinition.approval`, and
+ * `McpClientConnectionDefinition.approval`.
  *
  * Verifies AC4.1: the design's central claim that one helper covers authored tools,
  * OpenAPI connections and MCP connections. Type-level tests are the right instrument
@@ -27,7 +29,7 @@ import type { ToolDefinition } from "eve/tools";
 import { decisionAllow, stubClient } from "../../../test/_shared/stub-client.ts";
 import { guardApproval } from "./guard-approval.ts";
 
-test("AC4.1: guardApproval is assignable to all three Eve approval slots", () => {
+test("AC4.1: guardApproval function form is assignable to all three Eve approval slots", () => {
   const { client } = stubClient(decisionAllow());
 
   // Tool slot: parameterised as Approval<ApprovalContextInput<TInput>>, unlike
@@ -49,5 +51,26 @@ test("AC4.1: guardApproval is assignable to all three Eve approval slots", () =>
   });
 
   // Suppress unused variable warnings and ensure values are evaluated at runtime
+  void [forTool, forOpenAPI, forMcp];
+});
+
+test("AC4.1: guardApproval { request, response } form is assignable to all three Eve approval slots", () => {
+  const { client } = stubClient(decisionAllow());
+
+  const forTool: NonNullable<ToolDefinition<{ id: string }>["approval"]> = guardApproval(client, {
+    action: "thing.read",
+    response: { action: "thing.approved" },
+  });
+
+  const forOpenAPI: NonNullable<OpenAPIConnectionDefinition["approval"]> = guardApproval(client, {
+    action: "thing.read",
+    response: { action: "thing.approved" },
+  });
+
+  const forMcp: NonNullable<McpClientConnectionDefinition["approval"]> = guardApproval(client, {
+    action: "thing.read",
+    response: { action: "thing.approved" },
+  });
+
   void [forTool, forOpenAPI, forMcp];
 });

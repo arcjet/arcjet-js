@@ -7,7 +7,7 @@
  * layer they build on, so an Eve agent needs one import path and no notion of
  * layering.
  *
- * **Requires the optional peer dependency `eve@>=0.25.1 <1`**, and Eve's own
+ * **Requires the optional peer dependency `eve@>=0.34.0 <1`**, and Eve's own
  * Node floor of 24 — higher than `@arcjet/guard`'s. Nothing in this module
  * imports `eve` at runtime: every Eve type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls Eve in.
@@ -84,7 +84,7 @@
 
 export { eveAgentContext } from "./context.ts";
 export { guardApproval } from "./guard-approval.ts";
-export type { GuardApprovalPolicy } from "./guard-approval.ts";
+export type { GuardApprovalPolicy, GuardApprovalResponsePolicy } from "./guard-approval.ts";
 export { guardTool } from "./guard-tool.ts";
 export type { GuardToolPolicy } from "./guard-tool.ts";
 export { guardInbound } from "./guard-inbound.ts";

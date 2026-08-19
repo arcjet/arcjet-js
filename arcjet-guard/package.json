@@ -121,8 +121,8 @@
     "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.58.0",
     "@types/node": "22.20.1",
-    "ai": "7.0.38",
-    "eve": "0.31.0",
+    "ai": "7.0.58",
+    "eve": "0.39.0",
     "miniflare": "4.20260708.1",
     "oxlint-tsgolint": "0.24.0",
     "tsdown": "0.22.7",
@@ -135,7 +135,7 @@
     "@langchain/langgraph": ">=1 <2",
     "@mastra/core": ">=1 <2",
     "ai": ">=7 <8",
-    "eve": ">=0.25.1 <1"
+    "eve": ">=0.34.0 <1"
   },
   "peerDependenciesMeta": {
     "@ai-sdk/provider-utils": {

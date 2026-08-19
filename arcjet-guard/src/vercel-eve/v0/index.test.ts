@@ -19,6 +19,7 @@ import type {
   ArcjetHookFamily,
   ArcjetHooksOptions,
   GuardApprovalPolicy,
+  GuardApprovalResponsePolicy,
   GuardInboundOptions,
   GuardToolPolicy,
   InboundVerdict,
@@ -31,6 +32,7 @@ import type {
  */
 function verifyTypeExports(): void {
   const approvalPolicy: GuardApprovalPolicy | undefined = undefined;
+  const approvalResponsePolicy: GuardApprovalResponsePolicy | undefined = undefined;
   const toolPolicy: GuardToolPolicy<Record<string, unknown>> | undefined = undefined;
   const inboundOptions: GuardInboundOptions | undefined = undefined;
   const inboundVerdict: InboundVerdict | undefined = undefined;
@@ -39,6 +41,7 @@ function verifyTypeExports(): void {
   const denialResult: ArcjetDenialResult | undefined = undefined;
   void [
     approvalPolicy,
+    approvalResponsePolicy,
     toolPolicy,
     inboundOptions,
     inboundVerdict,
@@ -159,7 +162,7 @@ test("Eve namespace is a strict superset of the agents barrel with same identity
 
   // eve has exactly the agents keys plus five own exports: eveAgentContext,
   // guardApproval, guardTool, guardInbound, arcjetHooks.
-  // Type-only exports (GuardApprovalPolicy, GuardToolPolicy, GuardInboundOptions,
+  // Type-only exports (GuardApprovalPolicy, GuardApprovalResponsePolicy, GuardToolPolicy, GuardInboundOptions,
   // InboundVerdict, ArcjetHookFamily, ArcjetHooksOptions, ArcjetDenialResult)
   // do not appear at runtime.
   const expectedAdditions = 5;

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { ApprovalContext } from "eve/tools";
+import type { ApprovalContext, ApprovalResponseContext } from "eve/tools";
 
 import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
@@ -46,6 +46,44 @@ function createApprovalContext(overrides?: Partial<ApprovalContext>): ApprovalCo
     getSkill: mockSessionContext.getSkill,
     ...overrides,
   } as any as ApprovalContext;
+}
+
+// Factory for creating approval response contexts with overrides
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+function createApprovalResponseContext(
+  overrides?: Partial<ApprovalResponseContext>,
+): ApprovalResponseContext {
+  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+  const mockAuth: any = {
+    getToken: async () => ({ token: "t" }),
+    requireAuth: () => {
+      throw new Error("requireAuth");
+    },
+  };
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  return {
+    auth: mockAuth,
+    request: {
+      callId: "call_abc",
+      requestId: "req_xyz",
+      toolName: "test.tool",
+      toolInput: { id: "123" },
+    },
+    response: { decision: "approve" },
+    responder: {
+      attributes: {},
+      authenticator: "test",
+      principalId: "approver_789",
+      principalType: "user",
+    },
+    session: {
+      id: "ses_123",
+      initiator: null,
+      turn: { id: "turn_789", sequence: 1 },
+    },
+    ...overrides,
+  } as any as ApprovalResponseContext;
 }
 
 test("AC4.1: ALLOW → default resolved value is exactly 'not-applicable'", async () => {
@@ -673,6 +711,327 @@ test("last-resort catch emits warning when onDeny throws with onGuardError: allo
     assert.ok(
       warning,
       `Expected a warning with "resource.read", got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
+    assert.ok(
+      /fail(ing|ed) open/.test(warning.format),
+      `Expected warning to match /fail(ing|ed) open/, got: ${warning.format}`,
+    );
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
+test("omitting response returns Eve's function form", () => {
+  const { client } = stubClient(decisionAllow());
+  const approval = guardApproval(client, { action: "resource.read" });
+
+  assert.equal(typeof approval, "function");
+});
+
+test("setting response returns Eve's { request, response } form", () => {
+  const { client } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  assert.equal(typeof approval, "object");
+  assert.ok(approval !== null);
+  assert.equal(typeof approval.request, "function");
+  assert.equal(typeof approval.response, "function");
+});
+
+test("response ALLOW → { status: 'allowed' }", async () => {
+  const { client } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  const result = await approval.response(createApprovalResponseContext());
+
+  assert.deepEqual(result, { status: "allowed" });
+});
+
+test("response DENY → { status: 'rejected', reason } and does not throw", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  const result = await approval.response(createApprovalResponseContext());
+
+  assert.equal(result.status, "rejected");
+  assert.ok(result.status === "rejected" && result.reason.includes("PROMPT_INJECTION"));
+});
+
+test("response fail-closed unavailable → { status: 'rejected', reason }", async () => {
+  const { client } = stubClient(new Error("boom"));
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved", onGuardError: "deny" },
+  });
+
+  const result = await approval.response(createApprovalResponseContext());
+
+  assert.equal(result.status, "rejected");
+  assert.ok(result.status === "rejected" && result.reason.includes("could not be completed"));
+});
+
+test("response fail-open unavailable → { status: 'allowed' }", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: Array<{ format: string; args: unknown[] }> = [];
+  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+  console.warn = (format: string, ...args: any[]) => {
+    warnings.push({ format, args });
+  };
+
+  try {
+    const { client } = stubClient(new Error("boom"));
+    const approval = guardApproval(client, {
+      action: "resource.read",
+      response: { action: "resource.approved", onGuardError: "allow" },
+    });
+
+    const result = await approval.response(createApprovalResponseContext());
+
+    assert.deepEqual(result, { status: "allowed" });
+    const failOpenWarning = warnings.find((w) => /fail(ing|ed) open/.test(w.format));
+    assert.ok(
+      failOpenWarning,
+      `Expected a fail(ing|ed) open warning, got: ${warnings.map((w) => w.format).join(", ")}`,
+    );
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
+test("response rules callback throw → reject unavailable, not throw", async () => {
+  const { client } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: {
+      action: "resource.approved",
+      rules: () => {
+        throw new Error("rule computation failed");
+      },
+      onGuardError: "deny",
+    },
+  });
+
+  const result = await approval.response(createApprovalResponseContext());
+
+  assert.equal(result.status, "rejected");
+});
+
+test("response metadata callback throw → reject unavailable, not throw", async () => {
+  const { client } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: {
+      action: "resource.approved",
+      metadata: () => {
+        throw new Error("metadata computation failed");
+      },
+      onGuardError: "deny",
+    },
+  });
+
+  const result = await approval.response(createApprovalResponseContext());
+
+  assert.equal(result.status, "rejected");
+});
+
+test("response rules callback throw with onGuardError: allow → { status: 'allowed' }", async () => {
+  const { client } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: {
+      action: "resource.approved",
+      rules: () => {
+        throw new Error("rule computation failed");
+      },
+      onGuardError: "allow",
+    },
+  });
+
+  const result = await approval.response(createApprovalResponseContext());
+
+  assert.deepEqual(result, { status: "allowed" });
+});
+
+test("response capture carries eve.phase: 'approval-response' on all outcomes", async () => {
+  const { client: allowClient, captureCalls: allowCaptures } = stubClient(decisionAllow());
+  const { client: denyClient, captureCalls: denyCaptures } = stubClient(
+    decisionDenyPromptInjection(),
+  );
+  const { client: unavailableClient, captureCalls: unavailableCaptures } =
+    stubClient(decisionAllow());
+
+  const allowApproval = guardApproval(allowClient, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+  const denyApproval = guardApproval(denyClient, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+  const unavailableApproval = guardApproval(unavailableClient, {
+    action: "resource.read",
+    response: {
+      action: "resource.approved",
+      rules: () => {
+        throw new Error("rules callback failed");
+      },
+      onGuardError: "deny",
+    },
+  });
+
+  const ctx = createApprovalResponseContext();
+
+  await allowApproval.response(ctx);
+  await denyApproval.response(ctx);
+  await unavailableApproval.response(ctx);
+
+  for (const captures of [allowCaptures, denyCaptures, unavailableCaptures]) {
+    assert.equal(captures.length, 1);
+    const capture = recorded(captures[0]);
+    const metadata = recorded(capture.metadata);
+    assert.equal(metadata["eve.phase"], "approval-response");
+  }
+});
+
+test("response guard call uses responder as actor and session as correlation", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  await approval.response(createApprovalResponseContext());
+
+  assert.equal(guardCalls.length, 1);
+  const call = recorded(guardCalls[0]);
+  assert.equal(call.label, "resource.approved");
+  assert.equal(call.correlationId, "ses_123");
+  const metadata = recorded(call.metadata);
+  assert.equal(metadata["user"], "approver_789");
+  assert.equal(metadata["eve.session"], "ses_123");
+  assert.equal(metadata["eve.tool"], "test.tool");
+  assert.equal(metadata["eve.call"], "call_abc");
+  assert.equal(metadata["eve.request"], "req_xyz");
+  assert.equal(metadata["eve.phase"], "approval-response");
+});
+
+test("response rules function receives ApprovalResponseContext", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: {
+      action: "resource.approved",
+      rules: (ctx) => {
+        assert.equal(ctx.responder.principalId, "approver_789");
+        assert.equal(ctx.request.toolName, "test.tool");
+        assert.ok(ctx.request.toolInput);
+        return [fakeRule];
+      },
+    },
+  });
+
+  await approval.response(createApprovalResponseContext());
+
+  const call = recorded(guardCalls[0]);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const rules = call.rules as Array<{ type: string }>;
+  assert.equal(rules.length, 1);
+  assert.deepEqual(rules[0], fakeRule);
+});
+
+test("response empty toolName/callId/requestId omitted from metadata", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  await approval.response(
+    createApprovalResponseContext({
+      request: { callId: "", requestId: "", toolName: "" },
+    }),
+  );
+
+  const call = recorded(guardCalls[0]);
+  const metadata = recorded(call.metadata);
+  assert.equal("eve.tool" in metadata, false);
+  assert.equal("eve.call" in metadata, false);
+  assert.equal("eve.request" in metadata, false);
+});
+
+test("response missing session → guard still called, does not throw", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = {
+    request: { callId: "call_abc", requestId: "req_xyz", toolName: "test.tool" },
+    response: { decision: "approve" },
+    responder: { principalId: "approver_789" },
+  } as unknown as ApprovalResponseContext;
+
+  const result = await approval.response(ctx);
+
+  assert.ok(result !== undefined);
+  assert.equal(guardCalls.length, 1);
+});
+
+test("response last-resort catch fails open when extra evaluation throws with onGuardError: allow", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: Array<{ format: string; args: unknown[] }> = [];
+  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+  console.warn = (format: string, ...args: any[]) => {
+    warnings.push({ format, args });
+  };
+
+  try {
+    const { client } = stubClient(decisionAllow());
+    const approval = guardApproval(client, {
+      action: "resource.read",
+      response: { action: "resource.approved", onGuardError: "allow" },
+    });
+
+    // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
+    const ctx: any = createApprovalResponseContext();
+    Object.defineProperty(ctx, "request", {
+      get() {
+        throw new Error("request getter threw unexpectedly");
+      },
+    });
+
+    const result = await approval.response(ctx);
+
+    assert.deepEqual(result, { status: "allowed" });
+    const warning = warnings.find((w) => w.args.includes("resource.approved"));
+    assert.ok(
+      warning,
+      `Expected a warning with "resource.approved", got: ${warnings.map((w) => w.format).join(", ")}`,
     );
     assert.ok(
       /fail(ing|ed) open/.test(warning.format),

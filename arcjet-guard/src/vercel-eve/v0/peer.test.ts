@@ -32,12 +32,18 @@ function objectField(
 test("AC1.5: eve is an optional peer and not a dependency", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
 
-  // Static assertion 1: peerDependencies.eve is exactly ">=0.25.1 <1"
+  // Static assertion 1: peerDependencies.eve is exactly ">=0.34.0 <1"
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies, "package.json must have peerDependencies");
 
   const eveVersion = peerDependencies["eve"];
-  assert.equal(eveVersion, ">=0.25.1 <1", 'peerDependencies.eve must be exactly ">=0.25.1 <1"');
+  assert.equal(eveVersion, ">=0.34.0 <1", 'peerDependencies.eve must be exactly ">=0.34.0 <1"');
+
+  // The assignability tests compile against this pin; keep it on a 0.34+ release
+  // that exports Approval as ApprovalPolicy | ApprovalConfiguration.
+  const devDependencies = objectField(packageJson, "devDependencies");
+  assert.ok(devDependencies, "package.json must have devDependencies");
+  assert.equal(devDependencies["eve"], "0.39.0", 'devDependencies.eve must be pinned to "0.39.0"');
 
   // Static assertion 2: peerDependenciesMeta.eve.optional is true
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
