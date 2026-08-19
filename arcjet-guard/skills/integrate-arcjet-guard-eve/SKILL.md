@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-eve
 description: Integrate Arcjet security into a Vercel Eve agent using @arcjet/guard — add guard gates to tools and connections, screen inbound messages, and record agent lifecycle events correlated to the session. Use when asked to add Arcjet to an Eve agent, rate limit its tools, guard connection access, or screen inbound messages.
 license: Apache-2.0
-compatibility: Requires the target app to use Vercel Eve (eve >= 0.25.1 < 1) on Node.js >= 24.
+compatibility: Requires the target app to use Vercel Eve (eve >= 0.34.0 < 1) on Node.js >= 24.
 metadata:
   author: arcjet
 ---
@@ -68,9 +68,15 @@ State plainly why each applies to Eve, not other frameworks:
    helpers call it themselves; `guardInbound` runs before the session exists,
    so it takes an explicit `correlationId` instead.
 
-4. **`approval` is one function per tool or connection.** There is no composition
-   with `always()`/`once()`/`never()` from `eve/tools/approval`. To require a
-   human _in addition_ to the guard check, use `onAllow: "user-approval"`.
+4. **`approval` is one field per tool or connection.** It can be a function
+   (request-time only) or `{ request, response }`. You still cannot assign
+   `always()`/`once()`/`never()` from `eve/tools/approval` *alongside*
+   `guardApproval` — the slot holds one value. `onAllow: "user-approval"` is
+   how you require a human after the request-time gate. The optional `response`
+   policy is how you authorize who may approve the parked request. A rejected
+   response leaves the approval pending; it does not deny the tool. HITL
+   clients answer with `cancel`, not `deny`. Request-time denials are still
+   `{ type: "denied" }`.
 
 5. **`defineDynamic` tools are not covered.** Eve's compiler hoists a dynamic
    tool's inline `execute` to a module-scope step function, so a wrapper is not
@@ -155,8 +161,9 @@ export default guardTool(
 
 **Tool-only:** `guardTool` is called at tool invocation time and observes the
 outcome. If you only need to gate the tool without observing its result, use
-`guardApproval()` instead — it is simpler and can be composed with Eve's native
-`approval` field if the tool ever needs human sign-off.
+`guardApproval()` instead. To require a human after the request-time gate,
+set `onAllow: "user-approval"` and, when you need to authorize the responder,
+add a `response` policy.
 
 ## Step 3: Gate connection operations
 
@@ -180,6 +187,11 @@ export default defineOpenAPIConnection({
   approval: guardApproval(arcjet, {
     action: "orders-api.read",
     rules: (ctx) => [apiLimit({ key: ctx.session.id, requested: 1 })],
+    onAllow: "user-approval",
+    response: {
+      action: "orders-api.approved",
+      rules: (ctx) => [apiLimit({ key: ctx.responder.principalId, requested: 1 })],
+    },
   }),
   operations: {
     allow: ["GetOrder"],
@@ -187,10 +199,16 @@ export default defineOpenAPIConnection({
 });
 ```
 
-- The `approval` callback receives the `ApprovalContext` which carries
+- The request-time callback receives the `ApprovalContext` which carries
   `session.id`, so you can key limits per user/session.
-- On DENY the operation is blocked; Eve returns a `denied` status the model can
-  read and adapt to. Contrast `guardTool`, which throws.
+- On request-time DENY the operation is blocked; Eve returns a `denied` status
+  the model can read and adapt to. Contrast `guardTool`, which throws.
+- `onAllow: "user-approval"` parks the call for a human. HITL clients answer
+  with `cancel` (not `deny`). A request-time denial is still
+  `{ type: "denied" }`.
+- The optional `response` policy authorizes the responder. ALLOW returns
+  `{ status: "allowed" }`. DENY returns `{ status: "rejected", reason }` and
+  leaves the approval pending.
 - This gate is the only way to protect connection operations — there is no
   middleware or hook alternative.
 

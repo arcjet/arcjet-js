@@ -5,6 +5,7 @@
 
 ### 🚀 New Features
 
+* **guard:** add Eve 0.34+ request/response approval support
 * **guard:** graduate moderateContent from experimental
 
 
