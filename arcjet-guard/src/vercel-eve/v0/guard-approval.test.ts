@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { ApprovalContext, ApprovalResponseContext } from "eve/tools";
+import type { ApprovalContext, ApprovalResponseContext, ApprovalResponsePolicy } from "eve/tools";
 
 import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
@@ -55,7 +55,7 @@ function createApprovalResponseContext(
 ): ApprovalResponseContext {
   // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   const mockAuth: any = {
-    getToken: async () => ({ token: "t" }),
+    getToken: () => Promise.resolve({ token: "t" }),
     requireAuth: () => {
       throw new Error("requireAuth");
     },
@@ -84,6 +84,16 @@ function createApprovalResponseContext(
     },
     ...overrides,
   } as any as ApprovalResponseContext;
+}
+
+/** Eve types `ApprovalConfiguration.response` as optional; our helper always sets it. */
+function requireResponse<TInput>(approval: {
+  response?: ApprovalResponsePolicy<TInput>;
+}): ApprovalResponsePolicy<TInput> {
+  assert.equal(typeof approval.response, "function");
+  const response = approval.response;
+  assert.ok(response);
+  return response;
 }
 
 test("AC4.1: ALLOW → default resolved value is exactly 'not-applicable'", async () => {
@@ -753,7 +763,7 @@ test("response ALLOW → { status: 'allowed' }", async () => {
     response: { action: "resource.approved" },
   });
 
-  const result = await approval.response(createApprovalResponseContext());
+  const result = await requireResponse(approval)(createApprovalResponseContext());
 
   assert.deepEqual(result, { status: "allowed" });
 });
@@ -765,7 +775,7 @@ test("response DENY → { status: 'rejected', reason } and does not throw", asyn
     response: { action: "resource.approved" },
   });
 
-  const result = await approval.response(createApprovalResponseContext());
+  const result = await requireResponse(approval)(createApprovalResponseContext());
 
   assert.equal(result.status, "rejected");
   assert.ok(result.status === "rejected" && result.reason.includes("PROMPT_INJECTION"));
@@ -778,7 +788,7 @@ test("response fail-closed unavailable → { status: 'rejected', reason }", asyn
     response: { action: "resource.approved", onGuardError: "deny" },
   });
 
-  const result = await approval.response(createApprovalResponseContext());
+  const result = await requireResponse(approval)(createApprovalResponseContext());
 
   assert.equal(result.status, "rejected");
   assert.ok(result.status === "rejected" && result.reason.includes("could not be completed"));
@@ -801,7 +811,7 @@ test("response fail-open unavailable → { status: 'allowed' }", async () => {
       response: { action: "resource.approved", onGuardError: "allow" },
     });
 
-    const result = await approval.response(createApprovalResponseContext());
+    const result = await requireResponse(approval)(createApprovalResponseContext());
 
     assert.deepEqual(result, { status: "allowed" });
     const failOpenWarning = warnings.find((w) => /fail(ing|ed) open/.test(w.format));
@@ -832,7 +842,7 @@ test("response rules callback throw → reject unavailable, not throw", async ()
     },
   });
 
-  const result = await approval.response(createApprovalResponseContext());
+  const result = await requireResponse(approval)(createApprovalResponseContext());
 
   assert.equal(result.status, "rejected");
 });
@@ -850,7 +860,7 @@ test("response metadata callback throw → reject unavailable, not throw", async
     },
   });
 
-  const result = await approval.response(createApprovalResponseContext());
+  const result = await requireResponse(approval)(createApprovalResponseContext());
 
   assert.equal(result.status, "rejected");
 });
@@ -868,7 +878,7 @@ test("response rules callback throw with onGuardError: allow → { status: 'allo
     },
   });
 
-  const result = await approval.response(createApprovalResponseContext());
+  const result = await requireResponse(approval)(createApprovalResponseContext());
 
   assert.deepEqual(result, { status: "allowed" });
 });
@@ -902,9 +912,9 @@ test("response capture carries eve.phase: 'approval-response' on all outcomes", 
 
   const ctx = createApprovalResponseContext();
 
-  await allowApproval.response(ctx);
-  await denyApproval.response(ctx);
-  await unavailableApproval.response(ctx);
+  await requireResponse(allowApproval)(ctx);
+  await requireResponse(denyApproval)(ctx);
+  await requireResponse(unavailableApproval)(ctx);
 
   for (const captures of [allowCaptures, denyCaptures, unavailableCaptures]) {
     assert.equal(captures.length, 1);
@@ -921,7 +931,7 @@ test("response guard call uses responder as actor and session as correlation", a
     response: { action: "resource.approved" },
   });
 
-  await approval.response(createApprovalResponseContext());
+  await requireResponse(approval)(createApprovalResponseContext());
 
   assert.equal(guardCalls.length, 1);
   const call = recorded(guardCalls[0]);
@@ -951,7 +961,7 @@ test("response rules function receives ApprovalResponseContext", async () => {
     },
   });
 
-  await approval.response(createApprovalResponseContext());
+  await requireResponse(approval)(createApprovalResponseContext());
 
   const call = recorded(guardCalls[0]);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
@@ -967,7 +977,7 @@ test("response empty toolName/callId/requestId omitted from metadata", async () 
     response: { action: "resource.approved" },
   });
 
-  await approval.response(
+  await requireResponse(approval)(
     createApprovalResponseContext({
       request: { callId: "", requestId: "", toolName: "" },
     }),
@@ -994,7 +1004,7 @@ test("response missing session → guard still called, does not throw", async ()
     responder: { principalId: "approver_789" },
   } as unknown as ApprovalResponseContext;
 
-  const result = await approval.response(ctx);
+  const result = await requireResponse(approval)(ctx);
 
   assert.ok(result !== undefined);
   assert.equal(guardCalls.length, 1);
@@ -1025,7 +1035,7 @@ test("response last-resort catch fails open when extra evaluation throws with on
       },
     });
 
-    const result = await approval.response(ctx);
+    const result = await requireResponse(approval)(ctx);
 
     assert.deepEqual(result, { status: "allowed" });
     const warning = warnings.find((w) => w.args.includes("resource.approved"));

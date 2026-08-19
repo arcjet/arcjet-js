@@ -145,11 +145,19 @@ export function guardApproval<TInput = Record<string, unknown>>(
   };
 }
 
+function allowedResponse(): ApprovalResponseDecision {
+  return { status: "allowed" };
+}
+
+function rejectedResponse(reason: string): ApprovalResponseDecision {
+  return { status: "rejected", reason };
+}
+
 function createRequestApproval<TInput>(
   client: ArcjetAgentClient,
   policy: GuardApprovalPolicy<TInput>,
 ): ApprovalPolicy<TInput> {
-  return async (ctx: ApprovalContext<TInput>): Promise<ApprovalStatus> => {
+  return (ctx: ApprovalContext<TInput>): Promise<ApprovalStatus> => {
     const allowStatus = (): ApprovalStatus => policy.onAllow ?? "not-applicable";
 
     return evaluateApprovalPolicy(client, policy, ctx, {
@@ -171,26 +179,20 @@ function createResponseApproval<TInput>(
   client: ArcjetAgentClient,
   policy: GuardApprovalResponsePolicy<TInput>,
 ): ApprovalResponsePolicy<TInput> {
-  return async (ctx: ApprovalResponseContext<TInput>): Promise<ApprovalResponseDecision> => {
-    const allowStatus = (): ApprovalResponseDecision => ({ status: "allowed" });
-    const rejectStatus = (reason: string): ApprovalResponseDecision => ({
-      status: "rejected",
-      reason,
-    });
-
+  return (ctx: ApprovalResponseContext<TInput>): Promise<ApprovalResponseDecision> => {
     return evaluateApprovalPolicy(client, policy, ctx, {
       deriveAgentContext: () => responseAgentContext(ctx),
       extraMetadata: () => responsePhaseMetadata(ctx),
-      onAllow: allowStatus,
-      onDeny: (decision) => rejectStatus(deniedReason(decision)),
+      onAllow: allowedResponse,
+      onDeny: (decision) => rejectedResponse(deniedReason(decision)),
       onUnavailable: () =>
-        policy.onGuardError === "allow" ? allowStatus() : rejectStatus(unavailableReason()),
+        policy.onGuardError === "allow" ? allowedResponse() : rejectedResponse(unavailableReason()),
       warnKind: "approval-response",
     });
   };
 }
 
-function requestPhaseMetadata(ctx: ApprovalContext): ArcjetMetadata {
+function requestPhaseMetadata<TInput>(ctx: ApprovalContext<TInput>): ArcjetMetadata {
   return {
     "eve.phase": "approval",
     ...(typeof ctx?.toolName === "string" &&
@@ -199,7 +201,7 @@ function requestPhaseMetadata(ctx: ApprovalContext): ArcjetMetadata {
   };
 }
 
-function responsePhaseMetadata(ctx: ApprovalResponseContext): ArcjetMetadata {
+function responsePhaseMetadata<TInput>(ctx: ApprovalResponseContext<TInput>): ArcjetMetadata {
   const request = ctx?.request;
   return {
     "eve.phase": "approval-response",
@@ -218,26 +220,31 @@ function responsePhaseMetadata(ctx: ApprovalResponseContext): ArcjetMetadata {
  * `user` metadata field and session correlation apply to the person answering
  * the parked request rather than the original caller.
  */
-function responseAgentContext(ctx: ApprovalResponseContext): ReturnType<typeof eveAgentContext> {
-  return eveAgentContext({
-    session: {
-      id: ctx?.session?.id,
-      auth: {
-        current: ctx?.responder ?? null,
-        initiator: ctx?.session?.initiator ?? null,
-      },
-      turn: ctx?.session?.turn,
-      parent: ctx?.session?.parent,
+function responseAgentContext<TInput>(
+  ctx: ApprovalResponseContext<TInput>,
+): ReturnType<typeof eveAgentContext> {
+  // ApprovalResponseContext is not a SessionContext. Map the responder onto
+  // auth.current so eveAgentContext's existing `user` / session correlation
+  // apply to the person answering the parked request.
+  const session: SessionContext["session"] = {
+    id: typeof ctx?.session?.id === "string" ? ctx.session.id : "",
+    auth: {
+      current: ctx?.responder ?? null,
+      initiator: ctx?.session?.initiator ?? null,
     },
+    turn: ctx?.session?.turn ?? { id: "", sequence: 0 },
+    ...(ctx?.session?.parent === undefined ? {} : { parent: ctx.session.parent }),
+  };
+  const sessionContext: SessionContext = {
+    session,
     getSandbox() {
-      return Promise.reject(
-        new Error("@arcjet/guard: approval response context has no sandbox"),
-      );
+      return Promise.reject(new Error("@arcjet/guard: approval response context has no sandbox"));
     },
     getSkill() {
       throw new Error("@arcjet/guard: approval response context has no skill");
     },
-  } as SessionContext);
+  };
+  return eveAgentContext(sessionContext);
 }
 
 async function evaluateApprovalPolicy<TCtx, TResult>(
