@@ -70,6 +70,14 @@ change them:
   are `guardTool`, unwrapped / MCP tools go through `guardToolNode`, and
   `interrupt()` is HITL not policy. `createReactAgent` is deprecated; do not
   build on it or on LangChain `createAgent`.
+  `openai-agents/v0` is text `Agent` + `run()` / `Runner` + authored
+  `tool({ execute })`: the runner-facing deny point is `FunctionTool.invoke`
+  (the SDK closes over `execute`), inbound is screened before `run()`
+  (SDK `inputGuardrails` are not Arcjet), and `needsApproval` is HITL not
+  policy. There is no ToolNode, no `guardInbound`, no `guardApproval`, and
+  no `guardHooks` — hosted tools, MCP, handoffs, and `agent.asTool()` skip
+  the authored-`execute` path. `RunContext` has no session / conversation
+  id; correlation is a field the integrator puts on `runContext.context`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would
