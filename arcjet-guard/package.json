@@ -87,6 +87,10 @@
     "./langgraph/v1": {
       "types": "./dist/langgraph/v1/index.d.ts",
       "import": "./dist/langgraph/v1/index.js"
+    },
+    "./openai-agents/v0": {
+      "types": "./dist/openai-agents/v0/index.d.ts",
+      "import": "./dist/openai-agents/v0/index.js"
     }
   },
   "publishConfig": {
@@ -99,7 +103,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts'",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts'",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
     "test-runtime-deno": "npm run build && deno test --no-check --allow-all test/runtime/deno.test.ts",
@@ -120,6 +124,7 @@
     "@langchain/core": "1.2.8",
     "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.58.0",
+    "@openai/agents": "0.17.0",
     "@types/node": "22.20.1",
     "ai": "7.0.58",
     "eve": "0.39.0",
@@ -134,6 +139,7 @@
     "@langchain/core": ">=1 <2",
     "@langchain/langgraph": ">=1 <2",
     "@mastra/core": ">=1 <2",
+    "@openai/agents": ">=0.17.0 <1",
     "ai": ">=7 <8",
     "eve": ">=0.34.0 <1"
   },
@@ -157,6 +163,9 @@
       "optional": true
     },
     "@langchain/langgraph": {
+      "optional": true
+    },
+    "@openai/agents": {
       "optional": true
     }
   },

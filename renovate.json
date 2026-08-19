@@ -74,6 +74,13 @@
       "matchPackageNames": ["@langchain/langgraph", "@langchain/core"],
       "automerge": false,
       "allowedVersions": "<2"
+    },
+    {
+      "description": "Never automerge @openai/agents. It is pre-1.0, so a minor release may break. `@arcjet/guard/openai-agents/v0` types against FunctionTool, tool({ execute }), RunContext, and run() / Runner. A green typecheck is necessary but not sufficient. Keep the range below 1.0; openai-agents/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@openai/agents"],
+      "automerge": false,
+      "allowedVersions": "<1"
     }
   ],
   "lockFileMaintenance": {

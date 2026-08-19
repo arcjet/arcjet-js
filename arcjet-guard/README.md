@@ -1142,6 +1142,98 @@ the denial and build your own `ToolMessage`; do not push the denial object
 straight into `messages`, because the graph's message reducer only accepts
 real messages.
 
+- **`@arcjet/guard/openai-agents/v0`** — OpenAI Agents text `Agent` +
+  `run()` / `Runner` integration. Exports `guardTool` and
+  `openaiAgentsContext`. This is **not** Realtime, Sandbox, hosted tools,
+  computer / shell / apply_patch, MCP, or `agent.asTool()`. There is no
+  `guardInbound` (screen before `run()`; SDK `inputGuardrails` are not
+  Arcjet), no `guardApproval` (`needsApproval` is human HITL, not
+  policy), and no `guardHooks` / `guardToolNode` (there is no ToolNode;
+  hosted / MCP / handoffs skip authored `execute`).
+
+  On DENY a guarded tool does not run and does not throw: it returns a
+  structured `ArcjetDenialResult`. The runner stringifies that object
+  onto a `function_call_result` with `status: "completed"` — the denial
+  is in the payload (`arcjetDenied: true`), not a fabricated envelope.
+  Throwing would hit the SDK `errorFunction` (a generic string, or
+  `ToolCallError` when `outputSchema` / `errorFunction: null`).
+  `RunContext` has no session / conversation id; put the id you already
+  have on `run(..., { context })`:
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardTool, openaiAgentsContext } from "@arcjet/guard/openai-agents/v0";
+  import { Agent, run, tool } from "@openai/agents";
+  import { z } from "zod";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const lookupOrder = guardTool(
+    arcjet,
+    tool({
+      name: "lookup_order",
+      description: "Look up an order",
+      parameters: z.object({ orderNumber: z.string() }),
+      execute: async ({ orderNumber }) => ({ orderNumber, status: "shipped" }),
+    }),
+    {
+      action: "order.looked-up",
+      onGuardError: "deny",
+      rules: (input: { orderNumber: string }) => [limit({ key: input.orderNumber, requested: 1 })],
+    },
+  );
+
+  const agent = new Agent({
+    name: "support-agent",
+    instructions: "Help the user.",
+    tools: [lookupOrder],
+  });
+
+  const appContext = { sessionId: conversationId };
+  const inbound = detectPromptInjection();
+  const decision = await arcjet.guard({
+    label: "message.received",
+    rules: [inbound(userText)],
+    ...openaiAgentsContext({ context: appContext, conversationId }),
+  });
+
+  if (decision.conclusion === "DENY") {
+    throw new Error("message blocked");
+  }
+  // `guard()` fails open, so an ALLOW is not proof the rules ran. Gate on
+  // `decision.hasFailedOpen()` here if this call site must fail closed; the
+  // agent helpers below already default to that.
+  await run(agent, userText, { context: appContext });
+  ```
+
+#### Screen inbound before `run()` (SDK `inputGuardrails` are not Arcjet)
+
+OpenAI Agents has no first-class inbound channel, so there is no
+`guardInbound`. Put prompt-injection (and other inbound rules) in the
+application before `run()`. SDK `inputGuardrails` / `outputGuardrails` /
+`defineToolInputGuardrail` / `defineToolOutputGuardrail` are the SDK's
+own tripwires, not this policy gate.
+
+#### `needsApproval` is not a policy gate
+
+`needsApproval` / `requireApproval` / `onApproval` is human-in-the-loop,
+not policy. The run pauses; `result.state.approve` / `reject`. Same trap
+as Mastra `requireApproval`, Claude `canUseTool`, and LangGraph
+`interrupt()`. There is no `guardApproval`.
+
+#### `tool()` execute is the deny point; hosted, MCP, and handoffs are not on that path
+
+The runner executes authored function tools in `toolExecution.ts` via
+`invoke`. Hosted tools, handoffs, computer / shell / apply_patch, and
+MCP (`mcpServers` → `mcpToFunctionTool`) skip that authored-`execute`
+path. `agent_tool_start` / `agent_tool_end` are void observe-only hooks;
+they are not a deny. There is no `guardHooks` and no `guardToolNode`.
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -1183,6 +1275,9 @@ importing only core guards are not forced to install unneeded packages:
 - **`@arcjet/guard/langgraph/v1`** requires `@langchain/langgraph` and
   `@langchain/core` (optional peers, installed only to use
   `@arcjet/guard/langgraph/v1`). The peer range is `>=1 <2` for both.
+- **`@arcjet/guard/openai-agents/v0`** requires `@openai/agents` (optional
+  peer, installed only to use `@arcjet/guard/openai-agents/v0`). The peer
+  range is `>=0.17.0 <1`. Zod is their peer, not ours.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -1218,6 +1313,11 @@ pnpm install @langchain/langgraph @langchain/core
 ```
 
 ```sh
+# @arcjet/guard/openai-agents/v0
+pnpm install @openai/agents
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1230,8 +1330,9 @@ they import reaches `ai`. They are published on each vendor namespace, so there
 is one path to learn and no layering to reason about.
 
 `@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`,
-`@arcjet/guard/mastra/v1`, `@arcjet/guard/claude-agent-sdk/v0`, and
-`@arcjet/guard/langgraph/v1` now export these helpers. The open next step is
+`@arcjet/guard/mastra/v1`, `@arcjet/guard/claude-agent-sdk/v0`,
+`@arcjet/guard/langgraph/v1`, and `@arcjet/guard/openai-agents/v0` now export
+these helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
 agnostic layer without installing a vendor peer. That change is a follow-up
 with its own ADR; there is still no public `@arcjet/guard/agents`.
@@ -1253,6 +1354,7 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 | Mastra `guardProcessor` / `guardHooks`  | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Claude `guardTool` / `guardHooks`       | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | LangGraph `guardTool` / `guardToolNode` | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| OpenAI Agents `guardTool`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1604,6 +1706,8 @@ For an example with Mastra, see [`mastra-agent`](https://github.com/arcjet/examp
 
 For an example with LangGraph, see [`langgraph-agent`](https://github.com/arcjet/examples/tree/main/examples/langgraph-agent) (follow-up on that same PR): inbound screening before `invoke`, `guardTool` / `guardToolNode` (deny, PII on args, rate limit, fail-closed), and `thread_id` correlation. `interrupt()` is HITL, not a policy gate; `ToolNode` is the deny point for tools.
 
+For an example with OpenAI Agents, see [`openai-agent`](https://github.com/arcjet/examples/tree/main/examples/openai-agent) (follow-up on that same PR): inbound screening before `run()`, `guardTool` (deny, PII on args, rate limit, fail-closed), and a caller-owned id on `run(..., { context })`. `needsApproval` is HITL, not a policy gate; authored `tool()` `invoke` is the deny point.
+
 ## Agent skill
 
 For integration help in Claude Code or other AI coding agents, a skill file per integration is packaged with `@arcjet/guard`:
@@ -1659,6 +1763,16 @@ ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langgrap
 ```
 
 In Claude Code, use `/integrate-arcjet-guard-langgraph` to start an integration session.
+
+**For OpenAI Agents:**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-openai-agents ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-openai-agents ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-openai-agents` to start an integration session.
 
 Each skill guides you through wrapping tools, screening inbound messages, and recording lifecycle events joined by correlation ID.
 
