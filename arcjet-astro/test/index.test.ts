@@ -892,6 +892,48 @@ test("validateEmail", async function (t) {
   });
 });
 
+test("detectPromptInjection", async function (t) {
+  await t.test("should work w/o options", async function () {
+    const rule = detectPromptInjection();
+
+    assert.equal(rule.type, "detectPromptInjection");
+    assert.deepEqual(rule.options, {});
+
+    arcjet({ rules: [rule] });
+  });
+
+  await t.test("should work w/ valid `mode`", async function () {
+    const rule = detectPromptInjection({ mode: "LIVE" });
+
+    assert.equal(rule.type, "detectPromptInjection");
+    assert.deepEqual(rule.options, { mode: "LIVE" });
+
+    arcjet({ rules: [rule] });
+  });
+
+  await t.test("should fail w/ invalid `mode`", async function () {
+    const rule = detectPromptInjection({
+      // @ts-expect-error: test runtime behavior.
+      mode: "INVALID",
+    });
+
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /LIVE.*DRY_RUN/);
+  });
+
+  await t.test("should fail w/ removed `threshold`", async function () {
+    const rule = detectPromptInjection({
+      // @ts-expect-error: threshold was removed.
+      threshold: 0.5,
+    });
+
+    assert.throws(function () {
+      arcjet({ rules: [rule] });
+    }, /unrecognized_keys|threshold/);
+  });
+});
+
 test("@arcjet/astro", async function (t) {
   await t.test("should create an integration that injects the configured rules", async function () {
     const rule = filter({
