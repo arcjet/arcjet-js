@@ -75,6 +75,10 @@ jobs:
     name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    defaults:
+      run:
+        # Git Bash on Windows so `&&` and the pin-npm composite match Linux/macOS.
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -82,7 +86,10 @@ jobs:
           - 22
           - 24
           - 26
-        os: [ubuntu-latest]
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
     permissions:
       contents: read
     steps:
@@ -90,7 +97,8 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
-          disable-sudo-and-containers: true
+          # sudo/container lockdown is Linux-only; a no-op or error on other OS.
+          disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
           allowed-endpoints: >
             api.github.com:443
