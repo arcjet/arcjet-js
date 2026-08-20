@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import {
   ArcjetAllowDecision,
   ArcjetDenyDecision,
+  ArcjetPromptInjectionReason,
   ArcjetReason,
   ArcjetRuleResult,
 } from "../dist/index.js";
@@ -95,6 +96,23 @@ test("protocol", async (t) => {
         source,
         /Duration in milliseconds this decision should be considered valid/,
       );
+    });
+  });
+
+  await t.test("ArcjetPromptInjectionReason", async (t) => {
+    await t.test("should default injectionDetected to false and omit score", () => {
+      const reason = new ArcjetPromptInjectionReason({});
+
+      assert.equal(reason.type, "PROMPT_INJECTION_DETECTION");
+      assert.equal(reason.injectionDetected, false);
+      assert.equal("score" in reason, false);
+    });
+
+    await t.test("should record injectionDetected without a score", () => {
+      const reason = new ArcjetPromptInjectionReason({ injectionDetected: true });
+
+      assert.equal(reason.injectionDetected, true);
+      assert.equal("score" in reason, false);
     });
   });
 });

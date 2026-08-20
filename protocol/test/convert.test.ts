@@ -40,6 +40,8 @@ import {
   ArcjetErrorReason,
   ArcjetFilterReason,
   ArcjetIpDetails,
+  type ArcjetPromptInjectionDetectionRule,
+  ArcjetPromptInjectionReason,
   ArcjetRateLimitReason,
   ArcjetReason,
   ArcjetRuleResult,
@@ -565,6 +567,22 @@ test("convert", async (t) => {
       assert.equal(reason.shieldTriggered, false);
     });
 
+    await t.test("should create a prompt injection reason without score", () => {
+      const reason = ArcjetReasonFromProtocol(
+        create(ReasonSchema, {
+          reason: {
+            case: "promptInjection",
+            value: { injectionDetected: true, score: 0.995 },
+          },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetPromptInjectionReason);
+      assert.equal(reason.type, "PROMPT_INJECTION_DETECTION");
+      assert.equal(reason.injectionDetected, true);
+      assert.equal("score" in reason, false);
+    });
+
     await t.test("should create an anonymous reason w/ an unknown `case` proto", () => {
       // Note: creating a reason using `create` with an unknown `case` will
       // turn it into `undefined` instead:
@@ -744,6 +762,18 @@ test("convert", async (t) => {
         }),
       );
     });
+
+    await t.test(
+      "should create a protocol reason from a prompt injection reason without score",
+      () => {
+        const proto = ArcjetReasonToProtocol(
+          new ArcjetPromptInjectionReason({ injectionDetected: true }),
+        );
+
+        assert.equal(proto.reason.case, "promptInjection");
+        assert.equal(proto.reason.value?.injectionDetected, true);
+      },
+    );
 
     await t.test("should create a protocol reason from an arcjet email reason", () => {
       assert.deepEqual(
@@ -1281,6 +1311,35 @@ test("convert", async (t) => {
         }),
       );
       assert.equal(rule.rule.case, "filter");
+    });
+
+    await t.test("should create a prompt injection protocol rule without threshold", () => {
+      const rule = ArcjetRuleToProtocol({
+        mode: "LIVE",
+        priority: 1,
+        protect() {
+          assert.fail("should not call `protect`");
+        },
+        type: "PROMPT_INJECTION_DETECTION",
+        validate() {
+          assert.fail("should not call `validate`");
+        },
+        version: 0,
+      } as ArcjetPromptInjectionDetectionRule);
+
+      assert.deepEqual(
+        rule,
+        create(RuleSchema, {
+          rule: {
+            case: "promptInjectionDetection",
+            value: { mode: Mode.LIVE },
+          },
+        }),
+      );
+      assert.equal(rule.rule.case, "promptInjectionDetection");
+      if (rule.rule.case === "promptInjectionDetection") {
+        assert.equal(rule.rule.value.threshold, undefined);
+      }
     });
 
     await t.test("should create a sensitive info protocol rule", () => {

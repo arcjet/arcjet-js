@@ -152,10 +152,11 @@ const validateProtectSignupOptions = z
   })
   .strict();
 
+// `.strict()` rejects leftover `threshold` at config time. The core SDK
+// ignores that deprecated option; Astro users must drop it on upgrade.
 const validateDetectPromptInjectionOptions = z
   .object({
     mode: validateMode.optional(),
-    threshold: z.number().optional(),
   })
   .strict();
 

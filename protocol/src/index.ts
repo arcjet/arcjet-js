@@ -285,15 +285,6 @@ interface ArcjetPromptInjectionReasonInit {
    * Whether a prompt injection attempt was detected in the input.
    */
   injectionDetected?: boolean | undefined;
-
-  /**
-   * The prompt injection confidence score, scaled to [0, 1].
-   *
-   * @deprecated
-   *   This field is no longer respected by the server and will be removed in
-   *   a future release.
-   */
-  score?: number | undefined;
 }
 
 /**
@@ -311,15 +302,6 @@ export class ArcjetPromptInjectionReason extends ArcjetReason {
   injectionDetected: boolean;
 
   /**
-   * The prompt injection confidence score.
-   *
-   * @deprecated
-   *   This field is no longer respected by the server and will be removed in
-   *   a future release.
-   */
-  score?: number;
-
-  /**
    * Create a prompt injection reason.
    *
    * @param init
@@ -331,7 +313,6 @@ export class ArcjetPromptInjectionReason extends ArcjetReason {
     super();
 
     this.injectionDetected = init.injectionDetected ?? false;
-    this.score = init.score ?? 0.0;
   }
 }
 
@@ -1838,16 +1819,6 @@ export interface ArcjetPromptInjectionDetectionRule extends ArcjetRule<{
    * Kind.
    */
   type: "PROMPT_INJECTION_DETECTION";
-
-  /**
-   * The score threshold above which a request is considered a prompt
-   * injection attempt.
-   *
-   * @deprecated
-   *   This field is no longer respected by the server and will be removed in
-   *   a future release.
-   */
-  threshold?: number;
 }
 
 /**

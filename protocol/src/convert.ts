@@ -282,7 +282,6 @@ export function ArcjetReasonFromProtocol(proto?: Reason): ArcjetReason {
       const reason = proto.reason.value;
       return new ArcjetPromptInjectionReason({
         injectionDetected: reason.injectionDetected,
-        score: reason.score,
       });
     }
     case "bot": {
@@ -414,7 +413,6 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
         case: "promptInjection",
         value: create(PromptInjectionReasonSchema, {
           injectionDetected: reason.injectionDetected,
-          score: reason.score ?? 0.0,
         }),
       },
     });
@@ -768,7 +766,6 @@ export function ArcjetRuleToProtocol<Props extends { [key: string]: unknown }>(
         case: "promptInjectionDetection",
         value: {
           mode: ArcjetModeToProtocol(rule.mode),
-          threshold: rule.threshold ?? 0.5,
           version: rule.version,
         },
       },
