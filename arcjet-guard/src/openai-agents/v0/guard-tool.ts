@@ -6,7 +6,7 @@ import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { openaiAgentsContext } from "./context.ts";
 import type { OpenAIAgentsContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "./denial.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
 /**
  * Structural `tool()` / `FunctionTool`. Declared here so `guardTool` does

@@ -8,6 +8,7 @@ import * as agents from "./index.ts";
 import type {
   ArcjetAgentClient,
   ArcjetAgentContext,
+  ArcjetDenialResult,
   CaptureActionOptions,
   CaptureOptions,
   GuardActionPolicy,
@@ -29,7 +30,8 @@ function verifyTypeExports(): void {
   const check5: CaptureOptions | undefined = undefined;
   const check6: GuardActionPolicy | undefined = undefined;
   const check7: SecurityMetadataFields | undefined = undefined;
-  void [check1, check2, check3, check4, check5, check6, check7];
+  const check8: ArcjetDenialResult | undefined = undefined;
+  void [check1, check2, check3, check4, check5, check6, check7, check8];
 }
 
 // Ensure the verification function is called

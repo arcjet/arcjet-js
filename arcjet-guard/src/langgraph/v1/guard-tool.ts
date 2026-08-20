@@ -6,7 +6,7 @@ import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { langgraphAgentContext } from "./context.ts";
 import type { LangGraphContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "./denial.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
 /**
  * Structural LangChain `tool()` / `StructuredTool` / `RunnableToolLike`.

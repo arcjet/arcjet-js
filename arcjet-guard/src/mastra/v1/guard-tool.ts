@@ -6,7 +6,7 @@ import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "./denial.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
 /**
  * Structural shape of a Mastra tool.

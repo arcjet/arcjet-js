@@ -11,7 +11,7 @@ import {
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { ArcjetDenialResult } from "./denial.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import type { LangGraphToolNodeLike } from "./guard-tool-node.ts";
 import { guardToolNode } from "./guard-tool-node.ts";
 import type { LangGraphTool } from "./guard-tool.ts";

@@ -91,5 +91,4 @@ export { guardInbound } from "./guard-inbound.ts";
 export type { GuardInboundOptions, InboundVerdict } from "./guard-inbound.ts";
 export { arcjetHooks } from "./hooks.ts";
 export type { ArcjetHookFamily, ArcjetHooksOptions } from "./hooks.ts";
-export type { ArcjetDenialResult } from "./denial.ts";
 export * from "../../agents/index.ts";

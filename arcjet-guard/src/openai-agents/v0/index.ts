@@ -113,5 +113,4 @@ export { openaiAgentsContext } from "./context.ts";
 export type { OpenAIAgentsAgentContext, OpenAIAgentsContextSource } from "./context.ts";
 export { guardTool } from "./guard-tool.ts";
 export type { GuardToolPolicy, OpenAIAgentsTool } from "./guard-tool.ts";
-export type { ArcjetDenialResult } from "./denial.ts";
 export * from "../../agents/index.ts";

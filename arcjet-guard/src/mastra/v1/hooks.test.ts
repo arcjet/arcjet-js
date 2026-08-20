@@ -11,7 +11,7 @@ import {
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
 import { MASTRA_THREAD_ID_KEY } from "./context.ts";
-import type { ArcjetDenialResult } from "./denial.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { guardHooks } from "./hooks.ts";
 
 function hookContext(input?: unknown) {

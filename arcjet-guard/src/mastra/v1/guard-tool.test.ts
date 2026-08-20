@@ -16,7 +16,7 @@ import {
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { DecisionDeny } from "../../types.ts";
 import { MASTRA_THREAD_ID_KEY } from "./context.ts";
-import type { ArcjetDenialResult } from "./denial.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { guardTool } from "./guard-tool.ts";
 
 const TOOL_MARKER = Symbol.for("mastra.core.tools.Tool");

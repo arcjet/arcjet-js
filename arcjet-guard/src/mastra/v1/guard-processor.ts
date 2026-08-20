@@ -12,7 +12,7 @@ import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraRequestContextLike } from "./context.ts";
-import { deniedReason, unavailableReason } from "./denial.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
