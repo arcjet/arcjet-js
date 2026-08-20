@@ -946,45 +946,46 @@ test("`arcjetDeno`", async function (t) {
     "should not support `sensitiveInfo` on 5 megabytes of data",
     { skip: process.platform === "win32" },
     async function () {
-    const restore = capture();
-    let parameters: Array<unknown> | undefined;
+      const restore = capture();
+      let parameters: Array<unknown> | undefined;
 
-    const arcjet = arcjetDeno({
-      client: createLocalClient(),
-      key: exampleKey,
-      log: {
-        debug() {},
-        error(...values) {
-          parameters = values;
+      const arcjet = arcjetDeno({
+        client: createLocalClient(),
+        key: exampleKey,
+        log: {
+          debug() {},
+          error(...values) {
+            parameters = values;
+          },
+          info() {},
+          warn() {},
         },
-        info() {},
-        warn() {},
-      },
-      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-    });
+        rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+      });
 
-    const { server, url } = createSimpleServer({
-      decide: arcjet.protect,
-      handler: arcjet.handler,
-    });
-    const message = "My email is alice@arcjet.com";
-    const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
+      const { server, url } = createSimpleServer({
+        decide: arcjet.protect,
+        handler: arcjet.handler,
+      });
+      const message = "My email is alice@arcjet.com";
+      const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
 
-    const response = await fetch(url, {
-      body,
-      headers: { "Content-Type": "text/plain" },
-      method: "POST",
-    });
+      const response = await fetch(url, {
+        body,
+        headers: { "Content-Type": "text/plain" },
+        method: "POST",
+      });
 
-    await server.shutdown();
-    restore();
+      await server.shutdown();
+      restore();
 
-    assert.equal(response.status, 200);
-    assert.deepEqual(parameters, [
-      "failed to get request body: %s",
-      "Cannot read stream whose expected length exceeds limit",
-    ]);
-  });
+      assert.equal(response.status, 200);
+      assert.deepEqual(parameters, [
+        "failed to get request body: %s",
+        "Cannot read stream whose expected length exceeds limit",
+      ]);
+    },
+  );
 
   await t.test("should support `sensitiveInfo` w/ `sensitiveInfoValue`", async function () {
     const restore = capture();
