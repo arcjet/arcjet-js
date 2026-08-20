@@ -203,6 +203,14 @@ describe("Package boundary: the exports map is the public API", () => {
     assert.equal(typeof testing.registerTestClient, "function");
   });
 
+  test("@arcjet/guard/package.json is exported", async () => {
+    const pkg = await import("@arcjet/guard/package.json", {
+      with: { type: "json" },
+    });
+
+    assert.equal(pkg.default.name, "@arcjet/guard");
+  });
+
   test("the registered test client receives the free calls", async () => {
     const { registerTestClient } = await import("@arcjet/guard/testing");
     const { capture: freeCapture } = await import("@arcjet/guard");

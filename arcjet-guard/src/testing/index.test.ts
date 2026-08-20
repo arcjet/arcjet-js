@@ -200,6 +200,12 @@ describe("the ./testing subpath", () => {
   });
 });
 
+describe("the ./package.json subpath", () => {
+  test("is exported", () => {
+    assert.equal(exportsMap()["./package.json"], "./package.json");
+  });
+});
+
 describe("recording guards", () => {
   test("records the guard call and answers fail-open", async () => {
     const arcjet = registerTestClient();

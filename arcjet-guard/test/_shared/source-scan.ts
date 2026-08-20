@@ -296,6 +296,7 @@ export const EXPECTED_ROOT_KEYS = [
   "./mastra/v1",
   "./node",
   "./openai-agents/v0",
+  "./package.json",
   // The in-memory client for application tests. Deliberately a single entry
   // rather than a runtime-conditional one: it has no transport, so there is
   // nothing for a condition to select.
