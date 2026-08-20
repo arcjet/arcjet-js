@@ -1,0 +1,8 @@
+{
+  "name": "arcjet-js",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "user": "node",
+  "install": "npm ci && npm run build"
+}
