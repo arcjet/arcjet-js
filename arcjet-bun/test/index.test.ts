@@ -879,7 +879,12 @@ test("`arcjetBun`: should support `sensitiveInfo` on a megabyte of data", async 
 });
 
 // TODO(GH-5517): make this configurable.
-test("`arcjetBun`: should not support `sensitiveInfo` on 5 megabytes of data", async function () {
+// Bun's fetch of a ~5MB localhost POST is aborted on Windows
+// (WSAECONNABORTED / os error 10053). The 1MB case still covers the allow path.
+test(
+  "`arcjetBun`: should not support `sensitiveInfo` on 5 megabytes of data",
+  { skip: process.platform === "win32" },
+  async function () {
   const restore = capture();
   let parameters: Array<unknown> | undefined;
 

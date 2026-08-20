@@ -21,10 +21,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+        include:
+          - os: ubuntu-latest
+            bun-asset: bun-linux-x64.zip
+          - os: windows-latest
+            bun-asset: bun-windows-x64.zip
+          - os: macos-latest
+            bun-asset: bun-darwin-aarch64.zip
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
@@ -44,9 +47,16 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+      # Windows harden-runner's DNS proxy can still be coming up when the next
+      # step runs, which makes setup-bun's GitHub API fetch fail immediately.
+      - name: Wait for Windows DNS proxy
+        if: runner.os == 'Windows'
+        run: sleep 5
       - uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
         with:
           bun-version: 1.2.19
+          # Skip the tags API lookup; download the zip from GitHub releases.
+          bun-download-url: https://github.com/oven-sh/bun/releases/download/bun-v1.2.19/${{ matrix.bun-asset }}
       - run: bun install && bun run build
       - run: bun test
         working-directory: arcjet-bun
