@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import test from "node:test";
-
 import { readFileSync } from "node:fs";
+import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -85,11 +84,17 @@ test("protocol", async (t) => {
       assert.equal(decision.ttl, 0);
     });
 
-    await t.test("should document decision TTL as seconds in published types", () => {
-      const dts = readFileSync(fileURLToPath(new URL("../dist/index.d.ts", import.meta.url)), "utf8");
+    await t.test("should document decision TTL as seconds in source types", () => {
+      const source = readFileSync(
+        fileURLToPath(new URL("../src/index.ts", import.meta.url)),
+        "utf8",
+      );
 
-      assert.match(dts, /Duration in seconds this decision should be considered valid/);
-      assert.doesNotMatch(dts, /Duration in milliseconds this decision should be considered valid/);
+      assert.match(source, /Duration in seconds this decision should be considered valid/);
+      assert.doesNotMatch(
+        source,
+        /Duration in milliseconds this decision should be considered valid/,
+      );
     });
   });
 });
