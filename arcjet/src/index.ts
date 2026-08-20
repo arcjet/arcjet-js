@@ -989,10 +989,7 @@ function validateDetectPromptInjectionOptions(
 ): asserts value is DetectPromptInjectionOptions {
   validateInterface(value, {
     name: "detectPromptInjection",
-    validations: [
-      { key: "mode", required: false, validate: validateMode },
-      { key: "threshold", required: false, validate: validateNumber },
-    ],
+    validations: [{ key: "mode", required: false, validate: validateMode }],
   });
 }
 
@@ -3093,18 +3090,6 @@ export type DetectPromptInjectionOptions = {
    * `"LIVE"` will block requests when prompt injection is detected.
    */
   mode?: ArcjetMode;
-
-  /**
-   * The score threshold above which a request is considered a prompt injection
-   * attempt (default: `0.5`) e.g. anything over `0.5` is malicious.
-   *
-   * Must be in the range (0.0, 1.0) exclusive.
-   *
-   * @deprecated
-   *   This option is no longer respected by the server and will be removed in
-   *   a future release.
-   */
-  threshold?: number;
 };
 
 /**
@@ -3236,20 +3221,11 @@ export function detectPromptInjection(
   const type = "PROMPT_INJECTION_DETECTION";
   const version = 0;
   const mode = options.mode === "LIVE" ? "LIVE" : "DRY_RUN";
-  const threshold = options.threshold ?? 0.5;
-
-  // Validate threshold range: must be in (0.0, 1.0) exclusive
-  if (threshold <= 0.0 || threshold >= 1.0) {
-    throw new Error(
-      "`detectPromptInjection` options error: `threshold` must be between 0.0 and 1.0 (exclusive)",
-    );
-  }
 
   return [
     {
       type,
       version,
-      threshold,
       priority: Priority.DetectPromptInjection,
       mode,
       validate(
@@ -3290,7 +3266,6 @@ export function detectPromptInjection(
           hasher.string("type", type),
           hasher.uint32("version", version),
           hasher.string("mode", mode),
-          hasher.float64("threshold", threshold),
         );
 
         const { fingerprint } = context;
@@ -3317,7 +3292,6 @@ export function detectPromptInjection(
           conclusion: "ALLOW",
           reason: new ArcjetPromptInjectionReason({
             injectionDetected: false,
-            score: 0.0,
           }),
         });
       },

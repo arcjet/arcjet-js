@@ -155,7 +155,6 @@ const validateProtectSignupOptions = z
 const validateDetectPromptInjectionOptions = z
   .object({
     mode: validateMode.optional(),
-    threshold: z.number().optional(),
   })
   .strict();
 

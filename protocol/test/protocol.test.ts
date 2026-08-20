@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ArcjetReason, ArcjetRuleResult } from "../dist/index.js";
+import { ArcjetPromptInjectionReason, ArcjetReason, ArcjetRuleResult } from "../dist/index.js";
 
 test("@arcjet/protocol", async function (t) {
   await t.test("should expose the public api", async function () {
@@ -42,6 +42,23 @@ test("protocol", async (t) => {
       });
 
       assert.equal(result.isDenied(), false);
+    });
+  });
+
+  await t.test("ArcjetPromptInjectionReason", async (t) => {
+    await t.test("should default injectionDetected to false and omit score", () => {
+      const reason = new ArcjetPromptInjectionReason({});
+
+      assert.equal(reason.type, "PROMPT_INJECTION_DETECTION");
+      assert.equal(reason.injectionDetected, false);
+      assert.equal("score" in reason, false);
+    });
+
+    await t.test("should record injectionDetected without a score", () => {
+      const reason = new ArcjetPromptInjectionReason({ injectionDetected: true });
+
+      assert.equal(reason.injectionDetected, true);
+      assert.equal("score" in reason, false);
     });
   });
 });

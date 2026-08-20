@@ -19,7 +19,7 @@ test("detectPromptInjection", async function (t) {
   await t.test("should use defaults when no options provided", async function () {
     const [rule] = detectPromptInjection();
     assert.equal(rule.mode, "DRY_RUN");
-    assert.equal(rule.threshold, 0.5);
+    assert.equal("threshold" in rule, false);
   });
 
   await t.test("should accept valid mode", async function () {
@@ -36,57 +36,19 @@ test("detectPromptInjection", async function (t) {
     }, /`detectPromptInjection` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
-  await t.test("should use default threshold when not provided", async function () {
+  await t.test("should not expose a threshold on the rule", async function () {
     const [rule] = detectPromptInjection({ mode: "LIVE" });
-    assert.equal(rule.threshold, 0.5);
+    assert.equal("threshold" in rule, false);
   });
 
-  await t.test("should accept valid threshold", async function () {
-    const [rule] = detectPromptInjection({ threshold: 0.7 });
-    assert.equal(rule.threshold, 0.7);
-  });
-
-  await t.test("should fail if threshold is not a number", async function () {
-    assert.throws(function () {
-      detectPromptInjection({
-        // @ts-expect-error: test runtime behavior of invalid threshold.
-        threshold: "0.5",
-      });
-    }, /invalid type for `threshold` - expected number/);
-  });
-
-  await t.test("should fail if threshold is exactly 0.0", async function () {
-    assert.throws(function () {
-      detectPromptInjection({ threshold: 0.0 });
-    }, /`detectPromptInjection` options error: `threshold` must be between 0.0 and 1.0 \(exclusive\)/);
-  });
-
-  await t.test("should fail if threshold is exactly 1.0", async function () {
-    assert.throws(function () {
-      detectPromptInjection({ threshold: 1.0 });
-    }, /`detectPromptInjection` options error: `threshold` must be between 0.0 and 1.0 \(exclusive\)/);
-  });
-
-  await t.test("should fail if threshold is negative", async function () {
-    assert.throws(function () {
-      detectPromptInjection({ threshold: -0.5 });
-    }, /`detectPromptInjection` options error: `threshold` must be between 0.0 and 1.0 \(exclusive\)/);
-  });
-
-  await t.test("should fail if threshold is greater than 1.0", async function () {
-    assert.throws(function () {
-      detectPromptInjection({ threshold: 1.5 });
-    }, /`detectPromptInjection` options error: `threshold` must be between 0.0 and 1.0 \(exclusive\)/);
-  });
-
-  await t.test("should accept threshold near minimum", async function () {
-    const [rule] = detectPromptInjection({ threshold: 0.01 });
-    assert.equal(rule.threshold, 0.01);
-  });
-
-  await t.test("should accept threshold near maximum", async function () {
-    const [rule] = detectPromptInjection({ threshold: 0.99 });
-    assert.equal(rule.threshold, 0.99);
+  await t.test("should ignore a leftover threshold option", async function () {
+    const [rule] = detectPromptInjection({
+      mode: "LIVE",
+      // @ts-expect-error: threshold was removed; leftover callers must not throw.
+      threshold: 0,
+    });
+    assert.equal(rule.mode, "LIVE");
+    assert.equal("threshold" in rule, false);
   });
 
   await t.test("should throw if detectPromptInjectionMessage is missing", async function () {
@@ -173,7 +135,7 @@ test("detectPromptInjection", async function (t) {
     assert.equal(result.conclusion, "ALLOW");
     assert.ok(result.reason instanceof ArcjetPromptInjectionReason);
     assert.equal(result.reason.injectionDetected, false);
-    assert.equal(result.reason.score, 0.0);
+    assert.equal("score" in result.reason, false);
   });
 
   await t.test("should return NOT_RUN in DRY_RUN mode", async function () {
@@ -212,7 +174,6 @@ test("detectPromptInjection", async function (t) {
         conclusion: "DENY",
         reason: new ArcjetPromptInjectionReason({
           injectionDetected: true,
-          score: 0.95,
         }),
       },
       60,
@@ -225,7 +186,7 @@ test("detectPromptInjection", async function (t) {
     assert.equal(result2.conclusion, "DENY");
     assert.ok(result2.reason instanceof ArcjetPromptInjectionReason);
     assert.equal((result2.reason as ArcjetPromptInjectionReason).injectionDetected, true);
-    assert.equal((result2.reason as ArcjetPromptInjectionReason).score, 0.95);
+    assert.equal("score" in result2.reason, false);
   });
 
   await t.test("should have correct priority", async function () {
@@ -243,11 +204,13 @@ test("detectPromptInjection", async function (t) {
     assert.equal(rule.version, 0);
   });
 
-  await t.test("should generate different rule IDs for different thresholds", async function () {
+  await t.test("should generate the same rule ID regardless of leftover threshold", async function () {
     const rule1: ArcjetPromptInjectionDetectionRule = detectPromptInjection({
+      // @ts-expect-error: threshold was removed and must not affect identity.
       threshold: 0.5,
     })[0];
     const rule2: ArcjetPromptInjectionDetectionRule = detectPromptInjection({
+      // @ts-expect-error: threshold was removed and must not affect identity.
       threshold: 0.7,
     })[0];
     const context = createContext();
@@ -260,7 +223,7 @@ test("detectPromptInjection", async function (t) {
     const result1 = await rule1.protect(context, details);
     const result2 = await rule2.protect(context, details);
 
-    assert.notEqual(result1.ruleId, result2.ruleId);
+    assert.equal(result1.ruleId, result2.ruleId);
   });
 
   await t.test("should generate different rule IDs for different modes", async function () {
@@ -292,7 +255,6 @@ test("integration with arcjet client", async function (t) {
           ttl: 300,
           reason: new ArcjetPromptInjectionReason({
             injectionDetected: true,
-            score: 0.92,
           }),
           results: [],
         });
@@ -303,7 +265,7 @@ test("integration with arcjet client", async function (t) {
     const key = "test-key";
     const aj = arcjet({
       key,
-      rules: [detectPromptInjection({ mode: "LIVE", threshold: 0.8 })],
+      rules: [detectPromptInjection({ mode: "LIVE" })],
       client,
       log: createTestLogger(),
     });
@@ -330,7 +292,7 @@ test("integration with arcjet client", async function (t) {
     assert.equal(decision.conclusion, "DENY");
     assert.ok(decision.reason instanceof ArcjetPromptInjectionReason);
     assert.equal((decision.reason as ArcjetPromptInjectionReason).injectionDetected, true);
-    assert.equal((decision.reason as ArcjetPromptInjectionReason).score, 0.92);
+    assert.equal("score" in decision.reason, false);
   });
 
   await t.test("should handle server returning ALLOW", async function () {
@@ -340,7 +302,6 @@ test("integration with arcjet client", async function (t) {
           ttl: 0,
           reason: new ArcjetPromptInjectionReason({
             injectionDetected: false,
-            score: 0.15,
           }),
           results: [],
         });
@@ -351,7 +312,7 @@ test("integration with arcjet client", async function (t) {
     const key = "test-key";
     const aj = arcjet({
       key,
-      rules: [detectPromptInjection({ mode: "LIVE", threshold: 0.5 })],
+      rules: [detectPromptInjection({ mode: "LIVE" })],
       client,
       log: createTestLogger(),
     });
@@ -378,7 +339,7 @@ test("integration with arcjet client", async function (t) {
     assert.equal(decision.conclusion, "ALLOW");
     assert.ok(decision.reason instanceof ArcjetPromptInjectionReason);
     assert.equal((decision.reason as ArcjetPromptInjectionReason).injectionDetected, false);
-    assert.equal((decision.reason as ArcjetPromptInjectionReason).score, 0.15);
+    assert.equal("score" in decision.reason, false);
   });
 
   await t.test(
@@ -393,7 +354,6 @@ test("integration with arcjet client", async function (t) {
             ttl: 0,
             reason: new ArcjetPromptInjectionReason({
               injectionDetected: false,
-              score: 0.1,
             }),
             results: [],
           });
