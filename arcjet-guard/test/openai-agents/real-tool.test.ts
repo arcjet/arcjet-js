@@ -22,7 +22,7 @@ import { test } from "node:test";
 
 import { RunContext, tool } from "@openai/agents";
 
-import type { ArcjetDenialResult } from "../../src/openai-agents/v0/denial.ts";
+import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
 import { guardTool } from "../../src/openai-agents/v0/guard-tool.ts";
 import { asDenial, recorded } from "../_shared/source-scan.ts";
 import { decisionAllow, decisionDenyPromptInjection, stubClient } from "../_shared/stub-client.ts";

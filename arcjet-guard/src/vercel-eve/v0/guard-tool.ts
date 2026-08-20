@@ -6,7 +6,7 @@ import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/gua
 import { runGuarded } from "../../agents/guarded.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
-import { denialResult } from "./denial.ts";
+import { denialResult } from "../../agents/denial.ts";
 
 /**
  * Policy for `guardTool()` — how to guard an authored tool's execution.

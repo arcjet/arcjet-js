@@ -13,7 +13,8 @@ import {
 } from "../../../test/_shared/stub-client.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { DecisionDeny } from "../../types.ts";
-import type { ArcjetDenialResult, ClaudeCallToolResult } from "./denial.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import type { ClaudeCallToolResult } from "./denial.ts";
 import type { ClaudeToolDefinition } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 

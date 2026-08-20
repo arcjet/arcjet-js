@@ -15,7 +15,7 @@ import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
-import { deniedReason, unavailableReason } from "./denial.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**

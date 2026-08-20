@@ -32,9 +32,11 @@ import type { DecisionDeny } from "../types.ts";
  * either leak a throw into the model loop or swallow a policy denial as a
  * successful action.
  *
- * Adapter `denial.ts` files re-export these builders and add only the
- * envelope their SDK requires. They exist as separate modules so a vendor
- * namespace never imports another vendor's SDK.
+ * Every adapter builds its payload here. Only an adapter that needs a
+ * non-trivial envelope declares a module of its own — currently just
+ * `claude-agent-sdk/v0/denial.ts`, for the `CallToolResult` wrapper. This
+ * module imports no SDK, so sharing it does not put one vendor's SDK in
+ * another vendor namespace's import graph.
  */
 export interface ArcjetDenialResult {
   arcjetDenied: true;

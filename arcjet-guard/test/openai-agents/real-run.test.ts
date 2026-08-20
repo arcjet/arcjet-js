@@ -26,7 +26,7 @@ import { test } from "node:test";
 import { Agent, Runner, tool } from "@openai/agents";
 import { assistantMessage, functionCall, ScriptedModel } from "@openai/agents/testing";
 
-import type { ArcjetDenialResult } from "../../src/openai-agents/v0/denial.ts";
+import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
 import { guardTool } from "../../src/openai-agents/v0/guard-tool.ts";
 import { decisionAllow, decisionDenyPromptInjection, stubClient } from "../_shared/stub-client.ts";
 

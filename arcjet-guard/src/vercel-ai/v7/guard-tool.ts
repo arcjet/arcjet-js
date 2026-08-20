@@ -9,9 +9,11 @@ import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { PolicyInputMap } from "../../policy-input.ts";
 import type { DecisionDeny, RuleWithInput, ArcjetMetadata } from "../../types.ts";
-import { denialResult, unavailableResult } from "./denial.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
-export type { ArcjetDenialResult } from "./denial.ts";
+// Re-exported because this is the module the type was declared in before it
+// became shared, and `guardTool`'s callers already import from here.
+export type { ArcjetDenialResult } from "../../agents/denial.ts";
 
 /**
  * Policy for `guardTool()` — how to guard a tool's execution.

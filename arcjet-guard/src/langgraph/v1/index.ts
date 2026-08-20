@@ -109,5 +109,4 @@ export type {
   GuardToolNodePolicy,
   LangGraphToolNodeLike,
 } from "./guard-tool-node.ts";
-export type { ArcjetDenialResult } from "./denial.ts";
 export * from "../../agents/index.ts";

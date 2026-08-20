@@ -94,5 +94,4 @@ export type {
 } from "./guard-processor.ts";
 export { guardHooks } from "./hooks.ts";
 export type { GuardHooksPolicy, GuardHooksCall } from "./hooks.ts";
-export type { ArcjetDenialResult } from "./denial.ts";
 export * from "../../agents/index.ts";

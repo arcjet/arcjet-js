@@ -67,6 +67,5 @@
 
 export { guardTool } from "./guard-tool.ts";
 export type { GuardToolPolicy } from "./guard-tool.ts";
-export type { ArcjetDenialResult } from "./denial.ts";
 export { aiToolsContext } from "./tools-context.ts";
 export * from "../../agents/index.ts";

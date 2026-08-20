@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, test } from "node:test";
 
+import { collectTsFiles } from "../../test/_shared/source-scan.ts";
 import {
   decisionDenyError,
   decisionDenyPromptInjection,
@@ -8,12 +11,6 @@ import {
   decisionDenyRateLimit,
   decisionDenyRateLimitNoReset,
 } from "../../test/_shared/stub-client.ts";
-import * as claudeDenial from "../claude-agent-sdk/v0/denial.ts";
-import * as langgraphDenial from "../langgraph/v1/denial.ts";
-import * as mastraDenial from "../mastra/v1/denial.ts";
-import * as openaiDenial from "../openai-agents/v0/denial.ts";
-import * as vercelAiDenial from "../vercel-ai/v7/denial.ts";
-import * as eveDenial from "../vercel-eve/v0/denial.ts";
 import {
   denialResult,
   deniedReason,
@@ -88,7 +85,19 @@ describe("shared denial payload", () => {
     );
   });
 
-  test("the payload is a plain JSON object with no framework envelope fields", () => {
+  /**
+   * The payload carries no envelope field, because each adapter's envelope is
+   * added around it rather than onto it. Two of those fields are load-bearing:
+   *
+   * - `_getType` / `lc_kwargs` would satisfy LangGraph's `isBaseMessage`, so
+   *   `ToolNode` would hand the denial straight to `messagesStateReducer`,
+   *   which assigns `m.lc_kwargs.id` and throws on a duck-typed message —
+   *   taking the graph down.
+   * - `type` would make OpenAI Agents' `normalizeStructuredToolOutputs` read
+   *   the denial as a structured content item and rewrite it, instead of
+   *   stringifying the payload the model is meant to read.
+   */
+  test("the payload carries no framework envelope fields", () => {
     const results: Array<Record<string, unknown>> = [
       { ...denialResult(decisionDenyPromptInjection()) },
       { ...unavailableResult() },
@@ -114,7 +123,7 @@ describe("shared denial payload", () => {
     }
   });
 
-  test("a denial is JSON-serializable", () => {
+  test("a denial is JSON-serializable, which is how adapters pass it on", () => {
     const decoded: unknown = JSON.parse(
       JSON.stringify(denialResult(decisionDenyPromptInjection())),
     );
@@ -127,44 +136,46 @@ describe("shared denial payload", () => {
   });
 });
 
-describe("one contract across adapters", () => {
-  test("every adapter re-exports the same payload builders", () => {
-    const adapters = [
-      ["vercel-ai/v7", vercelAiDenial],
-      ["vercel-eve/v0", eveDenial],
-      ["mastra/v1", mastraDenial],
-      ["claude-agent-sdk/v0", claudeDenial],
-      ["langgraph/v1", langgraphDenial],
-      ["openai-agents/v0", openaiDenial],
-    ] as const;
+/**
+ * One payload, built in one place. Every vendor namespace used to declare its
+ * own structurally-identical copy, which is how the wording and the
+ * retry-after rules drifted apart in the first place. Nothing but a scan stops
+ * the next namespace from starting a fresh copy, so scan for it: the needles
+ * are built from parts so this file does not match itself.
+ */
+test("no vendor namespace declares its own denial payload", () => {
+  const vendorDirs = [
+    "vercel-ai",
+    "vercel-eve",
+    "mastra",
+    "claude-agent-sdk",
+    "langgraph",
+    "openai-agents",
+  ];
+  const forbidden = [
+    ["interface ", "Arcjet", "DenialResult"].join(""),
+    ["function ", "denial", "Result("].join(""),
+    ["function ", "denied", "Reason("].join(""),
+    ["function ", "unavailable", "Result("].join(""),
+    ["UNAVAILABLE_", "RETRY_AFTER_", "SECONDS ="].join(""),
+  ];
 
-    for (const [name, denial] of adapters) {
-      assert.strictEqual(
-        denial.denialResult,
-        denialResult,
-        `${name} must re-export the shared denialResult`,
-      );
-      assert.strictEqual(
-        denial.unavailableResult,
-        unavailableResult,
-        `${name} must re-export the shared unavailableResult`,
-      );
-      assert.strictEqual(
-        denial.deniedReason,
-        deniedReason,
-        `${name} must re-export the shared deniedReason`,
-      );
+  const errors: string[] = [];
+  for (const vendorDir of vendorDirs) {
+    for (const filePath of collectTsFiles(resolve(import.meta.dirname, "..", vendorDir))) {
+      let content: string;
+      try {
+        content = readFileSync(filePath, "utf-8");
+      } catch {
+        continue;
+      }
+      for (const needle of forbidden) {
+        if (content.includes(needle)) {
+          errors.push(`${filePath}: declares "${needle}"; import it from agents/denial.ts instead`);
+        }
+      }
     }
-  });
+  }
 
-  test("every adapter produces the same payload for the same decision", () => {
-    const decision = decisionDenyPromptInjection();
-    const expected = denialResult(decision);
-    assert.deepEqual(vercelAiDenial.denialResult(decision), expected);
-    assert.deepEqual(eveDenial.denialResult(decision), expected);
-    assert.deepEqual(mastraDenial.denialResult(decision), expected);
-    assert.deepEqual(claudeDenial.denialResult(decision), expected);
-    assert.deepEqual(langgraphDenial.denialResult(decision), expected);
-    assert.deepEqual(openaiDenial.denialResult(decision), expected);
-  });
+  assert.deepEqual(errors, [], `denial payload re-declared:\n${errors.join("\n")}`);
 });

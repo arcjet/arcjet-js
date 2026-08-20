@@ -14,7 +14,7 @@ import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { claudeAgentContext } from "./context.ts";
 import type { ClaudeContextSource } from "./context.ts";
-import { deniedReason, unavailableReason } from "./denial.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**

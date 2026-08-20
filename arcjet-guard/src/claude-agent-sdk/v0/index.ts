@@ -114,5 +114,5 @@ export type {
   GuardHooksInbound,
   GuardHooksInboundPolicy,
 } from "./hooks.ts";
-export type { ArcjetDenialResult, ClaudeCallToolResult } from "./denial.ts";
+export type { ClaudeCallToolResult } from "./denial.ts";
 export * from "../../agents/index.ts";

@@ -3,24 +3,6 @@ import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { DecisionDeny } from "../../types.ts";
 
 /**
- * Structured denial payload returned to the model (as `structuredContent` on
- * a `CallToolResult`, or as the PreToolUse / UserPromptSubmit reason).
- *
- * Claude's idiomatic delivery is a MCP `CallToolResult` with `isError: true`.
- * Prefer that over throwing: Claude reads the composed message instead of a
- * raw exception. Omitting `isError` would look like a successful tool call.
- * The payload itself is the shared contract in `agents/denial.ts`.
- */
-export {
-  type ArcjetDenialResult,
-  denialResult,
-  deniedReason,
-  unavailableReason,
-  unavailableResult,
-  UNAVAILABLE_RETRY_AFTER_SECONDS,
-} from "../../agents/denial.ts";
-
-/**
  * MCP `CallToolResult` shape the Claude Agent SDK's `tool()` handler must
  * return. Declared structurally so this module never value-imports the SDK
  * (or `@modelcontextprotocol/sdk`, which does not re-export `CallToolResult`
@@ -51,7 +33,9 @@ function asStructuredContent(value: ArcjetDenialResult): Record<string, unknown>
 
 /**
  * DENY as a `CallToolResult` with `isError: true`. Prefer this over throwing:
- * Claude reads the composed message instead of a raw exception.
+ * Claude reads the composed message instead of a raw exception, and omitting
+ * `isError` would look like a successful tool call. The payload carried on
+ * `structuredContent` is the shared contract from `agents/denial.ts`.
  */
 export function denialCallToolResult(decision: DecisionDeny): ClaudeCallToolResult {
   const result = denialResult(decision);

@@ -3,8 +3,6 @@ import type { ArcjetMetadata, DecisionAllow, DecisionDeny, RuleWithInput } from 
 import { captureEvent } from "./capture.ts";
 import type { ArcjetAgentClient } from "./capture.ts";
 import type { ArcjetAgentContext } from "./context.ts";
-import type { ArcjetDenialResult } from "./denial.ts";
-import { denialResult } from "./denial.ts";
 import { runGuarded } from "./guarded.ts";
 
 /**
@@ -52,19 +50,11 @@ import { runGuarded } from "./guarded.ts";
  */
 export class ArcjetDeniedError extends Error {
   readonly decision: DecisionDeny;
-  /**
-   * The same model-visible payload `guardTool` produces. Application code
-   * that `catch`es this error can inspect `reason` / `retryable` without
-   * sharing a handler with the model path — throwing remains the agent
-   * contract; this field is the shared payload.
-   */
-  readonly denial: ArcjetDenialResult;
 
   constructor(action: string, decision: DecisionDeny) {
     super(`Arcjet denied action "${action}" (${decision.reason}); decision ${decision.id}`);
     this.name = "ArcjetDeniedError";
     this.decision = decision;
-    this.denial = denialResult(decision);
   }
 }
 

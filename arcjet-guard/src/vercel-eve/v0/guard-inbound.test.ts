@@ -10,7 +10,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { deniedReason } from "./denial.ts";
+import { deniedReason } from "../../agents/denial.ts";
 import { guardInbound } from "./guard-inbound.ts";
 
 test("AC5.6: ALLOW → exactly { allowed: true } with no extra fields", async () => {
