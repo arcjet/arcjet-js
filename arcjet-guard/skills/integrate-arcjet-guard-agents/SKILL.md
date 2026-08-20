@@ -38,8 +38,10 @@ Ask only what you cannot infer from the code; suggest defaults.
 ## Step 1: Install and find the guard client
 
 Install `@arcjet/guard` (required), plus `ai` and `@ai-sdk/provider-utils`
-(optional peers, needed only for `@arcjet/guard/vercel-ai/v7`). Every agent
-helper lives on that one path. Always use explicit versions:
+(optional peers, needed only for `@arcjet/guard/vercel-ai/v7`). Importing
+`@arcjet/guard/vercel-ai/v7` without those peers throws
+`install ai and @ai-sdk/provider-utils.` Every agent helper lives on that
+one path. Always use explicit versions:
 `@arcjet/guard/vercel-ai/v7` resolves, but `@arcjet/guard/vercel-ai` does not —
 omitting the version is deliberate (it prevents silent API breaking changes
 when a new major version is supported). Attempting to import from an

@@ -8,7 +8,9 @@
  * layering.
  *
  * **Requires the optional peer dependency `eve@>=0.34.0 <1`**, and Eve's own
- * Node floor of 24 — higher than `@arcjet/guard`'s. Nothing in this module
+ * Node floor of 24 — higher than `@arcjet/guard`'s. Importing this namespace
+ * below Node 24 throws `needs Node 24.` rather than leaving npm's
+ * generic `EBADENGINE` warning as the only signal. Nothing in this module
  * imports `eve` at runtime: every Eve type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls Eve in.
  *
@@ -81,6 +83,10 @@
  * }
  * ```
  */
+
+import { assertEveEngine } from "./engine.ts";
+
+assertEveEngine();
 
 export { eveAgentContext } from "./context.ts";
 export { guardApproval } from "./guard-approval.ts";

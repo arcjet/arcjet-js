@@ -1261,12 +1261,13 @@ importing only core guards are not forced to install unneeded packages:
 
 - **`@arcjet/guard`** (core) has no peer dependencies.
 - **`@arcjet/guard/vercel-ai/v7`** requires `ai` and `@ai-sdk/provider-utils`
-  (optional peers — the package will not be installed automatically, but the
-  imports will fail clearly if the peers are missing).
+  (optional peers — the package will not be installed automatically). Importing
+  the namespace without them throws `install ai and @ai-sdk/provider-utils.`
 - **`@arcjet/guard/vercel-eve/v0`** requires `eve` (optional peer, installed
   only to use `@arcjet/guard/vercel-eve/v0`). **Eve requires Node.js >= 24**,
-  which is higher than `@arcjet/guard`'s own floor of >= 22. If you are using
-  Eve, ensure your deployment environment and CI both run Node 24 or later.
+  which is higher than `@arcjet/guard`'s own floor of >= 22. Importing this
+  namespace on an older engine throws `needs Node 24.` rather than a generic
+  engine warning.
 - **`@arcjet/guard/mastra/v1`** requires `@mastra/core` (optional peer,
   installed only to use `@arcjet/guard/mastra/v1`). The peer range is `>=1 <2`.
 - **`@arcjet/guard/claude-agent-sdk/v0`** requires

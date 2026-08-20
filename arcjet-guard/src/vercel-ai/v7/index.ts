@@ -11,6 +11,9 @@
  * - `ai@^7.0.36`
  * - `@ai-sdk/provider-utils@^5.0.12`
  *
+ * Missing peers throw `install ai and @ai-sdk/provider-utils.` rather than
+ * Node's generic `ERR_MODULE_NOT_FOUND`.
+ *
  * **Exports:** `guardTool` and `aiToolsContext`, plus the agnostic helpers —
  * context, metadata vocabulary, `guardAction`, `captureAction`, and the error
  * types. The agnostic layer has no export map entry of its own; this is the

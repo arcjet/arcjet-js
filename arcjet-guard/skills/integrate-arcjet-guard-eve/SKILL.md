@@ -103,8 +103,9 @@ npm install @arcjet/guard eve
 ```
 
 **Note:** Eve requires Node.js >= 24. `@arcjet/guard` supports Node >= 22, but
-the Eve integration does not. Verify the agent's `engines` declares `">=24"` or
-note the floor in deployment docs.
+the Eve integration does not. Importing `@arcjet/guard/vercel-eve/v0` on an
+older engine throws `needs Node 24.` Verify the agent's `engines` declares
+`">=24"` or note the floor in deployment docs.
 
 If the agent has no guard client yet, launch one **once at module scope**:
 

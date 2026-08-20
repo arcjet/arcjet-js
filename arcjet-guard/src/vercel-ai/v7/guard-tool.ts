@@ -1,7 +1,9 @@
-import { jsonSchema } from "ai";
 import type { InferToolInput, InferToolOutput, Tool } from "ai";
 
 import { shouldWarn } from "../../agents/capture.ts";
+import { importAi } from "./peers.ts";
+
+const { jsonSchema } = await importAi();
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { ArcjetAgentContext } from "../../agents/context.ts";
 import { retryAfterSeconds } from "../../agents/denial.ts";

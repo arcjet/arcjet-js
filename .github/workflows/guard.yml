@@ -180,10 +180,13 @@ jobs:
           node --test 'arcjet-guard/src/mastra/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
-      # The vercel-eve namespace imports eve for types only, which is what lets
-      # guard support Node 22 at all — eve declares engines.node ">=24". A static
-      # scan proves the imports are written `import type`; this proves the
-      # consequence, catching a build step that re-emits one as a value import.
+      # The vercel-eve namespace imports eve for types only so installing
+      # @arcjet/guard never pulls Eve in. Eve's own engines.node is ">=24";
+      # importing the namespace throws "needs Node 24" below that floor rather
+      # than leaving npm's generic EBADENGINE warning as the only signal. A
+      # static scan proves the imports are written `import type`; this proves
+      # the consequence, catching a build step that re-emits one as a value
+      # import.
       #
       # Runs on every leg of the matrix rather than just Node 22, because the
       # criterion is about all three. Runs last because it deletes a

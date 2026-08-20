@@ -217,6 +217,28 @@ describe("Package boundary: the exports map is the public API", () => {
     }
   });
 
+  test("@arcjet/guard/vercel-ai/v7 loads when the ai peers are installed", async () => {
+    const v7 = await import("@arcjet/guard/vercel-ai/v7");
+    assert.equal(typeof v7.guardTool, "function");
+  });
+
+  test("@arcjet/guard/vercel-eve/v0 names Node 24 when the engine is below it", async () => {
+    const major = Number(process.versions.node.split(".")[0]);
+    if (major >= 24) {
+      const eve = await import("@arcjet/guard/vercel-eve/v0");
+      assert.equal(typeof eve.guardTool, "function");
+      return;
+    }
+    await assert.rejects(
+      () => import("@arcjet/guard/vercel-eve/v0"),
+      (error: unknown) => {
+        assert.ok(error instanceof Error);
+        assert.match(error.message, /needs Node 24/);
+        return true;
+      },
+    );
+  });
+
   test("internal modules are unreachable through the package boundary", async () => {
     // The seams the registry and test client share with the client — the
     // fail-open decision, capture normalization, the diagnostics symbol — are
