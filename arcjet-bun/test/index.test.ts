@@ -886,46 +886,52 @@ test("`arcjetBun`: should support `sensitiveInfo` on a megabyte of data", async 
 });
 
 // TODO(GH-5517): make this configurable.
-test("`arcjetBun`: should not support `sensitiveInfo` on 5 megabytes of data", async function () {
-  const restore = capture();
-  let parameters: Array<unknown> | undefined;
+// Bun's fetch of a ~5MB localhost POST is aborted on Windows
+// (WSAECONNABORTED / os error 10053). The 1MB case still covers the allow path.
+test(
+  "`arcjetBun`: should not support `sensitiveInfo` on 5 megabytes of data",
+  { skip: process.platform === "win32" },
+  async function () {
+    const restore = capture();
+    let parameters: Array<unknown> | undefined;
 
-  const arcjet = arcjetBun({
-    client: createLocalClient(),
-    key: exampleKey,
-    log: {
-      debug() {},
-      error(...values) {
-        parameters = values;
+    const arcjet = arcjetBun({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        debug() {},
+        error(...values) {
+          parameters = values;
+        },
+        info() {},
+        warn() {},
       },
-      info() {},
-      warn() {},
-    },
-    rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
-  });
+      rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
+    });
 
-  const { server, url } = createSimpleServer({
-    decide: arcjet.protect,
-    handler: arcjet.handler,
-  });
-  const message = "My email is alice@arcjet.com";
-  const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
+    const { server, url } = createSimpleServer({
+      decide: arcjet.protect,
+      handler: arcjet.handler,
+    });
+    const message = "My email is alice@arcjet.com";
+    const body = "a".repeat(5 * oneMegabyte - message.length - 1) + " " + message;
 
-  const response = await fetch(url, {
-    body,
-    headers: { "Content-Type": "text/plain" },
-    method: "POST",
-  });
+    const response = await fetch(url, {
+      body,
+      headers: { "Content-Type": "text/plain" },
+      method: "POST",
+    });
 
-  await server.stop();
-  restore();
+    await server.stop();
+    restore();
 
-  assert.equal(response.status, 200);
-  assert.deepEqual(parameters, [
-    "failed to get request body: %s",
-    "Cannot read stream whose expected length exceeds limit",
-  ]);
-});
+    assert.equal(response.status, 200);
+    assert.deepEqual(parameters, [
+      "failed to get request body: %s",
+      "Cannot read stream whose expected length exceeds limit",
+    ]);
+  },
+);
 
 test("`arcjetBun`: should support `sensitiveInfo` w/ `sensitiveInfoValue`", async function () {
   const restore = capture();
