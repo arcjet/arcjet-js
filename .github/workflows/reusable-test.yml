@@ -16,16 +16,19 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        # Git Bash on Windows so `&&` matches Linux/macOS.
+        # Explicit so `pipefail` is on, matching the other jobs here.
         shell: bash
     strategy:
       fail-fast: false
       matrix:
+        # No windows-latest: Bun cannot migrate `package-lock.json`, so
+        # `bun install` resolves every package from the registry, and Windows
+        # harden-runner's DNS proxy drops those lookups (`no upstream DNS
+        # servers available` for registry.npmjs.org, then `ConnectionRefused`
+        # on each tarball). Re-add it once that proxy is reliable on Windows.
         include:
           - os: ubuntu-latest
             bun-asset: bun-linux-x64.zip
-          - os: windows-latest
-            bun-asset: bun-windows-x64.zip
           - os: macos-latest
             bun-asset: bun-darwin-aarch64.zip
     permissions:
@@ -47,11 +50,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      # Windows harden-runner's DNS proxy can still be coming up when the next
-      # step runs, which makes setup-bun's GitHub API fetch fail immediately.
-      - name: Wait for Windows DNS proxy
-        if: runner.os == 'Windows'
-        run: sleep 5
       - uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
         with:
           bun-version: 1.2.19
