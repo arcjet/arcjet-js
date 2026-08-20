@@ -19,9 +19,7 @@ export function eveEngineError(): Error {
   return new Error(`@arcjet/guard/vercel-eve/v0: ${EVE_NODE_ENGINE_MESSAGE}`);
 }
 
-export function nodeMajor(
-  versions: NodeVersions | undefined = readNodeVersions(),
-): number | undefined {
+export function nodeMajor(versions: NodeVersions | undefined): number | undefined {
   const node = versions?.node;
   if (typeof node !== "string" || node === "") {
     return undefined;
@@ -33,8 +31,12 @@ export function nodeMajor(
   return major;
 }
 
-export function assertEveEngine(versions: NodeVersions | undefined = readNodeVersions()): void {
-  const major = nodeMajor(versions);
+export function currentNodeMajor(): number | undefined {
+  return nodeMajor(readNodeVersions());
+}
+
+export function assertEveEngine(versions?: NodeVersions): void {
+  const major = nodeMajor(versions ?? readNodeVersions());
   if (major === undefined || major < 24) {
     throw eveEngineError();
   }
@@ -53,6 +55,5 @@ function readNodeVersions(): NodeVersions | undefined {
   if (typeof versions !== "object" || versions === null) {
     return undefined;
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- object-and-null guard above
-  return versions as NodeVersions;
+  return versions;
 }
