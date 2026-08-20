@@ -22,7 +22,7 @@ import { collectTsFiles, extractImportSpecifiers } from "../test/_shared/source-
  * deliberately to assert shared-export identity across the two.
  */
 const NAMESPACES = [
-  { dir: "vercel-ai", packages: ["ai", "@ai-sdk/"] },
+  { dir: "vercel-ai", packages: ["ai", "@ai-sdk"] },
   { dir: "vercel-eve", packages: ["eve"] },
   { dir: "mastra", packages: ["@mastra/core"] },
   { dir: "claude-agent-sdk", packages: ["@anthropic-ai/claude-agent-sdk"] },
@@ -30,11 +30,13 @@ const NAMESPACES = [
   { dir: "openai-agents", packages: ["@openai/agents"] },
 ] as const;
 
-/** Whether `specifier` imports one of `packages` (the package or a subpath). */
+/**
+ * Whether `specifier` imports one of `packages`, as the package itself or a
+ * subpath of it. `@ai-sdk` is a scope rather than a package, and matches the
+ * same way: every package under it is a subpath.
+ */
 function importsAnyOf(specifier: string, packages: readonly string[]): boolean {
-  return packages.some(
-    (name) => specifier === name || specifier.startsWith(name.endsWith("/") ? name : `${name}/`),
-  );
+  return packages.some((name) => specifier === name || specifier.startsWith(`${name}/`));
 }
 
 function foreignImports(
