@@ -3,7 +3,7 @@ import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } 
 import { ArcjetHeaders } from "@arcjet/headers";
 import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
-import { type Client, createClient } from "@arcjet/protocol/client.js";
+import { type Client, createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
   type ArcjetAdapterContext,
@@ -155,7 +155,7 @@ export interface RemoteClientOptions {
   /**
    * Timeout in milliseconds for the Decide API (optional).
    *
-   * Defaults to `500` in production and `1000` in development.
+   * Defaults to `2000` (2 seconds) to allow for API cold starts.
    */
   timeout?: number | null | undefined;
 }
@@ -306,7 +306,7 @@ export function createRemoteClient(options?: RemoteClientOptions | null | undefi
     baseUrl,
     sdkStack: "REACT_ROUTER",
     sdkVersion: VERSION,
-    timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
+    timeout: resolveClientTimeout(settings.timeout),
     transport: createTransport(baseUrl),
   });
 }

@@ -5,7 +5,7 @@ import { ArcjetHeaders } from "@arcjet/headers";
 import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
-import { createClient } from "@arcjet/protocol/client.js";
+import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import type {
   ArcjetDecision,
@@ -63,7 +63,7 @@ export type RemoteClientOptions = {
   /**
    * Timeout in milliseconds for the Decide API (optional).
    *
-   * Defaults to `500` in production and `1000` in development.
+   * Defaults to `2000` (2 seconds) to allow for API cold starts.
    */
   timeout?: number;
 };
@@ -86,7 +86,7 @@ export function createRemoteClient(
     baseUrl,
     sdkStack: "FASTIFY",
     sdkVersion: VERSION,
-    timeout: settings.timeout ?? (isDevelopment(process.env) ? 1000 : 500),
+    timeout: resolveClientTimeout(settings.timeout),
     transport: createTransport(baseUrl),
   });
 }

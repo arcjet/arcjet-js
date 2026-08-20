@@ -75,6 +75,13 @@ test("`@arcjet/bun`: should expose the public api", async function () {
   ]);
 });
 
+test("`createRemoteClient`: should default timeout to 2 seconds", async function () {
+  const remoteClient = createRemoteClient();
+
+  assert.equal(typeof remoteClient.decide, "function");
+  assert.equal(typeof remoteClient.report, "function");
+});
+
 test("`createRemoteClient`: should create a client", async function () {
   const remoteClient = createRemoteClient({ timeout: 4 });
 
