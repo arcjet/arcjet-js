@@ -1,14 +1,12 @@
 import type { ToolDefinition, ToolContext } from "eve/tools";
 
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
-import { retryAfterSeconds } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
-import type { ArcjetDenialResult } from "./denial.ts";
-import { deniedReason } from "./denial.ts";
+import { denialResult } from "./denial.ts";
 
 /**
  * Policy for `guardTool()` — how to guard an authored tool's execution.
@@ -209,32 +207,4 @@ export function guardTool<TInput, TOutput>(
   };
 
   return wrapped;
-}
-
-function denialResult(decision: DecisionDeny): ArcjetDenialResult {
-  const isRateLimit = decision.reason === "RATE_LIMIT";
-  let retryAfterSecs: number | undefined;
-
-  // Only rate-limit denials are retryable, so only they carry a retry-after.
-  // A co-occurring rule that allowed can still leave a resetAtUnixSeconds in
-  // decision.results; ignore it when the denying reason is not a rate limit.
-  if (isRateLimit) {
-    retryAfterSecs = retryAfterSeconds(decision);
-  }
-
-  const message = deniedReason(decision);
-
-  const result: ArcjetDenialResult = {
-    arcjetDenied: true,
-    reason: decision.reason,
-    message,
-    retryable: isRateLimit,
-  };
-
-  // For RATE_LIMIT, include the computed retry-after if available.
-  if (isRateLimit && retryAfterSecs !== undefined) {
-    result.retryAfterSeconds = retryAfterSecs;
-  }
-
-  return result;
 }

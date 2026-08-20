@@ -76,6 +76,9 @@ test("AC4.8: DENY decision → ArcjetDeniedError thrown, fn never called", async
     assert.ok(err instanceof ArcjetDeniedError, "should throw ArcjetDeniedError");
     assert.equal(err.name, "ArcjetDeniedError");
     assert.equal(err.decision.reason, "RATE_LIMIT");
+    assert.equal(err.denial.arcjetDenied, true);
+    assert.equal(err.denial.reason, "RATE_LIMIT");
+    assert.equal(err.denial.retryable, true);
     assert.ok(err.message.includes("test.action"), "message should include action");
     assert.ok(err.message.includes("RATE_LIMIT"), "message should include reason");
   }

@@ -1,9 +1,9 @@
 /**
  * Structured tool result returned to the model when a call is denied.
  *
- * Mastra's idiomatic delivery is to *return* this object as the tool result.
- * A throw is a tool failure, not a structured denial the model can inspect.
- * The payload itself is the shared contract in `agents/denial.ts`.
+ * Vercel AI SDK's idiomatic delivery is to *return* this object as the tool
+ * result. A throw becomes a tool-error part that does not preserve these
+ * fields. The payload itself is the shared contract in `agents/denial.ts`.
  */
 export {
   type ArcjetDenialResult,

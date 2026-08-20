@@ -4,32 +4,14 @@ import type { InferToolInput, InferToolOutput, Tool } from "ai";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { ArcjetAgentContext } from "../../agents/context.ts";
-import { retryAfterSeconds } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { PolicyInputMap } from "../../policy-input.ts";
 import type { DecisionDeny, RuleWithInput, ArcjetMetadata } from "../../types.ts";
+import { denialResult, unavailableResult } from "./denial.ts";
 
-/**
- * Structured tool result returned to the model when a call is denied.
- *
- * The model receives this object as the tool's return value (not an error) when
- * a guard check denies the call. The model can inspect `reason`, `message`, and
- * `retryable` to decide whether to retry, explain the denial to the user, or try
- * a different approach.
- */
-export interface ArcjetDenialResult {
-  arcjetDenied: true;
-  /** Denial reason, e.g. `"RATE_LIMIT"` or `"PROMPT_INJECTION"`. */
-  reason: string;
-  /** Human/model-readable explanation of the denial. */
-  message: string;
-  /** Whether retrying later can succeed (true for rate limits). */
-  retryable: boolean;
-  /** Seconds until a rate-limited call may be retried. */
-  retryAfterSeconds?: number;
-}
+export type { ArcjetDenialResult } from "./denial.ts";
 
 /**
  * Policy for `guardTool()` — how to guard a tool's execution.
@@ -121,8 +103,6 @@ export interface GuardToolPolicy<T extends Tool> {
  * model's retry loop — long enough that a retry is not effectively immediate,
  * short enough that the agent does not appear hung.
  */
-const UNAVAILABLE_RETRY_AFTER_SECONDS = 5;
-
 const contextSchema = jsonSchema<ArcjetAgentContext | undefined>(
   {
     type: "object",
@@ -309,52 +289,11 @@ export function guardTool<T extends Tool>(
         ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
         onDeny: (decision) =>
           policy.onDeny === undefined ? denialResult(decision) : policy.onDeny(decision),
-        onUnavailable: () => ({
-          arcjetDenied: true,
-          reason: "ERROR",
-          message: "Arcjet security check could not be completed; please retry later.",
-          retryable: true,
-          retryAfterSeconds: UNAVAILABLE_RETRY_AFTER_SECONDS,
-        }),
+        onUnavailable: () => unavailableResult(),
         // oxlint-disable-next-line typescript/no-unsafe-return -- tool output type inferred dynamically
         execute: () => originalExecute(input, options),
       });
       return result as unknown;
     },
   } as unknown as Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAgentContext | undefined>;
-}
-
-function denialResult(decision: DecisionDeny): ArcjetDenialResult {
-  const isRateLimit = decision.reason === "RATE_LIMIT";
-  let retryAfterSecs: number | undefined;
-
-  // Only rate-limit denials are retryable, so only they carry a retry-after.
-  // A co-occurring rule that allowed can still leave a resetAtUnixSeconds in
-  // decision.results; ignore it when the denying reason is not a rate limit.
-  if (isRateLimit) {
-    retryAfterSecs = retryAfterSeconds(decision);
-  }
-
-  let message: string;
-  if (isRateLimit) {
-    message =
-      `Arcjet denied this tool call (${decision.reason}). It may be retried` +
-      (retryAfterSecs === undefined ? " later." : ` after ${retryAfterSecs} seconds.`);
-  } else {
-    message = `Arcjet denied this tool call (${decision.reason}). Do not retry; explain the denial to the user or try a different approach.`;
-  }
-
-  const result: ArcjetDenialResult = {
-    arcjetDenied: true,
-    reason: decision.reason,
-    message,
-    retryable: isRateLimit,
-  };
-
-  // For RATE_LIMIT, include the computed retry-after if available.
-  if (isRateLimit && retryAfterSecs !== undefined) {
-    result.retryAfterSeconds = retryAfterSecs;
-  }
-
-  return result;
 }

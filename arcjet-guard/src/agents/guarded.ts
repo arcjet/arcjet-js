@@ -24,9 +24,10 @@ import type { ArcjetAgentClient } from "./capture.ts";
  * 3. Otherwise run `execute()`, capturing `outcome: "success"` — or, if it
  *    throws, `outcome: "error"` before rethrowing.
  *
- * `onDeny` returns the value the caller hands back on denial (`guardTool`
- * returns an `ArcjetDenialResult`; `guardAction` throws, and its `never`
- * return type is assignable to `T`).
+ * `onDeny` returns the value the caller hands back on denial. Model-facing
+ * helpers wrap the shared `ArcjetDenialResult` in a framework-idiomatic
+ * envelope; `guardAction` throws `ArcjetDeniedError`. Those are different
+ * handlers — they must not be the same function.
  */
 export async function runGuarded<T>(
   client: ArcjetAgentClient,

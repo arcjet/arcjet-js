@@ -1381,10 +1381,11 @@ what happens:
     to the agent. `guardApproval` returns a `denied` status carrying a reason the
     model reads.
   - The capture `outcome` on that path is `"unavailable"`, not `"denied"` on both
-    SDKs. The AI SDK returns a fixed `retryAfterSeconds: 5` backoff hint. Eve
-    supplies `retryAfterSeconds` only on a rate-limit denial surfaced via
-    `onDeny: "result"`, derived from the decision's reset time; its default
-    denial throws and carries no hint.
+    SDKs.     The model-facing helpers return a fixed `retryAfterSeconds: 5` backoff
+    hint on that payload. Eve's default `guardTool` path throws
+    `ArcjetGuardUnavailableError` instead; the same hint is on
+    `ArcjetDeniedError.denial` for a real DENY, and on the object returned
+    when `onDeny: "result"`.
 
 - **Opt-out: `onGuardError: "allow"`** — if the policy cannot be evaluated,
   proceed anyway. Use this for call sites where availability matters more than
@@ -1571,11 +1572,17 @@ The `action` is the guard label: use `resource.verb` past tense (e.g. `order.loo
 
 ### Which helper?
 
-| Scenario                       | Helper            | Guard  | Model Sees                         |
-| ------------------------------ | ----------------- | ------ | ---------------------------------- |
-| LLM decided to call a tool     | `guardTool()`     | Always | `ArcjetDenialResult` on DENY       |
-| Your app invokes an action     | `guardAction()`   | Always | Throws `ArcjetDeniedError` on DENY |
-| Record that something happened | `captureAction()` | No     | — (fire-and-forget)                |
+| Scenario                       | Helper            | Guard  | What happens on DENY                                                                 |
+| ------------------------------ | ----------------- | ------ | ------------------------------------------------------------------------------------ |
+| LLM decided to call a tool     | `guardTool()`     | Always | Shared `ArcjetDenialResult` payload, delivered in the framework's idiomatic envelope |
+| Your app invokes an action     | `guardAction()`   | Always | Throws `ArcjetDeniedError` (carries the same payload on `error.denial`)              |
+| Record that something happened | `captureAction()` | No     | — (fire-and-forget)                                                                  |
+
+These are different handlers and cannot be one function. A model-facing
+`onDeny` must return an envelope the model can inspect; an application
+`guardAction` must throw so callers can `catch` and branch. Sharing one
+callback would either leak a throw into the tool loop or swallow a policy
+denial as a successful action.
 
 `guardTool` and `guardAction` call `guard()` on every invocation, including when
 `rules` is omitted or resolves to `[]`. Submitting no rules is not the same as
@@ -1608,13 +1615,25 @@ console.log(ctx.correlationId); // "01ARZ3NDEKTSV4RRFFQ69G5FAV"
 
 ### Denial responses
 
-When a guard check denies a tool call, `guardTool` returns an `ArcjetDenialResult` object:
+Every JS adapter uses one payload — `ArcjetDenialResult` — built by a single
+shared helper. The *fields* are identical so a model trained on denial objects
+sees the same shape regardless of which integration is in use. The *envelope*
+is per-framework, because each SDK has a different idiomatic way to report
+that a tool did not run:
+
+| Adapter            | Idiomatic envelope                                                                                          | Why not the others                                                                                          |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| AI SDK / Mastra    | Return `{ arcjetDenied: true, … }` as the tool result                                                       | A throw becomes a generic tool error and drops the fields                                                   |
+| OpenAI Agents      | Return `{ arcjetDenied: true, … }` from `invoke`                                                            | A throw hits `errorFunction` or `ToolCallError` and can kill the run                                        |
+| LangGraph          | Return `{ arcjetDenied: true, … }`; `ToolNode` wraps it as a `ToolMessage` with `status: "success"`         | Faking a `ToolMessage` to force `status: "error"` crashes the graph reducer                                 |
+| Claude Agent SDK   | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                            | A throw is a raw exception; omitting `isError` looks like success                                           |
+| Vercel Eve         | Throw `ArcjetDeniedError` (payload on `error.denial`). Opt in to a returned payload with `onDeny: "result"` | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`                |
 
 ```ts
 const result: ArcjetDenialResult = {
   arcjetDenied: true,
   reason: "RATE_LIMIT",
-  message: "Arcjet denied this tool call (RATE_LIMIT). It may be retried after 30 seconds.",
+  message: "Arcjet denied this call (RATE_LIMIT). It may be retried after 30 seconds.",
   retryable: true,
   retryAfterSeconds: 30,
 };

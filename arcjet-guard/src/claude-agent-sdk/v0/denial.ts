@@ -1,26 +1,24 @@
-import { retryAfterSeconds } from "../../agents/denial.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { DecisionDeny } from "../../types.ts";
 
 /**
  * Structured denial payload returned to the model (as `structuredContent` on
  * a `CallToolResult`, or as the PreToolUse / UserPromptSubmit reason).
  *
- * Intentionally structurally identical to `vercel-ai/v7`'s ArcjetDenialResult
- * so the model trained on denial objects sees the same shape regardless of
- * which integration is in use. Both declarations exist to avoid putting the
- * `ai` SDK in this namespace's import graph.
+ * Claude's idiomatic delivery is a MCP `CallToolResult` with `isError: true`.
+ * Prefer that over throwing: Claude reads the composed message instead of a
+ * raw exception. Omitting `isError` would look like a successful tool call.
+ * The payload itself is the shared contract in `agents/denial.ts`.
  */
-export interface ArcjetDenialResult {
-  arcjetDenied: true;
-  /** Denial reason, e.g. `"RATE_LIMIT"` or `"PROMPT_INJECTION"`. */
-  reason: string;
-  /** Human/model-readable explanation of the denial. */
-  message: string;
-  /** Whether retrying later can succeed (true for rate limits). */
-  retryable: boolean;
-  /** Seconds until a rate-limited call may be retried. */
-  retryAfterSeconds?: number;
-}
+export {
+  type ArcjetDenialResult,
+  denialResult,
+  deniedReason,
+  unavailableReason,
+  unavailableResult,
+  UNAVAILABLE_RETRY_AFTER_SECONDS,
+} from "../../agents/denial.ts";
 
 /**
  * MCP `CallToolResult` shape the Claude Agent SDK's `tool()` handler must
@@ -36,69 +34,6 @@ export interface ClaudeCallToolResult {
   }>;
   structuredContent?: Record<string, unknown>;
   isError?: boolean;
-}
-
-/** Model- and user-readable explanation of a denial. */
-export function deniedReason(decision: DecisionDeny): string {
-  const isRateLimit = decision.reason === "RATE_LIMIT";
-  let message: string;
-
-  if (isRateLimit) {
-    const retryAfter = retryAfterSeconds(decision);
-    message =
-      `Arcjet denied this call (${decision.reason}). It may be retried` +
-      (retryAfter === undefined ? " later." : ` after ${retryAfter} seconds.`);
-  } else {
-    message = `Arcjet denied this call (${decision.reason}). Do not retry; explain the denial to the user or try a different approach.`;
-  }
-
-  return message;
-}
-
-/** Explanation used when the policy could not be evaluated. */
-export function unavailableReason(): string {
-  return "Arcjet security check could not be completed; please retry later.";
-}
-
-/**
- * Backoff hint returned to the model when the guard is unavailable.
- *
- * A rate-limit denial derives its hint from the denying rule's
- * `resetAtUnixSeconds`. This path has nothing to derive from. Five seconds
- * paces a model's retry loop.
- */
-export const UNAVAILABLE_RETRY_AFTER_SECONDS: number = 5;
-
-export function denialResult(decision: DecisionDeny): ArcjetDenialResult {
-  const isRateLimit = decision.reason === "RATE_LIMIT";
-  let retryAfterSecs: number | undefined;
-
-  if (isRateLimit) {
-    retryAfterSecs = retryAfterSeconds(decision);
-  }
-
-  const result: ArcjetDenialResult = {
-    arcjetDenied: true,
-    reason: decision.reason,
-    message: deniedReason(decision),
-    retryable: isRateLimit,
-  };
-
-  if (isRateLimit && retryAfterSecs !== undefined) {
-    result.retryAfterSeconds = retryAfterSecs;
-  }
-
-  return result;
-}
-
-export function unavailableResult(): ArcjetDenialResult {
-  return {
-    arcjetDenied: true,
-    reason: "ERROR",
-    message: unavailableReason(),
-    retryable: true,
-    retryAfterSeconds: UNAVAILABLE_RETRY_AFTER_SECONDS,
-  };
 }
 
 function asStructuredContent(value: ArcjetDenialResult): Record<string, unknown> {
