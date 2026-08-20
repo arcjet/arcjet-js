@@ -115,8 +115,14 @@ export const DEFAULT_CLIENT_TIMEOUT_MS = 2_000;
 /**
  * Resolve the Decide API timeout.
  *
+ * Any non-nullish value is used as-is, including `0`. A timeout of `0`
+ * expires immediately, so Decide requests fail open. Negative values are
+ * not validated here; callers should pass a positive number of milliseconds
+ * or omit the option to use the default.
+ *
  * @param timeout
- *   Explicit timeout in milliseconds. `null` and `undefined` use the default.
+ *   Explicit timeout in milliseconds. `null` and `undefined` use
+ *   {@link DEFAULT_CLIENT_TIMEOUT_MS}.
  * @returns
  *   Timeout in milliseconds.
  */

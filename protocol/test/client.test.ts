@@ -965,12 +965,17 @@ test("decideTimeout", async (t) => {
     assert.equal(decideTimeout(DEFAULT_CLIENT_TIMEOUT_MS, [{ ...baseRule, type: "EMAIL" }]), 4_000);
   });
 
-  await t.test("should keep the 2s default for prompt injection (already above the 1s floor)", () => {
-    assert.equal(
-      decideTimeout(DEFAULT_CLIENT_TIMEOUT_MS, [{ ...baseRule, type: "PROMPT_INJECTION_DETECTION" }]),
-      2_000,
-    );
-  });
+  await t.test(
+    "should keep the 2s default for prompt injection (already above the 1s floor)",
+    () => {
+      assert.equal(
+        decideTimeout(DEFAULT_CLIENT_TIMEOUT_MS, [
+          { ...baseRule, type: "PROMPT_INJECTION_DETECTION" },
+        ]),
+        2_000,
+      );
+    },
+  );
 
   await t.test("should return the timeout as-is with unrelated rules", () => {
     assert.equal(decideTimeout(500, [{ ...baseRule, type: "RATE_LIMIT" }]), 500);
