@@ -635,7 +635,7 @@ export type RemoteClientOptions = {
   /**
    * Timeout in milliseconds for the Decide API (optional).
    *
-   * Defaults to `500` in production and `1000` in development.
+   * Defaults to `2000` (2 seconds) to allow for API cold starts.
    */
   timeout?: number | undefined;
 };

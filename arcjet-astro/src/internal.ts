@@ -3,7 +3,7 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
-import { createClient } from "@arcjet/protocol/client.js";
+import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 import core from "arcjet";
 import type {
@@ -112,7 +112,7 @@ export type RemoteClientOptions = {
   /**
    * Timeout in milliseconds for the Decide API (optional).
    *
-   * Defaults to `500` in production and `1000` in development.
+   * Defaults to `2000` (2 seconds) to allow for API cold starts.
    */
   timeout?: number;
 };
@@ -127,7 +127,7 @@ export type RemoteClientOptions = {
  */
 export function createRemoteClient(options?: RemoteClientOptions) {
   const url = options?.baseUrl ?? baseUrl(env);
-  const timeout = options?.timeout ?? (isDevelopment(env) ? 1000 : 500);
+  const timeout = resolveClientTimeout(options?.timeout);
 
   // Transport is the HTTP client that the client uses to make requests.
   const transport = createTransport(url);
