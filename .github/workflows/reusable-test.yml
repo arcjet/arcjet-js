@@ -60,6 +60,23 @@ jobs:
       - run: bun install && bun run build
       - run: bun test
         working-directory: arcjet-bun
+  # Branch protection requires the check name `Run tests / Bun` (the
+  # reusable workflow job name `Bun`, called from the `Run tests` job).
+  bun:
+    name: Bun
+    if: always()
+    needs: bun-test
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - name: All Bun OS jobs passed
+        run: test "${{ needs.bun-test.result }}" = "success"
   deno-test:
     name: "Deno (OS: ${{ matrix.os }})"
     timeout-minutes: 15
@@ -96,6 +113,9 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+      - name: Wait for Windows DNS proxy
+        if: runner.os == 'Windows'
+        run: sleep 5
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 22
@@ -109,6 +129,22 @@ jobs:
       # would otherwise treat `**` as a single path segment).
       - run: deno test "test/**/*.test.ts" --allow-env --allow-net --allow-read=. --no-check
         working-directory: arcjet-deno
+  # Branch protection requires the check name `Run tests / Deno`.
+  deno:
+    name: Deno
+    if: always()
+    needs: deno-test
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          disable-sudo-and-containers: true
+          egress-policy: block
+      - name: All Deno OS jobs passed
+        run: test "${{ needs.deno-test.result }}" = "success"
   node-test:
     name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"
     runs-on: ${{ matrix.os }}
@@ -153,6 +189,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
+      - name: Wait for Windows DNS proxy
+        if: runner.os == 'Windows'
+        run: sleep 5
 
       # Language toolchains
       - name: Install Node
