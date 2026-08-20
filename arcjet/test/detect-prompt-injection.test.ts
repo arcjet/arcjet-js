@@ -204,27 +204,30 @@ test("detectPromptInjection", async function (t) {
     assert.equal(rule.version, 0);
   });
 
-  await t.test("should generate the same rule ID regardless of leftover threshold", async function () {
-    const rule1: ArcjetPromptInjectionDetectionRule = detectPromptInjection({
-      // @ts-expect-error: threshold was removed and must not affect identity.
-      threshold: 0.5,
-    })[0];
-    const rule2: ArcjetPromptInjectionDetectionRule = detectPromptInjection({
-      // @ts-expect-error: threshold was removed and must not affect identity.
-      threshold: 0.7,
-    })[0];
-    const context = createContext();
-    const details = createRequest();
-    details.extra.detectPromptInjectionMessage = "Test";
+  await t.test(
+    "should generate the same rule ID regardless of leftover threshold",
+    async function () {
+      const rule1: ArcjetPromptInjectionDetectionRule = detectPromptInjection({
+        // @ts-expect-error: threshold was removed and must not affect identity.
+        threshold: 0.5,
+      })[0];
+      const rule2: ArcjetPromptInjectionDetectionRule = detectPromptInjection({
+        // @ts-expect-error: threshold was removed and must not affect identity.
+        threshold: 0.7,
+      })[0];
+      const context = createContext();
+      const details = createRequest();
+      details.extra.detectPromptInjectionMessage = "Test";
 
-    rule1.validate(context, details);
-    rule2.validate(context, details);
+      rule1.validate(context, details);
+      rule2.validate(context, details);
 
-    const result1 = await rule1.protect(context, details);
-    const result2 = await rule2.protect(context, details);
+      const result1 = await rule1.protect(context, details);
+      const result2 = await rule2.protect(context, details);
 
-    assert.equal(result1.ruleId, result2.ruleId);
-  });
+      assert.equal(result1.ruleId, result2.ruleId);
+    },
+  );
 
   await t.test("should generate different rule IDs for different modes", async function () {
     const rule1: ArcjetPromptInjectionDetectionRule = detectPromptInjection({

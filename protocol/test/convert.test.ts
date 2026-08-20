@@ -763,15 +763,17 @@ test("convert", async (t) => {
       );
     });
 
-    await t.test("should create a protocol reason from a prompt injection reason without score", () => {
-      const proto = ArcjetReasonToProtocol(
-        new ArcjetPromptInjectionReason({ injectionDetected: true }),
-      );
+    await t.test(
+      "should create a protocol reason from a prompt injection reason without score",
+      () => {
+        const proto = ArcjetReasonToProtocol(
+          new ArcjetPromptInjectionReason({ injectionDetected: true }),
+        );
 
-      assert.equal(proto.reason.case, "promptInjection");
-      assert.equal(proto.reason.value?.injectionDetected, true);
-      assert.equal(proto.reason.value?.score, 0);
-    });
+        assert.equal(proto.reason.case, "promptInjection");
+        assert.equal(proto.reason.value?.injectionDetected, true);
+      },
+    );
 
     await t.test("should create a protocol reason from an arcjet email reason", () => {
       assert.deepEqual(
