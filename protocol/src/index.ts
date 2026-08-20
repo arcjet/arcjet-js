@@ -1238,7 +1238,7 @@ interface ArcjetDecisionInitAbstract {
   results: ArcjetRuleResult[];
 
   /**
-   * Duration in milliseconds this decision should be considered valid.
+   * Duration in seconds this decision should be considered valid.
    */
   ttl: number;
 
@@ -1279,7 +1279,7 @@ export abstract class ArcjetDecision {
   id: string;
 
   /**
-   * Duration in milliseconds this decision should be considered valid, also
+   * Duration in seconds this decision should be considered valid, also
    * known as time-to-live.
    */
   ttl: number;
