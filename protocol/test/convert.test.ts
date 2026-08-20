@@ -841,6 +841,20 @@ test("convert", async (t) => {
         }),
       );
     });
+
+    await t.test("should pass decision TTL through as seconds, not milliseconds", () => {
+      const proto = ArcjetDecisionToProtocol(
+        new ArcjetDenyDecision({
+          id: "deny-ttl",
+          ip: new ArcjetIpDetails(),
+          reason: new ArcjetReason(),
+          results: [],
+          ttl: 60,
+        }),
+      );
+
+      assert.equal(proto.ttl, 60);
+    });
   });
 
   await t.test("ArcjetDecisionFromProtocol", async (t) => {
@@ -874,6 +888,15 @@ test("convert", async (t) => {
 
       assert.ok(decision instanceof ArcjetDenyDecision);
       assert.equal(decision.conclusion, "DENY");
+    });
+
+    await t.test("should pass protocol TTL through as seconds, not milliseconds", () => {
+      const decision = ArcjetDecisionFromProtocol(
+        create(DecisionSchema, { conclusion: Conclusion.DENY, ttl: 60 }),
+      );
+
+      assert.ok(decision instanceof ArcjetDenyDecision);
+      assert.equal(decision.ttl, 60);
     });
 
     await t.test(
