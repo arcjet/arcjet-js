@@ -105,6 +105,26 @@ export type ClientOptions = {
 };
 
 /**
+ * Default timeout for Decide API requests, in milliseconds.
+ *
+ * Sized to allow for API cold starts while remaining short enough that a
+ * hung request still fails open quickly.
+ */
+export const DEFAULT_CLIENT_TIMEOUT_MS = 2_000;
+
+/**
+ * Resolve the Decide API timeout.
+ *
+ * @param timeout
+ *   Explicit timeout in milliseconds. `null` and `undefined` use the default.
+ * @returns
+ *   Timeout in milliseconds.
+ */
+export function resolveClientTimeout(timeout?: number | null): number {
+  return timeout ?? DEFAULT_CLIENT_TIMEOUT_MS;
+}
+
+/**
  * Compute the timeout for a `Decide` request based on the configured rules.
  *
  * @internal Exported for testing only.

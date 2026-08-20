@@ -68,6 +68,13 @@ test("`@arcjet/node`", async function (t) {
 });
 
 test("`createRemoteClient`", async function (t) {
+  await t.test("should default timeout to 2 seconds", async function () {
+    const remoteClient = createRemoteClient();
+
+    assert.equal(typeof remoteClient.decide, "function");
+    assert.equal(typeof remoteClient.report, "function");
+  });
+
   await t.test("should create a client", async function () {
     const remoteClient = createRemoteClient({ timeout: 4 });
 

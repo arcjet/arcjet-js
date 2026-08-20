@@ -5,7 +5,13 @@ import type { Cache } from "@arcjet/cache";
 import { create } from "@bufbuild/protobuf";
 import { createRouterTransport } from "@connectrpc/connect";
 
-import { type ClientOptions, createClient, decideTimeout } from "../dist/client.js";
+import {
+  type ClientOptions,
+  createClient,
+  decideTimeout,
+  DEFAULT_CLIENT_TIMEOUT_MS,
+  resolveClientTimeout,
+} from "../dist/client.js";
 import {
   type ArcjetCacheEntry,
   type ArcjetConclusion,
@@ -102,6 +108,33 @@ const exampleDetails = {
   query: "",
 };
 
+test("DEFAULT_CLIENT_TIMEOUT_MS", () => {
+  assert.equal(DEFAULT_CLIENT_TIMEOUT_MS, 2_000);
+});
+
+test("resolveClientTimeout", async (t) => {
+  await t.test("should default to 2 seconds when timeout is omitted", () => {
+    assert.equal(resolveClientTimeout(), 2_000);
+  });
+
+  await t.test("should default to 2 seconds when timeout is undefined", () => {
+    assert.equal(resolveClientTimeout(undefined), 2_000);
+  });
+
+  await t.test("should default to 2 seconds when timeout is null", () => {
+    assert.equal(resolveClientTimeout(null), 2_000);
+  });
+
+  await t.test("should return an explicit timeout", () => {
+    assert.equal(resolveClientTimeout(500), 500);
+    assert.equal(resolveClientTimeout(4), 4);
+  });
+
+  await t.test("should treat 0 as an explicit timeout", () => {
+    assert.equal(resolveClientTimeout(0), 0);
+  });
+});
+
 test("createClient", async (t) => {
   await t.test("should work", () => {
     const client = createClient(exampleClientOptions);
@@ -128,6 +161,33 @@ test("createClient", async (t) => {
             assert.ok(typeof ms === "number");
             assert.ok(ms > 9000);
             assert.ok(ms < 10000);
+            return create(DecideResponseSchema);
+          },
+        });
+      }),
+    });
+
+    await client.decide(exampleContext, exampleDetails, []);
+
+    assert.equal(calls, 1);
+  });
+
+  await t.test("should use the 2s default timeout when resolved", async () => {
+    let calls = 0;
+
+    const client = createClient({
+      ...exampleClientOptions,
+      timeout: resolveClientTimeout(),
+      transport: createRouterTransport(function ({ service }) {
+        service(DecideService, {
+          decide(_, handlerContext) {
+            assert.equal(calls, 0);
+            calls++;
+
+            const ms = handlerContext.timeoutMs();
+            assert.ok(typeof ms === "number");
+            assert.ok(ms > 1_500);
+            assert.ok(ms < 2_100);
             return create(DecideResponseSchema);
           },
         });
@@ -895,6 +955,21 @@ test("decideTimeout", async (t) => {
 
   await t.test("should return the timeout as-is with no rules", () => {
     assert.equal(decideTimeout(500, []), 500);
+  });
+
+  await t.test("should return the 2s default timeout as-is with no rules", () => {
+    assert.equal(decideTimeout(DEFAULT_CLIENT_TIMEOUT_MS, []), 2_000);
+  });
+
+  await t.test("should double the 2s default if there is an email rule", () => {
+    assert.equal(decideTimeout(DEFAULT_CLIENT_TIMEOUT_MS, [{ ...baseRule, type: "EMAIL" }]), 4_000);
+  });
+
+  await t.test("should keep the 2s default for prompt injection (already above the 1s floor)", () => {
+    assert.equal(
+      decideTimeout(DEFAULT_CLIENT_TIMEOUT_MS, [{ ...baseRule, type: "PROMPT_INJECTION_DETECTION" }]),
+      2_000,
+    );
   });
 
   await t.test("should return the timeout as-is with unrelated rules", () => {
