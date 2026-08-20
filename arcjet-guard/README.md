@@ -1381,7 +1381,7 @@ what happens:
     to the agent. `guardApproval` returns a `denied` status carrying a reason the
     model reads.
   - The capture `outcome` on that path is `"unavailable"`, not `"denied"` on both
-    SDKs.     The model-facing helpers return a fixed `retryAfterSeconds: 5` backoff
+    SDKs. The model-facing helpers return a fixed `retryAfterSeconds: 5` backoff
     hint on that payload. Eve's default `guardTool` path throws
     `ArcjetGuardUnavailableError` instead, and supplies the hint only on the
     object returned when `onDeny: "result"`.
@@ -1574,7 +1574,7 @@ The `action` is the guard label: use `resource.verb` past tense (e.g. `order.loo
 | Scenario                       | Helper            | Guard  | What happens on DENY                                                                 |
 | ------------------------------ | ----------------- | ------ | ------------------------------------------------------------------------------------ |
 | LLM decided to call a tool     | `guardTool()`     | Always | Shared `ArcjetDenialResult` payload, delivered in the framework's idiomatic envelope |
-| Your app invokes an action     | `guardAction()`   | Always | Throws `ArcjetDeniedError`, carrying the deciding `decision`                          |
+| Your app invokes an action     | `guardAction()`   | Always | Throws `ArcjetDeniedError`, carrying the deciding `decision`                         |
 | Record that something happened | `captureAction()` | No     | — (fire-and-forget)                                                                  |
 
 These are different handlers and cannot be one function. A model-facing
@@ -1626,7 +1626,7 @@ that a tool did not run:
 | OpenAI Agents      | Return `{ arcjetDenied: true, … }` from `invoke`                                                            | A throw hits `errorFunction` or `ToolCallError` and can kill the run                                        |
 | LangGraph          | Return `{ arcjetDenied: true, … }`; `ToolNode` wraps it as a `ToolMessage` with `status: "success"`         | Faking a `ToolMessage` to force `status: "error"` crashes the graph reducer                                 |
 | Claude Agent SDK   | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                            | A throw is a raw exception; omitting `isError` looks like success                                           |
-| Vercel Eve         | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                              | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`                |
+| Vercel Eve         | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                              | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`               |
 
 ```ts
 const result: ArcjetDenialResult = {
