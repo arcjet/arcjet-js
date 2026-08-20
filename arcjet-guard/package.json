@@ -91,7 +91,8 @@
     "./openai-agents/v0": {
       "types": "./dist/openai-agents/v0/index.d.ts",
       "import": "./dist/openai-agents/v0/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"

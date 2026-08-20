@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { afterEach, describe, test } from "node:test";
 
@@ -197,6 +198,18 @@ describe("the ./testing subpath", () => {
     assert.doesNotMatch(targets, /dist\/client\./);
     assert.doesNotMatch(targets, /dist\/diagnostics\./);
     assert.doesNotMatch(targets, /dist\/symbol\./);
+  });
+});
+
+describe("the ./package.json subpath", () => {
+  test("is exported", () => {
+    assert.equal(exportsMap()["./package.json"], "./package.json");
+  });
+
+  test("resolves through the package boundary", () => {
+    const require = createRequire(import.meta.url);
+    const pkg = require("@arcjet/guard/package.json") as { name: string };
+    assert.equal(pkg.name, "@arcjet/guard");
   });
 });
 
