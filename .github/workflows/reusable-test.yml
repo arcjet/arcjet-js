@@ -10,13 +10,24 @@ env:
 
 jobs:
   bun-test:
-    name: Bun
+    name: "Bun (OS: ${{ matrix.os }})"
     # Tests normally finish in a few minutes; cap well above that so a hung
     # process fails fast instead of running to the 6h GitHub default.
     timeout-minutes: 15
+    defaults:
+      run:
+        # Git Bash on Windows so `&&` matches Linux/macOS.
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
@@ -27,7 +38,8 @@ jobs:
             objects.githubusercontent.com:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
-          disable-sudo-and-containers: true
+          # sudo/container lockdown is Linux-only; a no-op or error on other OS.
+          disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -39,11 +51,22 @@ jobs:
       - run: bun test
         working-directory: arcjet-bun
   deno-test:
-    name: Deno
+    name: "Deno (OS: ${{ matrix.os }})"
     timeout-minutes: 15
+    defaults:
+      run:
+        # Git Bash on Windows so `&&` and the pin-npm composite match Linux/macOS.
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
@@ -51,11 +74,14 @@ jobs:
             api.github.com:443
             decide.arcjet.com:443
             deno.com:443
+            dl.deno.land:443
             github.com:443
+            nodejs.org:443
             objects.githubusercontent.com:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
-          disable-sudo-and-containers: true
+          # sudo/container lockdown is Linux-only; a no-op or error on other OS.
+          disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -69,7 +95,9 @@ jobs:
         with:
           deno-version: v2.4.2
       - run: npm ci && npm run build
-      - run: deno test test/**/*.test.ts --allow-env --allow-net --allow-read=. --no-check
+      # Quote the glob so Deno expands it on every OS (Windows Git Bash
+      # would otherwise treat `**` as a single path segment).
+      - run: deno test "test/**/*.test.ts" --allow-env --allow-net --allow-read=. --no-check
         working-directory: arcjet-deno
   node-test:
     name: "Run tests (OS: ${{matrix.os}}, Node: ${{ matrix.node }})"
