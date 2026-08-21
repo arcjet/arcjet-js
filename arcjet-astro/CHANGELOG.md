@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/astro-v2.0.0) (2026-08-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238))
+
+### 🚀 New Features
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238)) ([7278e83](https://github.com/arcjet/arcjet-js/commit/7278e838aab396ecb7fc755316738802aa093073))
+
+
+### 🪲 Bug Fixes
+
+* default Decide API timeout to 2s for cold starts ([#6236](https://github.com/arcjet/arcjet-js/issues/6236)) ([e856b30](https://github.com/arcjet/arcjet-js/commit/e856b30a5b8b5dba5d4c88cc736462639fbe973a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.10.0 to 2.0.0
+    * @arcjet/env bumped from 1.10.0 to 2.0.0
+    * @arcjet/headers bumped from 1.10.0 to 2.0.0
+    * @arcjet/ip bumped from 1.10.0 to 2.0.0
+    * @arcjet/logger bumped from 1.10.0 to 2.0.0
+    * @arcjet/protocol bumped from 1.10.0 to 2.0.0
+    * @arcjet/transport bumped from 1.10.0 to 2.0.0
+    * arcjet bumped from 1.10.0 to 2.0.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/astro-v1.10.0) (2026-08-11)
 
 

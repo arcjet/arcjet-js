@@ -1,5 +1,45 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...v2.0.0) (2026-08-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238))
+
+### 🚀 New Features
+
+* **guard:** add Claude Agent SDK support as @arcjet/guard/claude-agent-sdk/v0 ([#6229](https://github.com/arcjet/arcjet-js/issues/6229)) ([43838ef](https://github.com/arcjet/arcjet-js/commit/43838ef336df9a71b16760575a7ae81abf711897))
+* **guard:** add Eve 0.34+ request/response approval support ([#6231](https://github.com/arcjet/arcjet-js/issues/6231)) ([66d8b0c](https://github.com/arcjet/arcjet-js/commit/66d8b0c66c2559889131db0ecdc06392cbda387a))
+* **guard:** add Genkit support as @arcjet/guard/genkit/v1 ([#6243](https://github.com/arcjet/arcjet-js/issues/6243)) ([4e41678](https://github.com/arcjet/arcjet-js/commit/4e416787b5aad709476173f5daf6c30212710c37))
+* **guard:** add LangGraph support as @arcjet/guard/langgraph/v1 ([#6230](https://github.com/arcjet/arcjet-js/issues/6230)) ([a5debc7](https://github.com/arcjet/arcjet-js/commit/a5debc78e3cead84b3487f2a874efc9bbcb73845))
+* **guard:** add Mastra support as @arcjet/guard/mastra/v1 ([#6226](https://github.com/arcjet/arcjet-js/issues/6226)) ([40cf399](https://github.com/arcjet/arcjet-js/commit/40cf39910fc868559fc4558ccf747723f58f810a))
+* **guard:** add OpenAI Agents support as @arcjet/guard/openai-agents/v0 ([#6233](https://github.com/arcjet/arcjet-js/issues/6233)) ([0099fb7](https://github.com/arcjet/arcjet-js/commit/0099fb76e9229fa0b5922f938f4f1ce2e1033ce1))
+* **guard:** graduate moderateContent from experimental ([#6228](https://github.com/arcjet/arcjet-js/issues/6228)) ([c50a947](https://github.com/arcjet/arcjet-js/commit/c50a9474c040b413e2f7334665642e37570b4003))
+* **guard:** one denial payload, per-framework envelopes ([#6240](https://github.com/arcjet/arcjet-js/issues/6240)) ([fdec043](https://github.com/arcjet/arcjet-js/commit/fdec043e082f3998bcff2278905e9b4a3e553fe1))
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238)) ([7278e83](https://github.com/arcjet/arcjet-js/commit/7278e838aab396ecb7fc755316738802aa093073))
+* sync well-known bots and regenerate analyze WebAssembly module ([#6234](https://github.com/arcjet/arcjet-js/issues/6234)) ([919e874](https://github.com/arcjet/arcjet-js/commit/919e874dd640c4eaeaf7a2ee94be770faf833b03))
+
+
+### 🪲 Bug Fixes
+
+* default Decide API timeout to 2s for cold starts ([#6236](https://github.com/arcjet/arcjet-js/issues/6236)) ([e856b30](https://github.com/arcjet/arcjet-js/commit/e856b30a5b8b5dba5d4c88cc736462639fbe973a))
+* **guard:** agent adapter tweaks ([#6232](https://github.com/arcjet/arcjet-js/issues/6232)) ([286538e](https://github.com/arcjet/arcjet-js/commit/286538ec0357d2b9b655ed1158ae9ff3ac3939a0))
+* **guard:** export package.json from @arcjet/guard ([#6239](https://github.com/arcjet/arcjet-js/issues/6239)) ([7a3086a](https://github.com/arcjet/arcjet-js/commit/7a3086a82b4e9648f82efb429d45b679da87bbac))
+
+
+### 📝 Documentation
+
+* **protocol:** document ArcjetDecision.ttl as seconds ([#6237](https://github.com/arcjet/arcjet-js/issues/6237)) ([ad3dc41](https://github.com/arcjet/arcjet-js/commit/ad3dc41c70b9783a71a31b7575621cdffce03e7c))
+
+
+### ✅ Continuous Integration
+
+* drop Bun from the Windows test matrix ([#6242](https://github.com/arcjet/arcjet-js/issues/6242)) ([5a22ccd](https://github.com/arcjet/arcjet-js/commit/5a22ccd5b13c27123c4c7e2c32ca307031102b1e))
+* enforce harden-runner egress allow-lists instead of audit ([#6245](https://github.com/arcjet/arcjet-js/issues/6245)) ([2d8a2ea](https://github.com/arcjet/arcjet-js/commit/2d8a2ea67a9e0c51e0ef9d6fed5f786140de4df9))
+* **guard:** consolidate optional-peer absent unit tests ([#6244](https://github.com/arcjet/arcjet-js/issues/6244)) ([c5329da](https://github.com/arcjet/arcjet-js/commit/c5329da88c5c438e086bb931bda43d12c1704445))
+* run Node tests on Windows and macOS ([#6235](https://github.com/arcjet/arcjet-js/issues/6235)) ([f744202](https://github.com/arcjet/arcjet-js/commit/f744202d917d4a7c245c59990a17ff26a97d07d4))
+
 ## [Unreleased]
 
 

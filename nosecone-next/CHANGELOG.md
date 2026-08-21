@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@nosecone/next-v2.0.0) (2026-08-21)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@nosecone/next:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.10.0 to 2.0.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@nosecone/next-v1.10.0) (2026-08-11)
 
 
