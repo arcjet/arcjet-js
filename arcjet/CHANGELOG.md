@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...arcjet-v2.0.0) (2026-08-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238))
+
+### 🚀 New Features
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238)) ([7278e83](https://github.com/arcjet/arcjet-js/commit/7278e838aab396ecb7fc755316738802aa093073))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.10.0 to 2.0.0
+    * @arcjet/cache bumped from 1.10.0 to 2.0.0
+    * @arcjet/duration bumped from 1.10.0 to 2.0.0
+    * @arcjet/headers bumped from 1.10.0 to 2.0.0
+    * @arcjet/protocol bumped from 1.10.0 to 2.0.0
+    * @arcjet/runtime bumped from 1.10.0 to 2.0.0
+    * @arcjet/stable-hash bumped from 1.10.0 to 2.0.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.10.0 to 2.0.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...arcjet-v1.10.0) (2026-08-11)
 
 

@@ -26,7 +26,7 @@ import type { Server } from "bun";
 import { env } from "bun";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.10.0"; // x-release-please-version
+const VERSION = "2.0.0"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";

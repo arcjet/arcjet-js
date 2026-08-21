@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/nuxt",
-  "version": "1.10.0",
+  "version": "2.0.0",
   "description": "Arcjet runtime security SDK for Nuxt — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
@@ -61,14 +61,14 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/body": "1.10.0",
-    "@arcjet/env": "1.10.0",
-    "@arcjet/headers": "1.10.0",
-    "@arcjet/ip": "1.10.0",
-    "@arcjet/logger": "1.10.0",
-    "@arcjet/protocol": "1.10.0",
-    "@arcjet/transport": "1.10.0",
-    "arcjet": "1.10.0"
+    "@arcjet/body": "2.0.0",
+    "@arcjet/env": "2.0.0",
+    "@arcjet/headers": "2.0.0",
+    "@arcjet/ip": "2.0.0",
+    "@arcjet/logger": "2.0.0",
+    "@arcjet/protocol": "2.0.0",
+    "@arcjet/transport": "2.0.0",
+    "arcjet": "2.0.0"
   },
   "devDependencies": {
     "@nuxt/kit": "4.4.8",

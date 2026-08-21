@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/analyze-wasm-v2.0.0) (2026-08-21)
+
+
+### 🚀 New Features
+
+* sync well-known bots and regenerate analyze WebAssembly module ([#6234](https://github.com/arcjet/arcjet-js/issues/6234)) ([919e874](https://github.com/arcjet/arcjet-js/commit/919e874dd640c4eaeaf7a2ee94be770faf833b03))
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/analyze-wasm-v1.10.0) (2026-08-11)
 
 

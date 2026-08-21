@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/logger-v2.0.0) (2026-08-21)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/logger:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/sprintf bumped from 1.10.0 to 2.0.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/logger-v1.10.0) (2026-08-11)
 
 
