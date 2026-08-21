@@ -19,8 +19,8 @@
  * With no names, every check runs.
  */
 import { spawnSync } from "node:child_process";
-import { createRequire } from "node:module";
 import { existsSync, readdirSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -144,8 +144,7 @@ function assertChecksMatchSource() {
     (ns) => !CHECKS.some((check) => check.dir === ns.dir && check.version === ns.version),
   );
   const extra = CHECKS.filter(
-    (check) =>
-      !discovered.some((ns) => ns.dir === check.dir && ns.version === check.version),
+    (check) => !discovered.some((ns) => ns.dir === check.dir && ns.version === check.version),
   );
 
   const errors = [];
@@ -198,9 +197,7 @@ function runCheck(check) {
     const testDir = join(PACKAGE_ROOT, "src", check.dir);
     const count = countTestFiles(testDir);
     if (count < MIN_TEST_FILES) {
-      throw new Error(
-        `only ${count} ${check.name} test files matched; the glob has gone stale`,
-      );
+      throw new Error(`only ${count} ${check.name} test files matched; the glob has gone stale`);
     }
 
     const glob = `src/${check.dir}/**/*.test.ts`;
@@ -218,17 +215,18 @@ function runCheck(check) {
 }
 
 const requested = process.argv.slice(2);
-const selected = requested.length === 0
-  ? CHECKS
-  : requested.map((name) => {
-      const check = CHECKS.find((entry) => entry.name === name);
-      if (!check) {
-        throw new Error(
-          `unknown peer-absent check "${name}"; known: ${CHECKS.map((entry) => entry.name).join(", ")}`,
-        );
-      }
-      return check;
-    });
+const selected =
+  requested.length === 0
+    ? CHECKS
+    : requested.map((name) => {
+        const check = CHECKS.find((entry) => entry.name === name);
+        if (!check) {
+          throw new Error(
+            `unknown peer-absent check "${name}"; known: ${CHECKS.map((entry) => entry.name).join(", ")}`,
+          );
+        }
+        return check;
+      });
 
 assertChecksMatchSource();
 
