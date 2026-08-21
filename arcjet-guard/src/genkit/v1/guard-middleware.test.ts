@@ -256,6 +256,143 @@ test("action callback names the guard call from the tool name", async () => {
   assert.equal(recorded(guardCalls[0])["label"], "mcp_search.invoked");
 });
 
+test("defaults the guard label to tool.invoked", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client);
+  await runHook(mw, toolRequest("mcp_search"), async () => ({
+    toolResponse: { name: "mcp_search", output: "ok" },
+  }));
+  assert.equal(recorded(guardCalls[0])["label"], "tool.invoked");
+});
+
+test("sessionId callback receives the tool name and input", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let seen: unknown;
+  const mw = guardMiddleware(client, {
+    sessionId: (call) => {
+      seen = call;
+      return "sess-from-callback";
+    },
+  });
+  await runHook(
+    mw,
+    toolRequest("mcp_search", { q: "hello" }),
+    async () => ({ toolResponse: { name: "mcp_search", output: "ok" } }),
+    { context: {} },
+  );
+  assert.deepEqual(seen, { toolName: "mcp_search", input: { q: "hello" } });
+  assert.equal(recorded(guardCalls[0])["correlationId"], "sess-from-callback");
+});
+
+test("onDeny reshapes the payload carried by the ToolResponsePart", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    onDeny: (decision) => ({ blocked: true, reason: decision.reason }),
+  });
+  const result = await runHook(mw, toolRequest("mcp_search"), async () => ({
+    toolResponse: { name: "mcp_search", output: "must not run" },
+  }));
+  const part = result as { toolResponse: { name: string; ref?: string; output: unknown } };
+  assert.equal(part.toolResponse.name, "mcp_search");
+  assert.equal(part.toolResponse.ref, "call-1");
+  assert.deepEqual(part.toolResponse.output, { blocked: true, reason: "PROMPT_INJECTION" });
+});
+
+test("onDeny throw falls back to the default denial", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    onDeny: () => {
+      throw new Error("onDeny exploded");
+    },
+  });
+  const result = await runHook(mw, toolRequest("mcp_search"), async () => ({
+    toolResponse: { name: "mcp_search", output: "must not run" },
+  }));
+  const part = result as { toolResponse: { output: unknown } };
+  assert.equal(asDenial<ArcjetDenialResult>(part.toolResponse.output).arcjetDenied, true);
+});
+
+test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+
+  try {
+    const { client } = stubClient(decisionDenyPromptInjection());
+    const mw = guardMiddleware(client, {
+      action: "tool.invoked",
+      onDeny: () => {
+        throw new Error("onDeny exploded");
+      },
+    });
+    const result = await runHook(mw, toolRequest("mcp_search"), async () => ({
+      toolResponse: { name: "mcp_search", output: "must not run" },
+    }));
+    const part = result as { toolResponse: { output: unknown } };
+    assert.equal(asDenial<ArcjetDenialResult>(part.toolResponse.output).arcjetDenied, true);
+    assert.ok(warnings.length > 0);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
+});
+
+test("a non-object registry still gates the call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client, { action: "tool.invoked" });
+  await runHook(
+    mw,
+    toolRequest("mcp_search"),
+    async () => ({ toolResponse: { name: "mcp_search", output: "ok" } }),
+    { context: { sessionId: "s" } },
+    { registry: "not-a-registry" },
+  );
+  assert.equal(guardCalls.length, 1);
+});
+
+test("a registry without lookupAction still gates the call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client, { action: "tool.invoked" });
+  await runHook(
+    mw,
+    toolRequest("mcp_search"),
+    async () => ({ toolResponse: { name: "mcp_search", output: "ok" } }),
+    { context: { sessionId: "s" } },
+    { registry: {} },
+  );
+  assert.equal(guardCalls.length, 1);
+});
+
+test("a lookupAction that throws does not skip the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const ai = {
+    registry: {
+      lookupAction: async () => {
+        throw new Error("registry exploded");
+      },
+    },
+  };
+  const mw = guardMiddleware(client, { action: "tool.invoked" });
+  await runHook(
+    mw,
+    toolRequest("mcp_search"),
+    async () => ({ toolResponse: { name: "mcp_search", output: "ok" } }),
+    { context: { sessionId: "s" } },
+    ai,
+  );
+  assert.equal(guardCalls.length, 1);
+});
+
 test("guardTool-wrapped fake is skipped when registered under its action name", async () => {
   const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
   const raw: GenkitTool = Object.assign(async () => ({ ok: true }), {
