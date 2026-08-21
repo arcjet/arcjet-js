@@ -24,6 +24,12 @@ jobs:
     if: (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]')
     steps:
       # Environment security
+      #
+      # This job runs in a container, which harden-runner cannot monitor from
+      # inside — it logs "This job is running in a container" and does nothing
+      # else. Neither policy has any effect here, so `audit` stays rather than
+      # implying an egress allow-list is being enforced. Monitoring container
+      # jobs needs harden-runner installed in a custom runner image.
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:

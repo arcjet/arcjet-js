@@ -38,8 +38,31 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # Every list in this file comes from harden-runner's own DNS logs for
+          # these jobs, with two deliberate exceptions noted below.
+          #
+          # Observed: `decide.arcjet.com` is reached by the unit tests, unlike
+          # the runtime job below, which serves a local mock instead.
+          # `release-assets.githubusercontent.com` is where setup-node fetches a
+          # Node version the runner image has not already cached — it shows up on
+          # the Node 26 leg and not on 22 or 24.
+          #
+          # Not observed, kept deliberately: `nodejs.org` and
+          # `objects.githubusercontent.com` are the documented fallbacks for
+          # those same downloads, and every other block-mode workflow here lists
+          # them. Whether they are reached depends on what the runner image
+          # happens to have cached, so omitting them would fail only
+          # occasionally — the worst way to find out.
+          allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
           disable-sudo-and-containers: true
-          egress-policy: audit
+          egress-policy: block
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -134,8 +157,19 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # Installs and builds, then runs oxlint and tsgo locally: no Arcjet
+          # endpoint, because nothing here runs a test. Only `github.com` and
+          # `registry.npmjs.org` were observed; the rest are the same
+          # toolchain-download fallbacks described on the build job above.
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
           disable-sudo-and-containers: true
-          egress-policy: audit
+          egress-policy: block
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -213,8 +247,24 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # The per-runtime endpoints are added only on the leg that needs them,
+          # so a Node leg cannot reach Deno's installer hosts and only the
+          # workerd leg can reach Cloudflare. Bun needs nothing extra: it
+          # downloads its zip from GitHub releases.
+          #
+          # The runtime tests talk to a local mock DecideService, so unlike the
+          # unit-test job above this needs no Arcjet endpoint.
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
+            ${{ matrix.runtime == 'deno' && 'deno.com:443 deno.land:443 dl.deno.land:443' || '' }}
+            ${{ matrix.runtime == 'cloudflare' && 'workers.cloudflare.com:443' || '' }}
           disable-sudo-and-containers: true
-          egress-policy: audit
+          egress-policy: block
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
