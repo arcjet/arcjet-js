@@ -76,6 +76,13 @@
       "allowedVersions": "<2"
     },
     {
+      "description": "Never automerge genkit majors. `@arcjet/guard/genkit/v1` types against ToolAction, defineTool, ActionContext and the `generateMiddleware` tool hook. A green typecheck is necessary but not sufficient: the namespace also depends on `defineTool` registering the action on `registry.actionsById` (plus a `/tool.v2/<name>` twin over the same handler), and on `resolveToolRequest` treating a `ToolResponsePart` returned without calling `next()` as a completed tool result — runtime contracts a typecheck cannot see. Keep the range on 1.x; genkit/v2 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["genkit"],
+      "automerge": false,
+      "allowedVersions": "<2"
+    },
+    {
       "description": "Never automerge @openai/agents. It is pre-1.0, so a minor release may break. `@arcjet/guard/openai-agents/v0` types against FunctionTool, tool({ execute }), RunContext, and run() / Runner. A green typecheck is necessary but not sufficient. Keep the range below 1.0; openai-agents/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["@openai/agents"],
