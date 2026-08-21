@@ -374,23 +374,44 @@ test("a registry without lookupAction still gates the call", async () => {
 });
 
 test("a lookupAction that throws does not skip the guard call", async () => {
-  const { client, guardCalls } = stubClient(decisionAllow());
-  const ai = {
-    registry: {
-      lookupAction: async () => {
-        throw new Error("registry exploded");
-      },
-    },
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
   };
-  const mw = guardMiddleware(client, { action: "tool.invoked" });
-  await runHook(
-    mw,
-    toolRequest("mcp_search"),
-    async () => ({ toolResponse: { name: "mcp_search", output: "ok" } }),
-    { context: { sessionId: "s" } },
-    ai,
-  );
-  assert.equal(guardCalls.length, 1);
+
+  try {
+    const { client, guardCalls } = stubClient(decisionAllow());
+    const ai = {
+      registry: {
+        lookupAction: async () => {
+          throw new Error("registry exploded");
+        },
+      },
+    };
+    const mw = guardMiddleware(client, { action: "tool.invoked" });
+    await runHook(
+      mw,
+      toolRequest("mcp_search"),
+      async () => ({ toolResponse: { name: "mcp_search", output: "ok" } }),
+      { context: { sessionId: "s" } },
+      ai,
+    );
+    // Gating is the safe direction, but a branded tool guarded twice is
+    // worth a diagnostic.
+    assert.equal(guardCalls.length, 1);
+    assert.ok(warnings.length > 0);
+    assert.match(String(warnings[0]?.[0]), /could not look up/);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
 });
 
 test("guardTool-wrapped fake is skipped when registered under its action name", async () => {

@@ -141,14 +141,38 @@ async function lookupRegisteredTool(ai: unknown, name: string): Promise<object |
       if (isRegisteredTool(found)) {
         return found;
       }
-    } catch {
-      // continue
+    } catch (error) {
+      // A miss and an infrastructure failure are indistinguishable here:
+      // the registry signals "not found" by returning undefined, and a
+      // throw means the lookup itself failed. Carrying on gates the call
+      // rather than skipping it, which is the safe direction, but a
+      // branded tool guarded twice is worth knowing about.
+      if (shouldWarn()) {
+        console.warn(
+          '@arcjet/guard: guardMiddleware() could not look up "%s"; guarding it as if it were unwrapped:',
+          name,
+          error,
+        );
+      }
     }
   }
   return undefined;
 }
 
 let middlewareSeq = 0;
+
+/**
+ * A registry key, not a secret: `normalizeMiddleware` registers each
+ * middleware under its name and keeps the first registration under a
+ * given name, so two distinct instances sharing one must not happen —
+ * the second would silently never run. The counter alone is not enough
+ * because a second copy of this module (dual package, nested install)
+ * starts counting at one again.
+ */
+function middlewareName(): string {
+  middlewareSeq += 1;
+  return `arcjet-guard-${middlewareSeq}-${crypto.randomUUID().slice(0, 8)}`;
+}
 
 /**
  * A `generate({ use })` middleware whose `tool` hook is the
@@ -206,11 +230,8 @@ export function guardMiddleware(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy = {},
 ): GenkitGuardMiddleware {
-  middlewareSeq += 1;
-  const name = `arcjet-guard-${middlewareSeq}`;
-
   return {
-    name,
+    name: middlewareName(),
     instantiate: (options?: unknown) => {
       const ai =
         options !== null && typeof options === "object" && "ai" in options
