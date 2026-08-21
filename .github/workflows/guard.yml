@@ -77,7 +77,7 @@ jobs:
       # installing, so a floor below what package.json advertises fails here
       # rather than in a user's project.
       #
-      # Runs before the eve-absent step because that one deletes eve outright.
+      # Runs before the peer-absent step because that one deletes eve outright.
       - name: Unit tests at the lowest supported eve
         run: |
           floor=$(node -e "
@@ -108,116 +108,22 @@ jobs:
           node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
-      # The claude-agent-sdk namespace imports the SDK for types only. A static
-      # scan proves the imports are written `import type`; this proves the
-      # consequence, catching a build step that re-emits one as a value import.
-      #
-      # Runs before the eve-absent step because that one deletes a different
-      # optional peer. Typecheck legitimately fails without the SDK.
-      - name: Unit tests with claude-agent-sdk absent
-        run: |
-          rm -rf node_modules/@anthropic-ai/claude-agent-sdk arcjet-guard/node_modules/@anthropic-ai/claude-agent-sdk
-          node -e "try { require.resolve('@anthropic-ai/claude-agent-sdk', { paths: ['arcjet-guard/src/claude-agent-sdk/v0'] }); console.error('claude-agent-sdk still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
-          count=$(find arcjet-guard/src/claude-agent-sdk -name '*.test.ts' | wc -l)
-          test "$count" -ge 5 || { echo "only $count claude-agent-sdk test files matched; the glob has gone stale" >&2; exit 1; }
-          node --test 'arcjet-guard/src/claude-agent-sdk/**/*.test.ts'
-        working-directory: ${{ github.workspace }}
-
-      # The langgraph namespace imports @langchain/langgraph and
-      # @langchain/core for types only. A static scan proves the imports are
-      # written `import type`; this proves the consequence, catching a build
-      # step that re-emits one as a value import.
-      #
-      # Only `src/langgraph` is globbed. The suite that exercises the real
-      # ToolNode value-imports both peers, so it lives in `test/langgraph`
-      # and runs in the unit-test step above, where the peers are installed.
-      #
-      # Runs before the eve-absent step because that one deletes a different
-      # optional peer. Typecheck legitimately fails without the peers.
-      - name: Unit tests with langgraph absent
-        run: |
-          rm -rf node_modules/@langchain/langgraph node_modules/@langchain/core arcjet-guard/node_modules/@langchain/langgraph arcjet-guard/node_modules/@langchain/core
-          node -e "try { require.resolve('@langchain/langgraph', { paths: ['arcjet-guard/src/langgraph/v1'] }); console.error('langgraph still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
-          node -e "try { require.resolve('@langchain/core', { paths: ['arcjet-guard/src/langgraph/v1'] }); console.error('langchain core still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
-          count=$(find arcjet-guard/src/langgraph -name '*.test.ts' | wc -l)
-          test "$count" -ge 5 || { echo "only $count langgraph test files matched; the glob has gone stale" >&2; exit 1; }
-          node --test 'arcjet-guard/src/langgraph/**/*.test.ts'
-        working-directory: ${{ github.workspace }}
-
-      # The genkit namespace imports genkit for types only. A static scan
-      # proves the imports are written `import type`; this proves the
-      # consequence, catching a build step that re-emits one as a value
-      # import.
-      #
-      # Only `src/genkit` is globbed. The suites that exercise the real
-      # `defineTool` and the real `ai.generate()` loop value-import the
-      # peer, so they live in `test/genkit` and run in the unit-test step
-      # above, where the peer is installed.
-      #
-      # Runs before the eve-absent step because that one deletes a different
-      # optional peer. Typecheck legitimately fails without the peer.
-      - name: Unit tests with genkit absent
-        run: |
-          rm -rf node_modules/genkit node_modules/@genkit-ai arcjet-guard/node_modules/genkit arcjet-guard/node_modules/@genkit-ai
-          node -e "try { require.resolve('genkit', { paths: ['arcjet-guard/src/genkit/v1'] }); console.error('genkit still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
-          count=$(find arcjet-guard/src/genkit -name '*.test.ts' | wc -l)
-          test "$count" -ge 5 || { echo "only $count genkit test files matched; the glob has gone stale" >&2; exit 1; }
-          node --test 'arcjet-guard/src/genkit/**/*.test.ts'
-        working-directory: ${{ github.workspace }}
-
-      # The openai-agents namespace imports @openai/agents for types only. A
-      # static scan proves the imports are written `import type`; this proves
+      # Each type-only vendor namespace is the same check: delete the optional
+      # peer, prove it no longer resolves, then run `src/<namespace>` tests.
+      # A static scan proves the imports are written `import type`; this proves
       # the consequence, catching a build step that re-emits one as a value
       # import.
       #
-      # Only `src/openai-agents` is globbed. The suites that exercise the real
-      # `tool()` and the real `run()` loop value-import the peer, so they live
-      # in `test/openai-agents` and run in the unit-test step above, where the
-      # peer is installed.
+      # Only `src/<namespace>` is globbed. Suites that exercise the real SDK
+      # live under `test/<namespace>` and run in the unit-test step above.
+      # `vercel-ai` is omitted: its `src/` tests value-import `ai`.
       #
-      # Runs before the eve-absent step because that one deletes a different
-      # optional peer. Typecheck legitimately fails without the peer.
-      - name: Unit tests with openai-agents absent
-        run: |
-          rm -rf node_modules/@openai/agents arcjet-guard/node_modules/@openai/agents
-          node -e "try { require.resolve('@openai/agents', { paths: ['arcjet-guard/src/openai-agents/v0'] }); console.error('openai-agents still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
-          count=$(find arcjet-guard/src/openai-agents -name '*.test.ts' | wc -l)
-          test "$count" -ge 5 || { echo "only $count openai-agents test files matched; the glob has gone stale" >&2; exit 1; }
-          node --test 'arcjet-guard/src/openai-agents/**/*.test.ts'
-        working-directory: ${{ github.workspace }}
-
-      # The mastra namespace imports @mastra/core for types only. A static scan
-      # proves the imports are written `import type`; this proves the
-      # consequence, catching a build step that re-emits one as a value import.
-      #
-      # Runs before the eve-absent step because that one deletes a different
-      # optional peer. Typecheck legitimately fails without @mastra/core.
-      - name: Unit tests with mastra absent
-        run: |
-          rm -rf node_modules/@mastra/core arcjet-guard/node_modules/@mastra/core
-          node -e "try { require.resolve('@mastra/core', { paths: ['arcjet-guard/src/mastra/v1'] }); console.error('mastra still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
-          count=$(find arcjet-guard/src/mastra -name '*.test.ts' | wc -l)
-          test "$count" -ge 5 || { echo "only $count mastra test files matched; the glob has gone stale" >&2; exit 1; }
-          node --test 'arcjet-guard/src/mastra/**/*.test.ts'
-        working-directory: ${{ github.workspace }}
-
-      # The vercel-eve namespace imports eve for types only, which is what lets
-      # guard support Node 22 at all — eve declares engines.node ">=24". A static
-      # scan proves the imports are written `import type`; this proves the
-      # consequence, catching a build step that re-emits one as a value import.
-      #
-      # Runs on every leg of the matrix rather than just Node 22, because the
-      # criterion is about all three. Runs last because it deletes a
-      # devDependency: the typecheck legitimately fails without eve, since types
-      # are a build-time dependency.
-      - name: Unit tests with eve absent
-        run: |
-          rm -rf node_modules/eve arcjet-guard/node_modules/eve
-          node -e "try { require.resolve('eve', { paths: ['arcjet-guard/src/vercel-eve/v0'] }); console.error('eve still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
-          count=$(find arcjet-guard/src/vercel-eve -name '*.test.ts' | wc -l)
-          test "$count" -ge 5 || { echo "only $count vercel-eve test files matched; the glob has gone stale" >&2; exit 1; }
-          node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
-        working-directory: ${{ github.workspace }}
+      # Eve is last inside the script because it deletes a shared
+      # devDependency. The floor-pin step above also needs eve on disk.
+      # Runs on every matrix leg — eve's engines.node is ">=24", and the
+      # type-only import is what lets guard support Node 22 at all.
+      - name: Unit tests with optional peers absent
+        run: npm run test-peers-absent
 
   lint:
     name: Lint & Typecheck
