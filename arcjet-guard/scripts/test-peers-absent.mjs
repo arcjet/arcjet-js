@@ -15,6 +15,10 @@
  * Eve is last because it deletes a shared devDependency. The floor-pin
  * step in CI also needs eve on disk, so it runs before this script.
  *
+ * A failing check does not stop the run: each check only needs its own peer
+ * gone, so reporting all of them beats the one-at-a-time YAML steps this
+ * replaced, where the first failure hid the rest.
+ *
  * Usage: `node scripts/test-peers-absent.mjs [name...]`
  * With no names, every check runs.
  */
@@ -92,9 +96,9 @@ function removeFromDisk(id) {
 }
 
 function assertUnresolved(specifier, resolveFrom) {
-  const require = createRequire(join(resolveFrom, "dummy.js"));
+  const resolver = createRequire(join(resolveFrom, "dummy.js"));
   try {
-    require.resolve(specifier);
+    resolver.resolve(specifier);
   } catch (error) {
     if (error.code === "MODULE_NOT_FOUND") {
       return;
@@ -200,13 +204,19 @@ function runCheck(check) {
       throw new Error(`only ${count} ${check.name} test files matched; the glob has gone stale`);
     }
 
+    // Node expands the glob itself; `spawnSync` without a shell passes it through
+    // literally, which is what the quoting did in the YAML this replaced.
     const glob = `src/${check.dir}/**/*.test.ts`;
     const result = spawnSync(process.execPath, ["--test", glob], {
       cwd: PACKAGE_ROOT,
       stdio: "inherit",
     });
+    if (result.error) {
+      throw new Error(`${title} could not start: ${result.error.message}`);
+    }
     if (result.status !== 0) {
-      throw new Error(`${title} failed (exit ${result.status ?? "null"})`);
+      const how = result.signal === null ? `exit ${result.status}` : `signal ${result.signal}`;
+      throw new Error(`${title} failed (${how})`);
     }
     console.log(`${title}: ${count} files, peers gone`);
   } finally {
@@ -244,5 +254,7 @@ if (failures.length > 0) {
   for (const message of failures) {
     console.error(`  ${message}`);
   }
-  process.exit(1);
+  // Not `process.exit`: that can drop buffered stdout when it is a pipe, which
+  // is exactly where this summary is read from under Actions.
+  process.exitCode = 1;
 }
