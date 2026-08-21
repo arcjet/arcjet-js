@@ -144,6 +144,27 @@ jobs:
           node --test 'arcjet-guard/src/langgraph/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
+      # The genkit namespace imports genkit for types only. A static scan
+      # proves the imports are written `import type`; this proves the
+      # consequence, catching a build step that re-emits one as a value
+      # import.
+      #
+      # Only `src/genkit` is globbed. The suites that exercise the real
+      # `defineTool` and the real `ai.generate()` loop value-import the
+      # peer, so they live in `test/genkit` and run in the unit-test step
+      # above, where the peer is installed.
+      #
+      # Runs before the eve-absent step because that one deletes a different
+      # optional peer. Typecheck legitimately fails without the peer.
+      - name: Unit tests with genkit absent
+        run: |
+          rm -rf node_modules/genkit node_modules/@genkit-ai arcjet-guard/node_modules/genkit arcjet-guard/node_modules/@genkit-ai
+          node -e "try { require.resolve('genkit', { paths: ['arcjet-guard/src/genkit/v1'] }); console.error('genkit still resolves'); process.exit(1) } catch (error) { if (error.code !== 'MODULE_NOT_FOUND') throw error }"
+          count=$(find arcjet-guard/src/genkit -name '*.test.ts' | wc -l)
+          test "$count" -ge 5 || { echo "only $count genkit test files matched; the glob has gone stale" >&2; exit 1; }
+          node --test 'arcjet-guard/src/genkit/**/*.test.ts'
+        working-directory: ${{ github.workspace }}
+
       # The openai-agents namespace imports @openai/agents for types only. A
       # static scan proves the imports are written `import type`; this proves
       # the consequence, catching a build step that re-emits one as a value

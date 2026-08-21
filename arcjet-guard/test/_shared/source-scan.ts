@@ -292,6 +292,7 @@ export const EXPECTED_ROOT_KEYS = [
   "./bun",
   "./claude-agent-sdk/v0",
   "./fetch",
+  "./genkit/v1",
   "./langgraph/v1",
   "./mastra/v1",
   "./node",

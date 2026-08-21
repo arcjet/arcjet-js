@@ -148,6 +148,8 @@ test("does not export Eve / Mastra / Claude / LangGraph-only APIs", () => {
     "mastraAgentContext",
     "claudeAgentContext",
     "langgraphAgentContext",
+    "genkitContext",
+    "guardMiddleware",
     "guardInbound",
     "guardApproval",
     "guardInterrupt",

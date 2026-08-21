@@ -78,6 +78,17 @@ change them:
   no `guardHooks` — hosted tools, MCP, handoffs, and `agent.asTool()` skip
   the authored-`execute` path. `RunContext` has no session / conversation
   id; correlation is a field the integrator puts on `runContext.context`.
+  `genkit/v1` is JS `genkit()` + `ai.defineTool` + `ai.generate`: the
+  authored deny point is the `defineTool` handler (wrap the returned
+  `ToolAction`; `generate()` calls it as a function), unwrapped / MCP /
+  filesystem-injected tools go through `guardMiddleware`'s `tool` hook
+  (it denies by returning a completed `ToolResponsePart` without calling
+  `next()` — not `ToolInterruptError`), inbound is screened before
+  `generate()` (middleware `model` is not Guard), and `interrupt()` /
+  `defineInterrupt` / `toolApproval` is HITL not policy. There is no
+  `guardInbound` and no `guardApproval`. Correlation is a field the
+  integrator puts on `generate({ context })`. Do not wrap Go / Python
+  Genkit. Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would

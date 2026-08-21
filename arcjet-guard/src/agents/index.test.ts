@@ -1,9 +1,17 @@
+import assert from "node:assert/strict";
 import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
-import assert from "node:assert/strict";
-import { tmpdir } from "node:os";
 
+import {
+  extractImportSpecifiers,
+  collectTsFiles,
+  sortedKeys,
+} from "../../test/_shared/source-scan.ts";
+// Type-only, so the barrel's import graph is untouched and the AI SDK coupling
+// scan below is unaffected.
+import type { ArcjetGuard } from "../index.ts";
 import * as agents from "./index.ts";
 import type {
   ArcjetAgentClient,
@@ -15,10 +23,6 @@ import type {
   OnGuardError,
   SecurityMetadataFields,
 } from "./index.ts";
-// Type-only, so the barrel's import graph is untouched and the AI SDK coupling
-// scan below is unaffected.
-import type { ArcjetGuard } from "../index.ts";
-import { extractImportSpecifiers, collectTsFiles, sortedKeys } from "../../test/_shared/source-scan.ts";
 
 // Verify type exports exist - test will fail at typecheck if these types don't exist
 function verifyTypeExports(): void {
@@ -59,7 +63,11 @@ test("exports the correct runtime values (AC5.1)", () => {
     "securityMetadata",
   ];
 
-  assert.deepEqual(exportedNames, expectedRuntimeNames, "runtime exports must match expected list exactly");
+  assert.deepEqual(
+    exportedNames,
+    expectedRuntimeNames,
+    "runtime exports must match expected list exactly",
+  );
 });
 
 /**
@@ -68,11 +76,7 @@ test("exports the correct runtime values (AC5.1)", () => {
  * Records errors for any forbidden imports (ai, @ai-sdk/*, eve, eve/*).
  * Silently skips files that cannot be read (e.g., missing fixture files in tests).
  */
-function walkForForbiddenImports(
-  filePath: string,
-  visited: Set<string>,
-  errors: string[],
-): void {
+function walkForForbiddenImports(filePath: string, visited: Set<string>, errors: string[]): void {
   // Normalize to absolute path
   const absolutePath = resolve(filePath);
 
@@ -107,7 +111,15 @@ function walkForForbiddenImports(
       spec === "@langchain/langgraph" ||
       spec.startsWith("@langchain/langgraph/") ||
       spec === "@langchain/core" ||
-      spec.startsWith("@langchain/core/")
+      spec.startsWith("@langchain/core/") ||
+      spec === "@openai/agents" ||
+      spec.startsWith("@openai/agents/") ||
+      spec === "genkit" ||
+      spec.startsWith("genkit/") ||
+      spec === "@genkit-ai/core" ||
+      spec.startsWith("@genkit-ai/core/") ||
+      spec === "@genkit-ai/ai" ||
+      spec.startsWith("@genkit-ai/ai/")
     ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }
@@ -216,9 +228,16 @@ function runFixtureDrivenEveImportTest(): void {
       walkForForbiddenImports(fixturePath, fixtureVisited, fixtureErrors);
 
       if (fixtureTest.shouldFail) {
-        assert.ok(fixtureErrors.length > 0, `Expected scanner to detect eve import in: ${fixtureTest.name}`);
+        assert.ok(
+          fixtureErrors.length > 0,
+          `Expected scanner to detect eve import in: ${fixtureTest.name}`,
+        );
       } else {
-        assert.equal(fixtureErrors.length, 0, `Expected scanner to NOT detect eve import in: ${fixtureTest.name}`);
+        assert.equal(
+          fixtureErrors.length,
+          0,
+          `Expected scanner to NOT detect eve import in: ${fixtureTest.name}`,
+        );
       }
     }
   } finally {

@@ -28,6 +28,7 @@ const NAMESPACES = [
   { dir: "claude-agent-sdk", packages: ["@anthropic-ai/claude-agent-sdk"] },
   { dir: "langgraph", packages: ["@langchain/langgraph", "@langchain/core"] },
   { dir: "openai-agents", packages: ["@openai/agents"] },
+  { dir: "genkit", packages: ["genkit", "@genkit-ai"] },
 ] as const;
 
 /**
@@ -106,6 +107,7 @@ test("the scanner detects a cross-vendor import when one is introduced", () => {
     { from: "langgraph", content: 'import type { ToolDefinition } from "eve/tools";\nvoid 0;' },
     { from: "openai-agents", content: 'export type { X } from "@mastra/core/tools";' },
     { from: "vercel-ai", content: 'const m = await import("@openai/agents");\nvoid m;' },
+    { from: "genkit", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     {
       from: "mastra",
       content: 'import { denialResult } from "../../langgraph/v1/denial.ts";\nvoid denialResult;',
