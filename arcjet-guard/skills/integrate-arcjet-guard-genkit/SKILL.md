@@ -186,6 +186,9 @@ export const lookupOrder = guardTool(
 - Prefer omitting `outputSchema` on guarded tools, or verify the schema
   accepts `ArcjetDenialResult` / your `onDeny` shape. A denial is not
   schema-checked because the wrapper sits outside `action()`.
+- `multipart: true` tools work too. Their denial is returned as the
+  `output` field of the multipart response, which is the field
+  `generate()` copies to `toolResponse.output`.
 
 ## Step 3: Gate unwrapped / MCP / filesystem tools
 

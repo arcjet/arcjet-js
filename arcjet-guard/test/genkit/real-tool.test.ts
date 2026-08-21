@@ -123,6 +123,39 @@ test("DENY bypasses outputSchema so a mismatched ArcjetDenialResult is still ret
   assert.equal(result.reason, "PROMPT_INJECTION");
 });
 
+test("the tool.v2 twin defineTool registers over the same handler is guarded too", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let calls = 0;
+  const authored = ai.defineTool(
+    {
+      name: "lookup_order_twin",
+      description: "defineTool also registers basicToolV2 over this handler",
+      inputSchema: z.object({ note: z.string() }),
+    },
+    async (input) => {
+      calls += 1;
+      return `ran:${input.note}`;
+    },
+  );
+
+  guardTool(client, authored, { action: "order.looked-up" });
+
+  const twin = await ai.registry.lookupAction("/tool.v2/lookup_order_twin");
+  assert.equal(
+    typeof twin,
+    "function",
+    "defineTool registers a tool.v2 twin for a non-multipart tool",
+  );
+  const result = await (twin as (input: unknown, options: unknown) => Promise<unknown>)(
+    { note: "x" },
+    {},
+  );
+
+  assert.equal(calls, 0, "the twin must not reach the unguarded handler");
+  const denial = asDenial<ArcjetDenialResult>((result as { output?: unknown }).output);
+  assert.equal(denial.arcjetDenied, true);
+});
+
 test("a guarded ToolAction is still assignable as a defineTool result", async () => {
   const { client } = stubClient(decisionAllow());
   const authored = ai.defineTool(

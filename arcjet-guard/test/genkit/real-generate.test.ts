@@ -212,6 +212,45 @@ test("guardMiddleware ALLOW: the unwrapped handler still runs", async () => {
   assert.notEqual(result.finishReason, "interrupted");
 });
 
+test("multipart tool DENY still reaches the model on toolResponse.output", async () => {
+  const ai = createAi();
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let calls = 0;
+  const guarded = guardTool(
+    client,
+    ai.defineTool(
+      {
+        name: "lookup_order_multipart",
+        description: "a multipart tool resolves to { output, content }",
+        inputSchema: z.object({ note: z.string() }),
+        multipart: true,
+      },
+      async (input) => {
+        calls += 1;
+        return { output: `ran:${input.note}`, content: [{ text: "must not run" }] };
+      },
+    ),
+    { action: "order.looked-up" },
+  );
+
+  const model = scriptedToolModel(ai, "lookup_order_multipart", { note: "hello" });
+  const result = await ai.generate({
+    model,
+    prompt: "look up my order",
+    tools: [guarded],
+  });
+
+  assert.equal(calls, 0);
+  assert.notEqual(result.finishReason, "interrupted");
+
+  // `executeTool` reads `.output` off a tool.v2 result. A bare denial
+  // would leave `toolResponse.output` undefined — a silent block the
+  // model cannot explain.
+  const denial = denialFromMessages(result.messages);
+  assert.equal(denial.arcjetDenied, true);
+  assert.equal(denial.reason, "PROMPT_INJECTION");
+});
+
 test("outputSchema on a guarded tool does not turn DENY into an interrupt", async () => {
   const ai = createAi();
   const { client } = stubClient(decisionDenyPromptInjection());

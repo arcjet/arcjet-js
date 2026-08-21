@@ -83,6 +83,10 @@ export interface GuardToolPolicy<TInput> {
    * `{ reason: "ERROR", retryable: true, retryAfterSeconds: 5 }` result;
    * this callback does not fire for outages.
    *
+   * On a `multipart: true` tool the value is placed on the `output`
+   * field of the multipart response, because that is the field
+   * `executeTool` reads for `toolResponse.output`.
+   *
    * **Warning:** A tool created with `outputSchema` validates the
    * authored handler's return *inside* the `ToolAction` this wrapper
    * replaces. A denial is not schema-checked. Prefer omitting
@@ -142,38 +146,86 @@ function resolveSessionId<TInput>(
 }
 
 /**
+ * The registry map `defineTool` registered this action in, when the
+ * action came from `defineTool` rather than `dynamicTool` / `tool()`.
+ */
+function registryStore(tool: GenkitTool): object | undefined {
+  const registry = "__registry" in tool ? (tool as { __registry?: unknown }).__registry : undefined;
+  if (registry === null || typeof registry !== "object") {
+    return undefined;
+  }
+  if (!("actionsById" in registry)) {
+    return undefined;
+  }
+  const store: unknown = registry.actionsById;
+  if (store === null || typeof store !== "object") {
+    return undefined;
+  }
+  return store;
+}
+
+/**
+ * Every registry key that can resolve to `tool`'s authored handler.
+ *
+ * `defineTool(config, fn)` registers *two* actions for a non-multipart
+ * tool: the returned action under `/tool/<name>`, and a second
+ * `basicToolV2(config, fn)` twin under `/tool.v2/<name>` that closes
+ * over the same `fn`. Guarding only the first leaves a live unguarded
+ * reference to the handler on the registry.
+ */
+function registryKeys(tool: GenkitTool): string[] {
+  const { key, actionType, name } = tool.__action ?? {};
+  const keys = new Set<string>();
+  if (typeof key === "string") {
+    keys.add(key);
+  }
+  if (typeof name === "string") {
+    if (typeof actionType === "string") {
+      keys.add(`/${actionType}/${name}`);
+    }
+    keys.add(`/tool/${name}`);
+    keys.add(`/tool.v2/${name}`);
+  }
+  return [...keys];
+}
+
+/**
  * `ai.generate({ tools })` does not keep the ToolAction objects. It
  * converts them to name/schema definitions (`toToolDefinition`) and
  * `resolveTools` looks the live action up on the registry. A wrapper
  * that is only a copy would be discarded; the original registered
- * action would run unguarded. Overwrite the existing registry entry
- * so generate() resolves the guarded callable. Dynamic tools
- * (`metadata.dynamic`) are registered from the `tools` array at
- * generate() time and do not need this.
+ * action would run unguarded. Overwrite every registry entry that
+ * resolves to the authored handler so generate() resolves a guarded
+ * callable. Dynamic tools (`metadata.dynamic`) are registered from the
+ * `tools` array at generate() time and do not need this.
+ *
+ * The `/tool.v2/<name>` twin is a different action object wrapping the
+ * same handler, so it is guarded with its own wrapper — passing the
+ * basic wrapper would change the multipart response shape
+ * `executeTool` expects from a `tool.v2` action.
  */
-function reregisterGuardedTool(original: GenkitTool, wrapped: GenkitTool): void {
-  const registry = "__registry" in original ? (original as { __registry?: unknown }).__registry : undefined;
-  if (registry === null || typeof registry !== "object") {
-    return;
-  }
-  if (!("actionsById" in registry)) {
-    return;
-  }
-  const store: unknown = registry.actionsById;
-  if (store === null || typeof store !== "object") {
+function reregisterGuardedTool(
+  original: GenkitTool,
+  wrapped: GenkitTool,
+  wrapTwin: (twin: GenkitTool) => GenkitTool,
+): void {
+  const store = registryStore(original);
+  if (store === undefined) {
     return;
   }
 
-  const key = original.__action?.key;
-  const actionType = original.__action?.actionType;
-  const name = original.__action?.name;
-  const candidates = [
-    typeof key === "string" ? key : undefined,
-    typeof actionType === "string" && typeof name === "string" ? `/${actionType}/${name}` : undefined,
-  ];
-  for (const candidate of candidates) {
-    if (candidate !== undefined && Object.hasOwn(store, candidate)) {
+  for (const candidate of registryKeys(original)) {
+    if (!Object.hasOwn(store, candidate)) {
+      continue;
+    }
+    const current: unknown = Reflect.get(store, candidate);
+    if (current === original) {
       Reflect.set(store, candidate, wrapped);
+      continue;
+    }
+    if (typeof current === "function" && !(arcjetProtectedTool in current)) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a registry entry under a tool key is a ToolAction
+      Reflect.set(store, candidate, wrapTwin(current as GenkitTool));
     }
   }
 }
@@ -207,9 +259,15 @@ function copyToolDescriptors(tool: GenkitTool, onto: object): void {
  *
  * `ai.generate({ tools })` converts the array to name/schema
  * definitions and looks the live action up on the registry. This helper
- * therefore overwrites the original registry entry so generate() cannot
- * run the unguarded `defineTool` action. Dynamic tools are registered
- * from the `tools` array at generate() time and do not need that.
+ * therefore overwrites the registry entries so generate() cannot run
+ * the unguarded `defineTool` action — including the `/tool.v2/<name>`
+ * twin `defineTool` registers alongside a basic tool, which closes over
+ * the same handler. Dynamic tools are registered from the `tools` array
+ * at generate() time and do not need that.
+ *
+ * A `multipart: true` tool resolves to `{ output, content }` and
+ * `executeTool` reads `.output`; denials from one are returned in that
+ * shape so the model still sees the explanation.
  *
  * Guard API errors depend on `policy.onGuardError` (defaults to `"deny"`):
  * - `"deny"` (default): handler does not run; the model receives an
@@ -276,6 +334,23 @@ export function guardTool<TInput = unknown, TTool extends GenkitTool = GenkitToo
     );
   }
 
+  const wrapped = wrapToolAction(client, tool, policy);
+
+  reregisterGuardedTool(tool, wrapped, (twin) => wrapToolAction(client, twin, policy));
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- descriptors copied from the original ToolAction
+  return wrapped as TTool;
+}
+
+/**
+ * The wrap itself, without the registry replacement: replaces the
+ * callable and `.run` with guarded ones and brands the result.
+ */
+function wrapToolAction<TInput>(
+  client: ArcjetAgentClient,
+  tool: GenkitTool,
+  policy: GuardToolPolicy<TInput>,
+): GenkitTool {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GenkitTool's never[] call is the accept-any-ToolAction trick; invoke with the runtime args
   const originalCall = tool.bind(tool) as (input?: unknown, options?: unknown) => unknown;
   // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
@@ -297,7 +372,7 @@ export function guardTool<TInput = unknown, TTool extends GenkitTool = GenkitToo
   // Preserve own descriptors (`__action`, `respond`, `restart`, …).
   copyToolDescriptors(tool, wrappedFn);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- descriptors copied from the original ToolAction
-  const wrapped = wrappedFn as unknown as TTool;
+  const wrapped = wrappedFn as unknown as GenkitTool;
 
   if (originalRun !== undefined) {
     const newRun = (input?: unknown, options?: unknown): Promise<unknown> =>
@@ -318,18 +393,25 @@ export function guardTool<TInput = unknown, TTool extends GenkitTool = GenkitToo
     configurable: true,
   });
 
-  reregisterGuardedTool(tool, wrapped);
-
   return wrapped;
 }
 
-function isActionResult(value: unknown): value is { result: unknown; telemetry: unknown } {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    "result" in value &&
-    "telemetry" in value
-  );
+/**
+ * Shape a denial the way the action the wrapper replaced would have
+ * returned it.
+ *
+ * A `tool.v2` (multipart) action resolves to
+ * `{ output, content, metadata }`, and `executeTool` reads `.output`
+ * off it — returning a bare denial from one puts `undefined` on
+ * `toolResponse.output` and the model is told nothing. `.run()` adds
+ * the `{ result, telemetry }` envelope on top of either shape.
+ */
+function denialEnvelope(
+  value: unknown,
+  extras: { multipart: boolean; wrapRunResult: boolean },
+): unknown {
+  const shaped = extras.multipart ? { output: value } : value;
+  return extras.wrapRunResult ? { result: shaped, telemetry: { traceId: "", spanId: "" } } : shaped;
 }
 
 function runGuardedTool<TInput>(
@@ -342,6 +424,10 @@ function runGuardedTool<TInput>(
   extras?: { wrapRunResult?: boolean },
 ): Promise<unknown> {
   const args = toolArgs(input, policy.action);
+  const envelope = {
+    multipart: tool.__action?.actionType === "tool.v2",
+    wrapRunResult: extras?.wrapRunResult === true,
+  };
 
   let sessionId: string | undefined;
   let rules: RuleWithInput[] | undefined;
@@ -364,9 +450,7 @@ function runGuardedTool<TInput>(
     if (policy.onGuardError === "allow") {
       return execute();
     }
-    return Promise.resolve(
-      extras?.wrapRunResult === true ? { result: unavailableResult(), telemetry: { traceId: "", spanId: "" } } : unavailableResult(),
-    );
+    return Promise.resolve(denialEnvelope(unavailableResult(), envelope));
   }
 
   const source = isContextSource(options) ? options : undefined;
@@ -382,8 +466,7 @@ function runGuardedTool<TInput>(
   };
   const mergedMetadata = { ...metadata, ...policyMetadata };
 
-  const asResult = (value: unknown): unknown =>
-    extras?.wrapRunResult === true ? { result: value, telemetry: { traceId: "", spanId: "" } } : value;
+  const asResult = (value: unknown): unknown => denialEnvelope(value, envelope);
 
   return runGuarded<unknown>(client, {
     action: policy.action,
@@ -408,14 +491,10 @@ function runGuardedTool<TInput>(
       }
     },
     onUnavailable: () => asResult(unavailableResult()),
-    execute: async () => {
-      const out = await execute();
-      // `.run` already returns `{ result, telemetry }`; do not wrap twice.
-      if (extras?.wrapRunResult === true && isActionResult(out)) {
-        return out;
-      }
-      return out;
-    },
+    // The allow path returns whatever the original action returned —
+    // `.run`'s `{ result, telemetry }`, or a multipart response — so it
+    // is already in the shape the caller expects.
+    execute,
     onGuardError: policy.onGuardError ?? "deny",
   });
 }

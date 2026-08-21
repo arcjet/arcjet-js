@@ -28,6 +28,7 @@ type FakeTool = ((input?: unknown, options?: unknown) => Promise<unknown>) & {
 
 function createToolAction(overrides?: {
   name?: string;
+  actionType?: string;
   call?: (input?: unknown, options?: unknown) => Promise<unknown>;
   handler?: (args: unknown, options?: unknown) => Promise<unknown>;
 }): FakeTool {
@@ -42,11 +43,12 @@ function createToolAction(overrides?: {
       const out = await run(input, options);
       return out.result;
     });
+  const actionType = overrides?.actionType ?? "tool";
   const tool = Object.assign(call, {
     __action: {
       name: overrides?.name ?? "test-tool",
-      metadata: { type: "tool" },
-      actionType: "tool",
+      metadata: { type: actionType },
+      actionType,
     },
     run,
     respond: () => ({ toolResponse: { name: "test-tool", output: {} } }),
@@ -356,6 +358,54 @@ test("overwrites the original registry entry so generate() cannot bypass the wra
   assert.notStrictEqual(store[key], tool);
 });
 
+test("guards the tool.v2 twin defineTool registers alongside a basic tool", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let twinCalls = 0;
+  const tool = createToolAction({ name: "lookup_order" });
+  // `defineTool` registers a second action over the same handler.
+  const twin = createToolAction({
+    name: "lookup_order",
+    actionType: "tool.v2",
+    handler: async () => {
+      twinCalls += 1;
+      return { output: "must not run" };
+    },
+  });
+  const store: Record<string, unknown> = {
+    "/tool/lookup_order": tool,
+    "/tool.v2/lookup_order": twin,
+  };
+  Object.defineProperty(tool, "__registry", {
+    value: { actionsById: store },
+    configurable: true,
+  });
+  (tool.__action as { key?: string }).key = "/tool/lookup_order";
+
+  guardTool(client, tool, { action: "order.looked-up" });
+
+  const registered = store["/tool.v2/lookup_order"] as FakeTool;
+  assert.notStrictEqual(registered, twin);
+  assert.equal(arcjetProtectedTool in registered, true);
+
+  const result = await registered({ note: "hello" }, toolOptions("t"));
+  assert.equal(twinCalls, 0);
+  // A tool.v2 action resolves to `{ output }`; `executeTool` reads that
+  // field for `toolResponse.output`.
+  assert.equal(asToolResult(recorded(result)["output"]).arcjetDenied, true);
+});
+
+test("DENY from a tool.v2 action is returned in the multipart response shape", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const tool = createToolAction({ actionType: "tool.v2" });
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+
+  const called = recorded(await wrapped({}, toolOptions("t")));
+  assert.equal(asToolResult(called["output"]).reason, "PROMPT_INJECTION");
+
+  const ran = recorded(await wrapped.run?.({}, toolOptions("t")));
+  assert.equal(asToolResult(recorded(ran["result"])["output"]).reason, "PROMPT_INJECTION");
+});
+
 test("rejects a second wrap", async () => {
   const { client } = stubClient(decisionAllow());
   const tool = createToolAction();
@@ -485,6 +535,41 @@ test("undefined input is scanned as empty rather than coerced", async () => {
   assert.deepEqual(scanned, {});
 });
 
+test("a JSON string input is parsed before it is scanned", async () => {
+  const { client } = stubClient(decisionAllow());
+  const scanned: unknown[] = [];
+  const tool = createToolAction();
+  const wrapped = guardTool(client, tool, {
+    action: "note.read",
+    rules: (input) => {
+      scanned.push(input);
+      return [];
+    },
+  });
+
+  await wrapped('{"note":"hello"}', toolOptions("t"));
+  assert.deepEqual(scanned[0], { note: "hello" });
+
+  // Unparseable text is not a set of args; scanning the raw string would
+  // submit the wrong value under the wrong field names.
+  await wrapped("not json", toolOptions("t"));
+  assert.deepEqual(scanned[1], {});
+});
+
+test("a registry without a usable action store is left alone", () => {
+  const { client } = stubClient(decisionAllow());
+  const noStore = createToolAction({ name: "no_store" });
+  Object.defineProperty(noStore, "__registry", { value: {}, configurable: true });
+  assert.equal(typeof guardTool(client, noStore, { action: "note.read" }), "function");
+
+  const badStore = createToolAction({ name: "bad_store" });
+  Object.defineProperty(badStore, "__registry", {
+    value: { actionsById: "not-an-object" },
+    configurable: true,
+  });
+  assert.equal(typeof guardTool(client, badStore, { action: "note.read" }), "function");
+});
+
 test("a non-object, non-string input warns instead of silently scanning nothing", async () => {
   const previous = process.env["ARCJET_LOG_LEVEL"];
   process.env["ARCJET_LOG_LEVEL"] = "warn";
@@ -561,6 +646,24 @@ test(".run is gated the same way as the callable", async () => {
   assert.ok(out && typeof out === "object" && "result" in out);
   const denial = asToolResult((out as { result: unknown }).result);
   assert.equal(denial.arcjetDenied, true);
+});
+
+test(".run ALLOW returns the action's own { result, telemetry } envelope", async () => {
+  const { client } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createToolAction({
+    handler: async () => {
+      calls += 1;
+      return { ok: true };
+    },
+  });
+  const wrapped = guardTool(client, tool, { action: "order.looked-up" });
+  const out = await wrapped.run?.({}, toolOptions("t"));
+
+  assert.equal(calls, 1);
+  // The envelope is the original action's, not a re-wrap of it: a second
+  // `{ result }` layer would break every caller of `.run`.
+  assert.deepEqual(out, { result: { ok: true }, telemetry: { traceId: "t", spanId: "s" } });
 });
 
 test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
