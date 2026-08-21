@@ -71,6 +71,13 @@ jobs:
     steps:
       - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # This job only reads a needs result, so it needs no endpoint of its
+          # own. The list is still required: `block` with none at all also drops
+          # harden-runner's own API and the runner's orchestrator calls, which it
+          # then reports as unexpected network calls.
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
           disable-sudo-and-containers: true
           egress-policy: block
       - name: All Bun OS jobs passed
@@ -139,6 +146,11 @@ jobs:
     steps:
       - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # Same as the Bun gate above: a non-empty list is what lets
+          # harden-runner keep its own API and the runner's own calls allowed.
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
           disable-sudo-and-containers: true
           egress-policy: block
       - name: All Deno OS jobs passed

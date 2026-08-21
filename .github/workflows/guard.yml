@@ -38,8 +38,18 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # `decide.arcjet.com` is reached by the unit tests, unlike the runtime
+          # job below, which serves a local mock instead.
+          allowed-endpoints: >
+            api.github.com:443
+            decide.arcjet.com:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
           disable-sudo-and-containers: true
-          egress-policy: audit
+          egress-policy: block
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -134,8 +144,17 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # Installs and builds, then runs oxlint and tsgo locally: no Arcjet
+          # endpoint, because nothing here runs a test.
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
           disable-sudo-and-containers: true
-          egress-policy: audit
+          egress-policy: block
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -213,8 +232,24 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
+          # One list for every leg of the matrix: Deno's installer reaches
+          # `deno.com` / `deno.land` / `dl.deno.land`, Bun downloads its zip from
+          # GitHub releases, and miniflare's bundled workerd calls
+          # `workers.cloudflare.com` on startup. The runtime tests themselves
+          # talk to a local mock DecideService, so no Arcjet endpoint is needed.
+          allowed-endpoints: >
+            api.github.com:443
+            deno.com:443
+            deno.land:443
+            dl.deno.land:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
+            workers.cloudflare.com:443
           disable-sudo-and-containers: true
-          egress-policy: audit
+          egress-policy: block
 
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
