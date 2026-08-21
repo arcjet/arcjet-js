@@ -129,6 +129,12 @@ who never touch an AI SDK are unaffected.
 
 5. If the SDK is a new dependency, declare it in `peerDependencies` and mark it
    optional in `peerDependenciesMeta`.
+6. If the namespace imports its SDK for types only, add a check to
+   `arcjet-guard/scripts/test-peers-absent.mjs` (and a `type-only.test.ts`).
+   CI runs that script after unit tests and fails if a `type-only.test.ts`
+   exists with no matching check, or the other way around. Skip this when
+   `src/` tests value-import the SDK — `vercel-ai/v7` does, and has no
+   type-only scan.
 
 No changes to the shared layer, the build config, or the root export are
 required — `tsdown` runs with `unbundle: true`, so a new directory under `src/`

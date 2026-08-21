@@ -68,6 +68,13 @@ type stripping):
 npm run test-unit
 ```
 
+Optional-peer isolation (deletes those SDKs from `node_modules`, then runs
+each type-only namespace). Re-install afterwards:
+
+```sh
+npm run test-peers-absent
+```
+
 Runtime tests (build first — imports from `dist/` via package exports):
 
 ```sh
