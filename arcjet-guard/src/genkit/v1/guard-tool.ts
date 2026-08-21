@@ -116,6 +116,15 @@ function toolArgs(input: unknown, action: string): unknown {
     try {
       return JSON.parse(input) as unknown;
     } catch {
+      // Scanning the raw text would submit it under the wrong field
+      // names, so nothing is scanned — say so, or a misconfigured tool
+      // looks like a rule that never matches.
+      if (shouldWarn()) {
+        console.warn(
+          '@arcjet/guard: guardTool() for "%s" was invoked with a string input that is not JSON, so no arguments were scanned.',
+          action,
+        );
+      }
       return {};
     }
   }
@@ -220,14 +229,33 @@ function reregisterGuardedTool(
     }
     const current: unknown = Reflect.get(store, candidate);
     if (current === original) {
-      Reflect.set(store, candidate, wrapped);
+      install(store, candidate, wrapped);
       continue;
     }
     if (typeof current === "function" && !(arcjetProtectedTool in current)) {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a registry entry under a tool key is a ToolAction
-      Reflect.set(store, candidate, wrapTwin(current as GenkitTool));
+      install(store, candidate, wrapTwin(current as GenkitTool));
     }
   }
+}
+
+/**
+ * Replace one registry entry, or fail loudly.
+ *
+ * A frozen or otherwise non-writable entry makes `Reflect.set` return
+ * `false` rather than throw, and generate() would then resolve the
+ * unguarded original. Silently handing back a wrapper that the runner
+ * never calls is the one outcome a security wrapper must not have, so
+ * this fails at wrap time — the same choice `guardToolNode` makes for a
+ * frozen `ToolNode.tools` array.
+ */
+function install(store: object, key: string, action: GenkitTool): void {
+  if (Reflect.set(store, key, action)) {
+    return;
+  }
+  throw new Error(
+    `@arcjet/guard: guardTool() could not replace the registry entry for "${key}"; generate() would run the tool unguarded. Guard the tool before it is registered, or unfreeze the Genkit registry.`,
+  );
 }
 
 function copyToolDescriptors(tool: GenkitTool, onto: object): void {

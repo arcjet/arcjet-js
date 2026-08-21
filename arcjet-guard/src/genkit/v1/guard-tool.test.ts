@@ -556,6 +556,57 @@ test("a JSON string input is parsed before it is scanned", async () => {
   assert.deepEqual(scanned[1], {});
 });
 
+test("an unparseable string input warns instead of silently scanning nothing", async () => {
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "warn";
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+
+  try {
+    const { client } = stubClient(decisionAllow());
+    const tool = createToolAction();
+    const wrapped = guardTool(client, tool, { action: "note.read" });
+
+    await wrapped('{"note":"ok"}', toolOptions("t"));
+    assert.equal(warnings.length, 0);
+
+    await wrapped("not json", toolOptions("t"));
+    assert.equal(warnings.length, 1);
+    assert.match(String(warnings[0]?.[0]), /string input that is not JSON/);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
+});
+
+test("throws when the registry entry cannot be replaced", () => {
+  const { client } = stubClient(decisionAllow());
+  const tool = createToolAction({ name: "frozen_order" });
+  const key = "/tool/frozen_order";
+  const store: Record<string, unknown> = { [key]: tool };
+  Object.freeze(store);
+  Object.defineProperty(tool, "__registry", {
+    value: { actionsById: store },
+    configurable: true,
+  });
+  (tool.__action as { key?: string }).key = key;
+
+  // Returning a wrapper that generate() will never resolve would leave
+  // the tool running unguarded with no signal at all.
+  assert.throws(
+    () => guardTool(client, tool, { action: "order.looked-up" }),
+    /could not replace the registry entry/,
+  );
+  assert.strictEqual(store[key], tool);
+});
+
 test("a registry without a usable action store is left alone", () => {
   const { client } = stubClient(decisionAllow());
   const noStore = createToolAction({ name: "no_store" });
