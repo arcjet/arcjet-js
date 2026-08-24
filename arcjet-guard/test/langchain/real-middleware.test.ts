@@ -119,3 +119,81 @@ test("wrapToolCall DENY does not throw (throws would drop arcjetDenied)", async 
   });
   assert.equal(denialFrom(requireToolMessage(result)).arcjetDenied, true);
 });
+
+// A policy factory that throws is a guard error, not an allow. It has to
+// reach the model as a completed ToolMessage for the same reason a DENY
+// does: this return value skips `baseHandler`.
+test("a throwing policy factory fail-closes as a completed ToolMessage", async () => {
+  const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
+  let handlerCalls = 0;
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    rules: () => {
+      throw new Error("policy factory exploded");
+    },
+  });
+  const result = await runHook(mw, toolRequest("weather"), async () => {
+    handlerCalls += 1;
+    return { ok: true };
+  });
+
+  assert.equal(handlerCalls, 0);
+  assert.equal(guardCalls.length, 0);
+  const message = requireToolMessage(result);
+  assert.notEqual(message.status, "error");
+  assert.equal(denialFrom(message).reason, "ERROR");
+});
+
+test("a throwing policy factory with onGuardError allow still runs the handler", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let handlerCalls = 0;
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    onGuardError: "allow",
+    rules: () => {
+      throw new Error("policy factory exploded");
+    },
+  });
+  const result = await runHook(mw, toolRequest("weather"), async () => {
+    handlerCalls += 1;
+    return { ok: true };
+  });
+
+  assert.equal(handlerCalls, 1);
+  assert.deepEqual(result, { ok: true });
+});
+
+test("a throwing onDeny falls back to the default denial ToolMessage", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let handlerCalls = 0;
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    onDeny: () => {
+      throw new Error("onDeny exploded");
+    },
+  });
+  const result = await runHook(mw, toolRequest("weather"), async () => {
+    handlerCalls += 1;
+    return { ok: true };
+  });
+
+  assert.equal(handlerCalls, 0);
+  const message = requireToolMessage(result);
+  assert.notEqual(message.status, "error");
+  const payload = denialFrom(message);
+  assert.equal(payload.arcjetDenied, true);
+  assert.equal(payload.reason, "PROMPT_INJECTION");
+});
+
+test("onDeny reshapes the payload carried on the denial ToolMessage", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    onDeny: (decision) => ({ blocked: decision.reason }),
+  });
+  const result = await runHook(mw, toolRequest("weather"), async () => ({ ok: true }));
+
+  const message = requireToolMessage(result);
+  assert.notEqual(message.status, "error");
+  assert.deepEqual(JSON.parse(messageText(message.content)), { blocked: "PROMPT_INJECTION" });
+});
