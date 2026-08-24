@@ -185,6 +185,50 @@ test("a throwing onDeny falls back to the default denial ToolMessage", async () 
   assert.equal(payload.reason, "PROMPT_INJECTION");
 });
 
+// createAgent always supplies a string id, so this is a degenerate input.
+// It must still deny — the alternatives are a throw that drops arcjetDenied
+// or a bare object that crashes the reducer — but it must not pass a blank
+// id off as a correlated message.
+test("a tool call with no id still denies, and warns instead of silently blanking the id", async () => {
+  const oldLogLevel = process.env.ARCJET_LOG_LEVEL;
+  process.env.ARCJET_LOG_LEVEL = "warn";
+  const originalWarn = console.warn;
+  const warnings: string[] = [];
+  console.warn = (format: string) => {
+    warnings.push(format);
+  };
+
+  try {
+    const { client } = stubClient(decisionDenyPromptInjection());
+    let handlerCalls = 0;
+    const mw = guardMiddleware(client, { action: "tool.invoked" });
+    const request = {
+      toolCall: { name: "weather", args: {}, type: "tool_call" as const },
+      runtime: { configurable: { thread_id: "thread-1" } },
+    };
+    const result = await runHook(mw, request, async () => {
+      handlerCalls += 1;
+      return { ok: true };
+    });
+
+    assert.equal(handlerCalls, 0);
+    const message = requireToolMessage(result);
+    assert.notEqual(message.status, "error");
+    assert.equal(denialFrom(message).arcjetDenied, true);
+    assert.ok(
+      warnings.some((format) => format.includes("no tool_call_id")),
+      `expected a missing-id warning, got: ${warnings.join(", ")}`,
+    );
+  } finally {
+    console.warn = originalWarn;
+    if (oldLogLevel === undefined) {
+      delete process.env.ARCJET_LOG_LEVEL;
+    } else {
+      process.env.ARCJET_LOG_LEVEL = oldLogLevel;
+    }
+  }
+});
+
 test("onDeny reshapes the payload carried on the denial ToolMessage", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   const mw = guardMiddleware(client, {

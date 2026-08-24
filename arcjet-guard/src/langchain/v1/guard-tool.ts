@@ -214,6 +214,15 @@ export function guardTool<TTool extends LangChainTool<any>>(
   const originalInvoke = invoke?.bind(tool);
 
   // Preserve class prototype and non-enumerable markers.
+  //
+  // This copies own descriptors onto a fresh object sharing the prototype,
+  // which is what a real `DynamicStructuredTool` needs to stay usable. It
+  // only holds while LangChain resolves a tool's behaviour from the object
+  // it was handed. If a future version binds behaviour to the *instance*
+  // out of band — a `WeakMap` keyed on the original, say — the registered
+  // clone would resolve back to the unguarded original and this wrapper
+  // would stop gating. `test/langchain/real-agent.test.ts` pins today's
+  // shape end to end, so re-check it when bumping the `langchain` peer.
   // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols

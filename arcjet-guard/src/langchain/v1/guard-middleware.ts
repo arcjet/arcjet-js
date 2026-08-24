@@ -119,6 +119,28 @@ async function loadToolMessage(): Promise<ToolMessageCtor> {
   return toolMessageCtor;
 }
 
+/**
+ * `createAgent` always supplies a string id, so this is a degenerate
+ * input rather than a live path. There is also no id to correlate to
+ * when it is missing, and neither escape hatch is available: throwing
+ * bubbles out of `invoke` and drops `arcjetDenied`, and returning a
+ * bare object crashes the messages reducer. So the denial is still
+ * emitted — the tool must not run — and the anomaly is warned about
+ * instead of being passed off as a correlated message.
+ */
+function denialToolCallId(toolCall: { id?: string; name: string }): string {
+  if (typeof toolCall.id === "string" && toolCall.id.length > 0) {
+    return toolCall.id;
+  }
+  if (shouldWarn()) {
+    console.warn(
+      '@arcjet/guard: LangChain tool call "%s" carried no tool_call_id; denying with a blank id, which the model cannot pair with its request.',
+      toolCall.name,
+    );
+  }
+  return "";
+}
+
 async function denialToolMessage(
   request: { toolCall: { id?: string; name: string } },
   payload: unknown,
@@ -126,7 +148,7 @@ async function denialToolMessage(
   const ToolMessage = await loadToolMessage();
   const fields: DenialToolMessageFields = {
     content: JSON.stringify(payload),
-    tool_call_id: typeof request.toolCall.id === "string" ? request.toolCall.id : "",
+    tool_call_id: denialToolCallId(request.toolCall),
   };
   if (request.toolCall.name.length > 0) {
     fields.name = request.toolCall.name;
@@ -305,6 +327,11 @@ export function guardMiddleware(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      // Unlike guard-tool.ts, these handlers return a promise: building the
+      // denial has to await the dynamic `@langchain/core/messages` import.
+      // `runGuarded` is `async` and returns the handler's value directly, so
+      // the async return adopts the thenable and the hook resolves to the
+      // ToolMessage rather than to a promise wrapping one.
       onDeny: (decision: DecisionDeny) => {
         if (policy.onDeny === undefined) {
           return denialToolMessage(request, denialResult(decision));
