@@ -84,6 +84,10 @@
       "types": "./dist/claude-agent-sdk/v0/index.d.ts",
       "import": "./dist/claude-agent-sdk/v0/index.js"
     },
+    "./langchain/v1": {
+      "types": "./dist/langchain/v1/index.d.ts",
+      "import": "./dist/langchain/v1/index.js"
+    },
     "./langgraph/v1": {
       "types": "./dist/langgraph/v1/index.d.ts",
       "import": "./dist/langgraph/v1/index.js"
@@ -108,7 +112,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts'",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/langchain/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts'",
     "test-peers-absent": "node scripts/test-peers-absent.mjs",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
@@ -127,7 +131,7 @@
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.25",
     "@anthropic-ai/claude-agent-sdk": "0.3.233",
-    "@langchain/core": "1.2.8",
+    "@langchain/core": "1.2.9",
     "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.59.0",
     "@openai/agents": "0.17.0",
@@ -135,6 +139,7 @@
     "ai": "7.0.58",
     "eve": "0.39.0",
     "genkit": "1.41.0",
+    "langchain": "1.5.10",
     "miniflare": "4.20260730.0",
     "oxlint-tsgolint": "0.24.0",
     "tsdown": "0.22.14",
@@ -149,7 +154,8 @@
     "@openai/agents": ">=0.17.0 <1",
     "ai": ">=7 <8",
     "eve": ">=0.34.0 <1",
-    "genkit": ">=1.0.0 <2"
+    "genkit": ">=1.0.0 <2",
+    "langchain": ">=1.2.0 <2"
   },
   "peerDependenciesMeta": {
     "@ai-sdk/provider-utils": {
@@ -171,6 +177,9 @@
       "optional": true
     },
     "@langchain/langgraph": {
+      "optional": true
+    },
+    "langchain": {
       "optional": true
     },
     "@openai/agents": {

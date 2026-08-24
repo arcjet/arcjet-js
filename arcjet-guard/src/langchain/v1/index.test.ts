@@ -10,20 +10,14 @@ import {
 } from "../../../test/_shared/source-scan.ts";
 import * as agentsBarrel from "../../agents/index.ts";
 import * as v7Namespace from "../../vercel-ai/v7/index.ts";
-import * as langgraphNamespace from "./index.ts";
-import type {
-  ArcjetDenialResult,
-  GuardToolNodePolicy,
-  GuardToolPolicy,
-  LangGraphAgentContext,
-} from "./index.ts";
+import * as langchainNamespace from "./index.ts";
+import type { ArcjetDenialResult, GuardToolPolicy, LangChainAgentContext } from "./index.ts";
 
 function verifyTypeExports(): void {
   const toolPolicy: GuardToolPolicy<Record<string, unknown>> | undefined = undefined;
-  const nodePolicy: GuardToolNodePolicy | undefined = undefined;
   const denialResult: ArcjetDenialResult | undefined = undefined;
-  const agentContext: LangGraphAgentContext | undefined = undefined;
-  void [toolPolicy, nodePolicy, denialResult, agentContext];
+  const agentContext: LangChainAgentContext | undefined = undefined;
+  void [toolPolicy, denialResult, agentContext];
 }
 
 verifyTypeExports();
@@ -46,19 +40,19 @@ function objectField(
 }
 
 test("exports the three own helpers as functions", () => {
-  const ownExports = ["langgraphAgentContext", "guardTool", "guardToolNode"] as const;
+  const ownExports = ["langchainContext", "guardTool", "guardMiddleware"] as const;
 
   for (const funcName of ownExports) {
-    const func = (langgraphNamespace as Record<string, unknown>)[funcName];
+    const func = (langchainNamespace as Record<string, unknown>)[funcName];
     assert.equal(
       typeof func,
       "function",
-      `@arcjet/guard/langgraph/v1 must export ${funcName} as a function`,
+      `@arcjet/guard/langchain/v1 must export ${funcName} as a function`,
     );
   }
 });
 
-test("langgraph namespace exports the agnostic helpers", () => {
+test("langchain namespace exports the agnostic helpers", () => {
   const requiredSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -68,12 +62,12 @@ test("langgraph namespace exports the agnostic helpers", () => {
   ] as const;
 
   for (const symbol of requiredSymbols) {
-    const value = (langgraphNamespace as Record<string, unknown>)[symbol];
-    assert.ok(value !== undefined, `@arcjet/guard/langgraph/v1 must export ${symbol}`);
+    const value = (langchainNamespace as Record<string, unknown>)[symbol];
+    assert.ok(value !== undefined, `@arcjet/guard/langchain/v1 must export ${symbol}`);
   }
 });
 
-test("agnostic exports have same identity across LangGraph and v7 namespaces", () => {
+test("agnostic exports have same identity across LangChain and v7 namespaces", () => {
   const agnosticSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -84,28 +78,28 @@ test("agnostic exports have same identity across LangGraph and v7 namespaces", (
   ] as const;
 
   for (const symbol of agnosticSymbols) {
-    const langgraphValue = (langgraphNamespace as Record<string, unknown>)[symbol];
+    const langchainValue = (langchainNamespace as Record<string, unknown>)[symbol];
     const v7Value = (v7Namespace as Record<string, unknown>)[symbol];
 
     assert.strictEqual(
-      langgraphValue,
+      langchainValue,
       v7Value,
-      `${symbol} must be the same object identity from both @arcjet/guard/langgraph/v1 and @arcjet/guard/vercel-ai/v7`,
+      `${symbol} must be the same object identity from both @arcjet/guard/langchain/v1 and @arcjet/guard/vercel-ai/v7`,
     );
   }
 });
 
-test("LangGraph namespace is a strict superset of the agents barrel with same identity", () => {
-  const langgraphKeys = Object.keys(langgraphNamespace);
+test("LangChain namespace is a strict superset of the agents barrel with same identity", () => {
+  const langchainKeys = Object.keys(langchainNamespace);
   const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
     assert.ok(
-      langgraphKeys.includes(key),
-      `agents barrel key "${key}" must be present in langgraph namespace`,
+      langchainKeys.includes(key),
+      `agents barrel key "${key}" must be present in langchain namespace`,
     );
     assert.strictEqual(
-      (langgraphNamespace as Record<string, unknown>)[key],
+      (langchainNamespace as Record<string, unknown>)[key],
       (agentsBarrel as Record<string, unknown>)[key],
       `${key} must be the same object identity from both imports`,
     );
@@ -113,60 +107,64 @@ test("LangGraph namespace is a strict superset of the agents barrel with same id
 
   const expectedAdditions = 3;
   assert.equal(
-    langgraphKeys.length,
+    langchainKeys.length,
     agentKeys.length + expectedAdditions,
-    `langgraph namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
+    `langchain namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
   );
 
-  const langgraphOnlyKeys = langgraphKeys.filter((key) => !agentKeys.includes(key));
-  const ownExportsArray = ["guardTool", "guardToolNode", "langgraphAgentContext"];
+  const langchainOnlyKeys = langchainKeys.filter((key) => !agentKeys.includes(key));
+  const ownExportsArray = ["guardTool", "guardMiddleware", "langchainContext"];
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
   const expectedOwnExports: readonly string[] = ownExportsArray.sort();
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
-  const sorted: readonly string[] = langgraphOnlyKeys.sort();
+  const sorted: readonly string[] = langchainOnlyKeys.sort();
   assert.deepEqual(sorted, expectedOwnExports);
 });
 
-test("export map has no unversioned ./langgraph and no wildcard langgraph subpaths", () => {
+test("export map has no unversioned ./langchain and no wildcard subpaths", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
 
   const exportKeys = Object.keys(exportsMap);
 
-  assert.ok(!exportKeys.includes("./langgraph"), 'export map must not have "./langgraph"');
-  assert.ok(exportKeys.includes("./langgraph/v1"), 'export map must have "./langgraph/v1"');
+  assert.ok(!exportKeys.includes("./langchain"), 'export map must not have "./langchain"');
+  assert.ok(exportKeys.includes("./langchain/v1"), 'export map must have "./langchain/v1"');
 
   for (const key of exportKeys) {
-    if (key.startsWith("./langgraph/")) {
+    if (key.startsWith("./langchain/")) {
       assert.equal(
         key,
-        "./langgraph/v1",
-        `export map must not have wildcard langgraph subpaths; found "${key}"`,
+        "./langchain/v1",
+        `export map must not have wildcard langchain subpaths; found "${key}"`,
       );
     }
   }
 });
 
-test("does not export Eve / Mastra-only APIs onto the LangGraph namespace", () => {
+test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only APIs", () => {
   const forbidden = [
     "eveAgentContext",
     "mastraAgentContext",
+    "claudeAgentContext",
+    "langgraphAgentContext",
+    "openaiAgentsContext",
     "genkitContext",
-    "langchainContext",
-    "guardMiddleware",
     "guardInbound",
     "guardApproval",
     "guardInterrupt",
+    "guardHooks",
+    "guardToolNode",
     "guardProcessor",
     "arcjetHooks",
     "guardConnection",
+    "guardCanUseTool",
   ];
   for (const key of forbidden) {
     assert.equal(
-      (langgraphNamespace as Record<string, unknown>)[key],
+      (langchainNamespace as Record<string, unknown>)[key],
       undefined,
-      `langgraph namespace must not export "${key}"`,
+      `langchain namespace must not export "${key}"`,
     );
   }
 });

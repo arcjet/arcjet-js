@@ -26,7 +26,8 @@ decision rule:
 This namespace is LangGraph **Graph API** (`StateGraph` + `ToolNode`).
 `createReactAgent` is deprecated in LangGraph JS v1 in favor of LangChain
 `createAgent` / `wrapToolCall`. Do not build on `createReactAgent`. Do not
-use this path for a LangChain `createAgent` app — that is a later adapter.
+use this path for a LangChain `createAgent` app — that is
+`@arcjet/guard/langchain/v1`.
 
 ## Screen inbound before `invoke` (or at the first graph node)
 

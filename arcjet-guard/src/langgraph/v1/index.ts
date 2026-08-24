@@ -18,7 +18,7 @@
  * This adapter is LangGraph Graph API (`StateGraph` + `ToolNode`), not
  * LangChain `createAgent`. `createReactAgent` is deprecated in LangGraph JS
  * v1 in favor of LangChain `createAgent` / `wrapToolCall` — do not build on
- * it; that is a later adapter.
+ * it; that is `@arcjet/guard/langchain/v1`.
  *
  * Two surfaces, and three things this namespace does not build:
  *

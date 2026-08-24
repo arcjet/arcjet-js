@@ -7,8 +7,9 @@
  * @internal This barrel has no export map entry. Every symbol below reaches
  * users re-exported from a vendor namespace — `@arcjet/guard/vercel-ai/v7`,
  * `@arcjet/guard/vercel-eve/v0`, `@arcjet/guard/mastra/v1`,
- * `@arcjet/guard/claude-agent-sdk/v0`, `@arcjet/guard/langgraph/v1`,
- * `@arcjet/guard/openai-agents/v0`, and `@arcjet/guard/genkit/v1`. The
+ * `@arcjet/guard/claude-agent-sdk/v0`, `@arcjet/guard/langchain/v1`,
+ * `@arcjet/guard/langgraph/v1`, `@arcjet/guard/openai-agents/v0`, and
+ * `@arcjet/guard/genkit/v1`. The
  * layer stays agnostic so multiple
  * vendor namespaces can share the same code. A public `@arcjet/guard/agents`
  * path is still a follow-up with its own ADR.

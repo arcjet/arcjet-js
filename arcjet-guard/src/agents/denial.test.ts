@@ -149,6 +149,7 @@ test("no vendor namespace declares its own denial payload", () => {
     "vercel-eve",
     "mastra",
     "claude-agent-sdk",
+    "langchain",
     "langgraph",
     "openai-agents",
     "genkit",

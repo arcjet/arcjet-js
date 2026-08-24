@@ -26,6 +26,7 @@ const NAMESPACES = [
   { dir: "vercel-eve", packages: ["eve"] },
   { dir: "mastra", packages: ["@mastra/core"] },
   { dir: "claude-agent-sdk", packages: ["@anthropic-ai/claude-agent-sdk"] },
+  { dir: "langchain", packages: ["langchain", "@langchain/core"] },
   { dir: "langgraph", packages: ["@langchain/langgraph", "@langchain/core"] },
   { dir: "openai-agents", packages: ["@openai/agents"] },
   { dir: "genkit", packages: ["genkit", "@genkit-ai"] },
