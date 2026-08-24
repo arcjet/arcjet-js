@@ -29,22 +29,44 @@ function toolRequest(name: string, args: unknown = {}, id = "call-1", tool?: obj
   };
 }
 
+async function runHook(
+  mw: ReturnType<typeof guardMiddleware>,
+  request: unknown,
+  handler: (request: unknown) => Promise<unknown>,
+): Promise<unknown> {
+  const wrap = mw.wrapToolCall;
+  assert.equal(typeof wrap, "function", "guardMiddleware must install wrapToolCall");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tests drive wrapToolCall with a structural request
+  return wrap(request as never, handler as never);
+}
+
+function messageText(content: unknown): string {
+  return typeof content === "string" ? content : JSON.stringify(content);
+}
+
+function requireToolMessage(value: unknown): ToolMessage {
+  assert.equal(ToolMessage.isInstance(value), true);
+  if (!ToolMessage.isInstance(value)) {
+    throw new Error("expected a ToolMessage");
+  }
+  return value;
+}
+
 function denialFrom(message: ToolMessage): ArcjetDenialResult {
-  return asDenial<ArcjetDenialResult>(JSON.parse(String(message.content)));
+  return asDenial<ArcjetDenialResult>(JSON.parse(messageText(message.content)));
 }
 
 test("wrapToolCall DENY returns a real ToolMessage, not a bare object or status error", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   let handlerCalls = 0;
   const mw = guardMiddleware(client, { action: "tool.invoked" });
-  const result = await mw.wrapToolCall(toolRequest("weather", { city: "Paris" }), async () => {
+  const result = await runHook(mw, toolRequest("weather", { city: "Paris" }), async () => {
     handlerCalls += 1;
     return { ok: true };
   });
 
   assert.equal(handlerCalls, 0);
-  assert.equal(ToolMessage.isInstance(result), true);
-  const message = result as ToolMessage;
+  const message = requireToolMessage(result);
   assert.equal(message.tool_call_id, "call-1");
   assert.equal(message.name, "weather");
   assert.notEqual(message.status, "error");
@@ -57,7 +79,8 @@ test("wrapToolCall still gates when request.tool is undefined (MCP / unwrapped)"
   const { client } = stubClient(decisionDenyPromptInjection());
   let handlerCalls = 0;
   const mw = guardMiddleware(client, { action: "tool.invoked" });
-  const result = await mw.wrapToolCall(
+  const result = await runHook(
+    mw,
     toolRequest("mcp_search", { q: "hello" }, "call-mcp"),
     async () => {
       handlerCalls += 1;
@@ -66,8 +89,7 @@ test("wrapToolCall still gates when request.tool is undefined (MCP / unwrapped)"
   );
 
   assert.equal(handlerCalls, 0);
-  assert.equal(ToolMessage.isInstance(result), true);
-  const message = result as ToolMessage;
+  const message = requireToolMessage(result);
   assert.equal(message.tool_call_id, "call-mcp");
   assert.equal(message.name, "mcp_search");
   assert.notEqual(message.status, "error");
@@ -78,14 +100,13 @@ test("wrapToolCall fail-closed unavailable is a completed ToolMessage, not a thr
   const { client } = stubClient(decisionFailOpenAllow());
   let handlerCalls = 0;
   const mw = guardMiddleware(client, { action: "tool.invoked" });
-  const result = await mw.wrapToolCall(toolRequest("weather"), async () => {
+  const result = await runHook(mw, toolRequest("weather"), async () => {
     handlerCalls += 1;
     return { ok: true };
   });
 
   assert.equal(handlerCalls, 0);
-  assert.equal(ToolMessage.isInstance(result), true);
-  const message = result as ToolMessage;
+  const message = requireToolMessage(result);
   assert.notEqual(message.status, "error");
   assert.equal(denialFrom(message).reason, "ERROR");
 });
@@ -93,9 +114,8 @@ test("wrapToolCall fail-closed unavailable is a completed ToolMessage, not a thr
 test("wrapToolCall DENY does not throw (throws would drop arcjetDenied)", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
   const mw = guardMiddleware(client, { action: "tool.invoked" });
-  const result = await mw.wrapToolCall(toolRequest("weather"), async () => {
+  const result = await runHook(mw, toolRequest("weather"), async () => {
     throw new Error("handler should not run");
   });
-  assert.equal(ToolMessage.isInstance(result), true);
-  assert.equal(denialFrom(result as ToolMessage).arcjetDenied, true);
+  assert.equal(denialFrom(requireToolMessage(result)).arcjetDenied, true);
 });

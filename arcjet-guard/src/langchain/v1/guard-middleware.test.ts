@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { recorded } from "../../../test/_shared/source-scan.ts";
-import { decisionAllow, decisionDenyPromptInjection, fakeRule, stubClient } from "../../../test/_shared/stub-client.ts";
+import {
+  decisionAllow,
+  decisionDenyPromptInjection,
+  fakeRule,
+  stubClient,
+} from "../../../test/_shared/stub-client.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import { guardMiddleware } from "./guard-middleware.ts";
 import { guardTool } from "./guard-tool.ts";
@@ -25,7 +30,10 @@ async function runHook(
   request: unknown,
   handler: (request: unknown) => Promise<unknown>,
 ): Promise<unknown> {
-  return mw.wrapToolCall(request, handler);
+  const wrap = mw.wrapToolCall;
+  assert.ok(wrap, "guardMiddleware must install wrapToolCall");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- src tests use structural fakes so the peer-absent job never constructs a real ToolCallRequest
+  return wrap(request as never, handler as never);
 }
 
 test("returns a named object with wrapToolCall (not a raw function)", () => {

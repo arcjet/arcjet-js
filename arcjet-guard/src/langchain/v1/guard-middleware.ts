@@ -1,3 +1,5 @@
+import type { AgentMiddleware, WrapToolCallHook } from "langchain";
+
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
@@ -58,20 +60,15 @@ export interface GuardMiddlewarePolicy {
 }
 
 /**
- * Structural `createMiddleware` result this helper returns.
+ * The `createMiddleware`-shaped result this helper returns.
  *
- * Matches LangChain's `createMiddleware` object (`name` + `wrapToolCall`,
- * branded with `Symbol.for("AgentMiddleware")`) so `createAgent({
- * middleware })` accepts it. Declared here so this module never
- * value-imports `createMiddleware`.
+ * This is LangChain's `AgentMiddleware` (via `import type` only — this
+ * module never value-imports `createMiddleware`). `createAgent({
+ * middleware })` accepts it with no cast.
  */
-export interface LangChainGuardMiddleware {
-  name: string;
-  wrapToolCall: (
-    request: unknown,
-    handler: (request: unknown) => Promise<unknown>,
-  ) => Promise<unknown>;
-}
+export type LangChainGuardMiddleware = AgentMiddleware & {
+  wrapToolCall: NonNullable<AgentMiddleware["wrapToolCall"]>;
+};
 
 /**
  * Well-known brand `createMiddleware` stamps on every instance. A raw
@@ -112,6 +109,7 @@ async function loadToolMessage(): Promise<ToolMessageCtor> {
   const messages = await import("@langchain/core/messages");
   const ctor: unknown = messages.ToolMessage;
   if (typeof ctor !== "function") {
+    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(
       "@arcjet/guard: guardMiddleware() could not load ToolMessage from @langchain/core/messages; wrapToolCall cannot return a completed denial.",
     );
@@ -144,9 +142,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object";
 }
 
-function isToolCallRequest(
-  value: unknown,
-): value is {
+function isToolCallRequest(value: unknown): value is {
   toolCall: { name: string; args?: unknown; id?: string };
   tool?: object;
   runtime?: unknown;
@@ -167,7 +163,10 @@ function resolveAction(policy: GuardMiddlewarePolicy, call: GuardMiddlewareCall)
   return "tool.invoked";
 }
 
-function resolveSessionId(policy: GuardMiddlewarePolicy, call: GuardMiddlewareCall): string | undefined {
+function resolveSessionId(
+  policy: GuardMiddlewarePolicy,
+  call: GuardMiddlewareCall,
+): string | undefined {
   if (typeof policy.sessionId === "function") {
     return policy.sessionId(call);
   }
@@ -253,82 +252,85 @@ export function guardMiddleware(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy = {},
 ): LangChainGuardMiddleware {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body is structural; the hook type is what createAgent assigns without a cast
+  const wrapToolCall = ((request: unknown, handler: (request: unknown) => Promise<unknown>) => {
+    if (!isToolCallRequest(request)) {
+      return handler(request);
+    }
+
+    if (isBrandedTool(request.tool)) {
+      return handler(request);
+    }
+
+    const toolName = request.toolCall.name;
+    const input = request.toolCall.args ?? {};
+    const call: GuardMiddlewareCall = { toolName, input };
+
+    let action: string;
+    let sessionId: string | undefined;
+    let rules: RuleWithInput[] | undefined;
+    let policyMetadata: ArcjetMetadata | undefined;
+    try {
+      action = resolveAction(policy, call);
+      sessionId = resolveSessionId(policy, call);
+      rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
+      policyMetadata =
+        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
+    } catch (error) {
+      const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
+      if (shouldWarn()) {
+        console.warn(
+          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
+          actionLabel,
+          error,
+        );
+      }
+      if (policy.onGuardError === "allow") {
+        return handler(request);
+      }
+      return denialToolMessage(request, unavailableResult());
+    }
+
+    const source = isContextSource(request.runtime) ? request.runtime : undefined;
+    const agentCtx = langchainContext(source, sessionId === undefined ? undefined : { sessionId });
+
+    const metadata: ArcjetMetadata = {
+      ...agentCtx.metadata,
+      ...(toolName.length > 0 && { "langchain.tool": toolName }),
+    };
+    const mergedMetadata = { ...metadata, ...policyMetadata };
+
+    return runGuarded<unknown>(client, {
+      action,
+      rules,
+      correlationId: agentCtx.correlationId,
+      metadata: mergedMetadata,
+      onDeny: (decision: DecisionDeny) => {
+        if (policy.onDeny === undefined) {
+          return denialToolMessage(request, denialResult(decision));
+        }
+        try {
+          return denialToolMessage(request, policy.onDeny(decision));
+        } catch (error) {
+          if (shouldWarn()) {
+            console.warn(
+              '@arcjet/guard: onDeny for "%s" threw; returning the default denial:',
+              action,
+              error,
+            );
+          }
+          return denialToolMessage(request, denialResult(decision));
+        }
+      },
+      onUnavailable: () => denialToolMessage(request, unavailableResult()),
+      execute: () => handler(request),
+      onGuardError: policy.onGuardError ?? "deny",
+    });
+  }) as WrapToolCallHook;
+
   const middleware: LangChainGuardMiddleware = {
     name: middlewareName(),
-    wrapToolCall: async (request: unknown, handler: (request: unknown) => Promise<unknown>) => {
-      if (!isToolCallRequest(request)) {
-        return handler(request);
-      }
-
-      if (isBrandedTool(request.tool)) {
-        return handler(request);
-      }
-
-      const toolName = request.toolCall.name;
-      const input = request.toolCall.args ?? {};
-      const call: GuardMiddlewareCall = { toolName, input };
-
-      let action: string;
-      let sessionId: string | undefined;
-      let rules: RuleWithInput[] | undefined;
-      let policyMetadata: ArcjetMetadata | undefined;
-      try {
-        action = resolveAction(policy, call);
-        sessionId = resolveSessionId(policy, call);
-        rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-        policyMetadata =
-          typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-      } catch (error) {
-        const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
-        if (shouldWarn()) {
-          console.warn(
-            '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-            actionLabel,
-            error,
-          );
-        }
-        if (policy.onGuardError === "allow") {
-          return handler(request);
-        }
-        return denialToolMessage(request, unavailableResult());
-      }
-
-      const source = isContextSource(request.runtime) ? request.runtime : undefined;
-      const agentCtx = langchainContext(source, sessionId === undefined ? undefined : { sessionId });
-
-      const metadata: ArcjetMetadata = {
-        ...agentCtx.metadata,
-        ...(toolName.length > 0 && { "langchain.tool": toolName }),
-      };
-      const mergedMetadata = { ...metadata, ...policyMetadata };
-
-      return runGuarded<unknown>(client, {
-        action,
-        rules,
-        correlationId: agentCtx.correlationId,
-        metadata: mergedMetadata,
-        onDeny: (decision: DecisionDeny) => {
-          if (policy.onDeny === undefined) {
-            return denialToolMessage(request, denialResult(decision));
-          }
-          try {
-            return denialToolMessage(request, policy.onDeny(decision));
-          } catch (error) {
-            if (shouldWarn()) {
-              console.warn(
-                '@arcjet/guard: onDeny for "%s" threw; returning the default denial:',
-                action,
-                error,
-              );
-            }
-            return denialToolMessage(request, denialResult(decision));
-          }
-        },
-        onUnavailable: () => denialToolMessage(request, unavailableResult()),
-        execute: () => handler(request),
-        onGuardError: policy.onGuardError ?? "deny",
-      });
-    },
+    wrapToolCall,
   };
 
   Object.defineProperty(middleware, MIDDLEWARE_BRAND, {

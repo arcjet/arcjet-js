@@ -28,9 +28,7 @@ import { createAgent, FakeToolCallingModel } from "langchain";
 import { z } from "zod";
 
 import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
-import { guardMiddleware } from "../../src/langchain/v1/guard-middleware.ts";
-import { guardTool } from "../../src/langchain/v1/guard-tool.ts";
-import { asDenial } from "../_shared/source-scan.ts";
+import { guardMiddleware, guardTool } from "../../src/langchain/v1/index.ts";
 import { decisionAllow, decisionDenyPromptInjection, stubClient } from "../_shared/stub-client.ts";
 
 function weatherTool(handler?: (input: { city: string }) => Promise<string> | string) {
@@ -65,8 +63,13 @@ function toolCallingModel() {
   });
 }
 
+function messageText(content: unknown): string {
+  return typeof content === "string" ? content : JSON.stringify(content);
+}
+
 function denialFrom(message: ToolMessage): ArcjetDenialResult {
-  return asDenial<ArcjetDenialResult>(JSON.parse(String(message.content)));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolMessage.content is the JSON denial payload
+  return JSON.parse(messageText(message.content)) as ArcjetDenialResult;
 }
 
 test("guardMiddleware wrapToolCall DENY returns a completed ToolMessage, not interrupt or status error", async () => {
@@ -120,9 +123,13 @@ test("wrapToolCall still gates an unwrapped tool when the handler is omitted", a
 
 test("guardMiddleware skips a guardTool-branded tool so policy is not double-called", async () => {
   const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
-  const weather = guardTool(client, weatherTool(async () => "should-not-run"), {
-    action: "weather.looked-up",
-  });
+  const weather = guardTool(
+    client,
+    weatherTool(async () => "should-not-run"),
+    {
+      action: "weather.looked-up",
+    },
+  );
 
   const agent = createAgent({
     model: toolCallingModel(),
@@ -163,5 +170,5 @@ test("ALLOW through createAgent still reaches an unwrapped handler", async () =>
   assert.equal(guardCalls.length, 1);
   const toolMessage = result.messages.find((message) => ToolMessage.isInstance(message));
   assert.ok(toolMessage);
-  assert.equal(String(toolMessage!.content), "ok:Paris");
+  assert.equal(messageText(toolMessage!.content), "ok:Paris");
 });

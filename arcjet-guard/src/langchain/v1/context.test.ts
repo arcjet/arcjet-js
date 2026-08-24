@@ -110,8 +110,9 @@ test("init metadata overrides derived keys", () => {
 
 test("never reads traceId or interrupt / resume", () => {
   const result = langchainContext({
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting we do not read these
-    ...( { traceId: "trace-minted", interrupt: "hitl", resumed: true } as Record<string, unknown>),
+    traceId: "trace-minted",
+    interrupt: "hitl",
+    resumed: true,
     sessionId: "sess-real",
   } as never);
   assert.equal(result.correlationId, "sess-real");
@@ -136,7 +137,8 @@ test("derived metadata is encodeMetadata-safe", () => {
     conversationId: "conv-1",
   });
   assert.ok(result.metadata);
-  const metadataJson = encodeMetadata(result.metadata);
+  const { metadataJson, localWarnings } = encodeMetadata(result.metadata);
+  assert.equal(localWarnings.length, 0);
   assert.ok(metadataJson["langchain.thread"]);
   assert.ok(metadataJson["langchain.session"]);
   assert.ok(metadataJson["langchain.conversation"]);

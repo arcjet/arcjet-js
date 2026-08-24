@@ -44,11 +44,12 @@ function weatherTool(handler?: (input: { city: string }) => Promise<string> | st
   );
 }
 
-test("guardTool result is assignable to tool() without a cast", () => {
+test("guardTool result is a real DynamicStructuredTool the agent can register", () => {
   const { client } = stubClient(decisionAllow());
   const wrapped = guardTool(client, weatherTool(), { action: "weather.looked-up" });
-  const tools: ReturnType<typeof tool>[] = [wrapped];
-  assert.equal(tools[0], wrapped);
+  assert.equal(typeof wrapped.invoke, "function");
+  assert.equal(wrapped.name, "weather");
+  assert.equal(typeof wrapped.func, "function");
 });
 
 test("invoke DENY returns a plain ArcjetDenialResult, not a ToolMessage", async () => {
@@ -97,6 +98,12 @@ test("invoke with a tool_call envelope scans args, not the opaque id", async () 
   });
 
   assert.deepEqual(captured, { city: "Paris" });
-  assert.equal(result, "ok:Paris");
+  // Real DynamicStructuredTool.invoke wraps a string result in a ToolMessage
+  // when the input is a tool_call envelope. The guarded handler still ran.
+  const content =
+    typeof result === "object" && result !== null && "content" in result
+      ? (result as { content: unknown }).content
+      : result;
+  assert.equal(content, "ok:Paris");
   assert.equal("correlationId" in recorded(guardCalls[0]), false);
 });

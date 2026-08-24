@@ -47,7 +47,7 @@ function asContextSource(source: unknown): LangChainContextSource | undefined {
   return source;
 }
 
-function asRecord(value: unknown): Record<string, unknown> | undefined {
+function asAppContext(value: unknown): LangChainContextSource | undefined {
   if (value === undefined || value === null || typeof value !== "object" || Array.isArray(value)) {
     return undefined;
   }
@@ -102,15 +102,17 @@ function readConfigurable(
   return undefined;
 }
 
-function readAppContext(source: LangChainContextSource | undefined): LangChainContextSource | undefined {
+function readAppContext(
+  source: LangChainContextSource | undefined,
+): LangChainContextSource | undefined {
   if (source === undefined) {
     return undefined;
   }
-  const fromRuntime = asRecord(source.runtime?.context);
+  const fromRuntime = asAppContext(source.runtime?.context);
   if (fromRuntime !== undefined) {
     return fromRuntime;
   }
-  const nested = asRecord(source.context);
+  const nested = asAppContext(source.context);
   if (nested !== undefined) {
     return nested;
   }
