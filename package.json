@@ -33,7 +33,7 @@
     "miniflare": {
       "undici": "7.29.0"
     },
-    "nanoid": "3.3.17",
+    "nanoid": "3.3.18",
     "postcss": "^8.5.10",
     "rolldown-plugin-dts": {
       "typescript": "7.0.2"
