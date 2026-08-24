@@ -8,7 +8,7 @@
  * one import path and no notion of layering.
  *
  * **Requires the optional peer dependencies `langchain`
- * (`>=1.2.0 <2`) and `@langchain/core` (`>=1.2.0 <2`)**. Nothing in
+ * (`>=1.2.0 <2`) and `@langchain/core` (`>=1 <2`)**. Nothing in
  * this module imports those packages at runtime except a deny-path
  * dynamic load of `ToolMessage` (wrapToolCall's return is not passed
  * through `baseHandler`; a bare object is the reducer-crash case).

@@ -26,7 +26,7 @@ test("@langchain/langgraph and @langchain/core are optional peers and not depend
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies);
   assert.equal(peerDependencies["@langchain/langgraph"], ">=1 <2");
-  assert.equal(peerDependencies["@langchain/core"], ">=1.2.0 <2");
+  assert.equal(peerDependencies["@langchain/core"], ">=1 <2");
 
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
   assert.ok(peerDependenciesMeta);

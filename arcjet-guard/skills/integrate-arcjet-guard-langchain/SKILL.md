@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-langchain
 description: Integrate Arcjet security into a LangChain JS createAgent using @arcjet/guard — wrap tool() / StructuredTool, put guardMiddleware on createAgent({ middleware }) for MCP / unwrapped tools, and read configurable.thread_id for correlation. Use when asked to add Arcjet to langchain createAgent, rate limit its tools, screen inbound messages, or block prompt injection / PII. This is LangChain JS, not the Python page.
 license: Apache-2.0
-compatibility: Requires the target app to use LangChain JS (langchain >=1.2.0 <2 and @langchain/core >=1.2.0 <2) on Node.js >= 22. This is createAgent + createMiddleware({ wrapToolCall }), not LangGraph StateGraph / ToolNode. wrapToolCall only sees runtime.configurable.thread_id as of langchain 1.2.34.
+compatibility: Requires the target app to use LangChain JS (langchain >=1.2.0 <2 and @langchain/core >=1 <2) on Node.js >= 22. This is createAgent + createMiddleware({ wrapToolCall }), not LangGraph StateGraph / ToolNode. wrapToolCall only sees runtime.configurable.thread_id as of langchain 1.2.34.
 metadata:
   author: arcjet
 ---
@@ -125,8 +125,10 @@ Install `@arcjet/guard` (required), plus `langchain` and
 `@arcjet/guard/langchain/v1`). Always use the versioned path:
 `@arcjet/guard/langchain/v1` resolves; `@arcjet/guard/langchain` throws
 `ERR_PACKAGE_PATH_NOT_EXPORTED`. The peer range is `>=1.2.0 <2` for
-both. wrapToolCall only sees `runtime.configurable.thread_id` as of
-langchain 1.2.34. Node 22+.
+`langchain` and `>=1 <2` for `@langchain/core` (the range
+`langgraph/v1` already shipped — `langchain`'s own `^1.2.9` peer on core
+is what actually binds here). wrapToolCall only sees
+`runtime.configurable.thread_id` as of langchain 1.2.34. Node 22+.
 
 ```sh
 npm install @arcjet/guard langchain @langchain/core

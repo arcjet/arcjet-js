@@ -26,7 +26,12 @@ test("langchain and @langchain/core are optional peers and not dependencies", ()
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies);
   assert.equal(peerDependencies["langchain"], ">=1.2.0 <2");
-  assert.equal(peerDependencies["@langchain/core"], ">=1.2.0 <2");
+  // `@langchain/core` stays at the range langgraph/v1 already shipped.
+  // Tightening it to >=1.2.0 would constrain langgraph-only consumers for a
+  // reason that applies to neither namespace: @langchain/langgraph@1.4.10
+  // itself peer-requires ^1.1.48, and anyone using this namespace installs
+  // `langchain`, whose own ^1.2.9 peer on core is the binding constraint.
+  assert.equal(peerDependencies["@langchain/core"], ">=1 <2");
   // This namespace does not add @langchain/langgraph as a new peer.
   // langgraph/v1 already declared it.
   assert.equal(peerDependencies["@langchain/langgraph"], ">=1 <2");
