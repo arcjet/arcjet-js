@@ -29,8 +29,10 @@ decision rule:
   `configurable.thread_id` (what wrapToolCall sees on
   `runtime.configurable` as of langchain 1.2.34), then caller-owned
   `sessionId` / `conversationId`. It never mints a new id. It never
-  reads `traceId`. It never treats `interrupt` / resume as
-  correlation.
+  reads `traceId`. A run that pauses on `interrupt()` resumes through
+  the same config, so it keeps its `thread_id` and its later decisions
+  stay on the Sequence that started it — the interrupt and its resume
+  value are simply not correlation sources of their own.
 
 This namespace is LangChain JS **`createAgent` + `wrapToolCall`**. Not
 LangGraph Graph API (`StateGraph` + `ToolNode`) — that is
@@ -107,8 +109,11 @@ Ask only what you cannot infer from the code; suggest defaults.
 4. **Correlation is read, never minted.** Do not call `createAgentContext`
    inside a middleware / tool callback — that generates a second id and
    splits the Sequence. Put the id you already chose on
-   `configurable.thread_id`. Do not read `traceId`. Do not treat
-   `interrupt` / resume as correlation.
+   `configurable.thread_id`. Do not read `traceId`. Resuming after an
+   `interrupt()` reuses the same config and therefore the same
+   `thread_id`, so decisions after the pause already correlate to the
+   originating Sequence — do not derive an id from the interrupt or its
+   resume value.
 5. **Do not double-wrap with `@arcjet/guard/langgraph/v1` or
    `@arcjet/guard/vercel-ai/v7`.** `guardTool` throws if the tool
    already carries the Arcjet protection brand. `guardMiddleware`
@@ -272,8 +277,11 @@ Preference order: `configurable.thread_id`, then caller-owned
 string, the call is uncorrelated rather than joined to a generated
 id nobody has.
 
-Never mint a new id. Never read `traceId`. Never treat `interrupt` /
-resume as correlation. wrapToolCall only sees
+Never mint a new id. Never read `traceId`. `humanInTheLoopMiddleware`
+resumes with `agent.invoke(new Command({ resume }), config)` — the same
+config, so the same `thread_id`, so the decisions after the pause land
+on the Sequence that started it. Do not substitute the interrupt or its
+resume value for that id. wrapToolCall only sees
 `runtime.configurable.thread_id` as of langchain 1.2.34.
 
 ## Verify the integration

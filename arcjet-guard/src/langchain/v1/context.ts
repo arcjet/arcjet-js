@@ -11,9 +11,10 @@ import type { ArcjetMetadata } from "../../types.ts";
  * `configurable` object itself. Caller-owned `sessionId` / `conversationId`
  * are fallbacks when no thread id is present.
  *
- * Never mints a new id. Never reads `traceId`. Never treats `interrupt` /
- * resume as correlation. Declared here so this module never value-imports
- * `langchain` or `@langchain/core`.
+ * Never mints a new id. Never reads `traceId`. A resumed run passes the
+ * same config, so it keeps its `thread_id`; the interrupt and its resume
+ * value are never read as correlation sources. Declared here so this
+ * module never value-imports `langchain` or `@langchain/core`.
  */
 export interface LangChainContextSource {
   configurable?: Record<string, unknown>;
@@ -142,8 +143,9 @@ function readAppContext(
 /**
  * Derive correlation and metadata from a LangChain `createAgent` invoke
  * config or a `wrapToolCall` `request.runtime`. Never mints a new id.
- * Never calls `createAgentContext`. Never reads `traceId`. Never treats
- * `interrupt` / resume as correlation.
+ * Never calls `createAgentContext`. Never reads `traceId`. A resumed run
+ * keeps its `thread_id`, so the interrupt and its resume value are never
+ * read as correlation sources.
  *
  * Preference order for `correlationId`:
  * 1. `configurable.thread_id` — what `wrapToolCall` sees on
