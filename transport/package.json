@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@types/node": "22.20.1",
-    "tsdown": "0.22.7",
+    "tsdown": "0.22.14",
     "typescript": "7.0.2"
   },
   "engines": {
