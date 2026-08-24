@@ -45,6 +45,42 @@ test("accepts a bare thread_id field", () => {
   assert.equal(result.correlationId, "direct-thread");
 });
 
+// A caller threading a partially-built config can carry an empty
+// `configurable` alongside the real id. Reading the empty one and stopping
+// would send the decision out uncorrelated with no way to notice.
+test("an empty configurable does not shadow a thread_id living elsewhere", () => {
+  assert.equal(
+    langchainContext({ configurable: {}, config: { configurable: { thread_id: "t-config" } } })
+      .correlationId,
+    "t-config",
+  );
+  assert.equal(
+    langchainContext({ configurable: {}, runtime: { configurable: { thread_id: "t-runtime" } } })
+      .correlationId,
+    "t-runtime",
+  );
+  assert.equal(langchainContext({ configurable: {}, thread_id: "t-bare" }).correlationId, "t-bare");
+});
+
+test("the first configurable carrying a thread_id wins", () => {
+  const result = langchainContext({
+    configurable: { thread_id: "outer" },
+    config: { configurable: { thread_id: "inner" } },
+  });
+  assert.equal(result.correlationId, "outer");
+  assert.equal(result.metadata?.["langchain.thread"], "outer");
+});
+
+// An invalid id is an answer, not a miss: falling through to the next
+// candidate would silently swap the id the caller believes they set.
+test("an invalid thread_id is reported rather than skipped for the next candidate", () => {
+  const result = langchainContext({
+    configurable: { thread_id: "bad\nid" },
+    config: { configurable: { thread_id: "good-id" } },
+  });
+  assert.equal("correlationId" in result, false);
+});
+
 test("falls back to caller-owned sessionId when thread_id is absent", () => {
   const result = langchainContext({ sessionId: "sess-1", conversationId: "conv-1" });
   assert.equal(result.correlationId, "sess-1");
