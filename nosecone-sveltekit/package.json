@@ -62,7 +62,7 @@
     "nosecone": "1.10.0"
   },
   "devDependencies": {
-    "@sveltejs/kit": "2.69.3",
+    "@sveltejs/kit": "2.70.2",
     "@sveltejs/vite-plugin-svelte": "7.2.0",
     "@types/node": "22.20.1",
     "svelte": "5.56.5",
