@@ -1584,6 +1584,7 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 | Mastra `guardProcessor` / `guardHooks`  | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Claude `guardTool` / `guardHooks`       | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | LangGraph `guardTool` / `guardToolNode` | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| LangChain `guardTool` / `guardMiddleware` | Deny (fail closed)                        | `onGuardError: "allow"`            |
 | OpenAI Agents `guardTool`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Genkit `guardTool` / `guardMiddleware`  | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
@@ -1856,6 +1857,7 @@ that a tool did not run:
 | AI SDK / Mastra  | Return `{ arcjetDenied: true, … }` as the tool result                                               | A throw becomes a generic tool error and drops the fields                                    |
 | OpenAI Agents    | Return `{ arcjetDenied: true, … }` from `invoke`                                                    | A throw hits `errorFunction` or `ToolCallError` and can kill the run                         |
 | LangGraph        | Return `{ arcjetDenied: true, … }`; `ToolNode` wraps it as a `ToolMessage` with `status: "success"` | Faking a `ToolMessage` to force `status: "error"` crashes the graph reducer                  |
+| LangChain        | Two envelopes: `guardTool` returns `{ arcjetDenied: true, … }` and `baseHandler` wraps it as a success `ToolMessage`; `guardMiddleware`'s `wrapToolCall` returns a real `ToolMessage` carrying the payload as `content` | `wrapToolCall`'s return skips `baseHandler`, so a bare object crashes the messages reducer, and a throw bubbles out of `invoke` and drops the fields |
 | Claude Agent SDK | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                    | A throw is a raw exception; omitting `isError` looks like success                            |
 | Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                     | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema` |
 
