@@ -69,7 +69,25 @@ change them:
   `langgraph/v1` is Graph API (`StateGraph` + `ToolNode`): authored tools
   are `guardTool`, unwrapped / MCP tools go through `guardToolNode`, and
   `interrupt()` is HITL not policy. `createReactAgent` is deprecated; do not
-  build on it or on LangChain `createAgent`.
+  build on it. LangChain `createAgent` / `wrapToolCall` is
+  `langchain/v1`.
+  `langchain/v1` is JS `createAgent` + `createMiddleware({ wrapToolCall })`:
+  the authored deny point is `guardTool` (plain `ArcjetDenialResult`;
+  `baseHandler` wraps it in a success `ToolMessage`), MCP / unwrapped /
+  runtime-discovered tools go through `guardMiddleware`'s `wrapToolCall`
+  (it MUST return a real `ToolMessage` — a bare object is the
+  reducer-crash case; do not set `status: "error"`; do not throw),
+  inbound is screened before `agent.invoke` (SDK middleware that is not
+  `wrapToolCall` is not Guard), and `humanInTheLoopMiddleware` /
+  `interrupt()` is HITL not policy. Policy sits on `wrapToolCall` only —
+  do not deny in `afterModel`. There is no `guardInbound` and no
+  `guardApproval`. Correlation is `configurable.thread_id` (what
+  wrapToolCall sees as of langchain 1.2.34), then caller-owned
+  `sessionId` / `conversationId`. Server-side provider tools and
+  headless `.implement()` tools are out of scope. Do not add
+  `@langchain/langgraph` as a new peer. There is no unversioned
+  `@arcjet/guard/langchain` alias. Docs slug is `/guards/langchain-js/`,
+  not `/guards/langchain/` (the live Python page).
   `openai-agents/v0` is text `Agent` + `run()` / `Runner` + authored
   `tool({ execute })`: the runner-facing deny point is `FunctionTool.invoke`
   (the SDK closes over `execute`), inbound is screened before `run()`

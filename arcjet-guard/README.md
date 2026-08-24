@@ -1064,10 +1064,11 @@ helper. Currently available:
 - **`@arcjet/guard/langgraph/v1`** — LangGraph Graph API (`StateGraph` +
   `ToolNode`) integration. Exports `guardTool`, `guardToolNode`, and
   `langgraphAgentContext`. This is **not** LangChain `createAgent` /
-  `wrapToolCall`, and `createReactAgent` is deprecated in LangGraph JS v1
-  — do not build on it. There is no `guardInbound` (screen before
-  `invoke` or at the first graph node) and no `guardInterrupt` /
-  `guardApproval` (`interrupt()` is human HITL, not policy).
+  `wrapToolCall` — that is `@arcjet/guard/langchain/v1` — and
+  `createReactAgent` is deprecated in LangGraph JS v1 — do not build on
+  it. There is no `guardInbound` (screen before `invoke` or at the first
+  graph node) and no `guardInterrupt` / `guardApproval` (`interrupt()`
+  is human HITL, not policy).
 
   On DENY a guarded tool does not run and does not throw: it returns a
   structured `ArcjetDenialResult`, which `ToolNode` turns into a real
@@ -1141,6 +1142,111 @@ If you invoke a guarded tool yourself rather than through `ToolNode`, read
 the denial and build your own `ToolMessage`; do not push the denial object
 straight into `messages`, because the graph's message reducer only accepts
 real messages.
+
+- **`@arcjet/guard/langchain/v1`** — LangChain JS `createAgent` +
+  `createMiddleware({ wrapToolCall })` integration. Exports `guardTool`,
+  `guardMiddleware`, and `langchainContext`. This is **not** LangGraph
+  Graph API (`StateGraph` + `ToolNode`) — that is
+  `@arcjet/guard/langgraph/v1` — and not `vercel-ai/v7`. There is no
+  `guardInbound` (screen before `agent.invoke`; SDK middleware that is
+  not `wrapToolCall` is not Guard) and no `guardApproval`
+  (`humanInTheLoopMiddleware` / `interrupt()` is human HITL, not
+  policy). Policy sits on `wrapToolCall` only — do not deny in
+  `afterModel`. Server-side provider tools and headless `.implement()`
+  tools are out of scope. Docs live at
+  [`/guards/langchain-js/`](https://docs.arcjet.com/guards/langchain-js/);
+  do not overwrite [`/guards/langchain/`](https://docs.arcjet.com/guards/langchain/)
+  (the live Python page).
+
+  Two denial envelopes — do not collapse them. `guardTool` returns a
+  plain `ArcjetDenialResult`; it does not throw and does not fabricate
+  a `ToolMessage`. `createAgent`'s `baseHandler` wraps a non-ToolMessage
+  in a success `ToolMessage`. `guardMiddleware` `wrapToolCall` MUST
+  return a real `ToolMessage` (`content` = JSON of the payload,
+  `tool_call_id` = `request.toolCall.id`, `name` =
+  `request.toolCall.name`). wrapToolCall's return is **not** passed
+  through `baseHandler`; a bare object is the messages-reducer crash.
+  Do not set `status: "error"`. Do not throw (throws bubble and drop
+  `arcjetDenied`). Already-branded tools are skipped so Guard is not
+  double-called:
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardTool, guardMiddleware, langchainContext } from "@arcjet/guard/langchain/v1";
+  import { createAgent } from "langchain";
+  import { tool } from "@langchain/core/tools";
+  import { z } from "zod";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const lookupOrder = guardTool(
+    arcjet,
+    tool(async ({ orderNumber }) => ({ orderNumber, status: "shipped" }), {
+      name: "lookup_order",
+      description: "Look up an order",
+      schema: z.object({ orderNumber: z.string() }),
+    }),
+    {
+      action: "order.looked-up",
+      onGuardError: "deny",
+      rules: (input) => [limit({ key: input.orderNumber, requested: 1 })],
+    },
+  );
+
+  const inbound = detectPromptInjection();
+  const decision = await arcjet.guard({
+    label: "message.received",
+    rules: [inbound(userText)],
+    ...langchainContext({ configurable: { thread_id: conversationId } }),
+  });
+
+  if (decision.conclusion === "DENY") {
+    throw new Error("message blocked");
+  }
+  if (decision.hasFailedOpen()) {
+    throw new Error("inbound screening failed open");
+  }
+
+  const agent = createAgent({
+    model,
+    tools: [lookupOrder],
+    middleware: [guardMiddleware(arcjet, { sessionId: conversationId })],
+  });
+  await agent.invoke(
+    { messages: [{ role: "user", content: userText }] },
+    { configurable: { thread_id: conversationId } },
+  );
+  ```
+
+#### Screen inbound before `agent.invoke` — there is no inbound hook. SDK middleware that is not `wrapToolCall` is not Guard.
+
+LangChain `createAgent` has no first-class inbound channel, so there
+is no `guardInbound`. Put prompt-injection (and other inbound rules)
+in the application before `agent.invoke`. `wrapModelCall` /
+`beforeModel` / `afterModel` intercept the model call, not user text.
+They are not this policy gate.
+
+#### `humanInTheLoopMiddleware` / `interrupt` is HITL, not a policy gate.
+
+`humanInTheLoopMiddleware` / `interrupt()` / approve-edit-reject-respond
+is human-in-the-loop, not policy. Same trap as Mastra `requireApproval`,
+Claude `canUseTool`, LangGraph `interrupt()`, Genkit `toolApproval`,
+and OpenAI Agents `needsApproval`. There is no `guardApproval`. Policy
+sits on `wrapToolCall` only — do not deny in `afterModel`.
+
+#### Deny inside `tool()` (and `guardMiddleware`'s `wrapToolCall`). MCP and unwrapped tools skip an unwrapped handler.
+
+The authored `tool()` handler is the deny point for tools you own.
+MCP tools, runtime-discovered tools, and anything not wrapped with
+`guardTool` skip that handler. `guardMiddleware` is the invoke()-wide
+gate for those — its `wrapToolCall` denies by returning a real
+`ToolMessage` without calling `handler`. wrapToolCall only sees
+`runtime.configurable.thread_id` as of langchain 1.2.34.
 
 - **`@arcjet/guard/openai-agents/v0`** — OpenAI Agents text `Agent` +
   `run()` / `Runner` integration. Exports `guardTool` and
@@ -1375,7 +1481,14 @@ importing only core guards are not forced to install unneeded packages:
   `@arcjet/guard/claude-agent-sdk/v0`). The peer range is `>=0.1.0 <1`.
 - **`@arcjet/guard/langgraph/v1`** requires `@langchain/langgraph` and
   `@langchain/core` (optional peers, installed only to use
-  `@arcjet/guard/langgraph/v1`). The peer range is `>=1 <2` for both.
+  `@arcjet/guard/langgraph/v1`). The peer range is `>=1 <2` for
+  `@langchain/langgraph` and `>=1.2.0 <2` for `@langchain/core`.
+- **`@arcjet/guard/langchain/v1`** requires `langchain` and
+  `@langchain/core` (optional peers, installed only to use
+  `@arcjet/guard/langchain/v1`). The peer range is `>=1.2.0 <2` for
+  both. `wrapToolCall` only sees `runtime.configurable.thread_id` as of
+  langchain 1.2.34. This namespace does not add `@langchain/langgraph`
+  as a new peer.
 - **`@arcjet/guard/openai-agents/v0`** requires `@openai/agents` (optional
   peer, installed only to use `@arcjet/guard/openai-agents/v0`). The peer
   range is `>=0.17.0 <1`. Zod is their peer, not ours.
@@ -1418,6 +1531,11 @@ pnpm install @langchain/langgraph @langchain/core
 ```
 
 ```sh
+# @arcjet/guard/langchain/v1
+pnpm install langchain @langchain/core
+```
+
+```sh
 # @arcjet/guard/openai-agents/v0
 pnpm install @openai/agents
 ```
@@ -1441,7 +1559,8 @@ is one path to learn and no layering to reason about.
 
 `@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`,
 `@arcjet/guard/mastra/v1`, `@arcjet/guard/claude-agent-sdk/v0`,
-`@arcjet/guard/langgraph/v1`, `@arcjet/guard/openai-agents/v0`, and
+`@arcjet/guard/langchain/v1`, `@arcjet/guard/langgraph/v1`,
+`@arcjet/guard/openai-agents/v0`, and
 `@arcjet/guard/genkit/v1` now export
 these helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
@@ -1836,6 +1955,8 @@ For an example with Mastra, see [`mastra-agent`](https://github.com/arcjet/examp
 
 For an example with LangGraph, see [`langgraph-agent`](https://github.com/arcjet/examples/tree/main/examples/langgraph-agent) (follow-up on that same PR): inbound screening before `invoke`, `guardTool` / `guardToolNode` (deny, PII on args, rate limit, fail-closed), and `thread_id` correlation. `interrupt()` is HITL, not a policy gate; `ToolNode` is the deny point for tools.
 
+For an example with LangChain JS `createAgent`, see [`langchain-agent`](https://github.com/arcjet/examples/tree/main/examples/langchain-agent) (follow-up on that same PR): inbound screening before `agent.invoke`, `guardTool` / `guardMiddleware` (deny, PII on args, rate limit, fail-closed), and `thread_id` correlation. `humanInTheLoopMiddleware` / `interrupt()` is HITL, not a policy gate; `wrapToolCall` is the deny point for tools. Docs: [`/guards/langchain-js/`](https://docs.arcjet.com/guards/langchain-js/).
+
 For an example with OpenAI Agents, see [`openai-agent`](https://github.com/arcjet/examples/tree/main/examples/openai-agent) (follow-up on that same PR): inbound screening before `run()`, `guardTool` (deny, PII on args, rate limit, fail-closed), and a caller-owned id on `run(..., { context })`. `needsApproval` is HITL, not a policy gate; authored `tool()` `invoke` is the deny point.
 
 For an example with Genkit, see [`genkit-agent`](https://github.com/arcjet/examples/tree/main/examples/genkit-agent) (follow-up on that same PR): inbound screening before `generate()`, `guardTool` / `guardMiddleware` (deny, PII on args, rate limit, fail-closed), and a caller-owned id on `generate({ context })`. `interrupt()` / `defineInterrupt` / `toolApproval` is HITL, not a policy gate; the `defineTool` handler and `guardMiddleware`'s `tool` hook are the deny points.
@@ -1895,6 +2016,16 @@ ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langgrap
 ```
 
 In Claude Code, use `/integrate-arcjet-guard-langgraph` to start an integration session.
+
+**For LangChain JS (`createAgent`):**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langchain ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langchain ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-langchain` to start an integration session.
 
 **For OpenAI Agents:**
 

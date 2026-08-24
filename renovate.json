@@ -69,9 +69,9 @@
       "allowedVersions": "<1"
     },
     {
-      "description": "Never automerge @langchain/langgraph or @langchain/core majors. `@arcjet/guard/langgraph/v1` types against ToolNode, StructuredTool, and RunnableConfig. A green typecheck is necessary but not sufficient. Keep the range on 1.x; langgraph/v2 is added deliberately, not by a bump.",
+      "description": "Never automerge langchain, @langchain/langgraph, or @langchain/core majors. `@arcjet/guard/langgraph/v1` types against ToolNode, StructuredTool, and RunnableConfig. `@arcjet/guard/langchain/v1` types against createAgent, wrapToolCall, and ToolMessage.isInstance — wrapToolCall only sees runtime.configurable.thread_id as of langchain 1.2.34, and a bare wrapToolCall return is the messages-reducer crash. A green typecheck is necessary but not sufficient. Keep the range on 1.x; langchain/v2 and langgraph/v2 are added deliberately, not by a bump.",
       "matchManagers": ["npm"],
-      "matchPackageNames": ["@langchain/langgraph", "@langchain/core"],
+      "matchPackageNames": ["langchain", "@langchain/langgraph", "@langchain/core"],
       "automerge": false,
       "allowedVersions": "<2"
     },

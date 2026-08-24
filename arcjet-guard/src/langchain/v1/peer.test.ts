@@ -20,24 +20,28 @@ function objectField(
   return undefined;
 }
 
-test("@langchain/langgraph and @langchain/core are optional peers and not dependencies", () => {
+test("langchain and @langchain/core are optional peers and not dependencies", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
 
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies);
-  assert.equal(peerDependencies["@langchain/langgraph"], ">=1 <2");
+  assert.equal(peerDependencies["langchain"], ">=1.2.0 <2");
   assert.equal(peerDependencies["@langchain/core"], ">=1.2.0 <2");
+  // This namespace does not add @langchain/langgraph as a new peer.
+  // langgraph/v1 already declared it.
+  assert.equal(peerDependencies["@langchain/langgraph"], ">=1 <2");
 
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
   assert.ok(peerDependenciesMeta);
-  const langgraphMeta = objectField(peerDependenciesMeta, "@langchain/langgraph");
-  assert.ok(langgraphMeta);
-  assert.equal(langgraphMeta["optional"], true);
+  const langchainMeta = objectField(peerDependenciesMeta, "langchain");
+  assert.ok(langchainMeta);
+  assert.equal(langchainMeta["optional"], true);
   const coreMeta = objectField(peerDependenciesMeta, "@langchain/core");
   assert.ok(coreMeta);
   assert.equal(coreMeta["optional"], true);
 
   const dependencies = objectField(packageJson, "dependencies");
-  assert.ok(!(dependencies && "@langchain/langgraph" in dependencies));
+  assert.ok(!(dependencies && "langchain" in dependencies));
   assert.ok(!(dependencies && "@langchain/core" in dependencies));
+  assert.ok(!(dependencies && "@langchain/langgraph" in dependencies));
 });

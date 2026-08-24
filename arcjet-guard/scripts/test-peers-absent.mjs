@@ -55,6 +55,13 @@ const CHECKS = [
     resolve: ["@langchain/langgraph", "@langchain/core"],
   },
   {
+    name: "langchain",
+    dir: "langchain",
+    version: "v1",
+    remove: ["langchain", "@langchain/core"],
+    resolve: ["langchain", "@langchain/core"],
+  },
+  {
     name: "genkit",
     dir: "genkit",
     version: "v1",

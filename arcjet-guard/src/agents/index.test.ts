@@ -108,6 +108,8 @@ function walkForForbiddenImports(filePath: string, visited: Set<string>, errors:
       spec.startsWith("@mastra/core/") ||
       spec === "@anthropic-ai/claude-agent-sdk" ||
       spec.startsWith("@anthropic-ai/claude-agent-sdk/") ||
+      spec === "langchain" ||
+      spec.startsWith("langchain/") ||
       spec === "@langchain/langgraph" ||
       spec.startsWith("@langchain/langgraph/") ||
       spec === "@langchain/core" ||
