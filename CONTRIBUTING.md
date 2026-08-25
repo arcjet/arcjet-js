@@ -107,6 +107,24 @@ change them:
   `guardInbound` and no `guardApproval`. Correlation is a field the
   integrator puts on `generate({ context })`. Do not wrap Go / Python
   Genkit. Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.
+  `strands-agents/v1` is JS `@strands-agents/sdk` `Agent` +
+  `tool({ callback })` + Plugin / `addHook`: the authored deny point is
+  `_callback` (wrap both `_callback` and ZodTool's
+  `_functionTool._callback`; `stream()` is what the executor calls),
+  unwrapped / MCP / vended tools go through `guardHooks`'
+  `BeforeToolCallEvent` (deny by setting `event.cancel` to
+  `JSON.stringify(ArcjetDenialResult)` — do not use
+  `BeforeToolsEvent.cancel`, which skips per-tool hooks), inbound is
+  screened before `invoke()` / `stream()` (there is no inbound hook),
+  and `event.interrupt()` is HITL not policy. There is no
+  `guardInbound` and no `guardApproval` / `guardInterrupt`. Correlation
+  is a field the integrator puts on `invocationState` (`correlationId`,
+  then `sessionId`, then `requestId`). Never mint. Never read
+  `traceId`. Never use `SessionManager` or `agent.id`. Do not wrap the
+  Python SDK. Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
+  `@arcjet/guard/langgraph/v1`. There is no unversioned
+  `@arcjet/guard/strands-agents` alias. Docs slug is
+  `/guards/strands-agents/`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would

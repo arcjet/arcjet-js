@@ -121,7 +121,9 @@ function walkForForbiddenImports(filePath: string, visited: Set<string>, errors:
       spec === "@genkit-ai/core" ||
       spec.startsWith("@genkit-ai/core/") ||
       spec === "@genkit-ai/ai" ||
-      spec.startsWith("@genkit-ai/ai/")
+      spec.startsWith("@genkit-ai/ai/") ||
+      spec === "@strands-agents/sdk" ||
+      spec.startsWith("@strands-agents/sdk/")
     ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }

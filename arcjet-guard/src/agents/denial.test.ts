@@ -153,6 +153,7 @@ test("no vendor namespace declares its own denial payload", () => {
     "langgraph",
     "openai-agents",
     "genkit",
+    "strands-agents",
   ];
   const forbidden = [
     ["interface ", "Arcjet", "DenialResult"].join(""),

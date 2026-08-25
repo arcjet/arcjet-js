@@ -150,6 +150,7 @@ test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only A
     "langgraphAgentContext",
     "openaiAgentsContext",
     "genkitContext",
+    "strandsAgentContext",
     "guardInbound",
     "guardApproval",
     "guardInterrupt",

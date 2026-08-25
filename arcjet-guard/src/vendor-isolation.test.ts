@@ -30,6 +30,7 @@ const NAMESPACES = [
   { dir: "langgraph", packages: ["@langchain/langgraph", "@langchain/core"] },
   { dir: "openai-agents", packages: ["@openai/agents"] },
   { dir: "genkit", packages: ["genkit", "@genkit-ai"] },
+  { dir: "strands-agents", packages: ["@strands-agents/sdk"] },
 ] as const;
 
 /**
@@ -109,6 +110,8 @@ test("the scanner detects a cross-vendor import when one is introduced", () => {
     { from: "openai-agents", content: 'export type { X } from "@mastra/core/tools";' },
     { from: "vercel-ai", content: 'const m = await import("@openai/agents");\nvoid m;' },
     { from: "genkit", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "strands-agents", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "genkit", content: 'import type { Plugin } from "@strands-agents/sdk";\nvoid 0;' },
     {
       from: "mastra",
       content: 'import { denialResult } from "../../langgraph/v1/denial.ts";\nvoid denialResult;',

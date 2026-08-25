@@ -82,6 +82,13 @@ const CHECKS = [
     remove: ["@mastra/core"],
     resolve: ["@mastra/core"],
   },
+  {
+    name: "strands-agents",
+    dir: "strands-agents",
+    version: "v1",
+    remove: ["@strands-agents/sdk"],
+    resolve: ["@strands-agents/sdk"],
+  },
   // Last: deletes a shared devDependency.
   {
     name: "eve",
