@@ -122,7 +122,23 @@ async function loadStrandsHooks(): Promise<StrandsHookSdk> {
   if (loadedSdk !== undefined) {
     return loadedSdk;
   }
-  const sdk = await import("@strands-agents/sdk");
+  let sdk;
+  try {
+    sdk = await import("@strands-agents/sdk");
+  } catch (error) {
+    const code =
+      error !== null && typeof error === "object" && "code" in error
+        ? (error as { code: unknown }).code
+        : undefined;
+    if (code === "ERR_MODULE_NOT_FOUND") {
+      // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
+      throw new Error(
+        "@arcjet/guard: install @strands-agents/sdk (>=1.1.0 <2) to use guardHooks() from @arcjet/guard/strands-agents/v1",
+        { cause: error },
+      );
+    }
+    throw error;
+  }
   const before = sdk.BeforeToolCallEvent;
   const after = sdk.AfterToolCallEvent;
   const hookOrder = sdk.HookOrder;
@@ -192,10 +208,9 @@ let pluginSeq = 0;
 
 /**
  * A registry key, not a secret: PluginRegistry rejects a second plugin
- * of the same name, so two distinct instances sharing one must not
- * happen — the second would be refused. The counter alone is not
- * enough because a second copy of this module starts counting at one
- * again.
+ * of the same name. The per-process counter helps debugging; cross-copy
+ * uniqueness comes from the random UUID suffix (a second bundle of this
+ * module resets the counter to 1).
  */
 function pluginName(): string {
   pluginSeq += 1;
@@ -328,10 +343,10 @@ export function createAfterToolCallHandler(
         typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
       const metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
-        "strands.phase": "after",
-        outcome: event.error === undefined ? "success" : "error",
-        ...(call.toolName.length > 0 && { "strands.tool": call.toolName }),
         ...policyMetadata,
+        "strands.phase": "after",
+        ...(call.toolName.length > 0 && { "strands.tool": call.toolName }),
+        outcome: event.error === undefined ? "success" : "error",
       };
 
       const correlation =

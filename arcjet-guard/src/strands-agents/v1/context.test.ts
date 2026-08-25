@@ -90,7 +90,7 @@ test("rejects a session id over 256 characters and does not mint", () => {
   const result = strandsAgentContext({ invocationState: { sessionId: longId } });
 
   assert.equal(result.correlationId, undefined);
-  assert.equal(result.metadata?.["strands.session"], longId);
+  assert.equal("strands.session" in (result.metadata ?? {}), false);
 });
 
 test("never reads traceId, even when it is the only string present", () => {
@@ -192,7 +192,7 @@ test("non-string candidates are skipped", () => {
 test("non-printable session id is rejected and does not mint", () => {
   const result = strandsAgentContext({ invocationState: { sessionId: "bad\nid" } });
   assert.equal(result.correlationId, undefined);
-  assert.equal(result.metadata?.["strands.session"], "bad\nid");
+  assert.equal("strands.session" in (result.metadata ?? {}), false);
 });
 
 test("warns when every candidate is invalid and ARCJET_LOG_LEVEL asks for warnings", () => {

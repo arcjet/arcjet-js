@@ -166,6 +166,11 @@ function contextSource(context: unknown): StrandsContextSource | undefined {
  * shared `arcjetProtectedTool` brand throws on a second `guardTool`
  * wrap and lets `guardHooks` skip an already-guarded tool.
  *
+ * Register only the value this helper returns on `Agent({ tools })`.
+ * Passing the original `tool()` reference alongside the wrapped copy
+ * leaves the inner `_functionTool._callback` unguarded on the
+ * original's `stream()` path.
+ *
  * @example
  * ```ts
  * import { launchArcjet, tokenBucket } from "@arcjet/guard";

@@ -135,6 +135,21 @@ test("afterToolCall captures error outcome", () => {
   assert.equal(metadata["outcome"], "error");
 });
 
+test("afterToolCall outcome cannot be overridden by policy metadata", () => {
+  const { client, captureCalls } = stubClient(decisionAllow());
+  const handler = createAfterToolCallHandler(client, {
+    metadata: { outcome: "custom" },
+  });
+  handler({
+    toolUse: { name: "mcp_search", input: { q: "1" } },
+    invocationState: { sessionId: "sess-hooks" },
+    error: new Error("boom"),
+  });
+
+  const metadata = recorded(captureCalls[0])["metadata"] as Record<string, unknown>;
+  assert.equal(metadata["outcome"], "error");
+});
+
 test("default action is tool.invoked", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const handler = createBeforeToolCallHandler(client, {});
