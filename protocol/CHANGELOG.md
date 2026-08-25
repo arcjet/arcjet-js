@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/protocol-v1.11.0) (2026-08-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238))
+
+### 🚀 New Features
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238)) ([7278e83](https://github.com/arcjet/arcjet-js/commit/7278e838aab396ecb7fc755316738802aa093073))
+* sync well-known bots and regenerate analyze WebAssembly module ([#6234](https://github.com/arcjet/arcjet-js/issues/6234)) ([919e874](https://github.com/arcjet/arcjet-js/commit/919e874dd640c4eaeaf7a2ee94be770faf833b03))
+
+
+### 🪲 Bug Fixes
+
+* default Decide API timeout to 2s for cold starts ([#6236](https://github.com/arcjet/arcjet-js/issues/6236)) ([e856b30](https://github.com/arcjet/arcjet-js/commit/e856b30a5b8b5dba5d4c88cc736462639fbe973a))
+
+
+### 📝 Documentation
+
+* **protocol:** document ArcjetDecision.ttl as seconds ([#6237](https://github.com/arcjet/arcjet-js/issues/6237)) ([ad3dc41](https://github.com/arcjet/arcjet-js/commit/ad3dc41c70b9783a71a31b7575621cdffce03e7c))
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.10.0 to 1.11.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/protocol-v1.10.0) (2026-08-11)
 
 

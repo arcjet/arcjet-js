@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/guard-v1.11.0) (2026-08-25)
+
+
+### 🚀 New Features
+
+* **guard:** add Claude Agent SDK support as @arcjet/guard/claude-agent-sdk/v0 ([#6229](https://github.com/arcjet/arcjet-js/issues/6229)) ([43838ef](https://github.com/arcjet/arcjet-js/commit/43838ef336df9a71b16760575a7ae81abf711897))
+* **guard:** add Eve 0.34+ request/response approval support ([#6231](https://github.com/arcjet/arcjet-js/issues/6231)) ([66d8b0c](https://github.com/arcjet/arcjet-js/commit/66d8b0c66c2559889131db0ecdc06392cbda387a))
+* **guard:** add Genkit support as @arcjet/guard/genkit/v1 ([#6243](https://github.com/arcjet/arcjet-js/issues/6243)) ([4e41678](https://github.com/arcjet/arcjet-js/commit/4e416787b5aad709476173f5daf6c30212710c37))
+* **guard:** add LangChain createAgent support as @arcjet/guard/langchain/v1 ([#6248](https://github.com/arcjet/arcjet-js/issues/6248)) ([c49abcc](https://github.com/arcjet/arcjet-js/commit/c49abcc1f9afce7d284b6c294d0dcee5916ada86))
+* **guard:** add LangGraph support as @arcjet/guard/langgraph/v1 ([#6230](https://github.com/arcjet/arcjet-js/issues/6230)) ([a5debc7](https://github.com/arcjet/arcjet-js/commit/a5debc78e3cead84b3487f2a874efc9bbcb73845))
+* **guard:** add Mastra support as @arcjet/guard/mastra/v1 ([#6226](https://github.com/arcjet/arcjet-js/issues/6226)) ([40cf399](https://github.com/arcjet/arcjet-js/commit/40cf39910fc868559fc4558ccf747723f58f810a))
+* **guard:** add OpenAI Agents support as @arcjet/guard/openai-agents/v0 ([#6233](https://github.com/arcjet/arcjet-js/issues/6233)) ([0099fb7](https://github.com/arcjet/arcjet-js/commit/0099fb76e9229fa0b5922f938f4f1ce2e1033ce1))
+* **guard:** add Strands Agents support as `@arcjet/guard/strands-agents/v1` ([#6251](https://github.com/arcjet/arcjet-js/issues/6251)) ([f3a07ee](https://github.com/arcjet/arcjet-js/commit/f3a07ee675cbdd812a36dcb778ee4325d2f89617))
+* **guard:** graduate moderateContent from experimental ([#6228](https://github.com/arcjet/arcjet-js/issues/6228)) ([c50a947](https://github.com/arcjet/arcjet-js/commit/c50a9474c040b413e2f7334665642e37570b4003))
+* **guard:** one denial payload, per-framework envelopes ([#6240](https://github.com/arcjet/arcjet-js/issues/6240)) ([fdec043](https://github.com/arcjet/arcjet-js/commit/fdec043e082f3998bcff2278905e9b4a3e553fe1))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** agent adapter tweaks ([#6232](https://github.com/arcjet/arcjet-js/issues/6232)) ([286538e](https://github.com/arcjet/arcjet-js/commit/286538ec0357d2b9b655ed1158ae9ff3ac3939a0))
+* **guard:** export package.json from @arcjet/guard ([#6239](https://github.com/arcjet/arcjet-js/issues/6239)) ([7a3086a](https://github.com/arcjet/arcjet-js/commit/7a3086a82b4e9648f82efb429d45b679da87bbac))
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
+
+### ✅ Continuous Integration
+
+* **guard:** consolidate optional-peer absent unit tests ([#6244](https://github.com/arcjet/arcjet-js/issues/6244)) ([c5329da](https://github.com/arcjet/arcjet-js/commit/c5329da88c5c438e086bb931bda43d12c1704445))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.10.0 to 1.11.0
+    * @arcjet/logger bumped from 1.10.0 to 1.11.0
+
 ## [Unreleased]
 
 
