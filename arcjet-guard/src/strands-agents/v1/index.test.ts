@@ -10,19 +10,19 @@ import {
 } from "../../../test/_shared/source-scan.ts";
 import * as agentsBarrel from "../../agents/index.ts";
 import * as v7Namespace from "../../vercel-ai/v7/index.ts";
-import * as claudeNamespace from "./index.ts";
+import * as strandsNamespace from "./index.ts";
 import type {
   ArcjetDenialResult,
-  ClaudeAgentContext,
   GuardHooksPolicy,
   GuardToolPolicy,
+  StrandsAgentContext,
 } from "./index.ts";
 
 function verifyTypeExports(): void {
   const toolPolicy: GuardToolPolicy<Record<string, unknown>> | undefined = undefined;
   const hooksPolicy: GuardHooksPolicy | undefined = undefined;
   const denialResult: ArcjetDenialResult | undefined = undefined;
-  const agentContext: ClaudeAgentContext | undefined = undefined;
+  const agentContext: StrandsAgentContext | undefined = undefined;
   void [toolPolicy, hooksPolicy, denialResult, agentContext];
 }
 
@@ -46,19 +46,19 @@ function objectField(
 }
 
 test("exports the three own helpers as functions", () => {
-  const ownExports = ["claudeAgentContext", "guardTool", "guardHooks"] as const;
+  const ownExports = ["strandsAgentContext", "guardTool", "guardHooks"] as const;
 
   for (const funcName of ownExports) {
-    const func = (claudeNamespace as Record<string, unknown>)[funcName];
+    const func = (strandsNamespace as Record<string, unknown>)[funcName];
     assert.equal(
       typeof func,
       "function",
-      `@arcjet/guard/claude-agent-sdk/v0 must export ${funcName} as a function`,
+      `@arcjet/guard/strands-agents/v1 must export ${funcName} as a function`,
     );
   }
 });
 
-test("claude namespace exports the agnostic helpers", () => {
+test("strands-agents namespace exports the agnostic helpers", () => {
   const requiredSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -68,12 +68,12 @@ test("claude namespace exports the agnostic helpers", () => {
   ] as const;
 
   for (const symbol of requiredSymbols) {
-    const value = (claudeNamespace as Record<string, unknown>)[symbol];
-    assert.ok(value !== undefined, `@arcjet/guard/claude-agent-sdk/v0 must export ${symbol}`);
+    const value = (strandsNamespace as Record<string, unknown>)[symbol];
+    assert.ok(value !== undefined, `@arcjet/guard/strands-agents/v1 must export ${symbol}`);
   }
 });
 
-test("agnostic exports have same identity across Claude and v7 namespaces", () => {
+test("agnostic exports have same identity across Strands and v7 namespaces", () => {
   const agnosticSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -84,28 +84,28 @@ test("agnostic exports have same identity across Claude and v7 namespaces", () =
   ] as const;
 
   for (const symbol of agnosticSymbols) {
-    const claudeValue = (claudeNamespace as Record<string, unknown>)[symbol];
+    const strandsValue = (strandsNamespace as Record<string, unknown>)[symbol];
     const v7Value = (v7Namespace as Record<string, unknown>)[symbol];
 
     assert.strictEqual(
-      claudeValue,
+      strandsValue,
       v7Value,
-      `${symbol} must be the same object identity from both @arcjet/guard/claude-agent-sdk/v0 and @arcjet/guard/vercel-ai/v7`,
+      `${symbol} must be the same object identity from both @arcjet/guard/strands-agents/v1 and @arcjet/guard/vercel-ai/v7`,
     );
   }
 });
 
-test("Claude namespace is a strict superset of the agents barrel with same identity", () => {
-  const claudeKeys = Object.keys(claudeNamespace);
+test("Strands namespace is a strict superset of the agents barrel with same identity", () => {
+  const strandsKeys = Object.keys(strandsNamespace);
   const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
     assert.ok(
-      claudeKeys.includes(key),
-      `agents barrel key "${key}" must be present in claude namespace`,
+      strandsKeys.includes(key),
+      `agents barrel key "${key}" must be present in strands-agents namespace`,
     );
     assert.strictEqual(
-      (claudeNamespace as Record<string, unknown>)[key],
+      (strandsNamespace as Record<string, unknown>)[key],
       (agentsBarrel as Record<string, unknown>)[key],
       `${key} must be the same object identity from both imports`,
     );
@@ -113,65 +113,68 @@ test("Claude namespace is a strict superset of the agents barrel with same ident
 
   const expectedAdditions = 3;
   assert.equal(
-    claudeKeys.length,
+    strandsKeys.length,
     agentKeys.length + expectedAdditions,
-    `claude namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
+    `strands-agents namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
   );
 
-  const claudeOnlyKeys = claudeKeys.filter((key) => !agentKeys.includes(key));
-  const ownExportsArray = ["claudeAgentContext", "guardHooks", "guardTool"];
+  const strandsOnlyKeys = strandsKeys.filter((key) => !agentKeys.includes(key));
+  const ownExportsArray = ["guardTool", "guardHooks", "strandsAgentContext"];
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
   const expectedOwnExports: readonly string[] = ownExportsArray.sort();
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
-  const sorted: readonly string[] = claudeOnlyKeys.sort();
+  const sorted: readonly string[] = strandsOnlyKeys.sort();
   assert.deepEqual(sorted, expectedOwnExports);
 });
 
-test("export map has no unversioned ./claude-agent-sdk and no wildcard subpaths", () => {
+test("export map has no unversioned ./strands-agents and no wildcard subpaths", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
 
   const exportKeys = Object.keys(exportsMap);
 
+  assert.ok(!exportKeys.includes("./strands-agents"), 'export map must not have "./strands-agents"');
   assert.ok(
-    !exportKeys.includes("./claude-agent-sdk"),
-    'export map must not have "./claude-agent-sdk"',
-  );
-  assert.ok(
-    exportKeys.includes("./claude-agent-sdk/v0"),
-    'export map must have "./claude-agent-sdk/v0"',
+    exportKeys.includes("./strands-agents/v1"),
+    'export map must have "./strands-agents/v1"',
   );
 
   for (const key of exportKeys) {
-    if (key.startsWith("./claude-agent-sdk/")) {
+    if (key.startsWith("./strands-agents/")) {
       assert.equal(
         key,
-        "./claude-agent-sdk/v0",
-        `export map must not have wildcard claude-agent-sdk subpaths; found "${key}"`,
+        "./strands-agents/v1",
+        `export map must not have wildcard strands-agents subpaths; found "${key}"`,
       );
     }
   }
 });
 
-test("does not export Eve-only or Mastra-only APIs onto the Claude namespace", () => {
+test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only APIs", () => {
   const forbidden = [
     "eveAgentContext",
+    "mastraAgentContext",
+    "claudeAgentContext",
+    "langgraphAgentContext",
+    "langchainContext",
+    "openaiAgentsContext",
+    "genkitContext",
     "guardInbound",
     "guardApproval",
+    "guardInterrupt",
+    "guardToolNode",
+    "guardMiddleware",
+    "guardProcessor",
     "arcjetHooks",
     "guardConnection",
-    "mastraAgentContext",
-    "strandsAgentContext",
-    "guardProcessor",
-    "canUseTool",
     "guardCanUseTool",
   ];
   for (const key of forbidden) {
     assert.equal(
-      (claudeNamespace as Record<string, unknown>)[key],
+      (strandsNamespace as Record<string, unknown>)[key],
       undefined,
-      `claude namespace must not export "${key}"`,
+      `strands-agents namespace must not export "${key}"`,
     );
   }
 });

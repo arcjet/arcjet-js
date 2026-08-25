@@ -1441,6 +1441,96 @@ The tool wrapper and middleware hook see `options.context` /
 Never mint. Never use `traceId`. Never treat `interrupt` / `resumed` as
 correlation.
 
+- **`@arcjet/guard/strands-agents/v1`** — Strands Agents JS
+  `@strands-agents/sdk` `Agent` + `tool({ callback })` + Plugin /
+  `addHook` integration. Exports `guardTool`, `guardHooks`, and
+  `strandsAgentContext`. This is **not** the Python SDK. There is no
+  `guardInbound` (screen before `invoke()` / `stream()`), no
+  `guardApproval` / `guardInterrupt` (`event.interrupt()` is human HITL,
+  not policy). Do not also wrap the same tool with
+  `@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/langgraph/v1`.
+
+  On DENY a guarded tool does not run and does not throw: it returns a
+  plain `ArcjetDenialResult` from the authored `callback`.
+  `FunctionTool` wraps that object in a `JsonBlock`. This helper does
+  not fabricate a `ToolResultBlock`. `guardHooks` is the invoke-wide
+  gate for MCP / unwrapped / vended tools:
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardTool, guardHooks, strandsAgentContext } from "@arcjet/guard/strands-agents/v1";
+  import { Agent, tool } from "@strands-agents/sdk";
+  import { z } from "zod";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const lookupOrder = guardTool(
+    arcjet,
+    tool({
+      name: "lookup_order",
+      description: "Look up an order",
+      inputSchema: z.object({ orderNumber: z.string() }),
+      callback: async ({ orderNumber }) => ({ orderNumber, status: "shipped" }),
+    }),
+    {
+      action: "order.looked-up",
+      onGuardError: "deny",
+      rules: (input) => [limit({ key: input.orderNumber, requested: 1 })],
+    },
+  );
+
+  const invocationState = { sessionId: conversationId };
+  const inbound = detectPromptInjection();
+  const decision = await arcjet.guard({
+    label: "message.received",
+    rules: [inbound(userText)],
+    ...strandsAgentContext({ invocationState }),
+  });
+
+  if (decision.conclusion === "DENY") {
+    throw new Error("message blocked");
+  }
+  const agent = new Agent({
+    tools: [lookupOrder],
+    plugins: [guardHooks(arcjet, { sessionId: conversationId })],
+  });
+  await agent.invoke(userText, { invocationState });
+  ```
+
+#### Screen inbound before `invoke()` / `stream()` — there is no inbound hook.
+
+Strands Agents has no first-class inbound channel, so there is no
+`guardInbound`. Put prompt-injection (and other inbound rules) in the
+application before `agent.invoke()` / `stream()`. Middleware / model
+hooks are not this policy gate.
+
+#### `interrupt()` is not a policy gate.
+
+`event.interrupt()` is human-in-the-loop, not policy. Same trap as
+Mastra `requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`,
+OpenAI Agents `needsApproval`, and LangChain
+`humanInTheLoopMiddleware`. There is no `guardApproval` /
+`guardInterrupt`.
+
+#### Deny with `BeforeToolCallEvent.cancel` (and `guardTool` on authored callbacks). `BeforeToolsEvent.cancel` skips per-tool hooks — do not use it.
+
+The authored `callback` is the deny point for tools you own. MCP,
+vended tools, and anything not wrapped with `guardTool` skip that
+callback. `guardHooks` is the invoke-wide gate for those. Official:
+set `event.cancel` to a string; `tool.stream()` does not run;
+`AfterToolCallEvent` still fires. Do not use `BeforeToolsEvent.cancel`
+— a truthy value skips `_toolExecutor.execute()`, so per-tool hooks
+never run.
+
+Correlation is a field the integrator puts on `invocationState`
+(`correlationId`, then `sessionId`, then `requestId`). Never mint.
+Never read `traceId`. Never use `SessionManager` or `agent.id`.
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -1501,6 +1591,11 @@ importing only core guards are not forced to install unneeded packages:
   only to use `@arcjet/guard/genkit/v1`). The peer range is `>=1.0.0 <2`.
   Zod is Genkit's, not ours. `guardMiddleware` needs the
   `generateMiddleware` `tool` hook (Genkit >= 1.33).
+- **`@arcjet/guard/strands-agents/v1`** requires `@strands-agents/sdk`
+  (optional peer, installed only to use `@arcjet/guard/strands-agents/v1`).
+  The peer range is `>=1.1.0 <2`. The floor is 1.1.0 because `HookOrder`
+  - `interrupt()` shipped then; `cancel` itself is 1.0.0. Zod is their
+    peer, not ours.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -1551,6 +1646,11 @@ pnpm install genkit
 ```
 
 ```sh
+# @arcjet/guard/strands-agents/v1
+pnpm install @strands-agents/sdk
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1565,8 +1665,9 @@ is one path to learn and no layering to reason about.
 `@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`,
 `@arcjet/guard/mastra/v1`, `@arcjet/guard/claude-agent-sdk/v0`,
 `@arcjet/guard/langchain/v1`, `@arcjet/guard/langgraph/v1`,
-`@arcjet/guard/openai-agents/v0`, and
-`@arcjet/guard/genkit/v1` now export
+`@arcjet/guard/openai-agents/v0`,
+`@arcjet/guard/genkit/v1`, and
+`@arcjet/guard/strands-agents/v1` now export
 these helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
 agnostic layer without installing a vendor peer. That change is a follow-up
@@ -1581,17 +1682,18 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 > actions that are assumed to be sensitive. The core client reports degraded
 > evaluation via `hasFailedOpen()`; the helpers decide to block on it.
 
-| API                                     | Default on Arcjet outage                    | How to flip                        |
-| --------------------------------------- | ------------------------------------------- | ---------------------------------- |
-| `guard()` (core)                        | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
-| `guardTool` / `guardAction`             | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Eve `guardInbound` / `guardApproval`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Mastra `guardProcessor` / `guardHooks`  | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Claude `guardTool` / `guardHooks`       | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| LangGraph `guardTool` / `guardToolNode` | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| LangChain `guardTool` / `guardMiddleware` | Deny (fail closed)                        | `onGuardError: "allow"`            |
-| OpenAI Agents `guardTool`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Genkit `guardTool` / `guardMiddleware`  | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| API                                       | Default on Arcjet outage                    | How to flip                        |
+| ----------------------------------------- | ------------------------------------------- | ---------------------------------- |
+| `guard()` (core)                          | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
+| `guardTool` / `guardAction`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Eve `guardInbound` / `guardApproval`      | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Mastra `guardProcessor` / `guardHooks`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Claude `guardTool` / `guardHooks`         | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| LangGraph `guardTool` / `guardToolNode`   | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| LangChain `guardTool` / `guardMiddleware` | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| OpenAI Agents `guardTool`                 | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Genkit `guardTool` / `guardMiddleware`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Strands Agents `guardTool` / `guardHooks` | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1857,14 +1959,14 @@ sees the same shape regardless of which integration is in use. The _envelope_
 is per-framework, because each SDK has a different idiomatic way to report
 that a tool did not run:
 
-| Adapter          | Idiomatic envelope                                                                                  | Why not the others                                                                           |
-| ---------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| AI SDK / Mastra  | Return `{ arcjetDenied: true, … }` as the tool result                                               | A throw becomes a generic tool error and drops the fields                                    |
-| OpenAI Agents    | Return `{ arcjetDenied: true, … }` from `invoke`                                                    | A throw hits `errorFunction` or `ToolCallError` and can kill the run                         |
-| LangGraph        | Return `{ arcjetDenied: true, … }`; `ToolNode` wraps it as a `ToolMessage` with `status: "success"` | Faking a `ToolMessage` to force `status: "error"` crashes the graph reducer                  |
+| Adapter          | Idiomatic envelope                                                                                                                                                                                                      | Why not the others                                                                                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI SDK / Mastra  | Return `{ arcjetDenied: true, … }` as the tool result                                                                                                                                                                   | A throw becomes a generic tool error and drops the fields                                                                                            |
+| OpenAI Agents    | Return `{ arcjetDenied: true, … }` from `invoke`                                                                                                                                                                        | A throw hits `errorFunction` or `ToolCallError` and can kill the run                                                                                 |
+| LangGraph        | Return `{ arcjetDenied: true, … }`; `ToolNode` wraps it as a `ToolMessage` with `status: "success"`                                                                                                                     | Faking a `ToolMessage` to force `status: "error"` crashes the graph reducer                                                                          |
 | LangChain        | Two envelopes: `guardTool` returns `{ arcjetDenied: true, … }` and `baseHandler` wraps it as a success `ToolMessage`; `guardMiddleware`'s `wrapToolCall` returns a real `ToolMessage` carrying the payload as `content` | `wrapToolCall`'s return skips `baseHandler`, so a bare object crashes the messages reducer, and a throw bubbles out of `invoke` and drops the fields |
-| Claude Agent SDK | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                    | A throw is a raw exception; omitting `isError` looks like success                            |
-| Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                     | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema` |
+| Claude Agent SDK | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                                                                                                                                        | A throw is a raw exception; omitting `isError` looks like success                                                                                    |
+| Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                                                                                                                                         | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`                                                         |
 
 ```ts
 const result: ArcjetDenialResult = {
@@ -1968,6 +2070,8 @@ For an example with OpenAI Agents, see [`openai-agent`](https://github.com/arcje
 
 For an example with Genkit, see [`genkit-agent`](https://github.com/arcjet/examples/tree/main/examples/genkit-agent) (follow-up on that same PR): inbound screening before `generate()`, `guardTool` / `guardMiddleware` (deny, PII on args, rate limit, fail-closed), and a caller-owned id on `generate({ context })`. `interrupt()` / `defineInterrupt` / `toolApproval` is HITL, not a policy gate; the `defineTool` handler and `guardMiddleware`'s `tool` hook are the deny points.
 
+For an example with Strands Agents, see [`strands-agent`](https://github.com/arcjet/examples/tree/main/examples/strands-agent) (follow-up on that same PR): inbound screening before `invoke()` / `stream()`, `guardTool` / `guardHooks` (deny, PII on args, rate limit, fail-closed), and a caller-owned id on `invocationState`. `interrupt()` is HITL, not a policy gate; `BeforeToolCallEvent.cancel` is the deny point for unwrapped tools. Docs slug: [`/guards/strands-agents/`](https://docs.arcjet.com/guards/strands-agents/).
+
 ## Agent skill
 
 For integration help in Claude Code or other AI coding agents, a skill file per integration is packaged with `@arcjet/guard`:
@@ -2053,6 +2157,16 @@ ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-genkit ~
 ```
 
 In Claude Code, use `/integrate-arcjet-guard-genkit` to start an integration session.
+
+**For Strands Agents:**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-strands-agents ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-strands-agents ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-strands-agents` to start an integration session.
 
 Each skill guides you through wrapping tools, screening inbound messages, and recording lifecycle events joined by correlation ID.
 

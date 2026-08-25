@@ -100,6 +100,10 @@
       "types": "./dist/genkit/v1/index.d.ts",
       "import": "./dist/genkit/v1/index.js"
     },
+    "./strands-agents/v1": {
+      "types": "./dist/strands-agents/v1/index.d.ts",
+      "import": "./dist/strands-agents/v1/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -112,7 +116,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/langchain/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts'",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/langchain/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts' 'test/strands-agents/**/*.test.ts'",
     "test-peers-absent": "node scripts/test-peers-absent.mjs",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
@@ -135,6 +139,7 @@
     "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.59.0",
     "@openai/agents": "0.17.0",
+    "@strands-agents/sdk": "1.14.0",
     "@types/node": "22.20.1",
     "ai": "7.0.58",
     "eve": "0.39.0",
@@ -152,6 +157,7 @@
     "@langchain/langgraph": ">=1 <2",
     "@mastra/core": ">=1 <2",
     "@openai/agents": ">=0.17.0 <1",
+    "@strands-agents/sdk": ">=1.1.0 <2",
     "ai": ">=7 <8",
     "eve": ">=0.34.0 <1",
     "genkit": ">=1.0.0 <2",
@@ -186,6 +192,9 @@
       "optional": true
     },
     "genkit": {
+      "optional": true
+    },
+    "@strands-agents/sdk": {
       "optional": true
     }
   },

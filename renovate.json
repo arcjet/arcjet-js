@@ -83,6 +83,13 @@
       "allowedVersions": "<2"
     },
     {
+      "description": "Never automerge @strands-agents/sdk majors. `@arcjet/guard/strands-agents/v1` types against tool({ callback }), FunctionTool / ZodTool `_callback`, Plugin / addHook, BeforeToolCallEvent.cancel, and HookOrder. A green typecheck is necessary but not sufficient: the namespace also depends on addHook keying the registry by constructor identity, on ZodTool.stream() delegating to `_functionTool._callback` (closed over at construction), and on BeforeToolsEvent.cancel skipping per-tool hooks — runtime contracts a typecheck cannot see. The floor is 1.1.0 because HookOrder + interrupt() shipped then. Keep the range on 1.x; strands-agents/v2 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@strands-agents/sdk"],
+      "automerge": false,
+      "allowedVersions": "<2"
+    },
+    {
       "description": "Never automerge @openai/agents. It is pre-1.0, so a minor release may break. `@arcjet/guard/openai-agents/v0` types against FunctionTool, tool({ execute }), RunContext, and run() / Runner. A green typecheck is necessary but not sufficient. Keep the range below 1.0; openai-agents/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["@openai/agents"],
