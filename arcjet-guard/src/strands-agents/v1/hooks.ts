@@ -127,9 +127,7 @@ async function loadStrandsHooks(): Promise<StrandsHookSdk> {
     sdk = await import("@strands-agents/sdk");
   } catch (error) {
     const code =
-      error !== null && typeof error === "object" && "code" in error
-        ? (error as { code: unknown }).code
-        : undefined;
+      error !== null && typeof error === "object" && "code" in error ? error.code : undefined;
     if (code === "ERR_MODULE_NOT_FOUND") {
       // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
       throw new Error(
