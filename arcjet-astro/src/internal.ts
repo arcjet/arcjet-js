@@ -30,7 +30,7 @@ import {
 } from "astro:env/server";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.10.0"; // x-release-please-version
+const VERSION = "1.11.0"; // x-release-please-version
 
 let warnedForAutomaticBodyRead = false;
 

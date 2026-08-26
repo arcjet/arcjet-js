@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/stable-hash-v1.11.0) (2026-08-25)
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/stable-hash-v1.10.0) (2026-08-11)
 
 
