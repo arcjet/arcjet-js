@@ -2,7 +2,24 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { ApprovalContext, ApprovalResponseContext, ApprovalResponsePolicy } from "eve/tools";
+import type { Approval, ApprovalContext } from "eve/tools/approval";
+
+// Eve 0.34's `eve/tools/approval` only exports Approval, ApprovalContext, and
+// ApprovalStatus. Derive the response-time names the same way production does.
+type ApprovalPolicy<TInput = Record<string, unknown>> = Extract<
+  Approval<TInput>,
+  (ctx: ApprovalContext<TInput>) => unknown
+>;
+type ApprovalConfiguration<TInput = Record<string, unknown>> = Exclude<
+  Approval<TInput>,
+  ApprovalPolicy<TInput>
+>;
+type ApprovalResponsePolicy<TInput = Record<string, unknown>> = NonNullable<
+  ApprovalConfiguration<TInput>["response"]
+>;
+type ApprovalResponseContext<TInput = Record<string, unknown>> = Parameters<
+  ApprovalResponsePolicy<TInput>
+>[0];
 
 import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
