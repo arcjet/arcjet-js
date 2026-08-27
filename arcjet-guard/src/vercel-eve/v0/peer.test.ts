@@ -64,22 +64,32 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
 });
 
 test("production Approval imports stay on names eve/tools/approval has exported since 0.34", () => {
-  const source = readFileSync(resolve(import.meta.dirname, "./guard-approval.ts"), "utf-8");
-  const importMatch = source.match(/import type \{([^}]+)\} from "eve\/tools\/approval"/);
-  assert.ok(importMatch, "guard-approval.ts must import types from eve/tools/approval");
-  const names = importMatch[1]
+  const source = readFileSync(resolve(import.meta.dirname, "./approval-types.ts"), "utf-8");
+  const specifier = 'from "eve/tools/approval"';
+  const fromIndex = source.indexOf(specifier);
+  assert.ok(fromIndex !== -1, "approval-types.ts must import types from eve/tools/approval");
+  const before = source.slice(0, fromIndex);
+  const open = before.lastIndexOf("{");
+  const close = before.lastIndexOf("}");
+  assert.ok(
+    open !== -1 && close > open,
+    "import from eve/tools/approval must be a named type import",
+  );
+  const names = before
+    .slice(open + 1, close)
     .split(",")
     .map((name) => name.trim())
-    .filter((name) => name.length > 0)
-    .toSorted();
+    .filter((name) => name.length > 0);
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint's type-aware checker has no signature for Array#toSorted, which unicorn/no-array-sort requires
+  const sortedNames = names.toSorted();
   assert.deepEqual(
-    names,
+    sortedNames,
     ["Approval", "ApprovalContext", "ApprovalStatus"],
     "only import Approval names that eve/tools/approval exported in 0.34; derive the rest",
   );
   assert.equal(
-    source.includes('from "eve/tools"'),
+    /from ["']eve\/tools["']/.test(source),
     false,
-    "guard-approval.ts must not import Approval types from the eve/tools barrel",
+    "approval-types.ts must not import Approval types from the eve/tools barrel",
   );
 });
