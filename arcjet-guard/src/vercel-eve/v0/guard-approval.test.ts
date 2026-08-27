@@ -2,8 +2,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { ApprovalContext, ApprovalResponseContext, ApprovalResponsePolicy } from "eve/tools";
-
 import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
   decisionAllow,
@@ -15,6 +13,11 @@ import {
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
 import type { DecisionDeny } from "../../types.ts";
+import type {
+  ApprovalContext,
+  ApprovalResponseContext,
+  ApprovalResponsePolicy,
+} from "./approval-types.ts";
 import { eveAgentContext } from "./context.ts";
 import { guardApproval } from "./guard-approval.ts";
 

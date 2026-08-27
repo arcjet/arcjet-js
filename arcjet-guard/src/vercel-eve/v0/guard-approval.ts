@@ -1,4 +1,10 @@
 import type { SessionContext } from "eve/context";
+
+import { captureEvent, shouldWarn } from "../../agents/capture.ts";
+import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
+import type { OnGuardError } from "../../agents/guard-action.ts";
+import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import type {
   Approval,
   ApprovalConfiguration,
@@ -8,14 +14,8 @@ import type {
   ApprovalResponseDecision,
   ApprovalResponsePolicy,
   ApprovalStatus,
-} from "eve/tools";
-
-import { captureEvent, shouldWarn } from "../../agents/capture.ts";
-import type { ArcjetAgentClient } from "../../agents/capture.ts";
-import type { OnGuardError } from "../../agents/guard-action.ts";
-import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+} from "./approval-types.ts";
 import { eveAgentContext } from "./context.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
