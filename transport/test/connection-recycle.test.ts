@@ -12,13 +12,13 @@ import { create } from "@bufbuild/protobuf";
 import { Code, ConnectError, createClient, createRouterTransport } from "@connectrpc/connect";
 import type { Client } from "@connectrpc/connect";
 
-import { DecideService, GuardResponseSchema } from "./proto/proto/decide/v2/decide_pb.js";
-import type { GuardResponse } from "./proto/proto/decide/v2/decide_pb.js";
 import {
   withConnectionRecycling,
   RECYCLE_AFTER_CONSECUTIVE_DEADLINES,
-} from "./transport-recycle.ts";
-import type { RecyclableSession } from "./transport-recycle.ts";
+} from "../src/connection-recycle.ts";
+import type { RecyclableSession } from "../src/connection-recycle.ts";
+import { ElizaService, SayResponseSchema } from "./eliza_pb.ts";
+import type { SayResponse } from "./eliza_pb.ts";
 
 /** Per-call outcome for the scripted inner transport. */
 type Outcome = "ok" | "deadline" | "canceled" | "internal";
@@ -40,13 +40,13 @@ function fakeSession(): RecyclableSession & { aborts: number; connects: number }
 
 /** Build a client whose calls play back `outcomes` in order, then a session spy. */
 function scriptedClient(outcomes: Outcome[]): {
-  client: Client<typeof DecideService>;
+  client: Client<typeof ElizaService>;
   session: ReturnType<typeof fakeSession>;
 } {
   let call = 0;
   const inner = createRouterTransport(({ service }) => {
-    service(DecideService, {
-      guard() {
+    service(ElizaService, {
+      say() {
         const outcome = outcomes[call] ?? "ok";
         call += 1;
         switch (outcome) {
@@ -57,19 +57,19 @@ function scriptedClient(outcomes: Outcome[]): {
           case "internal":
             throw new ConnectError("internal", Code.Internal);
           case "ok":
-            return create(GuardResponseSchema, {});
+            return create(SayResponseSchema, { sentence: "ok" });
         }
       },
     });
   });
   const session = fakeSession();
-  const client = createClient(DecideService, withConnectionRecycling(inner, session));
+  const client = createClient(ElizaService, withConnectionRecycling(inner, session));
   return { client, session };
 }
 
-/** Call `guard` and swallow the expected rejection. */
-async function callIgnoringError(client: Client<typeof DecideService>): Promise<void> {
-  await client.guard({}).catch(() => {});
+/** Call `say` and swallow the expected rejection. */
+async function callIgnoringError(client: Client<typeof ElizaService>): Promise<void> {
+  await client.say({ sentence: "hi" }).catch(() => {});
 }
 
 describe("withConnectionRecycling", () => {
@@ -151,15 +151,15 @@ describe("withConnectionRecycling", () => {
       release = resolve;
     });
     const inner = createRouterTransport(({ service }) => {
-      service(DecideService, {
-        async guard(): Promise<never> {
+      service(ElizaService, {
+        async say(): Promise<never> {
           await gate;
           throw new ConnectError("deadline", Code.DeadlineExceeded);
         },
       });
     });
     const session = fakeSession();
-    const client = createClient(DecideService, withConnectionRecycling(inner, session));
+    const client = createClient(ElizaService, withConnectionRecycling(inner, session));
 
     const calls: Promise<void>[] = [];
     for (let index = 0; index < RECYCLE_AFTER_CONSECUTIVE_DEADLINES * 2; index++) {
@@ -182,20 +182,20 @@ describe("withConnectionRecycling", () => {
     });
     let call = 0;
     const inner = createRouterTransport(({ service }) => {
-      service(DecideService, {
-        async guard(): Promise<GuardResponse> {
+      service(ElizaService, {
+        async say(): Promise<SayResponse> {
           if (call++ === 0) {
             await firstGate;
-            return create(GuardResponseSchema, {});
+            return create(SayResponseSchema, { sentence: "ok" });
           }
           throw new ConnectError("deadline", Code.DeadlineExceeded);
         },
       });
     });
     const session = fakeSession();
-    const client = createClient(DecideService, withConnectionRecycling(inner, session));
+    const client = createClient(ElizaService, withConnectionRecycling(inner, session));
 
-    const held = client.guard({});
+    const held = client.say({ sentence: "hi" });
     for (let index = 0; index < RECYCLE_AFTER_CONSECUTIVE_DEADLINES; index++) {
       await callIgnoringError(client);
     }
@@ -219,10 +219,10 @@ describe("withConnectionRecycling", () => {
   test("responses and errors pass through unchanged", async () => {
     const { client } = scriptedClient(["ok", "deadline"]);
 
-    await client.guard({});
+    await client.say({ sentence: "hi" });
 
     await assert.rejects(
-      () => client.guard({}),
+      () => client.say({ sentence: "hi" }),
       (error: unknown) => ConnectError.from(error).code === Code.DeadlineExceeded,
     );
   });

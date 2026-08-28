@@ -53,6 +53,10 @@
         "default": "./dist/index.js"
       }
     },
+    "./http2": {
+      "types": "./dist/http2.d.ts",
+      "default": "./dist/http2.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
