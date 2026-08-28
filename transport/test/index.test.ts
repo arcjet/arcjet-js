@@ -87,6 +87,12 @@ test("@arcjet/transport", async function (t) {
     assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), ["createTransport"]);
   });
 
+  await t.test("should expose the shared HTTP/2 factory", async function () {
+    assert.deepEqual(Object.keys(await import("../dist/http2.js")).sort(), [
+      "createHttp2Transport",
+    ]);
+  });
+
   await t.test("should throw w/o `url`", async function () {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.
