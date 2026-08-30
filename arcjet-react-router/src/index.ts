@@ -349,25 +349,16 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   ipSrc?: string,
 ): ArcjetRequest<Properties> {
   const headers = new ArcjetHeaders(details.request.headers);
-  let applicationIp: string | undefined = ipSrc || undefined;
 
   // Get the IP from non-middleware context (no `future.v8_middleware` flag).
   // Users *themselves* must provide this `ip` field if they use a particular
   // adapter.
-  if (
-    !applicationIp &&
-    details.context &&
-    typeof details.context === "object" &&
-    "ip" in details.context &&
-    typeof details.context.ip === "string"
-  ) {
-    applicationIp = details.context.ip;
-  }
+  const contextIp = (details.context as { ip?: unknown } | null | undefined)?.ip;
   const ipDetails = resolveClientIp(
-    { headers },
+    { headers, ip: typeof contextIp === "string" ? contextIp : undefined },
     {
       development: isDevelopment(process.env),
-      ipSrc: applicationIp,
+      ipSrc,
       platform: platform(process.env),
       proxies: state.proxies,
     },

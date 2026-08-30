@@ -51,4 +51,22 @@ test("explicit ipSrc overrides React Router context.ip and is stripped", async f
     { ipSrc: "" },
   );
   assert.equal(details.ip, "8.8.4.4");
+
+  await client.protect({
+    context: { ip: "application-context:not-an-ip" },
+    request: new Request("https://example.com/", {
+      headers: { "x-forwarded-for": "1.1.1.1" },
+    }),
+  });
+  assert.equal(details.ip, "1.1.1.1");
+
+  for (const context of [undefined, "not-an-object", {}]) {
+    await client.protect({
+      context: context as any,
+      request: new Request("https://example.com/", {
+        headers: { "x-forwarded-for": "9.9.9.9" },
+      }),
+    });
+    assert.equal(details.ip, "9.9.9.9");
+  }
 });

@@ -286,9 +286,10 @@ export function parseProxy(value: string): string | Cidr {
  * Parse a list of trusted proxies.
  *
  * CIDR range strings are parsed to {@linkcode Cidr} (so they match by range);
- * plain IP strings and {@linkcode ProxyService} objects (such as those created
- * by {@linkcode cloudflare}) are passed through unchanged. Use this to
- * normalize the `proxies` option before handing it to {@linkcode findIp}.
+ * plain IP strings are passed through unchanged. {@linkcode ProxyService}
+ * objects (such as those created by {@linkcode cloudflare}) are shallow-cloned
+ * with parsed ranges. Use this to normalize the `proxies` option before handing
+ * it to {@linkcode findIp}.
  *
  * @param proxies
  *   Trusted proxies to parse.
@@ -302,10 +303,12 @@ export function parseProxies(
     if (typeof proxy === "string") {
       return parseProxy(proxy);
     }
-    for (const range of proxy.ranges) {
-      if (typeof range === "string") parseProxy(range);
-    }
-    return proxy;
+    return {
+      ...proxy,
+      // Parse service ranges once here so validation, trust-all detection, and
+      // request-time matching reuse the same immutable CIDR objects.
+      ranges: proxy.ranges.map((range) => (typeof range === "string" ? parseProxy(range) : range)),
+    };
   });
 }
 
@@ -333,9 +336,9 @@ export function hasTrustAllProxy(proxies: ReadonlyArray<string | Cidr | ProxySer
 /**
  * Check whether a value is a syntactically valid IPv4 or IPv6 address.
  */
-export function isValidIp(value: unknown): value is string {
+function parseIp(value: unknown): Ipv4Tuple | Ipv6Tuple | undefined {
   if (typeof value !== "string" || value === "") {
-    return false;
+    return undefined;
   }
   const ipv4 = new Parser(value);
   const octets = ipv4.readIpv4Address();
@@ -344,10 +347,15 @@ export function isValidIp(value: unknown): value is string {
     ipv4.state.length === 0 &&
     octets.every((part) => part >= 0 && part <= 255)
   ) {
-    return true;
+    return octets;
   }
   const ipv6 = new Parser(value);
-  return isIpv6Tuple(ipv6.readIpv6Address()) && ipv6.state.length === 0;
+  const segments = ipv6.readIpv6Address();
+  return isIpv6Tuple(segments) && ipv6.state.length === 0 ? segments : undefined;
+}
+
+export function isValidIp(value: unknown): value is string {
+  return typeof parseIp(value) !== "undefined";
 }
 
 function isIpv4Tuple(segements?: ArrayLike<number>): segements is Ipv4Tuple {
@@ -997,11 +1005,24 @@ export interface Options {
 
 /** Options for framework integrations resolving a client IP. */
 export interface ResolveOptions extends Options {
+  /**
+   * Independently trusted client IP supplied by the application.
+   *
+   * A non-empty malformed value throws. An empty string means "not supplied"
+   * for compatibility and automatic detection continues.
+   */
   ipSrc?: string | null | undefined;
+  /** Enable the `X-Arcjet-Ip` override and loopback fallback for development. */
   development?: boolean | null | undefined;
 }
 
-/** Where Arcjet obtained a client IP address. */
+/**
+ * Where Arcjet obtained a client IP address.
+ *
+ * `unverified-header` means a forwarding header was used without a trusted
+ * direct peer. `verified` in {@linkcode ClientIpDetails} describes that source
+ * relationship; it does not certify the surrounding network configuration.
+ */
 export type ClientIpProvenance =
   | "direct"
   | "platform"
@@ -1014,9 +1035,13 @@ export type ClientIpProvenance =
 
 /** Debug information about Arcjet's client IP selection. */
 export interface ClientIpDetails {
+  /** Selected IPv4/IPv6 address, or an empty string when none was found. */
   ip: string;
+  /** Where Arcjet obtained `ip`. */
   provenance: ClientIpProvenance;
+  /** Whether the SDK tied the source to a direct request or trusted path. */
   verified: boolean;
+  /** Lowercase source header when a header supplied `ip`. */
   header?: string | undefined;
 }
 
@@ -1026,7 +1051,19 @@ export interface ClientIpLogger {
   warn(facets: Record<string, unknown>, message: string): void;
 }
 
-/** Create a per-client provenance logger with a coalesced fallback warning. */
+/**
+ * Create a provenance reporter for one Arcjet client instance.
+ *
+ * Every call emits debug facets. The first `unverified-header` result emits one
+ * warning for the lifetime of this reporter; later results still emit debug
+ * data.
+ *
+ * @example
+ * ```ts
+ * const report = createClientIpDiagnostics(log);
+ * report(findIpDetails(request));
+ * ```
+ */
 export function createClientIpDiagnostics(log: ClientIpLogger) {
   let warnedForUnverifiedHeader = false;
   return function reportClientIp(details: ClientIpDetails): void {
@@ -1068,14 +1105,11 @@ function configuredProxyMatches(
   proxies: ReadonlyArray<string | Cidr>,
   services: ReadonlyArray<ProxyService>,
 ): boolean {
-  if (typeof candidate !== "string" || !isValidIp(candidate)) {
+  if (typeof candidate !== "string") {
     return false;
   }
-  const parser = new Parser(candidate);
-  const ipv4 = parser.readIpv4Address();
-  const segments = (isIpv4Tuple(ipv4) ? ipv4 : new Parser(candidate).readIpv6Address()) as
-    | Ipv4Tuple
-    | Ipv6Tuple;
+  const segments = parseIp(candidate);
+  if (!segments) return false;
   if (isTrustedProxy(candidate, Array.from(segments), proxies)) {
     return true;
   }
@@ -1123,7 +1157,20 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 /**
- * Find a client IP address on a request-like object.
+ * Find a client IP address and explain its provenance.
+ *
+ * This function is side-effect-free: it does not log or send a decision. When
+ * no platform is selected and only a forwarding header supplies an address,
+ * the result uses `provenance: "unverified-header"` and `verified: false`.
+ *
+ * @example
+ * ```ts
+ * const details = findIpDetails(
+ *   { headers: request.headers, socket: request.socket },
+ *   { proxies: ["10.0.0.0/8"] },
+ * );
+ * console.log(details.ip, details.provenance, details.verified, details.header);
+ * ```
  *
  * @param request
  *   Request-like object.
@@ -1162,10 +1209,11 @@ export function findIpDetails(
     }
   }
 
-  const directPeerTrusted =
-    configuredProxyMatches(request.ip, proxies, services) ||
-    configuredProxyMatches(request.socket?.remoteAddress, proxies, services) ||
-    configuredProxyMatches(request.info?.remoteAddress, proxies, services);
+  // A framework's `request.ip` may already be derived from forwarding headers.
+  // Prefer transport-level peer fields when present so a spoofed request value
+  // cannot upgrade another forwarding header to `trusted-proxy` provenance.
+  const directPeer = request.socket?.remoteAddress ?? request.info?.remoteAddress ?? request.ip;
+  const directPeerTrusted = configuredProxyMatches(directPeer, proxies, services);
   const forwardingProvenance: ClientIpProvenance = directPeerTrusted
     ? "trusted-proxy"
     : "unverified-header";
@@ -1527,7 +1575,24 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
   return findIpDetails(request, options).ip;
 }
 
-/** Resolve a client IP including manual and development-mode overrides. */
+/**
+ * Resolve a client IP including manual and development-mode overrides.
+ *
+ * `ipSrc` has highest precedence. A non-empty malformed value throws; an empty
+ * string preserves the legacy "not supplied" behavior. This function does not
+ * log or send a decision.
+ *
+ * @example
+ * ```ts
+ * const details = resolveClientIp(
+ *   { headers: request.headers, socket: request.socket },
+ *   { ipSrc: trustedClientIp, proxies: ["10.0.0.0/8"] },
+ * );
+ * ```
+ *
+ * @throws {Error}
+ *   If a non-empty `ipSrc` is not a valid IPv4 or IPv6 address.
+ */
 export function resolveClientIp(
   request: RequestLike,
   options?: ResolveOptions | null | undefined,

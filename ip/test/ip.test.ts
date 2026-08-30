@@ -216,6 +216,24 @@ test("client IP details", () => {
   assert.deepEqual(
     findIpDetails(
       {
+        // A framework-level request IP may itself come from X-Forwarded-For.
+        // It must not override the transport peer when establishing trust.
+        ip: "10.0.0.1",
+        socket: { remoteAddress: "192.168.0.1" },
+        headers: new Headers([["x-forwarded-for", "1.1.1.1"]]),
+      },
+      { proxies: ["10.0.0.0/8"] },
+    ),
+    {
+      ip: "1.1.1.1",
+      provenance: "unverified-header",
+      verified: false,
+      header: "x-forwarded-for",
+    },
+  );
+  assert.deepEqual(
+    findIpDetails(
+      {
         ip: "10.0.0.1",
         headers: new Headers([["x-forwarded-for", "1.1.1.1"]]),
       },
@@ -271,6 +289,21 @@ test("client IP details", () => {
   assert.equal(isValidIp(1234), false);
   assert.equal(isValidIp("999.0.0.1"), false);
   assert.equal(isValidIp("not-an-ip"), false);
+
+  for (const [platform, header] of [
+    ["cloudflare", "cf-connecting-ip"],
+    ["firebase", "x-fah-client-ip"],
+    ["fly-io", "fly-client-ip"],
+    ["render", "true-client-ip"],
+    ["vercel", "x-real-ip"],
+  ] as const) {
+    assert.deepEqual(findIpDetails({ headers: new Headers([[header, "1.1.1.1"]]) }, { platform }), {
+      ip: "1.1.1.1",
+      provenance: "platform",
+      verified: true,
+      header,
+    });
+  }
 
   assert.deepEqual(
     resolveClientIp({ headers: new Headers([["x-arcjet-ip", "10.0.0.1"]]) }, { development: true }),
@@ -334,15 +367,22 @@ test("client IP diagnostics", () => {
 });
 
 test("`parseProxies`", async (t) => {
-  await t.test("parses CIDR strings while passing through IPs and services", () => {
-    const service = cloudflare();
+  await t.test("parses CIDR strings in top-level and service ranges", () => {
+    const service = {
+      kind: "service" as const,
+      name: "mixed-ranges",
+      ranges: ["8.8.8.0/24", parseProxy("2606:4700::/32")],
+      clientIp: [{ header: "x-client-ip", format: "ip" as const }],
+    };
     const result = parseProxies(["1.2.3.0/24", "1.2.3.4", service]);
     // A CIDR range string is parsed to a `Cidr` object.
     assert.equal(typeof result[0], "object");
     // A plain IP string is passed through unchanged.
     assert.equal(result[1], "1.2.3.4");
-    // A `ProxyService` object is passed through unchanged.
-    assert.equal(result[2], service);
+    // A `ProxyService` is cloned so its string ranges can be parsed once.
+    assert.notEqual(result[2], service);
+    assert.equal(typeof (result[2] as typeof service).ranges[0], "object");
+    assert.equal((result[2] as typeof service).ranges[1], service.ranges[1]);
   });
 });
 

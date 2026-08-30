@@ -550,9 +550,13 @@ test("`default`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
+      const body = "email test@example.com phone 011234567 ip 10.12.234.2";
       const request = new Request("https://example.com/", {
-        body: "email test@example.com phone 011234567 ip 10.12.234.2",
-        headers: { "x-client-ip": "185.199.108.153" },
+        body,
+        headers: {
+          "content-length": String(new TextEncoder().encode(body).byteLength),
+          "x-client-ip": "185.199.108.153",
+        },
         method: "POST",
       });
       const result = await integration.protect({ request });

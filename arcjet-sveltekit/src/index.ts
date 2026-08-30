@@ -315,6 +315,9 @@ export default function arcjet<
 
     const ipDetails = resolveClientIp(
       {
+        // `getClientAddress()` can throw when the SvelteKit adapter cannot
+        // determine a peer. A valid manual `ipSrc` has higher precedence and
+        // must not invoke that fallible framework lookup.
         ip: ipSrc ? undefined : event.getClientAddress(),
         headers,
       },

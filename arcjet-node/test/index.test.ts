@@ -456,7 +456,7 @@ test("`arcjetNode`", async function (t) {
     ]);
   });
 
-  await t.test("should prefer and validate an explicit `ipSrc`", async function () {
+  await t.test("should prefer an explicit `ipSrc` and treat empty as omitted", async function () {
     const restore = capture();
     let request: ArcjetRequestDetails | undefined;
     const arcjet = arcjetNode({
@@ -501,6 +501,20 @@ test("`arcjetNode`", async function (t) {
     assert.deepEqual(request?.extra, {});
     assert.deepEqual(request?.metadata, { integration: "custom-ip" });
 
+    await arcjet.protect({ headers: { "x-forwarded-for": "185.199.108.1" } }, { ipSrc: "" });
+    await server.close();
+    restore();
+
+    assert.equal(request?.ip, "185.199.108.1");
+    assert.deepEqual(request?.extra, {});
+  });
+
+  await t.test("should reject a malformed explicit `ipSrc`", async function () {
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [],
+    });
     await assert.rejects(
       arcjet.protect(
         { headers: { "x-forwarded-for": "185.199.108.1" } },
@@ -508,13 +522,6 @@ test("`arcjetNode`", async function (t) {
       ),
       /Invalid ipSrc/,
     );
-
-    await arcjet.protect({ headers: { "x-forwarded-for": "185.199.108.1" } }, { ipSrc: "" });
-    await server.close();
-    restore();
-
-    assert.equal(request?.ip, "185.199.108.1");
-    assert.deepEqual(request?.extra, {});
   });
 
   await t.test("should expose provenance and warn once for unverified headers", async () => {

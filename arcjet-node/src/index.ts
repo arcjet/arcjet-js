@@ -278,7 +278,23 @@ export type ArcjetOptions<
  *   Configuration.
  */
 export interface ArcjetNode<Props extends PlainObject> {
-  /** Explain how this client would resolve an IP without protecting. */
+  /**
+   * Explain how this client would resolve an IP without protecting.
+   *
+   * This diagnostic is side-effect-free: it does not emit logs, consume the
+   * once-per-client-instance `unverified-header` warning, or send a decision.
+   * Pass the same independently trusted `ipSrc` here that you will pass to
+   * {@linkcode protect} when using a manual override.
+   *
+   * @example
+   * ```ts
+   * const details = aj.clientIpDetails(request);
+   * console.log(details.ip, details.provenance, details.verified, details.header);
+   * ```
+   *
+   * @throws {Error}
+   *   If a non-empty `ipSrc` is not a valid IPv4 or IPv6 address.
+   */
   clientIpDetails(
     request: ArcjetNodeRequest,
     options?: { ipSrc?: string | undefined } | undefined,
@@ -305,7 +321,12 @@ export interface ArcjetNode<Props extends PlainObject> {
     ...props: MaybeProperties<
       Props & {
         correlationId?: string;
-        /** Application-provided client IP address, used instead of automatic detection. */
+        /**
+         * Independently trusted client IP used instead of automatic detection.
+         * A non-empty malformed value throws. An empty string is treated as
+         * omitted for compatibility. Never copy a client-controlled forwarding
+         * header into this field.
+         */
         ipSrc?: string;
         metadata?: ArcjetMetadata;
       }
