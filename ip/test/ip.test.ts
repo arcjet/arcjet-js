@@ -386,6 +386,33 @@ test("`parseProxies`", async (t) => {
 });
 
 test("`findIp`", async (t) => {
+  await t.test("remains the string projection of the diagnostics API", () => {
+    const forwardedRequest = {
+      headers: { "x-forwarded-for": "1.1.1.1, 8.8.8.8" },
+    };
+    assert.equal(findIp(forwardedRequest), findIpDetails(forwardedRequest).ip);
+
+    const trustedProxyRequest = {
+      headers: { "x-forwarded-for": "1.1.1.1, 10.0.0.1" },
+      socket: { remoteAddress: "10.0.0.1" },
+    };
+    const trustedProxyOptions = { proxies: ["10.0.0.0/8"] };
+    assert.equal(
+      findIp(trustedProxyRequest, trustedProxyOptions),
+      findIpDetails(trustedProxyRequest, trustedProxyOptions).ip,
+    );
+
+    const platformRequest = { headers: { "cf-connecting-ip": "1.1.1.1" } };
+    const platformOptions = { platform: "cloudflare" as const };
+    assert.equal(
+      findIp(platformRequest, platformOptions),
+      findIpDetails(platformRequest, platformOptions).ip,
+    );
+
+    const emptyRequest = { headers: {} };
+    assert.equal(findIp(emptyRequest), findIpDetails(emptyRequest).ip);
+  });
+
   await t.test("returns empty string if headers not set", () => {
     assert.equal(
       findIp(
