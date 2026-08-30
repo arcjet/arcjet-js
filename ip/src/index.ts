@@ -224,10 +224,17 @@ function parseCidr(cidr: `${string}/${string}`): Cidr {
   if (cidrParts.length !== 2) {
     throw new Error("invalid CIDR address: must be exactly 2 parts");
   }
+  if (!/^\d+$/.test(cidrParts[1])) {
+    throw new Error("invalid CIDR address: incorrect amount of bits");
+  }
 
   const parser = new Parser(cidrParts[0]);
   const maybeIpv4 = parser.readIpv4Address();
-  if (isIpv4Tuple(maybeIpv4)) {
+  if (
+    isIpv4Tuple(maybeIpv4) &&
+    parser.state.length === 0 &&
+    maybeIpv4.every((part) => part >= 0 && part <= 255)
+  ) {
     const bits = parseInt(cidrParts[1], 10);
     if (isNaN(bits) || bits < 0 || bits > 32) {
       throw new Error("invalid CIDR address: incorrect amount of bits");
@@ -237,7 +244,7 @@ function parseCidr(cidr: `${string}/${string}`): Cidr {
   }
 
   const maybeIpv6 = parser.readIpv6Address();
-  if (isIpv6Tuple(maybeIpv6)) {
+  if (isIpv6Tuple(maybeIpv6) && parser.state.length === 0) {
     const bits = parseInt(cidrParts[1], 10);
     if (isNaN(bits) || bits < 0 || bits > 128) {
       throw new Error("invalid CIDR address: incorrect amount of bits");
@@ -262,11 +269,17 @@ function isCidr(address: string): address is `${string}/${string}` {
  *   Parsed {@linkcode Cidr} if range or given `value` if IP.
  */
 export function parseProxy(value: string): string | Cidr {
-  if (isCidr(value)) {
-    return parseCidr(value);
-  } else {
-    return value;
+  const candidate = value.trim();
+  if (candidate === "") {
+    throw new Error("invalid proxy address: expected an IP address or CIDR range");
   }
+  if (isCidr(candidate)) {
+    return parseCidr(candidate);
+  }
+  if (!isValidIp(candidate)) {
+    throw new Error(`invalid proxy address: ${JSON.stringify(value)}`);
+  }
+  return candidate;
 }
 
 /**
@@ -285,7 +298,56 @@ export function parseProxy(value: string): string | Cidr {
 export function parseProxies(
   proxies: ReadonlyArray<string | ProxyService>,
 ): Array<string | Cidr | ProxyService> {
-  return proxies.map((proxy) => (typeof proxy === "string" ? parseProxy(proxy) : proxy));
+  return proxies.map((proxy) => {
+    if (typeof proxy === "string") {
+      return parseProxy(proxy);
+    }
+    for (const range of proxy.ranges) {
+      if (typeof range === "string") parseProxy(range);
+    }
+    return proxy;
+  });
+}
+
+/** Check whether proxy configuration trusts an entire IP address family. */
+export function hasTrustAllProxy(proxies: ReadonlyArray<string | Cidr | ProxyService>): boolean {
+  for (const proxy of proxies) {
+    if (isIpv4Cidr(proxy) || isIpv6Cidr(proxy)) {
+      if (proxy.bits === 0) return true;
+      continue;
+    }
+    if (isProxyService(proxy)) {
+      if (
+        proxy.ranges.some((range) => {
+          const parsed = typeof range === "string" ? parseProxy(range) : range;
+          return (isIpv4Cidr(parsed) || isIpv6Cidr(parsed)) && parsed.bits === 0;
+        })
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Check whether a value is a syntactically valid IPv4 or IPv6 address.
+ */
+export function isValidIp(value: unknown): value is string {
+  if (typeof value !== "string" || value === "") {
+    return false;
+  }
+  const ipv4 = new Parser(value);
+  const octets = ipv4.readIpv4Address();
+  if (
+    isIpv4Tuple(octets) &&
+    ipv4.state.length === 0 &&
+    octets.every((part) => part >= 0 && part <= 255)
+  ) {
+    return true;
+  }
+  const ipv6 = new Parser(value);
+  return isIpv6Tuple(ipv6.readIpv6Address()) && ipv6.state.length === 0;
 }
 
 function isIpv4Tuple(segements?: ArrayLike<number>): segements is Ipv4Tuple {
@@ -933,6 +995,95 @@ export interface Options {
   proxies?: ReadonlyArray<string | Cidr | ProxyService> | null | undefined;
 }
 
+/** Options for framework integrations resolving a client IP. */
+export interface ResolveOptions extends Options {
+  ipSrc?: string | null | undefined;
+  development?: boolean | null | undefined;
+}
+
+/** Where Arcjet obtained a client IP address. */
+export type ClientIpProvenance =
+  | "direct"
+  | "platform"
+  | "trusted-proxy"
+  | "unverified-header"
+  | "manual"
+  | "development"
+  | "request"
+  | "none";
+
+/** Debug information about Arcjet's client IP selection. */
+export interface ClientIpDetails {
+  ip: string;
+  provenance: ClientIpProvenance;
+  verified: boolean;
+  header?: string | undefined;
+}
+
+/** Logger shape used by client-IP diagnostics. */
+export interface ClientIpLogger {
+  debug(facets: Record<string, unknown>, message: string): void;
+  warn(facets: Record<string, unknown>, message: string): void;
+}
+
+/** Create a per-client provenance logger with a coalesced fallback warning. */
+export function createClientIpDiagnostics(log: ClientIpLogger) {
+  let warnedForUnverifiedHeader = false;
+  return function reportClientIp(details: ClientIpDetails): void {
+    log.debug(
+      {
+        client_ip_provenance: details.provenance,
+        client_ip_verified: details.verified,
+        client_ip_header: details.header,
+      },
+      "Arcjet client IP resolved",
+    );
+    if (details.provenance !== "unverified-header" || warnedForUnverifiedHeader) {
+      return;
+    }
+    warnedForUnverifiedHeader = true;
+    log.warn(
+      {
+        client_ip_provenance: details.provenance,
+        client_ip_header: details.header,
+      },
+      "Arcjet resolved the client IP from an unverified forwarding header. Ensure a trusted proxy overwrites or safely appends forwarding headers, configure `proxies`, use a proxy-service helper, or pass a validated `ipSrc`. See https://docs.arcjet.com/best-practices#configure-proxies-and-load-balancers",
+    );
+  };
+}
+
+function ipDetails(
+  ip: string,
+  provenance: ClientIpProvenance,
+  verified: boolean,
+  header?: string,
+): ClientIpDetails {
+  return typeof header === "string"
+    ? { ip, provenance, verified, header }
+    : { ip, provenance, verified };
+}
+
+function configuredProxyMatches(
+  candidate: unknown,
+  proxies: ReadonlyArray<string | Cidr>,
+  services: ReadonlyArray<ProxyService>,
+): boolean {
+  if (typeof candidate !== "string" || !isValidIp(candidate)) {
+    return false;
+  }
+  const parser = new Parser(candidate);
+  const ipv4 = parser.readIpv4Address();
+  const segments = (isIpv4Tuple(ipv4) ? ipv4 : new Parser(candidate).readIpv6Address()) as
+    | Ipv4Tuple
+    | Ipv6Tuple;
+  if (isTrustedProxy(candidate, Array.from(segments), proxies)) {
+    return true;
+  }
+  return services.some((service) =>
+    isTrustedProxy(candidate, Array.from(segments), service.ranges),
+  );
+}
+
 function isHeaders(val: HeaderLike["headers"]): val is Headers {
   return typeof val.get === "function";
 }
@@ -981,7 +1132,10 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
  * @returns
  *   Found IP address; empty string if not found.
  */
-export function findIp(request: RequestLike, options?: Options | null | undefined): string {
+export function findIpDetails(
+  request: RequestLike,
+  options?: Options | null | undefined,
+): ClientIpDetails {
   const { platform, proxies: rawProxies } = options || {};
   const proxies: Array<Cidr | string> = [];
   const services: Array<ProxyService> = [];
@@ -1008,12 +1162,24 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     }
   }
 
+  const directPeerTrusted =
+    configuredProxyMatches(request.ip, proxies, services) ||
+    configuredProxyMatches(request.socket?.remoteAddress, proxies, services) ||
+    configuredProxyMatches(request.info?.remoteAddress, proxies, services);
+  const forwardingProvenance: ClientIpProvenance = directPeerTrusted
+    ? "trusted-proxy"
+    : "unverified-header";
+
   // Prefer anything available via the platform over headers since headers can
   // be set by users. Only if we don't have an IP available in `request` do we
   // search the `headers`.
   const ipFromRequest = resolveCandidate(request.ip, services, proxies, request.headers);
   if (ipFromRequest) {
-    return ipFromRequest;
+    return ipDetails(
+      ipFromRequest,
+      configuredProxyMatches(request.ip, proxies, services) ? "trusted-proxy" : "request",
+      true,
+    );
   }
 
   const socketRemoteAddress = resolveCandidate(
@@ -1023,7 +1189,13 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (socketRemoteAddress) {
-    return socketRemoteAddress;
+    return ipDetails(
+      socketRemoteAddress,
+      configuredProxyMatches(request.socket?.remoteAddress, proxies, services)
+        ? "trusted-proxy"
+        : "direct",
+      true,
+    );
   }
 
   const infoRemoteAddress = resolveCandidate(
@@ -1033,7 +1205,13 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (infoRemoteAddress) {
-    return infoRemoteAddress;
+    return ipDetails(
+      infoRemoteAddress,
+      configuredProxyMatches(request.info?.remoteAddress, proxies, services)
+        ? "trusted-proxy"
+        : "direct",
+      true,
+    );
   }
 
   // AWS Api Gateway + Lambda
@@ -1044,12 +1222,12 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (requestContextIdentitySourceIp) {
-    return requestContextIdentitySourceIp;
+    return ipDetails(requestContextIdentitySourceIp, "request", true);
   }
 
   // Validate we have some object for `request.headers`
   if (typeof request.headers !== "object" || request.headers === null) {
-    return "";
+    return ipDetails("", "none", false);
   }
 
   // Platform-specific headers should only be accepted when we can determine
@@ -1061,19 +1239,19 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     // CF-Connecting-IPv6: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ipv6
     const cfConnectingIpv6 = getHeader(request.headers, "cf-connecting-ipv6");
     if (isGlobalIpv6(cfConnectingIpv6, proxies)) {
-      return cfConnectingIpv6;
+      return ipDetails(cfConnectingIpv6, "platform", true, "cf-connecting-ipv6");
     }
 
     // CF-Connecting-IP: https://developers.cloudflare.com/fundamentals/reference/http-request-headers/#cf-connecting-ip
     const cfConnectingIp = getHeader(request.headers, "cf-connecting-ip");
     if (isGlobalIp(cfConnectingIp, proxies)) {
-      return cfConnectingIp;
+      return ipDetails(cfConnectingIp, "platform", true, "cf-connecting-ip");
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
     // early with an empty IP since the more generic headers shouldn't be
     // trusted over the platform-specific headers.
-    return "";
+    return ipDetails("", "none", false);
   }
 
   // Firebase https://github.com/arcjet/arcjet-js/issues/5383
@@ -1085,7 +1263,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
       request.headers,
     );
     if (fahClientIp) {
-      return fahClientIp;
+      return ipDetails(fahClientIp, "platform", true, "x-fah-client-ip");
     }
 
     // https://cloud.google.com/functions/docs/reference/headers#x-forwarded-for
@@ -1098,14 +1276,14 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     for (const item of xForwardedForItems.reverse()) {
       const resolved = resolveCandidate(item, services, proxies, request.headers);
       if (resolved) {
-        return resolved;
+        return ipDetails(resolved, "platform", true, "x-forwarded-for");
       }
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
     // early with an empty IP since the more generic headers shouldn't be
     // trusted over the platform-specific headers.
-    return "";
+    return ipDetails("", "none", false);
   }
 
   // Fly.io: https://fly.io/docs/machines/runtime-environment/#fly_app_name
@@ -1118,13 +1296,13 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
       request.headers,
     );
     if (flyClientIp) {
-      return flyClientIp;
+      return ipDetails(flyClientIp, "platform", true, "fly-client-ip");
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
     // early with an empty IP since the more generic headers shouldn't be
     // trusted over the platform-specific headers.
-    return "";
+    return ipDetails("", "none", false);
   }
 
   if (platform === "vercel") {
@@ -1138,7 +1316,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
       request.headers,
     );
     if (xRealIp) {
-      return xRealIp;
+      return ipDetails(xRealIp, "platform", true, "x-real-ip");
     }
 
     // https://vercel.com/docs/edge-network/headers/request-headers#x-vercel-forwarded-for
@@ -1156,7 +1334,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     for (const item of xVercelForwardedForItems.reverse()) {
       const resolved = resolveCandidate(item, services, proxies, request.headers);
       if (resolved) {
-        return resolved;
+        return ipDetails(resolved, "platform", true, "x-vercel-forwarded-for");
       }
     }
 
@@ -1175,14 +1353,14 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     for (const item of xForwardedForItems.reverse()) {
       const resolved = resolveCandidate(item, services, proxies, request.headers);
       if (resolved) {
-        return resolved;
+        return ipDetails(resolved, "platform", true, "x-forwarded-for");
       }
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
     // early with an empty IP since the more generic headers shouldn't be
     // trusted over the platform-specific headers.
-    return "";
+    return ipDetails("", "none", false);
   }
 
   if (platform === "render") {
@@ -1194,13 +1372,13 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
       request.headers,
     );
     if (trueClientIp) {
-      return trueClientIp;
+      return ipDetails(trueClientIp, "platform", true, "true-client-ip");
     }
 
     // If we are using a platform check and don't have a Global IP, we exit
     // early with an empty IP since the more generic headers shouldn't be
     // trusted over the platform-specific headers.
-    return "";
+    return ipDetails("", "none", false);
   }
 
   // Load-balancers (AWS ELB) or proxies.
@@ -1215,7 +1393,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
   for (const item of xForwardedForItems.reverse()) {
     const resolved = resolveCandidate(item, services, proxies, request.headers);
     if (resolved) {
-      return resolved;
+      return ipDetails(resolved, forwardingProvenance, directPeerTrusted, "x-forwarded-for");
     }
   }
 
@@ -1227,7 +1405,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (xClientIp) {
-    return xClientIp;
+    return ipDetails(xClientIp, forwardingProvenance, directPeerTrusted, "x-client-ip");
   }
 
   // DigitalOcean.
@@ -1239,7 +1417,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (doConnectingIp) {
-    return doConnectingIp;
+    return ipDetails(doConnectingIp, forwardingProvenance, directPeerTrusted, "do-connecting-ip");
   }
 
   // Fastly and Firebase hosting header (When forwared to cloud function)
@@ -1251,7 +1429,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (fastlyClientIp) {
-    return fastlyClientIp;
+    return ipDetails(fastlyClientIp, forwardingProvenance, directPeerTrusted, "fastly-client-ip");
   }
 
   // Akamai
@@ -1263,7 +1441,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (trueClientIp) {
-    return trueClientIp;
+    return ipDetails(trueClientIp, forwardingProvenance, directPeerTrusted, "true-client-ip");
   }
 
   // Default nginx proxy/fcgi; alternative to x-forwarded-for, used by some proxies
@@ -1275,7 +1453,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (xRealIp) {
-    return xRealIp;
+    return ipDetails(xRealIp, forwardingProvenance, directPeerTrusted, "x-real-ip");
   }
 
   // Rackspace LB and Riverbed's Stingray?
@@ -1286,7 +1464,12 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (xClusterClientIp) {
-    return xClusterClientIp;
+    return ipDetails(
+      xClusterClientIp,
+      forwardingProvenance,
+      directPeerTrusted,
+      "x-cluster-client-ip",
+    );
   }
 
   const xForwarded = resolveCandidate(
@@ -1296,7 +1479,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (xForwarded) {
-    return xForwarded;
+    return ipDetails(xForwarded, forwardingProvenance, directPeerTrusted, "x-forwarded");
   }
 
   const forwardedFor = resolveCandidate(
@@ -1306,7 +1489,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (forwardedFor) {
-    return forwardedFor;
+    return ipDetails(forwardedFor, forwardingProvenance, directPeerTrusted, "forwarded-for");
   }
 
   const forwarded = resolveCandidate(
@@ -1316,7 +1499,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (forwarded) {
-    return forwarded;
+    return ipDetails(forwarded, forwardingProvenance, directPeerTrusted, "forwarded");
   }
 
   // Google Cloud App Engine
@@ -1328,10 +1511,52 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
     request.headers,
   );
   if (xAppEngineUserIp) {
-    return xAppEngineUserIp;
+    return ipDetails(
+      xAppEngineUserIp,
+      forwardingProvenance,
+      directPeerTrusted,
+      "x-appengine-user-ip",
+    );
   }
 
-  return "";
+  return ipDetails("", "none", false);
+}
+
+/** Find a client IP address while preserving the legacy string API. */
+export function findIp(request: RequestLike, options?: Options | null | undefined): string {
+  return findIpDetails(request, options).ip;
+}
+
+/** Resolve a client IP including manual and development-mode overrides. */
+export function resolveClientIp(
+  request: RequestLike,
+  options?: ResolveOptions | null | undefined,
+): ClientIpDetails {
+  const { ipSrc, development, platform, proxies } = options ?? {};
+  if (typeof ipSrc === "string" && ipSrc !== "") {
+    if (!isValidIp(ipSrc)) {
+      throw new Error(
+        `Invalid ipSrc: expected an IPv4 or IPv6 address, got ${JSON.stringify(ipSrc)}`,
+      );
+    }
+    return { ip: ipSrc, provenance: "manual", verified: true };
+  }
+  if (development) {
+    const value = getHeader(request.headers, "x-arcjet-ip");
+    if (typeof value === "string" && value !== "") {
+      return {
+        ip: value,
+        provenance: "development",
+        verified: false,
+        header: "x-arcjet-ip",
+      };
+    }
+  }
+  const details = findIpDetails(request, { platform, proxies });
+  if (details.ip === "" && development) {
+    return { ip: "127.0.0.1", provenance: "development", verified: false };
+  }
+  return details;
 }
 
 /**

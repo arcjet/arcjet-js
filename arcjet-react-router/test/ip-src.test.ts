@@ -37,9 +37,18 @@ test("explicit ipSrc overrides React Router context.ip and is stripped", async f
     ],
   });
   await client.protect(
-    { context: { ip: "192.0.2.1" }, request: new Request("https://example.com/") },
+    {
+      context: { ip: "192.0.2.1" },
+      request: new Request("https://example.com/", { headers: { cookie: "session=test" } }),
+    },
     { ipSrc: "203.0.113.10" },
   );
   assert.equal(details.ip, "203.0.113.10");
   assert.deepEqual(details.extra, {});
+
+  await client.protect(
+    { context: { ip: "8.8.4.4" }, request: new Request("https://example.com/") },
+    { ipSrc: "" },
+  );
+  assert.equal(details.ip, "8.8.4.4");
 });

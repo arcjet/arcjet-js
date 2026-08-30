@@ -1,7 +1,15 @@
 import { readBodyWeb } from "@arcjet/body";
 import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  type Cidr,
+  type ClientIpDetails,
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ProxyService,
+} from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -178,6 +186,8 @@ interface State {
    * Configured proxies.
    */
   proxies: ReadonlyArray<Cidr | string | ProxyService>;
+
+  reportClientIp: (details: ClientIpDetails) => void;
 }
 
 /**
@@ -204,11 +214,20 @@ export default function arcjet<
 >(
   options: ArcjetOptions<Rules, Characteristics>,
 ): ArcjetReactRouter<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
+  const log = options.log ?? new Logger({ level: logLevel(process.env) });
+  const proxies = options.proxies ? parseProxies(options.proxies) : [];
   const state: State = {
     client: options.client ?? createRemoteClient(),
-    log: options.log ?? new Logger({ level: logLevel(process.env) }),
-    proxies: options.proxies ? parseProxies(options.proxies) : [],
+    log,
+    proxies,
+    reportClientIp: createClientIpDiagnostics(log),
   };
+  if (hasTrustAllProxy(state.proxies)) {
+    state.log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(process.env)) {
     state.log.warn(
@@ -330,45 +349,36 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   ipSrc?: string,
 ): ArcjetRequest<Properties> {
   const headers = new ArcjetHeaders(details.request.headers);
-  let ip: string | undefined = ipSrc || undefined;
+  let applicationIp: string | undefined = ipSrc || undefined;
 
   // Get the IP from non-middleware context (no `future.v8_middleware` flag).
   // Users *themselves* must provide this `ip` field if they use a particular
   // adapter.
   if (
-    !ip &&
+    !applicationIp &&
     details.context &&
     typeof details.context === "object" &&
     "ip" in details.context &&
     typeof details.context.ip === "string"
   ) {
-    ip = details.context.ip;
+    applicationIp = details.context.ip;
   }
-
-  const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
-
-  if (!ip && xArcjetIp) {
-    ip = xArcjetIp;
-  }
-
-  if (!ip) {
-    ip = findIp(details.request, {
+  const ipDetails = resolveClientIp(
+    { headers },
+    {
+      development: isDevelopment(process.env),
+      ipSrc: applicationIp,
       platform: platform(process.env),
       proxies: state.proxies,
-    });
-  }
+    },
+  );
+  state.reportClientIp(ipDetails);
+  const ip = ipDetails.ip;
 
   if (!ip) {
-    if (isDevelopment(process.env)) {
-      // In development, there is a warning for this when the client is
-      // constructed.
-      ip = "127.0.0.1";
-    } else {
-      // In production, warn for every request.
-      state.log.warn(
-        "Cannot find client IP address; if this is a development environment, set the `ARCJET_ENV` environment variable to `development`; in production, provide `context.ip` or an `x-client-ip` (or similar) header",
-      );
-    }
+    state.log.warn(
+      "Cannot find client IP address; if this is a development environment, set the `ARCJET_ENV` environment variable to `development`; in production, provide `context.ip` or an `x-client-ip` (or similar) header",
+    );
   }
 
   const url = new URL(details.request.url);

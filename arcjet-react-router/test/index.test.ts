@@ -164,6 +164,25 @@ test("`default`", async function (t) {
         assert.equal(called, false);
       },
     );
+
+    await t.test("should warn when proxy configuration trusts every peer", () => {
+      let parameters: unknown;
+      arcjet({
+        key: "",
+        log: {
+          ...createArcjetLogger(),
+          warn(...rest) {
+            parameters = rest;
+          },
+        },
+        proxies: ["0.0.0.0/0"],
+        rules: [],
+      });
+      assert.deepEqual(parameters, [
+        { trustAll: true },
+        "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+      ]);
+    });
   });
 
   await t.test("`protect()`", async function (t) {
@@ -194,6 +213,7 @@ test("`default`", async function (t) {
       assert.deepEqual(parameters, undefined);
 
       await integration.protect({
+        context: { ip: 123 } as any,
         request: new Request("https://example.com/"),
       });
 

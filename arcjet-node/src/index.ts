@@ -1,4 +1,11 @@
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ClientIpDetails,
+  type ProxyService,
+} from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -14,7 +21,7 @@ import type {
 } from "arcjet";
 
 export { cloudflare } from "@arcjet/ip";
-export type { ProxyService } from "@arcjet/ip";
+export type { ClientIpDetails, ClientIpProvenance, ProxyService } from "@arcjet/ip";
 import { readBody } from "@arcjet/body";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -271,6 +278,12 @@ export type ArcjetOptions<
  *   Configuration.
  */
 export interface ArcjetNode<Props extends PlainObject> {
+  /** Explain how this client would resolve an IP without protecting. */
+  clientIpDetails(
+    request: ArcjetNodeRequest,
+    options?: { ipSrc?: string | undefined } | undefined,
+  ): ClientIpDetails;
+
   /**
    * Make a decision about how to handle a request.
    *
@@ -350,9 +363,25 @@ export default function arcjet<
       });
 
   const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
+  const reportClientIp = createClientIpDiagnostics(log);
+
+  if (proxies && hasTrustAllProxy(proxies)) {
+    log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(env)) {
     log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
+  }
+
+  function resolveIp(request: ArcjetNodeRequest, ipSrc?: string): ClientIpDetails {
+    const headers = new ArcjetHeaders(request.headers);
+    return resolveClientIp(
+      { socket: request.socket, headers },
+      { development: isDevelopment(env), ipSrc, platform: platform(env), proxies },
+    );
   }
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -366,17 +395,9 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
-    let ip =
-      ipSrc ||
-      xArcjetIp ||
-      findIp(
-        {
-          socket: request.socket,
-          headers,
-        },
-        { platform: platform(env), proxies },
-      );
+    const ipDetails = resolveIp(request, ipSrc);
+    reportClientIp(ipDetails);
+    let ip = ipDetails.ip;
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
@@ -434,6 +455,9 @@ export default function arcjet<
     aj: Arcjet<Properties>,
   ): ArcjetNode<Properties> {
     const client: ArcjetNode<Properties> = {
+      clientIpDetails(request, options) {
+        return resolveIp(request, options?.ipSrc);
+      },
       withRule(rule) {
         const client = aj.withRule(rule);
         return withClient(client);

@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { cloudflare, findIp, parseProxies, parseProxy } from "../dist/index.js";
+import {
+  cloudflare,
+  createClientIpDiagnostics,
+  findIp,
+  findIpDetails,
+  hasTrustAllProxy,
+  isValidIp,
+  parseProxies,
+  parseProxy,
+  resolveClientIp,
+} from "../dist/index.js";
 
 type Proxy = ReturnType<typeof parseProxy>;
 
@@ -133,12 +143,194 @@ test("@arcjet/ip", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
       "cloudflare",
+      "createClientIpDiagnostics",
       "default",
       "findIp",
+      "findIpDetails",
+      "hasTrustAllProxy",
+      "isValidIp",
       "parseProxies",
       "parseProxy",
+      "resolveClientIp",
     ]);
   });
+
+  await t.test("validates every configured proxy", () => {
+    assert.throws(() => parseProxies(["not-an-ip"]), /invalid proxy address/);
+    assert.throws(() => parseProxies([""]), /invalid proxy address/);
+    assert.throws(
+      () => parseProxies([{ kind: "service", name: "bad", ranges: ["bad"], clientIp: [] }]),
+      /invalid proxy address/,
+    );
+  });
+
+  await t.test("detects trust-all ranges", () => {
+    assert.equal(hasTrustAllProxy(parseProxies(["0.0.0.0/0"])), true);
+    assert.equal(hasTrustAllProxy(parseProxies(["1.2.3.0/24"])), false);
+    assert.equal(hasTrustAllProxy(parseProxies(["1.2.3.4"])), false);
+    assert.equal(
+      hasTrustAllProxy([{ kind: "service", name: "all", ranges: ["::/0"], clientIp: [] }]),
+      true,
+    );
+    assert.equal(
+      hasTrustAllProxy([
+        { kind: "service", name: "all", ranges: [parseProxy("0.0.0.0/0")], clientIp: [] },
+      ]),
+      true,
+    );
+    assert.equal(
+      hasTrustAllProxy([{ kind: "service", name: "narrow", ranges: ["1.2.3.0/24"], clientIp: [] }]),
+      false,
+    );
+  });
+});
+
+test("client IP details", () => {
+  const proxyService = {
+    kind: "service" as const,
+    name: "test-proxy",
+    ranges: ["8.8.8.0/24", parseProxy("2606:4700::/32")],
+    clientIp: [{ header: "x-client-ip", format: "ip" as const }],
+  };
+  assert.deepEqual(findIpDetails({ headers: new Headers([["x-forwarded-for", "1.1.1.1"]]) }), {
+    ip: "1.1.1.1",
+    provenance: "unverified-header",
+    verified: false,
+    header: "x-forwarded-for",
+  });
+  assert.deepEqual(
+    findIpDetails(
+      {
+        socket: { remoteAddress: "10.0.0.1" },
+        headers: new Headers([["x-forwarded-for", "1.1.1.1"]]),
+      },
+      { proxies: ["10.0.0.0/8"] },
+    ),
+    {
+      ip: "1.1.1.1",
+      provenance: "trusted-proxy",
+      verified: true,
+      header: "x-forwarded-for",
+    },
+  );
+  assert.deepEqual(
+    findIpDetails(
+      {
+        ip: "10.0.0.1",
+        headers: new Headers([["x-forwarded-for", "1.1.1.1"]]),
+      },
+      { proxies: ["10.0.0.0/8"] },
+    ),
+    {
+      ip: "1.1.1.1",
+      provenance: "trusted-proxy",
+      verified: true,
+      header: "x-forwarded-for",
+    },
+  );
+  assert.deepEqual(findIpDetails({ ip: "1.1.1.1", headers: new Headers() }), {
+    ip: "1.1.1.1",
+    provenance: "request",
+    verified: true,
+  });
+  assert.deepEqual(
+    findIpDetails({ socket: { remoteAddress: "1.1.1.1" }, headers: new Headers() }),
+    { ip: "1.1.1.1", provenance: "direct", verified: true },
+  );
+  assert.deepEqual(findIpDetails({ info: { remoteAddress: "1.1.1.1" }, headers: new Headers() }), {
+    ip: "1.1.1.1",
+    provenance: "direct",
+    verified: true,
+  });
+  for (const request of [
+    { ip: "8.8.8.1", headers: { "x-client-ip": "1.1.1.1" } },
+    { socket: { remoteAddress: "8.8.8.1" }, headers: { "x-client-ip": "1.1.1.1" } },
+    {
+      info: { remoteAddress: "2606:4700::1" },
+      headers: { "x-client-ip": "1.1.1.1" },
+    },
+  ]) {
+    assert.deepEqual(findIpDetails(request, { proxies: [proxyService] }), {
+      ip: "1.1.1.1",
+      provenance: "trusted-proxy",
+      verified: true,
+    });
+  }
+  assert.deepEqual(
+    findIpDetails({ requestContext: { identity: { sourceIp: "1.1.1.1" } }, headers: {} }),
+    { ip: "1.1.1.1", provenance: "request", verified: true },
+  );
+  assert.deepEqual(findIpDetails({ headers: null }), {
+    ip: "",
+    provenance: "none",
+    verified: false,
+  });
+  assert.equal(isValidIp("10.0.0.1"), true);
+  assert.equal(isValidIp("::1"), true);
+  assert.equal(isValidIp(""), false);
+  assert.equal(isValidIp(1234), false);
+  assert.equal(isValidIp("999.0.0.1"), false);
+  assert.equal(isValidIp("not-an-ip"), false);
+
+  assert.deepEqual(
+    resolveClientIp({ headers: new Headers([["x-arcjet-ip", "10.0.0.1"]]) }, { development: true }),
+    {
+      ip: "10.0.0.1",
+      provenance: "development",
+      verified: false,
+      header: "x-arcjet-ip",
+    },
+  );
+  assert.deepEqual(resolveClientIp({ headers: new Headers() }, { development: true }), {
+    ip: "127.0.0.1",
+    provenance: "development",
+    verified: false,
+  });
+  assert.deepEqual(resolveClientIp({ headers: new Headers() }, { ipSrc: "10.0.0.1" }), {
+    ip: "10.0.0.1",
+    provenance: "manual",
+    verified: true,
+  });
+  assert.deepEqual(resolveClientIp({ headers: new Headers() }), {
+    ip: "",
+    provenance: "none",
+    verified: false,
+  });
+  assert.deepEqual(resolveClientIp({ headers: new Headers() }, { ipSrc: "" }), {
+    ip: "",
+    provenance: "none",
+    verified: false,
+  });
+  assert.throws(
+    () => resolveClientIp({ headers: new Headers() }, { ipSrc: "not-an-ip" }),
+    /Invalid ipSrc/,
+  );
+});
+
+test("client IP diagnostics", () => {
+  const debug: Array<Record<string, unknown>> = [];
+  const warnings: Array<Record<string, unknown>> = [];
+  const report = createClientIpDiagnostics({
+    debug(facets) {
+      debug.push(facets);
+    },
+    warn(facets) {
+      warnings.push(facets);
+    },
+  });
+  const details = {
+    ip: "1.1.1.1",
+    provenance: "unverified-header" as const,
+    verified: false,
+    header: "x-forwarded-for",
+  };
+  report(details);
+  report(details);
+  assert.equal(debug.length, 2);
+  assert.equal(debug[0].client_ip_provenance, "unverified-header");
+  assert.equal(warnings.length, 1);
+  report({ ip: "1.1.1.1", provenance: "direct", verified: true });
+  assert.equal(warnings.length, 1);
 });
 
 test("`parseProxies`", async (t) => {
