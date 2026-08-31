@@ -90,9 +90,16 @@
       "allowedVersions": "<2"
     },
     {
-      "description": "Never automerge @openai/agents. It is pre-1.0, so a minor release may break. `@arcjet/guard/openai-agents/v0` types against FunctionTool, tool({ execute }), RunContext, and run() / Runner. A green typecheck is necessary but not sufficient. Keep the range below 1.0; openai-agents/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
+      "description": "Never automerge @openai/agents. It is pre-1.0, so a minor release may break. `@arcjet/guard/openai-agents/v0` types against FunctionTool, tool({ execute }), RunContext, and run() / Runner. A green typecheck is necessary but not sufficient. Keep the range below 1.0; openai-agents/v1 is added deliberately, not by a bump.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["@openai/agents"],
+      "automerge": false,
+      "allowedVersions": "<1"
+    },
+    {
+      "description": "Never automerge @tanstack/ai. It is pre-1.0, so a minor release may break. `@arcjet/guard/tanstack-ai/v0` types against ChatMiddleware, onBeforeToolCall, BeforeToolCallDecision, and chat({ context }). A green typecheck is necessary but not sufficient: the namespace also depends on onBeforeToolCall first-win composition (a preceding toolCacheMiddleware skip means Guard never runs) and on execute throws being swallowed into { error } — runtime contracts a typecheck cannot see. Keep the range below 1.0; tanstack-ai/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@tanstack/ai"],
       "automerge": false,
       "allowedVersions": "<1"
     }

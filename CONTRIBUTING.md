@@ -125,6 +125,26 @@ change them:
   `@arcjet/guard/langgraph/v1`. There is no unversioned
   `@arcjet/guard/strands-agents` alias. Docs slug is
   `/guards/strands-agents/`.
+  `tanstack-ai/v0` is `chat({ middleware })` +
+  `ChatMiddleware.onBeforeToolCall`: there is no `guardTool` (a throw
+  from `execute` is swallowed into `{ error }` and is not a usable deny
+  envelope), tool calls go through `guardMiddleware`'s
+  `onBeforeToolCall` (default DENY is `{ type: "skip", result:
+  ArcjetDenialResult }`; optional `onDeny: "abort"` only; do not
+  throw), inbound is screened with `guard()` before `chat()`
+  (`guard()` fails open — check `hasFailedOpen()`), and
+  `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL
+  not policy. After a human yes, Guard still runs. Put Arcjet first
+  in the middleware array — `onBeforeToolCall` is first-win; if
+  `toolCacheMiddleware` skips first, Guard never runs. Brand-skip
+  inbound so `guardMiddleware` does not double-call a preceding
+  `guard()`. Correlation is a caller-owned id from helper options or
+  `chat({ context })`. Never mint. Never `ctx.threadId`. Never
+  `traceId` / `requestId` / `streamId`. There is no unversioned
+  `@arcjet/guard/tanstack-ai` alias and no `/v1` until TanStack AI
+  ships 1.x. Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.
+  Do not name anything `contentGuardMiddleware`. Docs slug is
+  `/guards/tanstack-ai/`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would

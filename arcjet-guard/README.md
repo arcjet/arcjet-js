@@ -1531,6 +1531,100 @@ Correlation is a field the integrator puts on `invocationState`
 (`correlationId`, then `sessionId`, then `requestId`). Never mint.
 Never read `traceId`. Never use `SessionManager` or `agent.id`.
 
+- **`@arcjet/guard/tanstack-ai/v0`** — TanStack AI `chat({ middleware })`
+  - `ChatMiddleware.onBeforeToolCall` integration. Exports
+    `guardMiddleware` and `tanstackAiContext`. This is **not** the
+    Vercel AI SDK — do not also wrap with `@arcjet/guard/vercel-ai/v7`.
+    There is no `guardTool` (a throw from `execute` is swallowed into
+    `{ error }` and is not a usable deny envelope), no `guardInbound`
+    (screen with `guard()` before `chat()`; `guard()` fails open —
+    check `hasFailedOpen()`), and no `guardApproval` (`needsApproval` /
+    `defineInterrupt` / `onInterruptBoundary` is human HITL, not
+    policy). After a human yes, Guard still runs. Do not name anything
+    `contentGuardMiddleware` (TanStack already has that name). Docs
+    live at
+    [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
+
+  Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
+  first-win; if `toolCacheMiddleware` (or anything else) skips first,
+  Guard never runs. Default DENY is `{ type: "skip", result:
+ArcjetDenialResult }` so the tool never runs and the model sees the
+  payload. Optional `onDeny: "abort"` stops the run. The hook does
+  not throw. Already-branded tools are skipped so a preceding
+  `guard()` is not double-called. Correlation is a caller-owned id
+  from helper options or `chat({ context })`. Never mint. Never
+  `ctx.threadId`. Never `traceId` / `requestId` / `streamId`. Client
+  tools and provider-native tools with no local `execute` are out of
+  scope.
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardMiddleware, tanstackAiContext } from "@arcjet/guard/tanstack-ai/v0";
+  import { chat } from "@tanstack/ai";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const appContext = { sessionId: conversationId };
+  const inbound = detectPromptInjection();
+  const decision = await arcjet.guard({
+    label: "message.received",
+    rules: [inbound(userText)],
+    ...tanstackAiContext({ context: appContext }),
+  });
+
+  if (decision.conclusion === "DENY") {
+    throw new Error("message blocked");
+  }
+  if (decision.hasFailedOpen()) {
+    throw new Error("inbound screening failed open");
+  }
+
+  const stream = chat({
+    adapter,
+    messages,
+    tools: [lookupOrder],
+    context: appContext,
+    middleware: [
+      guardMiddleware(arcjet, {
+        action: ({ toolName }) => `${toolName}.invoked`,
+        rules: ({ toolName }) => [limit({ key: toolName, requested: 1 })],
+        sessionId: conversationId,
+      }),
+    ],
+  });
+  ```
+
+#### Screen inbound before `chat()` — there is no inbound hook.
+
+TanStack AI has no first-class inbound channel, so there is no
+`guardInbound`. Put prompt-injection (and other inbound rules) in the
+application before `chat()`. Call `guard()` directly. `guard()` fails
+open — callers must check `hasFailedOpen()`. TanStack's
+`contentGuardMiddleware` redacts the stream; it is not this policy
+gate.
+
+#### `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL, not a policy gate.
+
+`needsApproval` / `defineInterrupt` / `onInterruptBoundary` is
+human-in-the-loop, not policy. After a human yes, Guard still runs
+on the tool call. Same trap as Mastra `requireApproval`, Claude
+`canUseTool`, LangGraph `interrupt()`, Genkit `toolApproval`, OpenAI
+Agents `needsApproval`, and LangChain `humanInTheLoopMiddleware`.
+There is no `guardApproval`.
+
+#### Deny inside `guardMiddleware`'s `onBeforeToolCall`. There is no `guardTool`.
+
+`onBeforeToolCall` is the deny point. Default DENY is
+`{ type: "skip", result: ArcjetDenialResult }`. Optional
+`onDeny: "abort"` returns `{ type: "abort", reason }`. Do not throw
+from the hook. Put Arcjet first — first-win composition means a
+preceding `toolCacheMiddleware` skip skips Guard too.
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -1596,6 +1690,10 @@ importing only core guards are not forced to install unneeded packages:
   The peer range is `>=1.1.0 <2`. The floor is 1.1.0 because `HookOrder`
   - `interrupt()` shipped then; `cancel` itself is 1.0.0. Zod is their
     peer, not ours.
+- **`@arcjet/guard/tanstack-ai/v0`** requires `@tanstack/ai` (optional
+  peer, installed only to use `@arcjet/guard/tanstack-ai/v0`). The peer
+  range is `>=0.8.0 <1`. There is no `/v1` until TanStack AI ships 1.x.
+  Node stays Guard's existing floor.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -1651,6 +1749,11 @@ pnpm install @strands-agents/sdk
 ```
 
 ```sh
+# @arcjet/guard/tanstack-ai/v0
+pnpm install @tanstack/ai
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1666,8 +1769,9 @@ is one path to learn and no layering to reason about.
 `@arcjet/guard/mastra/v1`, `@arcjet/guard/claude-agent-sdk/v0`,
 `@arcjet/guard/langchain/v1`, `@arcjet/guard/langgraph/v1`,
 `@arcjet/guard/openai-agents/v0`,
-`@arcjet/guard/genkit/v1`, and
-`@arcjet/guard/strands-agents/v1` now export
+`@arcjet/guard/genkit/v1`,
+`@arcjet/guard/strands-agents/v1`, and
+`@arcjet/guard/tanstack-ai/v0` now export
 these helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
 agnostic layer without installing a vendor peer. That change is a follow-up
@@ -1694,6 +1798,7 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 | OpenAI Agents `guardTool`                 | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Genkit `guardTool` / `guardMiddleware`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Strands Agents `guardTool` / `guardHooks` | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| TanStack AI `guardMiddleware`             | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -1967,6 +2072,7 @@ that a tool did not run:
 | LangChain        | Two envelopes: `guardTool` returns `{ arcjetDenied: true, … }` and `baseHandler` wraps it as a success `ToolMessage`; `guardMiddleware`'s `wrapToolCall` returns a real `ToolMessage` carrying the payload as `content` | `wrapToolCall`'s return skips `baseHandler`, so a bare object crashes the messages reducer, and a throw bubbles out of `invoke` and drops the fields |
 | Claude Agent SDK | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                                                                                                                                        | A throw is a raw exception; omitting `isError` looks like success                                                                                    |
 | Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                                                                                                                                         | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`                                                         |
+| TanStack AI      | `{ type: "skip", result: ArcjetDenialResult }` from `onBeforeToolCall`. Optional `onDeny: "abort"` returns `{ type: "abort", reason }`                                                                                  | A throw from `execute` is swallowed into `{ error }`. A throw from the hook aborts the run as an error, not a policy denial                          |
 
 ```ts
 const result: ArcjetDenialResult = {
@@ -2072,6 +2178,8 @@ For an example with Genkit, see [`genkit-agent`](https://github.com/arcjet/examp
 
 For an example with Strands Agents, see [`strands-agent`](https://github.com/arcjet/examples/tree/main/examples/strands-agent) (follow-up on that same PR): inbound screening before `invoke()` / `stream()`, `guardTool` / `guardHooks` (deny, PII on args, rate limit, fail-closed), and a caller-owned id on `invocationState`. `interrupt()` is HITL, not a policy gate; `BeforeToolCallEvent.cancel` is the deny point for unwrapped tools. Docs slug: [`/guards/strands-agents/`](https://docs.arcjet.com/guards/strands-agents/).
 
+For an example with TanStack AI, see [`tanstack-agent`](https://github.com/arcjet/examples/tree/main/examples/tanstack-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `chat()` (check `hasFailedOpen()`), `guardMiddleware` first in the middleware array (skip-deny, abort-deny, rate limit, fail-closed), and a caller-owned id on `chat({ context })`. `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL, not a policy gate; `onBeforeToolCall` is the deny point. Docs slug: [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
+
 ## Agent skill
 
 For integration help in Claude Code or other AI coding agents, a skill file per integration is packaged with `@arcjet/guard`:
@@ -2167,6 +2275,16 @@ ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-strands-
 ```
 
 In Claude Code, use `/integrate-arcjet-guard-strands-agents` to start an integration session.
+
+**For TanStack AI:**
+
+```bash
+cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-tanstack-ai ~/.claude/skills/
+# or
+ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-tanstack-ai ~/.claude/skills/
+```
+
+In Claude Code, use `/integrate-arcjet-guard-tanstack-ai` to start an integration session.
 
 Each skill guides you through wrapping tools, screening inbound messages, and recording lifecycle events joined by correlation ID.
 

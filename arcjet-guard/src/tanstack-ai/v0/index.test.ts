@@ -10,14 +10,14 @@ import {
 } from "../../../test/_shared/source-scan.ts";
 import * as agentsBarrel from "../../agents/index.ts";
 import * as v7Namespace from "../../vercel-ai/v7/index.ts";
-import * as langchainNamespace from "./index.ts";
-import type { ArcjetDenialResult, GuardToolPolicy, LangChainAgentContext } from "./index.ts";
+import * as tanstackNamespace from "./index.ts";
+import type { ArcjetDenialResult, GuardMiddlewarePolicy, TanStackAiAgentContext } from "./index.ts";
 
 function verifyTypeExports(): void {
-  const toolPolicy: GuardToolPolicy<Record<string, unknown>> | undefined = undefined;
+  const policy: GuardMiddlewarePolicy | undefined = undefined;
   const denialResult: ArcjetDenialResult | undefined = undefined;
-  const agentContext: LangChainAgentContext | undefined = undefined;
-  void [toolPolicy, denialResult, agentContext];
+  const agentContext: TanStackAiAgentContext | undefined = undefined;
+  void [policy, denialResult, agentContext];
 }
 
 verifyTypeExports();
@@ -39,20 +39,20 @@ function objectField(
   return undefined;
 }
 
-test("exports the three own helpers as functions", () => {
-  const ownExports = ["langchainContext", "guardTool", "guardMiddleware"] as const;
+test("exports the two own helpers as functions", () => {
+  const ownExports = ["tanstackAiContext", "guardMiddleware"] as const;
 
   for (const funcName of ownExports) {
-    const func = (langchainNamespace as Record<string, unknown>)[funcName];
+    const func = (tanstackNamespace as Record<string, unknown>)[funcName];
     assert.equal(
       typeof func,
       "function",
-      `@arcjet/guard/langchain/v1 must export ${funcName} as a function`,
+      `@arcjet/guard/tanstack-ai/v0 must export ${funcName} as a function`,
     );
   }
 });
 
-test("langchain namespace exports the agnostic helpers", () => {
+test("tanstack-ai namespace exports the agnostic helpers", () => {
   const requiredSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -62,12 +62,12 @@ test("langchain namespace exports the agnostic helpers", () => {
   ] as const;
 
   for (const symbol of requiredSymbols) {
-    const value = (langchainNamespace as Record<string, unknown>)[symbol];
-    assert.ok(value !== undefined, `@arcjet/guard/langchain/v1 must export ${symbol}`);
+    const value = (tanstackNamespace as Record<string, unknown>)[symbol];
+    assert.ok(value !== undefined, `@arcjet/guard/tanstack-ai/v0 must export ${symbol}`);
   }
 });
 
-test("agnostic exports have same identity across LangChain and v7 namespaces", () => {
+test("agnostic exports have same identity across TanStack AI and v7 namespaces", () => {
   const agnosticSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -78,82 +78,88 @@ test("agnostic exports have same identity across LangChain and v7 namespaces", (
   ] as const;
 
   for (const symbol of agnosticSymbols) {
-    const langchainValue = (langchainNamespace as Record<string, unknown>)[symbol];
+    const tanstackValue = (tanstackNamespace as Record<string, unknown>)[symbol];
     const v7Value = (v7Namespace as Record<string, unknown>)[symbol];
 
     assert.strictEqual(
-      langchainValue,
+      tanstackValue,
       v7Value,
-      `${symbol} must be the same object identity from both @arcjet/guard/langchain/v1 and @arcjet/guard/vercel-ai/v7`,
+      `${symbol} must be the same object identity from both @arcjet/guard/tanstack-ai/v0 and @arcjet/guard/vercel-ai/v7`,
     );
   }
 });
 
-test("LangChain namespace is a strict superset of the agents barrel with same identity", () => {
-  const langchainKeys = Object.keys(langchainNamespace);
+test("TanStack AI namespace is a strict superset of the agents barrel with same identity", () => {
+  const tanstackKeys = Object.keys(tanstackNamespace);
   const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
     assert.ok(
-      langchainKeys.includes(key),
-      `agents barrel key "${key}" must be present in langchain namespace`,
+      tanstackKeys.includes(key),
+      `agents barrel key "${key}" must be present in tanstack-ai namespace`,
     );
     assert.strictEqual(
-      (langchainNamespace as Record<string, unknown>)[key],
+      (tanstackNamespace as Record<string, unknown>)[key],
       (agentsBarrel as Record<string, unknown>)[key],
       `${key} must be the same object identity from both imports`,
     );
   }
 
-  const expectedAdditions = 3;
+  const expectedAdditions = 2;
   assert.equal(
-    langchainKeys.length,
+    tanstackKeys.length,
     agentKeys.length + expectedAdditions,
-    `langchain namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
+    `tanstack-ai namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
   );
 
-  const langchainOnlyKeys = langchainKeys.filter((key) => !agentKeys.includes(key));
-  const ownExportsArray = ["guardTool", "guardMiddleware", "langchainContext"];
+  const tanstackOnlyKeys = tanstackKeys.filter((key) => !agentKeys.includes(key));
+  const ownExportsArray = ["guardMiddleware", "tanstackAiContext"];
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
   const expectedOwnExports: readonly string[] = ownExportsArray.sort();
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
-  const sorted: readonly string[] = langchainOnlyKeys.sort();
+  const sorted: readonly string[] = tanstackOnlyKeys.sort();
   assert.deepEqual(sorted, expectedOwnExports);
 });
 
-test("export map has no unversioned ./langchain and no wildcard subpaths", () => {
+test("export map has no unversioned ./tanstack-ai, no ./tanstack-ai/v1, and no wildcard subpaths", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
 
   const exportKeys = Object.keys(exportsMap);
 
-  assert.ok(!exportKeys.includes("./langchain"), 'export map must not have "./langchain"');
-  assert.ok(exportKeys.includes("./langchain/v1"), 'export map must have "./langchain/v1"');
+  assert.ok(!exportKeys.includes("./tanstack-ai"), 'export map must not have "./tanstack-ai"');
+  assert.ok(
+    !exportKeys.includes("./tanstack-ai/v1"),
+    'export map must not have "./tanstack-ai/v1"',
+  );
+  assert.ok(exportKeys.includes("./tanstack-ai/v0"), 'export map must have "./tanstack-ai/v0"');
 
   for (const key of exportKeys) {
-    if (key.startsWith("./langchain/")) {
+    if (key.startsWith("./tanstack-ai/")) {
       assert.equal(
         key,
-        "./langchain/v1",
-        `export map must not have wildcard langchain subpaths; found "${key}"`,
+        "./tanstack-ai/v0",
+        `export map must not have wildcard tanstack-ai subpaths; found "${key}"`,
       );
     }
   }
 });
 
-test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only APIs", () => {
+test("does not export guardTool, inbound, approval, or sibling-only APIs", () => {
   const forbidden = [
+    "guardTool",
+    "guardInbound",
+    "guardApproval",
+    "contentGuardMiddleware",
     "eveAgentContext",
     "mastraAgentContext",
     "claudeAgentContext",
     "langgraphAgentContext",
+    "langchainContext",
     "openaiAgentsContext",
     "genkitContext",
     "strandsAgentContext",
-    "tanstackAiContext",
-    "guardInbound",
-    "guardApproval",
     "guardInterrupt",
     "guardHooks",
     "guardToolNode",
@@ -164,9 +170,9 @@ test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only A
   ];
   for (const key of forbidden) {
     assert.equal(
-      (langchainNamespace as Record<string, unknown>)[key],
+      (tanstackNamespace as Record<string, unknown>)[key],
       undefined,
-      `langchain namespace must not export "${key}"`,
+      `tanstack-ai namespace must not export "${key}"`,
     );
   }
 });
