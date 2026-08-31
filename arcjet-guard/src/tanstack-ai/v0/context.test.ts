@@ -92,6 +92,22 @@ test("never reads requestId, streamId, runId, or traceId", () => {
   assert.equal(result.metadata, undefined);
 });
 
+test("a bare object with requestId and streamId is an envelope; nest caller ids on context", () => {
+  const bare = tanstackAiContext({
+    requestId: "req-1",
+    streamId: "stream-1",
+    sessionId: "sess-lost",
+  });
+  assert.equal(bare.correlationId, undefined);
+
+  const nested = tanstackAiContext({
+    requestId: "req-1",
+    streamId: "stream-1",
+    context: { sessionId: "sess-kept" },
+  });
+  assert.equal(nested.correlationId, "sess-kept");
+});
+
 test("reads chat({ context }) even when the envelope is a ChatMiddlewareContext", () => {
   const result = tanstackAiContext({
     requestId: "req-1",

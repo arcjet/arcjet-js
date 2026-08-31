@@ -204,6 +204,39 @@ test("policy factory throw fail-closes and does not throw from the hook", async 
   assert.equal(asDenial<ArcjetDenialResult>(decision.result).reason, "ERROR");
 });
 
+test("onDeny abort does not abort unavailable: fail-open stays skip", async () => {
+  const { client } = stubClient(decisionFailOpenAllow());
+  const mw = guardMiddleware(client, { action: "tool.invoked", onDeny: "abort" });
+  const result = await runHook(mw, toolHook("lookup"));
+  const decision = result as { type: string; result: unknown };
+  assert.equal(decision.type, "skip");
+  assert.equal(asDenial<ArcjetDenialResult>(decision.result).reason, "ERROR");
+});
+
+test("onDeny abort does not abort unavailable: policy factory throw stays skip", async () => {
+  const { client } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    onDeny: "abort",
+    rules: () => {
+      throw new Error("rules exploded");
+    },
+  });
+  const result = await runHook(mw, toolHook("lookup"));
+  const decision = result as { type: string; result: unknown };
+  assert.equal(decision.type, "skip");
+  assert.equal(asDenial<ArcjetDenialResult>(decision.result).reason, "ERROR");
+});
+
+test("onDeny abort does not abort unavailable: thrown guard() stays skip", async () => {
+  const { client } = stubClient(new Error("transport down"));
+  const mw = guardMiddleware(client, { action: "tool.invoked", onDeny: "abort" });
+  const result = await runHook(mw, toolHook("lookup"));
+  const decision = result as { type: string; result: unknown };
+  assert.equal(decision.type, "skip");
+  assert.equal(asDenial<ArcjetDenialResult>(decision.result).reason, "ERROR");
+});
+
 test("no-throw: a throwing guard() becomes a skip denial, not a thrown error", async () => {
   const { client } = stubClient(new Error("transport down"));
   const mw = guardMiddleware(client, { action: "tool.invoked" });
@@ -213,7 +246,7 @@ test("no-throw: a throwing guard() becomes a skip denial, not a thrown error", a
   assert.equal(asDenial<ArcjetDenialResult>(decision.result).reason, "ERROR");
 });
 
-test("inbound brand-skip: a branded tool skips so a preceding guard() is not double-called", async () => {
+test("skips a sibling guardTool-branded tool so Guard is not double-called", async () => {
   const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
   const branded = { name: "lookup_order" };
   Object.defineProperty(branded, arcjetProtectedTool, { value: true });
