@@ -1,7 +1,13 @@
 import { readBodyWeb } from "@arcjet/body";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ProxyService,
+} from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -250,6 +256,13 @@ export function createArcjetClient<
       });
 
   const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
+  const reportClientIp = createClientIpDiagnostics(log);
+  if (proxies && hasTrustAllProxy(proxies)) {
+    log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(process.env)) {
     log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
@@ -271,11 +284,12 @@ export function createArcjetClient<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
-    const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
-    let ip =
-      ipSrc ||
-      xArcjetIp ||
-      findIp({ ip: clientAddress, headers }, { platform: platform(env), proxies });
+    const ipDetails = resolveClientIp(
+      { ip: clientAddress, headers },
+      { development: isDevelopment(env), ipSrc, platform: platform(env), proxies },
+    );
+    reportClientIp(ipDetails);
+    let ip = ipDetails.ip;
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

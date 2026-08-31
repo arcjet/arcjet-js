@@ -1,4 +1,10 @@
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ProxyService,
+} from "@arcjet/ip";
 // NestJS requires this. Usually it is imported via their runtime but we
 // import it to be sure.
 // oxlint-disable-next-line import/no-unassigned-import
@@ -326,6 +332,13 @@ function arcjet<
       });
 
   const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
+  const reportClientIp = createClientIpDiagnostics(log);
+  if (proxies && hasTrustAllProxy(proxies)) {
+    log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(process.env)) {
     log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
@@ -342,18 +355,16 @@ function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
-    let ip =
-      ipSrc ||
-      xArcjetIp ||
-      findIp(
-        {
-          ip: request.ip,
-          socket: request.socket,
-          headers,
-        },
-        { platform: platform(process.env), proxies },
-      );
+    const ipDetails = resolveClientIp(
+      {
+        ip: request.ip,
+        socket: request.socket,
+        headers,
+      },
+      { development: isDevelopment(process.env), ipSrc, platform: platform(process.env), proxies },
+    );
+    reportClientIp(ipDetails);
+    let ip = ipDetails.ip;
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

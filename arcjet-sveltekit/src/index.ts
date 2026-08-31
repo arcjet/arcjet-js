@@ -1,5 +1,11 @@
 import { readBodyWeb } from "@arcjet/body";
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ProxyService,
+} from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -285,6 +291,13 @@ export default function arcjet<
       });
 
   const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
+  const reportClientIp = createClientIpDiagnostics(log);
+  if (proxies && hasTrustAllProxy(proxies)) {
+    log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(env)) {
     log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
@@ -300,17 +313,18 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(event.request.headers);
 
-    const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
-    let ip =
-      ipSrc ||
-      xArcjetIp ||
-      findIp(
-        {
-          ip: event.getClientAddress(),
-          headers,
-        },
-        { platform: platform(env), proxies },
-      );
+    const ipDetails = resolveClientIp(
+      {
+        // `getClientAddress()` can throw when the SvelteKit adapter cannot
+        // determine a peer. A valid manual `ipSrc` has higher precedence and
+        // must not invoke that fallible framework lookup.
+        ip: ipSrc ? undefined : event.getClientAddress(),
+        headers,
+      },
+      { development: isDevelopment(env), ipSrc, platform: platform(env), proxies },
+    );
+    reportClientIp(ipDetails);
+    let ip = ipDetails.ip;
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.

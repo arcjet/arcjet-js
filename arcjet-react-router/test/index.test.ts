@@ -164,6 +164,25 @@ test("`default`", async function (t) {
         assert.equal(called, false);
       },
     );
+
+    await t.test("should warn when proxy configuration trusts every peer", () => {
+      let parameters: unknown;
+      arcjet({
+        key: "",
+        log: {
+          ...createArcjetLogger(),
+          warn(...rest) {
+            parameters = rest;
+          },
+        },
+        proxies: ["0.0.0.0/0"],
+        rules: [],
+      });
+      assert.deepEqual(parameters, [
+        { trustAll: true },
+        "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+      ]);
+    });
   });
 
   await t.test("`protect()`", async function (t) {
@@ -194,6 +213,7 @@ test("`default`", async function (t) {
       assert.deepEqual(parameters, undefined);
 
       await integration.protect({
+        context: { ip: 123 } as any,
         request: new Request("https://example.com/"),
       });
 
@@ -530,9 +550,13 @@ test("`default`", async function (t) {
         rules: [sensitiveInfo({ deny: ["EMAIL"], mode: "LIVE" })],
       });
 
+      const body = "email test@example.com phone 011234567 ip 10.12.234.2";
       const request = new Request("https://example.com/", {
-        body: "email test@example.com phone 011234567 ip 10.12.234.2",
-        headers: { "x-client-ip": "185.199.108.153" },
+        body,
+        headers: {
+          "content-length": String(new TextEncoder().encode(body).byteLength),
+          "x-client-ip": "185.199.108.153",
+        },
         method: "POST",
       });
       const result = await integration.protect({ request });

@@ -456,7 +456,7 @@ test("`arcjetNode`", async function (t) {
     ]);
   });
 
-  await t.test("should prefer and strip an explicit `ipSrc`", async function () {
+  await t.test("should prefer an explicit `ipSrc` and treat empty as omitted", async function () {
     const restore = capture();
     let request: ArcjetRequestDetails | undefined;
     const arcjet = arcjetNode({
@@ -489,14 +489,14 @@ test("`arcjetNode`", async function (t) {
       decide(request) {
         return arcjet.protect(request, {
           correlationId: "wf_ip_src",
-          ipSrc: " application-owned:not-an-ip ",
+          ipSrc: "8.8.8.8",
           metadata: { integration: "custom-ip" },
         });
       },
     });
 
     await fetch(url, { headers: { "x-forwarded-for": "185.199.108.1" } });
-    assert.equal(request?.ip, " application-owned:not-an-ip ");
+    assert.equal(request?.ip, "8.8.8.8");
     assert.equal(request?.correlationId, "wf_ip_src");
     assert.deepEqual(request?.extra, {});
     assert.deepEqual(request?.metadata, { integration: "custom-ip" });
@@ -507,6 +507,66 @@ test("`arcjetNode`", async function (t) {
 
     assert.equal(request?.ip, "185.199.108.1");
     assert.deepEqual(request?.extra, {});
+  });
+
+  await t.test("should reject a malformed explicit `ipSrc`", async function () {
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      rules: [],
+    });
+    await assert.rejects(
+      arcjet.protect(
+        { headers: { "x-forwarded-for": "185.199.108.1" } },
+        { ipSrc: "application-owned:not-an-ip" },
+      ),
+      /Invalid ipSrc/,
+    );
+  });
+
+  await t.test("should expose provenance and warn once for unverified headers", async () => {
+    const debug: Array<Array<unknown>> = [];
+    const warnings: Array<Array<unknown>> = [];
+    const arcjet = arcjetNode({
+      client: createLocalClient(),
+      key: exampleKey,
+      log: {
+        debug(...args: Array<unknown>) {
+          debug.push(args);
+        },
+        error() {},
+        info() {},
+        warn(...args: Array<unknown>) {
+          warnings.push(args);
+        },
+      },
+      rules: [],
+    });
+    const request = { headers: { "x-forwarded-for": "185.199.108.1" } };
+
+    assert.deepEqual(arcjet.clientIpDetails(request), {
+      ip: "185.199.108.1",
+      provenance: "unverified-header",
+      verified: false,
+      header: "x-forwarded-for",
+    });
+    await arcjet.protect(request);
+    await arcjet.protect(request);
+
+    assert.equal(
+      debug.some(
+        ([facets]) =>
+          typeof facets === "object" &&
+          facets !== null &&
+          "client_ip_provenance" in facets &&
+          facets.client_ip_provenance === "unverified-header",
+      ),
+      true,
+    );
+    assert.equal(
+      warnings.filter((args) => String(args[1]).includes("unverified forwarding header")).length,
+      1,
+    );
   });
 
   await t.test("should prefer `x-arcjet-ip` in development", async function () {

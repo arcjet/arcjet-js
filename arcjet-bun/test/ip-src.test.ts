@@ -44,12 +44,12 @@ test("explicit ipSrc takes precedence over the cached Bun address and is strippe
     },
   };
   const handler = client.handler(async (received) => {
-    await client.protect(received, { ipSrc: " application-owned:not-an-ip " });
+    await client.protect(received, { ipSrc: "8.8.8.8" });
     return new Response();
   });
 
   await handler.call(server as any, request, server as any);
 
-  assert.equal(details.ip, " application-owned:not-an-ip ");
+  assert.equal(details.ip, "8.8.8.8");
   assert.deepEqual(details.extra, {});
 });

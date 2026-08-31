@@ -1,4 +1,11 @@
-import { findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ClientIpDetails,
+  type ProxyService,
+} from "@arcjet/ip";
 import core from "arcjet";
 import type {
   ArcjetDecision,
@@ -14,7 +21,7 @@ import type {
 } from "arcjet";
 
 export { cloudflare } from "@arcjet/ip";
-export type { ProxyService } from "@arcjet/ip";
+export type { ClientIpDetails, ClientIpProvenance, ProxyService } from "@arcjet/ip";
 import { readBody } from "@arcjet/body";
 import type { Env } from "@arcjet/env";
 import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
@@ -272,6 +279,28 @@ export type ArcjetOptions<
  */
 export interface ArcjetNode<Props extends PlainObject> {
   /**
+   * Explain how this client would resolve an IP without protecting.
+   *
+   * This diagnostic is side-effect-free: it does not emit logs, consume the
+   * once-per-client-instance `unverified-header` warning, or send a decision.
+   * Pass the same independently trusted `ipSrc` here that you will pass to
+   * {@linkcode protect} when using a manual override.
+   *
+   * @example
+   * ```ts
+   * const details = aj.clientIpDetails(request);
+   * console.log(details.ip, details.provenance, details.verified, details.header);
+   * ```
+   *
+   * @throws {Error}
+   *   If a non-empty `ipSrc` is not a valid IPv4 or IPv6 address.
+   */
+  clientIpDetails(
+    request: ArcjetNodeRequest,
+    options?: { ipSrc?: string | undefined } | undefined,
+  ): ClientIpDetails;
+
+  /**
    * Make a decision about how to handle a request.
    *
    * This will analyze the request locally where possible and otherwise call
@@ -292,7 +321,12 @@ export interface ArcjetNode<Props extends PlainObject> {
     ...props: MaybeProperties<
       Props & {
         correlationId?: string;
-        /** Application-provided client IP address, used instead of automatic detection. */
+        /**
+         * Independently trusted client IP used instead of automatic detection.
+         * A non-empty malformed value throws. An empty string is treated as
+         * omitted for compatibility. Never copy a client-controlled forwarding
+         * header into this field.
+         */
         ipSrc?: string;
         metadata?: ArcjetMetadata;
       }
@@ -350,9 +384,25 @@ export default function arcjet<
       });
 
   const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
+  const reportClientIp = createClientIpDiagnostics(log);
+
+  if (proxies && hasTrustAllProxy(proxies)) {
+    log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(env)) {
     log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
+  }
+
+  function resolveIp(request: ArcjetNodeRequest, ipSrc?: string): ClientIpDetails {
+    const headers = new ArcjetHeaders(request.headers);
+    return resolveClientIp(
+      { socket: request.socket, headers },
+      { development: isDevelopment(env), ipSrc, platform: platform(env), proxies },
+    );
   }
 
   function toArcjetRequest<Props extends PlainObject>(
@@ -366,17 +416,9 @@ export default function arcjet<
     // We construct an ArcjetHeaders to normalize over Headers
     const headers = new ArcjetHeaders(request.headers);
 
-    const xArcjetIp = isDevelopment(env) ? headers.get("x-arcjet-ip") : undefined;
-    let ip =
-      ipSrc ||
-      xArcjetIp ||
-      findIp(
-        {
-          socket: request.socket,
-          headers,
-        },
-        { platform: platform(env), proxies },
-      );
+    const ipDetails = resolveIp(request, ipSrc);
+    reportClientIp(ipDetails);
+    let ip = ipDetails.ip;
     if (ip === "") {
       // If the `ip` is empty but we're in development mode, we default the IP
       // so the request doesn't fail.
@@ -434,6 +476,9 @@ export default function arcjet<
     aj: Arcjet<Properties>,
   ): ArcjetNode<Properties> {
     const client: ArcjetNode<Properties> = {
+      clientIpDetails(request, options) {
+        return resolveIp(request, options?.ipSrc);
+      },
       withRule(rule) {
         const client = aj.withRule(rule);
         return withClient(client);

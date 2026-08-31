@@ -1,7 +1,15 @@
 import { readBody } from "@arcjet/body";
 import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  type Cidr,
+  type ClientIpDetails,
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ProxyService,
+} from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
@@ -247,6 +255,8 @@ interface State {
    * Configured proxies.
    */
   proxies: ReadonlyArray<Cidr | string | ProxyService>;
+
+  reportClientIp: (details: ClientIpDetails) => void;
 }
 
 /**
@@ -279,11 +289,20 @@ export default function arcjet<
     key = config.__ARCJET_KEY;
   }
 
+  const log = options.log ?? new Logger({ level: logLevel(process.env) });
+  const proxies = options.proxies ? parseProxies(options.proxies) : [];
   const state: State = {
     client: options.client ?? createRemoteClient(),
-    log: options.log ?? new Logger({ level: logLevel(process.env) }),
-    proxies: options.proxies ? parseProxies(options.proxies) : [],
+    log,
+    proxies,
+    reportClientIp: createClientIpDiagnostics(log),
   };
+  if (hasTrustAllProxy(state.proxies)) {
+    state.log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(process.env)) {
     state.log.warn(
@@ -405,14 +424,14 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   ipSrc?: string,
 ): ArcjetRequest<Properties> {
   const headers = new ArcjetHeaders(event.node.req.headers);
-  const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
-  let ip =
-    ipSrc ||
-    xArcjetIp ||
-    findIp(event.node.req, {
-      platform: platform(process.env),
-      proxies: state.proxies,
-    });
+  const ipDetails = resolveClientIp(event.node.req, {
+    development: isDevelopment(process.env),
+    ipSrc,
+    platform: platform(process.env),
+    proxies: state.proxies,
+  });
+  state.reportClientIp(ipDetails);
+  let ip = ipDetails.ip;
 
   if (!ip) {
     if (isDevelopment(process.env)) {
