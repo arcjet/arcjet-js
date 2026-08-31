@@ -21,8 +21,9 @@ import type { ArcjetAgentClient } from "./capture.ts";
  *    `onUnavailable` without executing; with `"allow"`, both fail open and
  *    proceed to execute.
  * 2. On DENY, capture `outcome: "denied"` and return `onDeny(decision)`.
- * 3. Otherwise run `execute()`, capturing `outcome: "success"` — or, if it
- *    throws, `outcome: "error"` before rethrowing.
+ * 3. Otherwise run `execute()`, capturing `outcome: "success"` when policy
+ *    judged the action, or `outcome: "degraded"` when `"allow"` let it run
+ *    unjudged — or, if it throws, `outcome: "error"` before rethrowing.
  *
  * `onDeny` returns the value the caller hands back on denial. Model-facing
  * helpers wrap the shared `ArcjetDenialResult` in a framework-idiomatic
@@ -69,6 +70,11 @@ export async function runGuarded<T>(
 
   const failClosed = onGuardError === "deny";
 
+  // Cleared wherever `onGuardError: "allow"` lets the action run without a
+  // complete judgement, so the capture at the tail reports what happened
+  // rather than claiming a success policy never made.
+  let judgedFully = true;
+
   let decisionId: string | undefined;
   let decision: Decision | undefined;
   try {
@@ -98,7 +104,8 @@ export async function runGuarded<T>(
       return onUnavailable({ kind: "threw", error });
     }
     warnUnavailable(action, "threw", false, error);
-    decision = undefined; // fall through to execute, exactly as today
+    decision = undefined; // fall through to execute
+    judgedFully = false;
   }
   if (decision !== undefined) {
     // Suppress an empty id. Every decision the client synthesizes on a
@@ -129,7 +136,8 @@ export async function runGuarded<T>(
     }
     if (decision.conclusion === "ALLOW" && decision.hasFailedOpen()) {
       warnUnavailable(action, "failed-open", false);
-      // fall through to execute
+      // fall through to execute, with nothing judged
+      judgedFully = false;
     }
     if (decision.conclusion === "DENY") {
       captureEvent(client, {
@@ -159,7 +167,7 @@ export async function runGuarded<T>(
     action,
     ...correlation,
     ...(decisionId !== undefined && { decisionId }),
-    metadata: { ...metadata, outcome: "success" },
+    metadata: { ...metadata, outcome: judgedFully ? "success" : "degraded" },
   });
   return result;
 }

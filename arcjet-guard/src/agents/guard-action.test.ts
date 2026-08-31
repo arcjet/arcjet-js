@@ -221,6 +221,15 @@ test("AC4.4: guard throws, onGuardError: 'allow' → fn runs, result passes thro
     );
     assert.equal(guardCalls.length, 1, "guard should be called");
     assert.equal(captureCalls.length, 1, "capture should still fire");
+    // The action ran only because onGuardError is "allow", and policy judged
+    // none of it, so the record must not claim a success.
+    assert.equal(recorded(recorded(captureCalls[0])["metadata"])["outcome"], "degraded");
+    // No decision exists to point at, which is what says policy judged nothing.
+    assert.equal(
+      recorded(captureCalls[0])["decisionId"],
+      undefined,
+      "a call guard never judged has no decision id",
+    );
   } finally {
     console.warn = originalWarn;
     restoreLogLevel();
@@ -261,6 +270,14 @@ test("AC4.4: guard resolves fail-open ALLOW, onGuardError: 'allow' → fn runs, 
       "warning should mention failed open",
     );
     assert.equal(captureCalls.length, 1, "capture should fire");
+    // A failed-open decision judged nothing, so this is not a success either.
+    assert.equal(recorded(recorded(captureCalls[0])["metadata"])["outcome"], "degraded");
+    // The synthesized fail-open decision carries id "", which is suppressed.
+    assert.equal(
+      recorded(captureCalls[0])["decisionId"],
+      undefined,
+      "an empty id is not a decision id",
+    );
   } finally {
     console.warn = originalWarn;
     restoreLogLevel();
