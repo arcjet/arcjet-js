@@ -30,9 +30,11 @@
  *   `onBeforeToolCall` is the `chat()`-wide gate. Default DENY is
  *   `{ type: "skip", result: ArcjetDenialResult }` so the tool never
  *   runs and the model sees the payload. Optional `onDeny: "abort"`
- *   returns `{ type: "abort", reason }` and stops the run. The hook
- *   does not throw. Already-branded tools are skipped so a preceding
- *   `guard()` is not double-called.
+ *   returns `{ type: "abort", reason }` and stops the run — the model
+ *   does not get `ArcjetDenialResult`. The hook does not throw.
+ *   Tools already branded by a sibling `guardTool` are skipped so
+ *   Guard is not double-called. Inbound `guard()` before `chat()`
+ *   does not brand tools and does not skip this gate.
  * - **Correlation** → `tanstackAiContext()` reads a caller-owned id
  *   from the helper options or `chat({ context })`. It never mints a
  *   new id. It never reads `ctx.threadId` (TanStack auto-generates

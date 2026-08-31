@@ -137,8 +137,10 @@ change them:
   not policy. After a human yes, Guard still runs. Put Arcjet first
   in the middleware array — `onBeforeToolCall` is first-win; if
   `toolCacheMiddleware` skips first, Guard never runs. Brand-skip
-  inbound so `guardMiddleware` does not double-call a preceding
-  `guard()`. Correlation is a caller-owned id from helper options or
+  tools already wrapped by a sibling `guardTool` so
+  `guardMiddleware` does not double-call. Inbound `guard()` before
+  `chat()` is a separate call and does not brand tools. Correlation
+  is a caller-owned id from helper options or
   `chat({ context })`. Never mint. Never `ctx.threadId`. Never
   `traceId` / `requestId` / `streamId`. There is no unversioned
   `@arcjet/guard/tanstack-ai` alias and no `/v1` until TanStack AI

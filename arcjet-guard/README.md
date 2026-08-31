@@ -1549,9 +1549,12 @@ Never read `traceId`. Never use `SessionManager` or `agent.id`.
   first-win; if `toolCacheMiddleware` (or anything else) skips first,
   Guard never runs. Default DENY is `{ type: "skip", result:
 ArcjetDenialResult }` so the tool never runs and the model sees the
-  payload. Optional `onDeny: "abort"` stops the run. The hook does
-  not throw. Already-branded tools are skipped so a preceding
-  `guard()` is not double-called. Correlation is a caller-owned id
+  payload. Optional `onDeny: "abort"` stops the run with a reason
+  string — the model does not get `ArcjetDenialResult`. The hook
+  does not throw. Tools already branded by a sibling `guardTool`
+  are skipped so Guard is not double-called. Inbound `guard()`
+  before `chat()` does not brand tools and does not skip this
+  gate. Correlation is a caller-owned id
   from helper options or `chat({ context })`. Never mint. Never
   `ctx.threadId`. Never `traceId` / `requestId` / `streamId`. Client
   tools and provider-native tools with no local `execute` are out of
@@ -1621,9 +1624,14 @@ There is no `guardApproval`.
 
 `onBeforeToolCall` is the deny point. Default DENY is
 `{ type: "skip", result: ArcjetDenialResult }`. Optional
-`onDeny: "abort"` returns `{ type: "abort", reason }`. Do not throw
-from the hook. Put Arcjet first — first-win composition means a
-preceding `toolCacheMiddleware` skip skips Guard too.
+`onDeny: "abort"` returns `{ type: "abort", reason }` (the denial
+`message` string) and stops the run — the model does not get
+`ArcjetDenialResult`. `onDeny: "abort"` applies to real DENY only;
+unavailable stays skip. Do not throw from the hook. Put Arcjet
+first — first-win composition means a preceding
+`toolCacheMiddleware` skip skips Guard too. Sibling `guardTool`
+brands are skipped; inbound `guard()` is a separate call and does
+not skip this gate.
 
 ### Naming and versions
 

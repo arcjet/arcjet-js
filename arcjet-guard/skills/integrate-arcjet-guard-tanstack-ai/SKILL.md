@@ -17,9 +17,11 @@ decision rule:
   middleware whose `onBeforeToolCall` is the chat()-wide gate. Default
   DENY is `{ type: "skip", result: ArcjetDenialResult }` so the tool
   never runs and the model sees the payload. Optional `onDeny: "abort"`
-  returns `{ type: "abort", reason }` and stops the run. Do not throw
-  from the hook. Already-branded tools are skipped so a preceding
-  `guard()` is not double-called.
+  returns `{ type: "abort", reason }` and stops the run — the model
+  does not get `ArcjetDenialResult`. Do not throw from the hook.
+  Tools already branded by a sibling `guardTool` are skipped so
+  Guard is not double-called. Inbound `guard()` before `chat()`
+  does not brand tools and does not skip this gate.
 - **Correlation** → `tanstackAiContext()` reads a caller-owned id from
   the helper options or `chat({ context })`. It never mints a new id.
   It never reads `ctx.threadId` (TanStack auto-generates it). It never
@@ -168,10 +170,18 @@ const stream = chat({
 - Omit `rules` to submit none. The guard call still happens.
 - On DENY the original `execute` never runs. Default delivery is
   `{ type: "skip", result: { arcjetDenied: true, reason, message, retryable } }`.
-- `onDeny: "abort"` stops the chat run instead.
+- `onDeny: "abort"` stops the chat run with `{ type: "abort", reason }`
+  (the denial `message` string). The model does not get
+  `ArcjetDenialResult`. Prefer default skip when the model should
+  see the payload. `onDeny: "abort"` applies to real DENY only;
+  unavailable stays skip.
 - Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
-- Already-branded tools skip the middleware guard so a preceding
-  `guard()` is not double-called.
+- ALLOW captures `outcome: "success"` when the policy lets the tool
+  run, not when `execute` finishes. `onBeforeToolCall` cannot wrap
+  the tool; a later tool throw does not flip that capture.
+- Tools already branded by a sibling `guardTool` skip the middleware
+  so Guard is not double-called. This namespace has no `guardTool`.
+  Inbound `guard()` before `chat()` does not stamp that brand.
 
 ## Step 3: Screen inbound before chat
 
@@ -225,6 +235,11 @@ then `context.conversationId`, then `init.sessionId` /
 string, the call is uncorrelated rather than joined to a generated
 id nobody has.
 
+Pass a caller-owned bag as `tanstackAiContext({ context: appContext })`
+or `chat({ context: appContext })`. A bare object that also has
+string `requestId` and `streamId` looks like TanStack's middleware
+envelope, so top-level `sessionId` on that object is ignored.
+
 Never mint a new id. Never read `ctx.threadId` (TanStack
 auto-generates it). Never read `traceId` / `requestId` / `streamId`.
 `needsApproval` resumes after a human yes — Guard still runs on the
@@ -235,11 +250,11 @@ correlation.
 
 1. `npm run typecheck` passes.
 2. Exercise inbound PI (before `chat()`, including `hasFailedOpen()`),
-   a middleware skip-deny, an abort-deny, first-win ordering (Arcjet
-   before `toolCacheMiddleware`), no-throw, never-mint, and
-   fail-closed (an unreachable guard). Confirm the denial is
-   `{ type: "skip", result }` (or abort) and the run is not an
-   interrupt.
+   a middleware skip-deny, an abort-deny, abort+unavailable still
+   skip, first-win ordering (Arcjet before `toolCacheMiddleware`),
+   no-throw, never-mint, and fail-closed (an unreachable guard).
+   Confirm the denial is `{ type: "skip", result }` (or abort) and
+   the run is not an interrupt.
 3. Confirm in the Arcjet dashboard that decisions share the
    caller-owned session id as their correlation id — not
    `threadId`.
