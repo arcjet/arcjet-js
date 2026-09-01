@@ -160,6 +160,7 @@ test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only A
     "langchainContext",
     "openaiAgentsContext",
     "genkitContext",
+    "tanstackAiContext",
     "guardInbound",
     "guardApproval",
     "guardInterrupt",

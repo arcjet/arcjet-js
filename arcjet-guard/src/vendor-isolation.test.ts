@@ -31,6 +31,7 @@ const NAMESPACES = [
   { dir: "openai-agents", packages: ["@openai/agents"] },
   { dir: "genkit", packages: ["genkit", "@genkit-ai"] },
   { dir: "strands-agents", packages: ["@strands-agents/sdk"] },
+  { dir: "tanstack-ai", packages: ["@tanstack/ai"] },
 ] as const;
 
 /**
@@ -111,6 +112,7 @@ test("the scanner detects a cross-vendor import when one is introduced", () => {
     { from: "vercel-ai", content: 'const m = await import("@openai/agents");\nvoid m;' },
     { from: "genkit", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "strands-agents", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "tanstack-ai", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "genkit", content: 'import type { Plugin } from "@strands-agents/sdk";\nvoid 0;' },
     {
       from: "mastra",

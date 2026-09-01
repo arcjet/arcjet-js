@@ -89,6 +89,13 @@ const CHECKS = [
     remove: ["@strands-agents/sdk"],
     resolve: ["@strands-agents/sdk"],
   },
+  {
+    name: "tanstack-ai",
+    dir: "tanstack-ai",
+    version: "v0",
+    remove: ["@tanstack/ai"],
+    resolve: ["@tanstack/ai"],
+  },
   // Last: deletes a shared devDependency.
   {
     name: "eve",
