@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { describe, test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   PACKAGE_NAME,
@@ -79,7 +79,7 @@ describe("manifest", () => {
 describe("SKILL.md files", () => {
   test("frontmatter matches the TypeScript manifest", () => {
     for (const skill of skills) {
-      const text = readFileSync(join(packageRoot, skill.file), "utf8");
+      const text = readFileSync(join(packageRoot, skill.file), "utf8").replaceAll("\r\n", "\n");
       const match = /^---\n([\s\S]*?)\n---\n/.exec(text);
       assert.ok(match, `${skill.file} is missing YAML frontmatter`);
 
@@ -118,12 +118,51 @@ describe("SKILL.md files", () => {
   });
 });
 
+describe("stale check", () => {
+  test("walks up from skills/<name>/SKILL.md to the workspace package.json", async () => {
+    const skillFile = join(packageRoot, "skills/protect/SKILL.md");
+    const twoUp = dirname(dirname(skillFile));
+    const threeUp = dirname(twoUp);
+
+    assert.ok(!existsSync(join(twoUp, "package.json")));
+    assert.ok(existsSync(join(threeUp, "package.json")));
+
+    const { findNearestPackageRoot } = await import(
+      pathToFileURL(join(packageRoot, "../.github/scripts/check-skill-source-stale.mjs")).href
+    );
+    assert.equal(findNearestPackageRoot(skillFile, dirname(packageRoot)), resolve(packageRoot));
+  });
+
+  test("parses sources from CRLF frontmatter", async () => {
+    const { readSources } = await import(
+      pathToFileURL(join(packageRoot, "../.github/scripts/check-skill-source-stale.mjs")).href
+    );
+    const crlf = [
+      "---",
+      "name: protect",
+      "sources:",
+      "  - docs/protect.md",
+      "---",
+      "",
+      "# Protect",
+      "",
+    ].join("\r\n");
+    assert.deepEqual(readSources(crlf), ["docs/protect.md"]);
+  });
+});
+
 describe("npm tarball", () => {
   test("publishes skills and source docs", () => {
-    const packed = execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], {
-      cwd: packageRoot,
-      encoding: "utf8",
-    });
+    const npmArgs = ["pack", "--dry-run", "--json", "--ignore-scripts"];
+    const packed = process.env.npm_execpath
+      ? execFileSync(process.execPath, [process.env.npm_execpath, ...npmArgs], {
+          cwd: packageRoot,
+          encoding: "utf8",
+        })
+      : execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", npmArgs, {
+          cwd: packageRoot,
+          encoding: "utf8",
+        });
     const parsed: unknown = JSON.parse(packed);
     const report = Array.isArray(parsed)
       ? (parsed[0] as { files: Array<{ path: string }> })

@@ -9,7 +9,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -43,11 +43,50 @@ function findFiles(dir, name) {
 }
 
 /**
+ * Walk from a SKILL.md up to the nearest package.json, stopping at `stopAt`.
+ * Skills live at `skills/<name>/SKILL.md`, three levels below the workspace
+ * manifest — do not assume a fixed number of `dirname` calls.
+ *
+ * @param {string} skillFile
+ * @param {string} stopAt
+ * @returns {string | undefined}
+ */
+export function findNearestPackageRoot(skillFile, stopAt) {
+  const root = resolve(stopAt);
+  let dir = dirname(resolve(skillFile));
+  for (;;) {
+    if (existsSync(join(dir, "package.json"))) {
+      return dir;
+    }
+    if (dir === root) {
+      return undefined;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) {
+      return undefined;
+    }
+    dir = parent;
+  }
+}
+
+/**
+ * Git prints repo-relative paths with `/`. `path.relative` uses `path.sep`.
+ *
+ * @param {string} from
+ * @param {string} to
+ * @returns {string}
+ */
+export function toRepoRel(from, to) {
+  return relative(from, to).split(sep).join("/");
+}
+
+/**
  * @param {string} text
  * @returns {string[]}
  */
-function readSources(text) {
-  const match = /^---\n([\s\S]*?)\n---\n/.exec(text);
+export function readSources(text) {
+  const normalized = text.replaceAll("\r\n", "\n");
+  const match = /^---\n([\s\S]*?)\n---\n/.exec(normalized);
   if (!match) {
     return [];
   }
@@ -82,69 +121,92 @@ function changedFiles() {
   return new Set(
     output
       .split("\n")
-      .map((line) => line.trim())
+      .map((line) => line.trim().replaceAll("\\", "/"))
       .filter(Boolean),
   );
 }
 
-const changed = changedFiles();
-/** @type {string[]} */
-const errors = [];
-/** @type {string[]} */
-const reviews = [];
-
-for (const skillFile of findFiles(repoRoot, "SKILL.md")) {
-  const packageRoot = dirname(dirname(skillFile));
-  const pkgFile = join(packageRoot, "package.json");
-  if (!existsSync(pkgFile)) {
-    continue;
+function invokedAsCli() {
+  const entry = process.argv[1];
+  if (!entry) {
+    return false;
   }
-  const pkg = JSON.parse(readFileSync(pkgFile, "utf8"));
-  const keywords = Array.isArray(pkg.keywords) ? pkg.keywords : [];
-  if (!keywords.includes("tanstack-intent")) {
-    continue;
-  }
+  return fileURLToPath(import.meta.url) === resolve(entry);
+}
 
-  const text = readFileSync(skillFile, "utf8");
-  const sources = readSources(text);
-  const skillRel = relative(repoRoot, skillFile);
-  const skillChanged = changed.has(skillRel);
+function main() {
+  const changed = changedFiles();
+  /** @type {string[]} */
+  const errors = [];
+  /** @type {string[]} */
+  const reviews = [];
+  let checked = 0;
 
-  if (sources.length === 0) {
-    errors.push(`${skillRel}: missing sources list`);
-    continue;
-  }
-
-  for (const source of sources) {
-    const sourcePath = join(packageRoot, source);
-    if (!existsSync(sourcePath) || !statSync(sourcePath).isFile()) {
-      errors.push(`${skillRel}: source not found: ${source}`);
+  for (const skillFile of findFiles(repoRoot, "SKILL.md")) {
+    const packageRoot = findNearestPackageRoot(skillFile, repoRoot);
+    if (!packageRoot) {
       continue;
     }
-    const sourceRel = relative(repoRoot, sourcePath);
-    if (against && changed.has(sourceRel) && !skillChanged) {
-      reviews.push(
-        `${skillRel}: source ${sourceRel} changed; review the skill (a changed source is a signal, not proof it is wrong)`,
-      );
+    const pkgFile = join(packageRoot, "package.json");
+    const pkg = JSON.parse(readFileSync(pkgFile, "utf8"));
+    const keywords = Array.isArray(pkg.keywords) ? pkg.keywords : [];
+    if (!keywords.includes("tanstack-intent")) {
+      continue;
+    }
+
+    checked += 1;
+    const text = readFileSync(skillFile, "utf8");
+    const sources = readSources(text);
+    const skillRel = toRepoRel(repoRoot, skillFile);
+    const skillChanged = changed.has(skillRel);
+
+    if (sources.length === 0) {
+      errors.push(`${skillRel}: missing sources list`);
+      continue;
+    }
+
+    for (const source of sources) {
+      const sourcePath = join(packageRoot, source);
+      if (!existsSync(sourcePath) || !statSync(sourcePath).isFile()) {
+        errors.push(`${skillRel}: source not found: ${source}`);
+        continue;
+      }
+      const sourceRel = toRepoRel(repoRoot, sourcePath);
+      if (against && changed.has(sourceRel) && !skillChanged) {
+        reviews.push(
+          `${skillRel}: source ${sourceRel} changed; review the skill (a changed source is a signal, not proof it is wrong)`,
+        );
+      }
     }
   }
-}
 
-if (errors.length > 0) {
-  console.error("Skill source check failed:\n" + errors.map((e) => `- ${e}`).join("\n"));
-  process.exit(1);
-}
+  if (checked === 0) {
+    console.error(
+      "Skill source check found no TanStack Intent skills. Expected SKILL.md under a package with the tanstack-intent keyword.",
+    );
+    process.exit(1);
+  }
 
-if (reviews.length > 0) {
-  console.error(
-    "Conservative stale check — declared sources changed without a skill edit:\n" +
-      reviews.map((e) => `- ${e}`).join("\n"),
+  if (errors.length > 0) {
+    console.error("Skill source check failed:\n" + errors.map((e) => `- ${e}`).join("\n"));
+    process.exit(1);
+  }
+
+  if (reviews.length > 0) {
+    console.error(
+      "Conservative stale check — declared sources changed without a skill edit:\n" +
+        reviews.map((e) => `- ${e}`).join("\n"),
+    );
+    process.exit(1);
+  }
+
+  console.log(
+    against
+      ? `Checked ${checked} Intent skills; sources exist; no unreviewed source edits against ${against}.`
+      : `Checked ${checked} Intent skills; sources exist.`,
   );
-  process.exit(1);
 }
 
-console.log(
-  against
-    ? `Skill sources exist; no unreviewed source edits against ${against}.`
-    : "Skill sources exist.",
-);
+if (invokedAsCli()) {
+  main();
+}
