@@ -100,11 +100,15 @@ function firstValidId(candidates: ReadonlyArray<{ value: unknown; label: string 
   return { id: undefined, rejected };
 }
 
-function firstString(values: unknown[]): string | undefined {
+function validMetadataString(values: unknown[]): string | undefined {
   for (const value of values) {
-    if (typeof value === "string" && value.length > 0) {
-      return value;
+    if (typeof value !== "string" || value.length === 0) {
+      continue;
     }
+    if (correlationIdProblem(value) !== undefined) {
+      continue;
+    }
+    return value;
   }
   return undefined;
 }
@@ -182,12 +186,12 @@ export function tanstackAiContext(
 
   const derivedMetadata: ArcjetMetadata = {};
 
-  const session = firstString([fromApp.sessionId, fromEnvelope.sessionId, init?.sessionId]);
+  const session = validMetadataString([fromApp.sessionId, fromEnvelope.sessionId, init?.sessionId]);
   if (session !== undefined) {
     derivedMetadata["tanstack-ai.session"] = session;
   }
 
-  const conversation = firstString([fromApp.conversationId, fromEnvelope.conversationId]);
+  const conversation = validMetadataString([fromApp.conversationId, fromEnvelope.conversationId]);
   if (conversation !== undefined) {
     derivedMetadata["tanstack-ai.conversation"] = conversation;
   }

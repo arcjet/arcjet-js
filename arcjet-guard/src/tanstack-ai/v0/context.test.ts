@@ -128,6 +128,8 @@ test("skips an invalid context session id and uses the next candidate", () => {
   });
 
   assert.equal(result.correlationId, "conv-ok");
+  assert.equal("tanstack-ai.session" in (result.metadata ?? {}), false);
+  assert.equal(result.metadata?.["tanstack-ai.conversation"], "conv-ok");
 });
 
 test("rejects a session id over 256 characters and does not mint", () => {
@@ -135,7 +137,7 @@ test("rejects a session id over 256 characters and does not mint", () => {
   const result = tanstackAiContext({ context: { sessionId: longId } });
 
   assert.equal(result.correlationId, undefined);
-  assert.equal(result.metadata?.["tanstack-ai.session"], longId);
+  assert.equal("tanstack-ai.session" in (result.metadata ?? {}), false);
 });
 
 test("a null context does not throw and does not mint", () => {
@@ -202,7 +204,17 @@ test("non-string candidates are skipped", () => {
 test("non-printable session id is rejected and does not mint", () => {
   const result = tanstackAiContext({ context: { sessionId: "bad\nid" } });
   assert.equal(result.correlationId, undefined);
-  assert.equal(result.metadata?.["tanstack-ai.session"], "bad\nid");
+  assert.equal("tanstack-ai.session" in (result.metadata ?? {}), false);
+});
+
+test("does not write an invalid session id into metadata when a later candidate is valid", () => {
+  const result = tanstackAiContext(
+    { context: { sessionId: "bad\nid" } },
+    { sessionId: "policy-sess" },
+  );
+
+  assert.equal(result.correlationId, "policy-sess");
+  assert.equal(result.metadata?.["tanstack-ai.session"], "policy-sess");
 });
 
 test("warns when every candidate is invalid and ARCJET_LOG_LEVEL asks for warnings", () => {
