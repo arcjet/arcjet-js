@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Vercel Eve (eve >= 0.34.0 < 1) on Node.js >= 24.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Vercel Eve agent

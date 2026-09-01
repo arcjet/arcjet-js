@@ -1,0 +1,103 @@
+name: Check Skills
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - arcjet-skills/**
+      - arcjet-guard/skills/**
+      - arcjet-guard/README.md
+      - arcjet-guard/package.json
+      - .github/workflows/check-skills.yml
+      - .github/scripts/check-skill-source-stale.mjs
+  push:
+    branches:
+      - main
+      - release-please--branches--main
+    paths:
+      - arcjet-skills/**
+      - arcjet-guard/skills/**
+      - arcjet-guard/README.md
+      - arcjet-guard/package.json
+      - .github/workflows/check-skills.yml
+      - .github/scripts/check-skill-source-stale.mjs
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DO_NOT_TRACK: "1"
+
+jobs:
+  validate:
+    name: Validate intent skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
+            nodejs.org:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
+          disable-sudo-and-containers: true
+          egress-policy: block
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Pin npm
+        uses: ./.github/actions/pin-npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate @arcjet/skills
+        run: npm run validate-skills --workspace @arcjet/skills
+
+      - name: Validate @arcjet/guard
+        run: npm run validate-skills --workspace @arcjet/guard
+
+      - name: Conservative source stale check
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            git fetch origin "$BASE_REF"
+            node .github/scripts/check-skill-source-stale.mjs --against "origin/$BASE_REF"
+          else
+            node .github/scripts/check-skill-source-stale.mjs
+          fi
+
+      - name: Intent stale report
+        run: |
+          {
+            echo "## Intent stale"
+            echo
+            echo "Conservative report only. A changed source is a review signal,"
+            echo "not proof the skill is wrong. Missing npm versions are expected"
+            echo "until the package is published."
+            echo
+            echo '```json'
+            npm run stale-skills --workspace @arcjet/skills || true
+            npm run stale-skills --workspace @arcjet/guard || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

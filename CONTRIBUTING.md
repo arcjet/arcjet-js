@@ -317,3 +317,24 @@ released, or a release run will fail:
    hand (`npm publish --workspace @arcjet/<name>`), then configure
    [trusted publishing](#npm-trusted-publishing) for it.
 4. After that, it publishes automatically alongside everything else.
+
+## Agent Skills
+
+Versioned [Agent Skills](https://agentskills.io) ship inside npm packages via
+[TanStack Intent](https://tanstack.com/intent). Do not add new skills to
+[`arcjet/skills`](https://github.com/arcjet/skills) for JS/TS guidance — that
+repo is the older marketplace install. JS skills live next to the docs they
+were derived from:
+
+- General request / CLI / MCP / Guard routing: [`arcjet-skills/`](./arcjet-skills)
+- Guard vendor integrations: [`arcjet-guard/skills/`](./arcjet-guard/skills)
+
+Each `SKILL.md` must declare `sources` pointing at those docs. CI runs
+`intent validate` and a conservative stale check: if a source file changes
+and the skill does not, the pull request fails so a human can decide whether
+the guidance still holds.
+
+New skill-shipping packages need the `tanstack-intent` keyword and a
+`skills/` entry in `files` so the tarball includes them. Consumers allowlist
+packages in `package.json#intent.skills` and load one skill per task. Editor
+hooks are convenience, not a security boundary.

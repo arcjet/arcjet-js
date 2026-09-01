@@ -201,6 +201,7 @@ jobs:
             --workspace @arcjet/ip \
             --workspace @arcjet/redact-wasm \
             --workspace @arcjet/runtime \
+            --workspace @arcjet/skills \
             --workspace @arcjet/sprintf \
             --workspace @arcjet/stable-hash \
             --workspace @arcjet/transport \

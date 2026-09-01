@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Strands Agents JS (@strands-agents/sdk >=1.1.0 <2) on Node.js >= 22. This is JS Agent + tool({ callback }) + Plugin / addHook, not the Python SDK. The floor is 1.1.0 because HookOrder + interrupt() shipped then.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Strands Agents app

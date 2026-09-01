@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use the Claude Agent SDK (@anthropic-ai/claude-agent-sdk >=0.1.0 <1) on Node.js >= 22.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Claude Agent SDK agent

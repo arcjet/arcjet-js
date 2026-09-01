@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Mastra (@mastra/core >=1 <2) on Node.js >= 22.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Mastra agent

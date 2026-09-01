@@ -58,8 +58,28 @@ Skills give your agent the documentation to detect your framework, install
 the SDK, and wire up request or guard protection rules.
 
 ```sh
-npx skills add arcjet/skills
+npx @tanstack/intent@latest install
 ```
+
+This discovers `@arcjet/skills` (and `@arcjet/guard` if installed) from
+`node_modules` without executing package code. Add an allowlist in your app
+`package.json` so only those packages can surface skills:
+
+```json
+{
+  "intent": {
+    "skills": ["@arcjet/skills", "@arcjet/guard"]
+  }
+}
+```
+
+Load only the skill for the current task, for example
+`npx @tanstack/intent@latest load @arcjet/skills#protect`. Editor hooks from
+`intent hooks install` are convenience, not a security boundary.
+
+The standalone marketplace install (`npx skills add arcjet/skills`) still
+works from [`arcjet/skills`](https://github.com/arcjet/skills). Prefer the
+versioned package when you want skills that match the SDK in `node_modules`.
 
 > You can also use the [Arcjet plugin for Claude Code and
 > Cursor](https://docs.arcjet.com/arcjet-plugin), which bundles skills, MCP,
@@ -1012,6 +1032,7 @@ See [the docs][nosecone-docs] for details.
 - [`@arcjet/env`](./env/README.md): Environment detection.
 - [`@arcjet/headers`](./headers/README.md): Extension of the Headers class.
 - [`@arcjet/inspect`](./inspect/README.md): Inspect decisions made by an SDK.
+- [`@arcjet/skills`](./arcjet-skills/README.md): Versioned Agent Skills for AI coding agents (TanStack Intent).
 - [`@arcjet/ip`](./ip/README.md): Find the originating IP of a request.
 - [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
   Pino structured logger interface.
