@@ -149,6 +149,39 @@ describe("stale check", () => {
     ].join("\r\n");
     assert.deepEqual(readSources(crlf), ["docs/protect.md"]);
   });
+
+  test("keeps sources listed before a later frontmatter key", async () => {
+    const { readSources } = await import(
+      pathToFileURL(join(packageRoot, "../.github/scripts/check-skill-source-stale.mjs")).href
+    );
+    const text = [
+      "---",
+      "name: protect",
+      "sources:",
+      "  - docs/protect.md",
+      "  - docs/cli.md",
+      "compatibility: Node.js",
+      "---",
+      "",
+    ].join("\n");
+    assert.deepEqual(readSources(text), ["docs/protect.md", "docs/cli.md"]);
+  });
+
+  test("readAgainstArg requires a git ref", async () => {
+    const { readAgainstArg } = await import(
+      pathToFileURL(join(packageRoot, "../.github/scripts/check-skill-source-stale.mjs")).href
+    );
+    assert.equal(readAgainstArg(["node", "script.mjs"]), undefined);
+    assert.equal(readAgainstArg(["node", "script.mjs", "--against", "origin/main"]), "origin/main");
+    assert.throws(
+      () => readAgainstArg(["node", "script.mjs", "--against"]),
+      /--against requires a git ref/,
+    );
+    assert.throws(
+      () => readAgainstArg(["node", "script.mjs", "--against", "--json"]),
+      /--against requires a git ref/,
+    );
+  });
 });
 
 describe("npm tarball", () => {

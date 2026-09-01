@@ -13,9 +13,22 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const against = process.argv.includes("--against")
-  ? process.argv[process.argv.indexOf("--against") + 1]
-  : undefined;
+
+/**
+ * @param {string[]} argv
+ * @returns {string | undefined}
+ */
+export function readAgainstArg(argv) {
+  const index = argv.indexOf("--against");
+  if (index === -1) {
+    return undefined;
+  }
+  const value = argv[index + 1];
+  if (value === undefined || value.startsWith("-")) {
+    throw new Error("check-skill-source-stale: --against requires a git ref");
+  }
+  return value;
+}
 
 /**
  * @param {string} dir
@@ -99,18 +112,27 @@ export function readSources(text) {
   const sources = [];
   for (const line of block.slice(sourcesIndex).split("\n").slice(1)) {
     const item = /^\s+-\s+(\S+)\s*$/.exec(line);
-    if (!item) {
+    if (item) {
+      sources.push(item[1]);
+      continue;
+    }
+    if (/^\s*(?:#.*)?$/.test(line)) {
+      continue;
+    }
+    // Another top-level key ends the list. Keep going past indented
+    // non-items so a later key does not silently truncate sources.
+    if (/^\S/.test(line)) {
       break;
     }
-    sources.push(item[1]);
   }
   return sources;
 }
 
 /**
+ * @param {string | undefined} against
  * @returns {Set<string>}
  */
-function changedFiles() {
+function changedFiles(against) {
   if (!against) {
     return new Set();
   }
@@ -135,7 +157,8 @@ function invokedAsCli() {
 }
 
 function main() {
-  const changed = changedFiles();
+  const against = readAgainstArg(process.argv);
+  const changed = changedFiles(against);
   /** @type {string[]} */
   const errors = [];
   /** @type {string[]} */

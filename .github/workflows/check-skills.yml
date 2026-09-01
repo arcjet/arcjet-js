@@ -81,7 +81,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: |
           if [ -n "$BASE_REF" ]; then
-            git fetch origin "$BASE_REF"
+            git fetch origin "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
             node .github/scripts/check-skill-source-stale.mjs --against "origin/$BASE_REF"
           else
             node .github/scripts/check-skill-source-stale.mjs
