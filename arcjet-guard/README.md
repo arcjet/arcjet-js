@@ -1531,19 +1531,18 @@ Correlation is a field the integrator puts on `invocationState`
 (`correlationId`, then `sessionId`, then `requestId`). Never mint.
 Never read `traceId`. Never use `SessionManager` or `agent.id`.
 
-- **`@arcjet/guard/tanstack-ai/v0`** — TanStack AI `chat({ middleware })`
-  - `ChatMiddleware.onBeforeToolCall` integration. Exports
-    `guardMiddleware` and `tanstackAiContext`. This is **not** the
-    Vercel AI SDK — do not also wrap with `@arcjet/guard/vercel-ai/v7`.
-    There is no `guardTool` (a throw from `execute` is swallowed into
-    `{ error }` and is not a usable deny envelope), no `guardInbound`
-    (screen with `guard()` before `chat()`; `guard()` fails open —
-    check `hasFailedOpen()`), and no `guardApproval` (`needsApproval` /
-    `defineInterrupt` / `onInterruptBoundary` is human HITL, not
-    policy). After a human yes, Guard still runs. Do not name anything
-    `contentGuardMiddleware` (TanStack already has that name). Docs
-    live at
-    [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
+- **`@arcjet/guard/tanstack-ai/v0`** — TanStack AI `chat({ middleware })` +
+  `ChatMiddleware.onBeforeToolCall` integration. Exports `guardMiddleware`
+  and `tanstackAiContext`. This is **not** the Vercel AI SDK — do not also
+  wrap with `@arcjet/guard/vercel-ai/v7`. There is no `guardTool` (a throw
+  from `execute` is swallowed into `{ error }` and is not a usable deny
+  envelope), no `guardInbound` (screen with `guard()` before `chat()`;
+  `guard()` fails open — check `hasFailedOpen()`), and no `guardApproval`
+  (`needsApproval` / `defineInterrupt` / `onInterruptBoundary` is human
+  HITL, not policy). After a human yes, Guard still runs. Do not name
+  anything `contentGuardMiddleware` (TanStack already has that name). Docs
+  live at
+  [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
 
   Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
   first-win; if `toolCacheMiddleware` (or anything else) skips first,
