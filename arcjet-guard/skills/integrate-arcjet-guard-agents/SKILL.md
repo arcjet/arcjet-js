@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use the Vercel AI SDK (`ai` >= 7) on Node.js >= 22.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Vercel AI SDK app

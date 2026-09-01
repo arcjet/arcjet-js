@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use TanStack AI (@tanstack/ai >=0.8.0 <1) on Node.js >= 22. This is chat() + ChatMiddleware.onBeforeToolCall. There is no /v1 until TanStack AI ships 1.x. Do not use @arcjet/guard/vercel-ai/v7.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into TanStack AI

@@ -38,9 +38,9 @@ Your app's AI features and agents take real actions, calling tools, reading data
    ```sh
    npx @arcjet/cli auth login
    ```
-2. Install the Arcjet skill to give your coding agent the docs it needs:
+2. Install versioned Agent Skills so your coding agent matches this SDK:
    ```sh
-   npx skills add arcjet/skills
+   npx @tanstack/intent@latest install
    ```
 3. Tell your agent what to protect — it handles the rest.
 

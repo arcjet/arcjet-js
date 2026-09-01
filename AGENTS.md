@@ -28,6 +28,15 @@ README and skill links should point at
 `https://github.com/arcjet/examples/tree/main/examples/<name>`, not at a
 path under this repository.
 
+## Agent Skills
+
+JS/TS Agent Skills ship in npm packages via TanStack Intent, not in
+`arcjet/skills`. Keep `SKILL.md` files beside their source docs
+(`arcjet-skills/docs/`, `arcjet-guard/README.md`). Validate with
+`intent validate`. Conservative stale checks fail a PR when a declared
+source changes and the skill does not. Consumers allowlist packages and
+load one skill per task; editor hooks are not a security boundary.
+
 ## Integration work: review before a PR
 
 For Guard vendor integrations and other integration work, keep going on a

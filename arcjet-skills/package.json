@@ -1,0 +1,67 @@
+{
+  "name": "@arcjet/skills",
+  "version": "1.11.0",
+  "description": "Versioned Agent Skills for the Arcjet JavaScript SDK, shipped with TanStack Intent",
+  "keywords": [
+    "agent-skills",
+    "ai",
+    "arcjet",
+    "security",
+    "tanstack-intent"
+  ],
+  "homepage": "https://arcjet.com",
+  "bugs": {
+    "url": "https://github.com/arcjet/arcjet-js/issues",
+    "email": "support@arcjet.com"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Arcjet",
+    "email": "support@arcjet.com",
+    "url": "https://arcjet.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcjet/arcjet-js.git",
+    "directory": "arcjet-skills"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "skills"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --tsconfig=tsconfig.json",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "validate-skills": "node ../.github/scripts/intent-cli.mjs validate",
+    "stale-skills": "node ../.github/scripts/intent-cli.mjs stale --json",
+    "test-api": "node --test -- test/*.test.ts",
+    "test-coverage": "node --experimental-test-coverage --test -- test/*.test.ts",
+    "test": "npm run build && npm run test-coverage && npm run validate-skills && node ../.github/scripts/check-skill-source-stale.mjs"
+  },
+  "devDependencies": {
+    "@tanstack/intent": "0.3.8",
+    "@types/node": "22.20.1",
+    "tsdown": "0.22.14",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=22.21.0 <23 || >=24.5.0"
+  }
+}

@@ -66,6 +66,7 @@
     "@arcjet/headers": "1.11.0",
     "@arcjet/protocol": "1.11.0",
     "@arcjet/runtime": "1.11.0",
+    "@arcjet/skills": "1.11.0",
     "@arcjet/stable-hash": "1.11.0"
   },
   "devDependencies": {

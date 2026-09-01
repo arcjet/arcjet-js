@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Genkit JS (genkit >=1.0.0 <2) on Node.js >= 22. This is JS genkit() + ai.defineTool + ai.generate, not Go / Python Genkit. guardMiddleware needs the generateMiddleware tool hook (Genkit >= 1.33).
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Genkit app

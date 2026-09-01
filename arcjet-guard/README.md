@@ -36,9 +36,9 @@ Your app's AI features and agents take real actions, calling tools, reading data
    ```sh
    npx @arcjet/cli auth login
    ```
-2. Install the Arcjet skill to give your coding agent the docs it needs:
+2. Install versioned Agent Skills so your coding agent matches this SDK:
    ```sh
-   npx skills add arcjet/skills
+   npx @tanstack/intent@latest install
    ```
 3. Tell your agent what to protect — it handles the rest.
 
@@ -2189,113 +2189,46 @@ For an example with TanStack AI, see [`tanstack-agent`](https://github.com/arcje
 
 ## Agent skill
 
-For integration help in Claude Code or other AI coding agents, a skill file per integration is packaged with `@arcjet/guard`:
+Integration skills ship in this package's tarball (`skills/`) and are
+discovered by [TanStack Intent](https://tanstack.com/intent) as static files —
+Intent does not execute package code. Allow `@arcjet/guard` (and
+`@arcjet/skills` for request-protection routing) in the app `package.json`:
 
-**For Vercel AI SDK:**
-
-```bash
-# Extract the skill from node_modules into your Claude Code skills directory:
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/skills/
-
-# Or symlink it instead:
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-agents ~/.claude/skills/
+```json
+{
+  "intent": {
+    "skills": ["@arcjet/skills", "@arcjet/guard"]
+  }
+}
 ```
 
-In Claude Code, use `/integrate-arcjet-guard-agents` to start an integration session.
-
-**For Vercel Eve:**
-
 ```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-eve ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-eve ~/.claude/skills/
+npx @tanstack/intent@latest install
+npx @tanstack/intent@latest load @arcjet/guard#integrate-arcjet-guard-agents
 ```
 
-In Claude Code, use `/integrate-arcjet-guard-eve` to start an integration session.
+Load only the skill for the current vendor SDK:
 
-**For Mastra:**
+| SDK | Skill |
+| --- | --- |
+| Vercel AI SDK | `@arcjet/guard#integrate-arcjet-guard-agents` |
+| Vercel Eve | `@arcjet/guard#integrate-arcjet-guard-eve` |
+| Mastra | `@arcjet/guard#integrate-arcjet-guard-mastra` |
+| Claude Agent SDK | `@arcjet/guard#integrate-arcjet-guard-claude-agent-sdk` |
+| LangGraph | `@arcjet/guard#integrate-arcjet-guard-langgraph` |
+| LangChain JS `createAgent` | `@arcjet/guard#integrate-arcjet-guard-langchain` |
+| OpenAI Agents | `@arcjet/guard#integrate-arcjet-guard-openai-agents` |
+| Genkit | `@arcjet/guard#integrate-arcjet-guard-genkit` |
+| Strands Agents | `@arcjet/guard#integrate-arcjet-guard-strands-agents` |
+| TanStack AI | `@arcjet/guard#integrate-arcjet-guard-tanstack-ai` |
 
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-mastra ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-mastra ~/.claude/skills/
-```
+`intent.exclude` can drop a package or one skill. Editor hooks from
+`intent hooks install` are convenience, not a security boundary.
 
-In Claude Code, use `/integrate-arcjet-guard-mastra` to start an integration session.
-
-**For the Claude Agent SDK:**
-
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-claude-agent-sdk ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-claude-agent-sdk ~/.claude/skills/
-```
-
-In Claude Code, use `/integrate-arcjet-guard-claude-agent-sdk` to start an integration session.
-
-**For LangGraph:**
-
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langgraph ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langgraph ~/.claude/skills/
-```
-
-In Claude Code, use `/integrate-arcjet-guard-langgraph` to start an integration session.
-
-**For LangChain JS (`createAgent`):**
-
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langchain ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-langchain ~/.claude/skills/
-```
-
-In Claude Code, use `/integrate-arcjet-guard-langchain` to start an integration session.
-
-**For OpenAI Agents:**
-
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-openai-agents ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-openai-agents ~/.claude/skills/
-```
-
-In Claude Code, use `/integrate-arcjet-guard-openai-agents` to start an integration session.
-
-**For Genkit:**
-
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-genkit ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-genkit ~/.claude/skills/
-```
-
-In Claude Code, use `/integrate-arcjet-guard-genkit` to start an integration session.
-
-**For Strands Agents:**
-
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-strands-agents ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-strands-agents ~/.claude/skills/
-```
-
-In Claude Code, use `/integrate-arcjet-guard-strands-agents` to start an integration session.
-
-**For TanStack AI:**
-
-```bash
-cp -r node_modules/@arcjet/guard/skills/integrate-arcjet-guard-tanstack-ai ~/.claude/skills/
-# or
-ln -s /path/to/node_modules/@arcjet/guard/skills/integrate-arcjet-guard-tanstack-ai ~/.claude/skills/
-```
-
-In Claude Code, use `/integrate-arcjet-guard-tanstack-ai` to start an integration session.
-
-Each skill guides you through wrapping tools, screening inbound messages, and recording lifecycle events joined by correlation ID.
-
-Note: `npx skills add arcjet/skills` refers to the separate Anthropic skills marketplace, not the packaged file.
+The `SKILL.md` files remain copyable from `node_modules/@arcjet/guard/skills/`
+for agents that do not use Intent. The standalone marketplace install
+(`npx skills add arcjet/skills`) is a different delivery path from
+[`arcjet/skills`](https://github.com/arcjet/skills).
 
 ## MCP server
 

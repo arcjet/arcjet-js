@@ -88,6 +88,56 @@
           "type": "generic",
           "path": "src/version.ts",
           "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-agents/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-claude-agent-sdk/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-eve/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-genkit/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-langchain/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-langgraph/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-mastra/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-openai-agents/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-strands-agents/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-tanstack-ai/SKILL.md",
+          "glob": false
         }
       ]
     },
@@ -158,6 +208,42 @@
         {
           "type": "generic",
           "path": "src/index.ts",
+          "glob": false
+        }
+      ]
+    },
+    "arcjet-skills": {
+      "component": "@arcjet/skills",
+      "skip-github-release": true,
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/version.ts",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/choose-protections/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/cli/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/guard/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/mcp/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/protect/SKILL.md",
           "glob": false
         }
       ]
@@ -295,6 +381,7 @@
         "@arcjet/redact",
         "@arcjet/remix",
         "@arcjet/runtime",
+        "@arcjet/skills",
         "@arcjet/sensitive-info-rampart",
         "@arcjet/sprintf",
         "@arcjet/stable-hash",

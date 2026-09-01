@@ -2,7 +2,9 @@
 
 rules:
   cache-poisoning:
-    # guard.yml triggers on push-to-main, which matches zizmor's "publishing"
-    # heuristic, but it only runs tests — no artifacts are published.
+    # These workflows trigger on push-to-main, which matches zizmor's
+    # "publishing" heuristic, but they only run tests — no artifacts are
+    # published.
     ignore:
+      - check-skills.yml
       - guard.yml

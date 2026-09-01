@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use LangChain JS (langchain >=1.2.0 <2 and @langchain/core >=1 <2) on Node.js >= 22. This is createAgent + createMiddleware({ wrapToolCall }), not LangGraph StateGraph / ToolNode. wrapToolCall only sees runtime.configurable.thread_id as of langchain 1.2.34.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.11.0" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a LangChain JS createAgent
