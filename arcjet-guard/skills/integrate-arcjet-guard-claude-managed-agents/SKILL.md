@@ -67,7 +67,8 @@ Ask only what you cannot infer from the code; suggest defaults.
 ## The things readers get wrong
 
 1. **This is not the Claude Agent SDK.** No `guardTool`, no `guardHooks`,
-   no PreToolUse, no `UserPromptSubmit`.
+   no PreToolUse, no `UserPromptSubmit`. Do not also wrap with
+   `@arcjet/guard/claude-agent-sdk/v0` or `@arcjet/guard/vercel-ai/v7`.
 2. **There is no `guardInbound`.** The helper is `guardEvents`.
 3. **The import path is versioned and there is no alias.**
    `@arcjet/guard/claude-managed-agents/v0`.

@@ -70,9 +70,17 @@ export async function GET(request: Request) {
 Call `protect()` once per request, in the route handler. Not Express
 middleware. Not Next.js middleware.
 
-Pass a trusted `userId` on the rule that needs it. Pass `ipSrc` only when the
-app already has a trusted client IP. Nested `metadata` is for the Console —
-no secrets, no PII.
+Pass a trusted `userId` on the rule that needs it. Treat client-IP
+provenance as security configuration. Forwarding-header fallbacks can be
+spoofed; the SDK logs one `unverified-header` warning per client instance.
+Configure trusted `proxies` (or `cloudflare()`) and real ingress. Pass
+`ipSrc` only when the app already has an independently trusted IP — never
+copy `X-Forwarded-For` to silence the warning. Inspect with
+`clientIpDetails()` (`@arcjet/node`) or `findIpDetails()` / `resolveClientIp()`
+(`@arcjet/ip`). Empty `ipSrc` is omitted; a malformed value is rejected.
+
+Pass `correlationId` when the decision must join another request or guard
+call. Nested `metadata` is for the Console — no secrets, no PII.
 
 ## Common mistakes
 
@@ -81,6 +89,7 @@ no secrets, no PII.
 - Double `protect()` (double-counts rate limits)
 - Dry-run rules that look like they block
 - Both `allow` and `deny` on `detectBot`
+- Copying `X-Forwarded-For` into `ipSrc` to hide `unverified-header`
 - Hardcoded `ARCJET_KEY`
 
 ## Verify

@@ -84,11 +84,39 @@ Put a `userId` characteristic on the rule that needs it, then pass a trusted,
 authenticated user ID at protection time. Never rate limit by a client-controlled
 header unless a trusted proxy strips and rewrites it.
 
-If the application already has a trusted client IP, pass it as `ipSrc`. The SDK
-trusts the value.
+Treat client-IP provenance as security configuration, not a warning to silence.
+When a framework or platform does not expose a usable public address, adapters
+may fall back to forwarding headers such as `X-Forwarded-For`. A client that
+can reach the app directly can spoof those headers. The SDK still protects the
+request, logs one `client_ip_provenance="unverified-header"` warning for the
+lifetime of each client instance, and records the source on the debug facet.
+
+In production, make the app reachable only through ingress that overwrites or
+safely appends forwarding headers. List every trusted hop in `proxies`, or use
+a helper such as `cloudflare()`. Malformed proxy entries are rejected.
+`0.0.0.0/0` and `::/0` warn because they trust every peer.
+
+If the application already has an independently trusted client IP, pass it as
+`ipSrc` to both `protect()` and the diagnostics API. A non-empty value wins
+over automatic detection. An empty string is omitted. A non-empty malformed
+value is rejected. Syntax validation does not prove provenance — do not copy
+`X-Forwarded-For` (or any client-controlled header) into `ipSrc`. That
+relabels attacker-controlled input as manual/trusted.
+
+Before shipping, inspect representative requests:
+
+- `@arcjet/node`: `aj.clientIpDetails(request)`
+- other adapters: `findIpDetails()` / `resolveClientIp()` from `@arcjet/ip`
+
+Check `ip`, `provenance`, `verified`, and `header`. These diagnostics do not
+consume the once-per-client warning.
+
+Pass `correlationId` on `protect()` when the decision must join another
+request, guard call, or workflow. It is a dedicated field, not `metadata`.
 
 `protect()` accepts nested-JSON `metadata`. It does not affect fingerprinting.
-Do not put secrets or PII in it.
+Do not put secrets or PII in it. When present, request decisions also expose
+optional IP threat intelligence (`decision.ip.threat`).
 
 ## Common mistakes
 
@@ -97,6 +125,8 @@ Do not put secrets or PII in it.
 - Calling `protect()` twice for the same request (double-counts rate limits)
 - Leaving rules in `DRY_RUN` and expecting them to block
 - Passing both `allow` and `deny` to `detectBot`
+- Silencing an `unverified-header` warning by copying `X-Forwarded-For` into
+  `ipSrc`
 - Hardcoding `ARCJET_KEY`
 
 ## Verify
