@@ -234,7 +234,12 @@ function runCheck(check) {
 
     // Node expands the glob itself; `spawnSync` without a shell passes it through
     // literally, which is what the quoting did in the YAML this replaced.
+    // Stay under `src/<dir>` — `test/<dir>` value-imports the peer
+    // (e.g. test/google-adk/real-plugin.test.ts) and runs in test-unit.
     const glob = `src/${check.dir}/**/*.test.ts`;
+    if (!glob.startsWith(`src/${check.dir}/`)) {
+      throw new Error(`peer-absent glob must stay under src/${check.dir}/; got ${glob}`);
+    }
     const result = spawnSync(process.execPath, ["--test", glob], {
       cwd: PACKAGE_ROOT,
       stdio: "inherit",

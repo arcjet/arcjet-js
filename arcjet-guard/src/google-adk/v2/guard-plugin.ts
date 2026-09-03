@@ -2,7 +2,7 @@ import type { BasePlugin } from "@google/adk";
 
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
+import { denialResult, unavailableResult, type ArcjetDenialResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
@@ -107,8 +107,8 @@ function resolveSessionId(policy: GuardPluginPolicy, call: GuardPluginCall): str
   return undefined;
 }
 
-function denyDict(payload: { message: string }): Record<string, unknown> {
-  return payload;
+function denyDict(payload: ArcjetDenialResult): Record<string, unknown> {
+  return { ...payload };
 }
 
 let pluginSeq = 0;
@@ -196,12 +196,21 @@ function noopVoid(): Promise<void> {
 }
 
 /**
- * PluginManager calls methods by name. A 2.x minor that adds a hook
- * would otherwise throw `plugin.X is not a function` — a plugin error,
- * not skip. Unknown `before*` / `after*` / `on*` names no-op.
+ * PluginManager calls methods by name. A 2.x minor that adds a
+ * `*Callback` / `*Selection` / `*Compaction` hook would otherwise
+ * throw `plugin.X is not a function` — a plugin error, not skip.
+ *
+ * The suffix is required so a future non-hook property (`onError`,
+ * `beforeVersion`) is not turned into a callable no-op. Unknown
+ * hook-shaped names still no-op: a frozen allowlist would re-throw
+ * on the next 2.x hook, and majors get a new `/v3` namespace
+ * (Renovate `allowedVersions: <3`, no automerge).
  */
 function isPluginHookName(prop: PropertyKey): prop is string {
-  return typeof prop === "string" && /^(?:before|after|on)[A-Z]/.test(prop);
+  return (
+    typeof prop === "string" &&
+    /^(?:before|after|on)[A-Z]\w*(?:Callback|Selection|Compaction)$/.test(prop)
+  );
 }
 
 function withUnknownHookNoops(plugin: GoogleAdkGuardPlugin): GoogleAdkGuardPlugin {
@@ -363,7 +372,7 @@ export function guardPlugin(
 ): GoogleAdkGuardPlugin {
   // PluginManager accepts any object with the callback methods; it does
   // not check `instanceof BasePlugin`. The Proxy no-ops unknown
-  // `before*` / `after*` / `on*` names so a later 2.x PluginManager
-  // hook does not throw.
+  // hook-shaped names (`*Callback` / `*Selection` / `*Compaction`) so
+  // a later 2.x PluginManager hook does not throw.
   return withUnknownHookNoops(createGuardPlugin(client, policy));
 }

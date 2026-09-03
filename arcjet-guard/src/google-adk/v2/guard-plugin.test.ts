@@ -94,6 +94,8 @@ test("deny-dict skip: DENY → ArcjetDenialResult, never undefined", async () =>
   const denial = asDenial<ArcjetDenialResult>(result);
   assert.equal(denial.arcjetDenied, true);
   assert.equal(denial.reason, "PROMPT_INJECTION");
+  assert.equal(typeof denial.message, "string");
+  assert.equal(typeof denial.retryable, "boolean");
 });
 
 test("rules see toolArgs, not the opaque functionCallId", async () => {
@@ -348,7 +350,7 @@ test("defaults the guard label to tool.invoked", async () => {
   assert.equal(recorded(guardCalls[0])["label"], "tool.invoked");
 });
 
-test("unknown before/after/on hooks no-op so a later 2.x PluginManager method does not throw", async () => {
+test("unknown hook-shaped names no-op so a later 2.x PluginManager method does not throw", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const plugin = guardPlugin(client, { action: "tool.invoked" });
   const hooks = plugin as unknown as Record<string, unknown>;
@@ -358,8 +360,13 @@ test("unknown before/after/on hooks no-op so a later 2.x PluginManager method do
     // oxlint-disable-next-line typescript/no-unsafe-call -- runtime no-op from the Proxy
     await future();
   }
-  assert.equal(typeof hooks["afterFutureHook"], "function");
-  assert.equal(typeof hooks["onFutureEvent"], "function");
+  assert.equal(typeof hooks["afterFutureCallback"], "function");
+  assert.equal(typeof hooks["onFutureCallback"], "function");
+  assert.equal(typeof hooks["beforeFutureSelection"], "function");
+  assert.equal(typeof hooks["afterFutureCompaction"], "function");
+  assert.equal(hooks["onError"], undefined);
+  assert.equal(hooks["beforeVersion"], undefined);
+  assert.equal(hooks["afterFutureHook"], undefined);
   assert.equal(hooks["notAHook"], undefined);
   assert.equal(guardCalls.length, 0);
 });
