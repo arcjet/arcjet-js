@@ -110,7 +110,7 @@ export async function guardEvents<
   send: (body: EventSendBody<TEvent>) => Promise<T>,
 ): Promise<GuardEventsResult<T>> {
   const events: TEvent[] = [...policy.events];
-  const hasUserMessage = events.some(isUserMessageEvent);
+  const hasUserMessage = events.some((event) => isUserMessageEvent(event));
 
   if (!hasUserMessage) {
     const sent = await send({ events });
@@ -145,19 +145,28 @@ export async function guardEvents<
     ...policy.metadata,
   };
 
-  const verdict = await runGate(client, {
+  type Permit =
+    | { allowed: true }
+    | {
+        allowed: false;
+        outcome: "DENY" | "UNAVAILABLE";
+        message: string;
+        decision?: Decision;
+      };
+
+  const verdict = await runGate<Permit>(client, {
     action,
     rules,
     correlationId: policy.context?.correlationId,
     metadata,
-    onAllow: (): { allowed: true } => ({ allowed: true }),
-    onDeny: (decision: DecisionDeny): GuardEventsResult<T> => ({
+    onAllow: (): Permit => ({ allowed: true }),
+    onDeny: (decision: DecisionDeny): Permit => ({
       allowed: false,
       outcome: "DENY",
       message: deniedReason(decision),
       decision,
     }),
-    onUnavailable: (): GuardEventsResult<T> => ({
+    onUnavailable: (): Permit => ({
       allowed: false,
       outcome: "UNAVAILABLE",
       message: unavailableReason(),

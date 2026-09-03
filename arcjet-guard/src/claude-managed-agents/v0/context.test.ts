@@ -1,3 +1,4 @@
+// oxlint-disable eslint/explicit-function-return-type -- test infrastructure
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -33,11 +34,12 @@ test("rejects a correlationId over 256 characters and does not mint", () => {
 
 test("does not treat Anthropic session ids as correlation", () => {
   const sneaky = {
-    correlationId: undefined,
     sessionId: "sesn_011CZkZAtmR3yMPDzynEDxu7",
     session_id: "sesn_011CZkZAtmR3yMPDzynEDxu7",
     id: "sesn_011CZkZAtmR3yMPDzynEDxu7",
   };
+  // Extra Anthropic ids are not on the public init; the helper must ignore them.
+  // @ts-expect-error -- session / event ids are not accepted as correlation
   const result = claudeManagedAgentsContext(sneaky);
   assert.equal("correlationId" in result, false);
 });

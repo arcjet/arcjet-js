@@ -205,20 +205,30 @@ async function runHostedCustomTool<TOutput>(
     ...policyMetadata,
   };
 
-  return runGuarded<GuardCustomToolResult<TOutput>>(client, {
+  const gated = await runGuarded<GuardCustomToolResult<TOutput>>(client, {
     action: policy.action,
     rules,
     correlationId: policy.context?.correlationId,
     metadata,
-    onDeny: (decision: DecisionDeny) =>
-      sendDenied(send, errorResult(event, deniedReason(decision))),
-    onUnavailable: () => sendDenied(send, errorResult(event, unavailableReason())),
+    onDeny: (decision: DecisionDeny): GuardCustomToolResult<TOutput> => ({
+      allowed: false,
+      result: errorResult(event, deniedReason(decision)),
+    }),
+    onUnavailable: (): GuardCustomToolResult<TOutput> => ({
+      allowed: false,
+      result: errorResult(event, unavailableReason()),
+    }),
     execute: async () => {
       const output = await execute(input);
       return { allowed: true, output };
     },
     onGuardError: policy.onGuardError ?? "deny",
   });
+
+  if (!gated.allowed) {
+    return sendDenied(send, gated.result);
+  }
+  return gated;
 }
 
 function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
@@ -227,7 +237,7 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
   policy: GuardCustomToolPolicy<Parameters<TTool["run"]>[0]>,
 ): TTool {
   if (typeof tool.run !== "function") {
-    throw new Error("@arcjet/guard: guardCustomTool() requires a tool with a run function");
+    throw new TypeError("@arcjet/guard: guardCustomTool() requires a tool with a run function");
   }
   if (arcjetProtectedTool in tool) {
     throw new Error(
@@ -262,9 +272,10 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
         );
       }
       if (policy.onGuardError === "allow") {
-        return originalRun(input, context);
+        // oxlint-disable-next-line typescript/no-unsafe-return -- original run is TTool["run"]
+        return await originalRun(input, context);
       }
-      throw new Error(unavailableReason());
+      throw new Error(unavailableReason(), { cause: error });
     }
 
     const toolName = typeof tool.name === "string" && tool.name.length > 0 ? tool.name : undefined;
@@ -274,6 +285,7 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
       ...policyMetadata,
     };
 
+    // oxlint-disable-next-line typescript/no-unsafe-return -- TTool["run"] is the wrapped tool's output
     return runGuarded<ReturnType<TTool["run"]>>(client, {
       action: policy.action,
       rules,

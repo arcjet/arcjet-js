@@ -91,7 +91,7 @@ test("DENY does not execute and sends user.custom_tool_result with is_error", as
   assert.equal(executed, 0);
   assert.equal(calls.length, 1);
   const result = calls[0];
-  assert.ok(result);
+  assert.notEqual(result, undefined);
   assert.equal(result.type, "user.custom_tool_result");
   assert.equal(result.custom_tool_use_id, "sevt_tool_1");
   assert.equal(result.is_error, true);

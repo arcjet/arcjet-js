@@ -1068,8 +1068,7 @@ helper. Currently available:
       {
         event,
         execute: (input) => lookupOrder(input),
-        send: (result) =>
-          client.beta.sessions.events.send(session.id, { events: [result] }),
+        send: (result) => client.beta.sessions.events.send(session.id, { events: [result] }),
       },
       {
         action: "order.looked-up",
@@ -1080,11 +1079,13 @@ helper. Currently available:
     );
     if (gated.allowed) {
       await client.beta.sessions.events.send(session.id, {
-        events: [{
-          type: "user.custom_tool_result",
-          custom_tool_use_id: event.id,
-          content: [{ type: "text", text: JSON.stringify(gated.output) }],
-        }],
+        events: [
+          {
+            type: "user.custom_tool_result",
+            custom_tool_use_id: event.id,
+            content: [{ type: "text", text: JSON.stringify(gated.output) }],
+          },
+        ],
       });
     }
   }
@@ -1884,20 +1885,20 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 > actions that are assumed to be sensitive. The core client reports degraded
 > evaluation via `hasFailedOpen()`; the helpers decide to block on it.
 
-| API                                       | Default on Arcjet outage                    | How to flip                        |
-| ----------------------------------------- | ------------------------------------------- | ---------------------------------- |
-| `guard()` (core)                          | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
-| `guardTool` / `guardAction`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Eve `guardInbound` / `guardApproval`      | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Mastra `guardProcessor` / `guardHooks`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Claude `guardTool` / `guardHooks`         | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Claude Managed Agents `guardEvents` / `guardCustomTool` | Deny (fail closed)              | `onGuardError: "allow"`            |
-| LangGraph `guardTool` / `guardToolNode`   | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| LangChain `guardTool` / `guardMiddleware` | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| OpenAI Agents `guardTool`                 | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Genkit `guardTool` / `guardMiddleware`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| Strands Agents `guardTool` / `guardHooks` | Deny (fail closed)                          | `onGuardError: "allow"`            |
-| TanStack AI `guardMiddleware`             | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| API                                                     | Default on Arcjet outage                    | How to flip                        |
+| ------------------------------------------------------- | ------------------------------------------- | ---------------------------------- |
+| `guard()` (core)                                        | Allow (fail open), `hasFailedOpen()===true` | gate manually on `hasFailedOpen()` |
+| `guardTool` / `guardAction`                             | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Eve `guardInbound` / `guardApproval`                    | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Mastra `guardProcessor` / `guardHooks`                  | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Claude `guardTool` / `guardHooks`                       | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Claude Managed Agents `guardEvents` / `guardCustomTool` | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| LangGraph `guardTool` / `guardToolNode`                 | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| LangChain `guardTool` / `guardMiddleware`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| OpenAI Agents `guardTool`                               | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Genkit `guardTool` / `guardMiddleware`                  | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Strands Agents `guardTool` / `guardHooks`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| TanStack AI `guardMiddleware`                           | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -2303,19 +2304,19 @@ npx @tanstack/intent@latest load @arcjet/guard#integrate-arcjet-guard-agents
 
 Load only the skill for the current vendor SDK:
 
-| SDK | Skill |
-| --- | --- |
-| Vercel AI SDK | `@arcjet/guard#integrate-arcjet-guard-agents` |
-| Vercel Eve | `@arcjet/guard#integrate-arcjet-guard-eve` |
-| Mastra | `@arcjet/guard#integrate-arcjet-guard-mastra` |
-| Claude Agent SDK | `@arcjet/guard#integrate-arcjet-guard-claude-agent-sdk` |
-| Claude Managed Agents | `@arcjet/guard#integrate-arcjet-guard-claude-managed-agents` |
-| LangGraph | `@arcjet/guard#integrate-arcjet-guard-langgraph` |
-| LangChain JS `createAgent` | `@arcjet/guard#integrate-arcjet-guard-langchain` |
-| OpenAI Agents | `@arcjet/guard#integrate-arcjet-guard-openai-agents` |
-| Genkit | `@arcjet/guard#integrate-arcjet-guard-genkit` |
-| Strands Agents | `@arcjet/guard#integrate-arcjet-guard-strands-agents` |
-| TanStack AI | `@arcjet/guard#integrate-arcjet-guard-tanstack-ai` |
+| SDK                        | Skill                                                        |
+| -------------------------- | ------------------------------------------------------------ |
+| Vercel AI SDK              | `@arcjet/guard#integrate-arcjet-guard-agents`                |
+| Vercel Eve                 | `@arcjet/guard#integrate-arcjet-guard-eve`                   |
+| Mastra                     | `@arcjet/guard#integrate-arcjet-guard-mastra`                |
+| Claude Agent SDK           | `@arcjet/guard#integrate-arcjet-guard-claude-agent-sdk`      |
+| Claude Managed Agents      | `@arcjet/guard#integrate-arcjet-guard-claude-managed-agents` |
+| LangGraph                  | `@arcjet/guard#integrate-arcjet-guard-langgraph`             |
+| LangChain JS `createAgent` | `@arcjet/guard#integrate-arcjet-guard-langchain`             |
+| OpenAI Agents              | `@arcjet/guard#integrate-arcjet-guard-openai-agents`         |
+| Genkit                     | `@arcjet/guard#integrate-arcjet-guard-genkit`                |
+| Strands Agents             | `@arcjet/guard#integrate-arcjet-guard-strands-agents`        |
+| TanStack AI                | `@arcjet/guard#integrate-arcjet-guard-tanstack-ai`           |
 
 `intent.exclude` can drop a package or one skill. Editor hooks from
 `intent hooks install` are convenience, not a security boundary.
