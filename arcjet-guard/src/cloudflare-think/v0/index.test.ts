@@ -10,20 +10,14 @@ import {
 } from "../../../test/_shared/source-scan.ts";
 import * as agentsBarrel from "../../agents/index.ts";
 import * as v7Namespace from "../../vercel-ai/v7/index.ts";
-import * as claudeNamespace from "./index.ts";
-import type {
-  ArcjetDenialResult,
-  ClaudeAgentContext,
-  GuardHooksPolicy,
-  GuardToolPolicy,
-} from "./index.ts";
+import * as thinkNamespace from "./index.ts";
+import type { ArcjetDenialResult, CloudflareThinkAgentContext, GuardHooksPolicy } from "./index.ts";
 
 function verifyTypeExports(): void {
-  const toolPolicy: GuardToolPolicy<Record<string, unknown>> | undefined = undefined;
-  const hooksPolicy: GuardHooksPolicy | undefined = undefined;
+  const policy: GuardHooksPolicy | undefined = undefined;
   const denialResult: ArcjetDenialResult | undefined = undefined;
-  const agentContext: ClaudeAgentContext | undefined = undefined;
-  void [toolPolicy, hooksPolicy, denialResult, agentContext];
+  const agentContext: CloudflareThinkAgentContext | undefined = undefined;
+  void [policy, denialResult, agentContext];
 }
 
 verifyTypeExports();
@@ -45,20 +39,20 @@ function objectField(
   return undefined;
 }
 
-test("exports the three own helpers as functions", () => {
-  const ownExports = ["claudeAgentContext", "guardTool", "guardHooks"] as const;
+test("exports the two own helpers as functions", () => {
+  const ownExports = ["cloudflareThinkContext", "guardHooks"] as const;
 
   for (const funcName of ownExports) {
-    const func = (claudeNamespace as Record<string, unknown>)[funcName];
+    const func = (thinkNamespace as Record<string, unknown>)[funcName];
     assert.equal(
       typeof func,
       "function",
-      `@arcjet/guard/claude-agent-sdk/v0 must export ${funcName} as a function`,
+      `@arcjet/guard/cloudflare-think/v0 must export ${funcName} as a function`,
     );
   }
 });
 
-test("claude namespace exports the agnostic helpers", () => {
+test("cloudflare-think namespace exports the agnostic helpers", () => {
   const requiredSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -68,12 +62,12 @@ test("claude namespace exports the agnostic helpers", () => {
   ] as const;
 
   for (const symbol of requiredSymbols) {
-    const value = (claudeNamespace as Record<string, unknown>)[symbol];
-    assert.ok(value !== undefined, `@arcjet/guard/claude-agent-sdk/v0 must export ${symbol}`);
+    const value = (thinkNamespace as Record<string, unknown>)[symbol];
+    assert.ok(value !== undefined, `@arcjet/guard/cloudflare-think/v0 must export ${symbol}`);
   }
 });
 
-test("agnostic exports have same identity across Claude and v7 namespaces", () => {
+test("agnostic exports have same identity across Cloudflare Think and v7 namespaces", () => {
   const agnosticSymbols = [
     "createAgentContext",
     "securityMetadata",
@@ -84,50 +78,50 @@ test("agnostic exports have same identity across Claude and v7 namespaces", () =
   ] as const;
 
   for (const symbol of agnosticSymbols) {
-    const claudeValue = (claudeNamespace as Record<string, unknown>)[symbol];
+    const thinkValue = (thinkNamespace as Record<string, unknown>)[symbol];
     const v7Value = (v7Namespace as Record<string, unknown>)[symbol];
 
     assert.strictEqual(
-      claudeValue,
+      thinkValue,
       v7Value,
-      `${symbol} must be the same object identity from both @arcjet/guard/claude-agent-sdk/v0 and @arcjet/guard/vercel-ai/v7`,
+      `${symbol} must be the same object identity from both @arcjet/guard/cloudflare-think/v0 and @arcjet/guard/vercel-ai/v7`,
     );
   }
 });
 
-test("Claude namespace is a strict superset of the agents barrel with same identity", () => {
-  const claudeKeys = Object.keys(claudeNamespace);
+test("Cloudflare Think namespace is a strict superset of the agents barrel with same identity", () => {
+  const thinkKeys = Object.keys(thinkNamespace);
   const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
     assert.ok(
-      claudeKeys.includes(key),
-      `agents barrel key "${key}" must be present in claude namespace`,
+      thinkKeys.includes(key),
+      `agents barrel key "${key}" must be present in cloudflare-think namespace`,
     );
     assert.strictEqual(
-      (claudeNamespace as Record<string, unknown>)[key],
+      (thinkNamespace as Record<string, unknown>)[key],
       (agentsBarrel as Record<string, unknown>)[key],
       `${key} must be the same object identity from both imports`,
     );
   }
 
-  const expectedAdditions = 3;
+  const expectedAdditions = 2;
   assert.equal(
-    claudeKeys.length,
+    thinkKeys.length,
     agentKeys.length + expectedAdditions,
-    `claude namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
+    `cloudflare-think namespace must have agents barrel exports plus ${expectedAdditions} own exports`,
   );
 
-  const claudeOnlyKeys = claudeKeys.filter((key) => !agentKeys.includes(key));
-  const ownExportsArray = ["claudeAgentContext", "guardHooks", "guardTool"];
+  const thinkOnlyKeys = thinkKeys.filter((key) => !agentKeys.includes(key));
+  const ownExportsArray = ["cloudflareThinkContext", "guardHooks"];
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
   const expectedOwnExports: readonly string[] = ownExportsArray.sort();
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
-  const sorted: readonly string[] = claudeOnlyKeys.sort();
+  const sorted: readonly string[] = thinkOnlyKeys.sort();
   assert.deepEqual(sorted, expectedOwnExports);
 });
 
-test("export map has no unversioned ./claude-agent-sdk and no wildcard subpaths", () => {
+test("export map has no unversioned ./cloudflare-think, no ./cloudflare-think/v1, and no wildcard subpaths", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
@@ -135,46 +129,60 @@ test("export map has no unversioned ./claude-agent-sdk and no wildcard subpaths"
   const exportKeys = Object.keys(exportsMap);
 
   assert.ok(
-    !exportKeys.includes("./claude-agent-sdk"),
-    'export map must not have "./claude-agent-sdk"',
+    !exportKeys.includes("./cloudflare-think"),
+    'export map must not have "./cloudflare-think"',
   );
   assert.ok(
-    exportKeys.includes("./claude-agent-sdk/v0"),
-    'export map must have "./claude-agent-sdk/v0"',
+    !exportKeys.includes("./cloudflare-think/v1"),
+    'export map must not have "./cloudflare-think/v1"',
+  );
+  assert.ok(
+    exportKeys.includes("./cloudflare-think/v0"),
+    'export map must have "./cloudflare-think/v0"',
   );
 
   for (const key of exportKeys) {
-    if (key.startsWith("./claude-agent-sdk/")) {
+    if (key.startsWith("./cloudflare-think/")) {
       assert.equal(
         key,
-        "./claude-agent-sdk/v0",
-        `export map must not have wildcard claude-agent-sdk subpaths; found "${key}"`,
+        "./cloudflare-think/v0",
+        `export map must not have wildcard cloudflare-think subpaths; found "${key}"`,
       );
     }
   }
 });
 
-test("does not export Eve-only or Mastra-only APIs onto the Claude namespace", () => {
+test("does not export guardTool, inbound, approval, or sibling-only APIs", () => {
   const forbidden = [
-    "eveAgentContext",
+    "guardTool",
     "guardInbound",
     "guardApproval",
-    "arcjetHooks",
-    "guardConnection",
+    "guardMiddleware",
+    "guardPlugin",
+    "needsApproval",
+    "contentGuardMiddleware",
+    "eveAgentContext",
     "mastraAgentContext",
+    "claudeAgentContext",
+    "langgraphAgentContext",
+    "langchainContext",
+    "openaiAgentsContext",
+    "genkitContext",
     "strandsAgentContext",
     "tanstackAiContext",
     "googleAdkContext",
-    "cloudflareThinkContext",
+    "guardInterrupt",
+    "guardToolNode",
     "guardProcessor",
-    "canUseTool",
+    "arcjetHooks",
+    "guardConnection",
     "guardCanUseTool",
   ];
   for (const key of forbidden) {
     assert.equal(
-      (claudeNamespace as Record<string, unknown>)[key],
+      (thinkNamespace as Record<string, unknown>)[key],
       undefined,
-      `claude namespace must not export "${key}"`,
+      `cloudflare-think namespace must not export "${key}"`,
     );
   }
 });

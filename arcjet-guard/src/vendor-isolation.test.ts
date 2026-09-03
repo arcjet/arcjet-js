@@ -34,6 +34,7 @@ const NAMESPACES = [
   { dir: "google-adk", packages: ["@google/adk"] },
   { dir: "strands-agents", packages: ["@strands-agents/sdk"] },
   { dir: "tanstack-ai", packages: ["@tanstack/ai"] },
+  { dir: "cloudflare-think", packages: ["@cloudflare/think"] },
 ] as const;
 
 /**
@@ -116,6 +117,7 @@ test("the scanner detects a cross-vendor import when one is introduced", () => {
     { from: "strands-agents", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "tanstack-ai", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "google-adk", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "cloudflare-think", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "genkit", content: 'import type { Plugin } from "@strands-agents/sdk";\nvoid 0;' },
     {
       from: "mastra",

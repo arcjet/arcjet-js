@@ -11,8 +11,9 @@
  * `@arcjet/guard/langchain/v1`,
  * `@arcjet/guard/langgraph/v1`, `@arcjet/guard/openai-agents/v0`,
  * `@arcjet/guard/genkit/v1`, `@arcjet/guard/google-adk/v2`,
- * `@arcjet/guard/strands-agents/v1`, and
- * `@arcjet/guard/tanstack-ai/v0`. The
+ * `@arcjet/guard/strands-agents/v1`,
+ * `@arcjet/guard/tanstack-ai/v0`, and
+ * `@arcjet/guard/cloudflare-think/v0`. The
  * layer stays agnostic so multiple
  * vendor namespaces can share the same code. A public `@arcjet/guard/agents`
  * path is still a follow-up with its own ADR.

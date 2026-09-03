@@ -110,6 +110,13 @@ const CHECKS = [
     remove: ["@google/adk"],
     resolve: ["@google/adk"],
   },
+  {
+    name: "cloudflare-think",
+    dir: "cloudflare-think",
+    version: "v0",
+    remove: ["@cloudflare/think"],
+    resolve: ["@cloudflare/think"],
+  },
   // Last: deletes a shared devDependency.
   {
     name: "eve",

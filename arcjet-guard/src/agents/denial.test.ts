@@ -157,6 +157,7 @@ test("no vendor namespace declares its own denial payload", () => {
     "google-adk",
     "strands-agents",
     "tanstack-ai",
+    "cloudflare-think",
   ];
   const forbidden = [
     ["interface ", "Arcjet", "DenialResult"].join(""),

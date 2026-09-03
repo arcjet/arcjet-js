@@ -52,8 +52,11 @@
   "allowScripts": {
     "@firebase/util": false,
     "@google/genai": false,
+    "@mongodb-js/zstd": false,
+    "core-js-pure": false,
     "esbuild": false,
     "fsevents": false,
+    "node-liblzma": false,
     "onnxruntime-node": false,
     "protobufjs": false,
     "sharp": false,
