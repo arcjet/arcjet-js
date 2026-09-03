@@ -19,8 +19,8 @@ and agent tool calls are Guard. HTTP routes are `@arcjet/skills#protect`.
 
 For a specific vendor SDK, load the matching skill from `@arcjet/guard`
 (`@arcjet/guard#integrate-arcjet-guard-agents`, `-eve`, `-mastra`,
-`-langgraph`, `-langchain`, `-openai-agents`, `-genkit`, `-strands-agents`,
-`-tanstack-ai`, `-claude-agent-sdk`).
+`-langgraph`, `-langchain`, `-openai-agents`, `-genkit`, `-google-adk`,
+`-strands-agents`, `-tanstack-ai`, `-claude-agent-sdk`).
 
 ## Client
 

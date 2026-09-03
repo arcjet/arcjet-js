@@ -96,6 +96,13 @@ const CHECKS = [
     remove: ["@tanstack/ai"],
     resolve: ["@tanstack/ai"],
   },
+  {
+    name: "google-adk",
+    dir: "google-adk",
+    version: "v2",
+    remove: ["@google/adk"],
+    resolve: ["@google/adk"],
+  },
   // Last: deletes a shared devDependency.
   {
     name: "eve",

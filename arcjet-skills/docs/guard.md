@@ -68,6 +68,7 @@ Prefer the versioned Guard namespaces over hand-wrapping every tool:
 | LangChain JS `createAgent` | `@arcjet/guard/langchain/v1` |
 | OpenAI Agents | `@arcjet/guard/openai-agents/v0` |
 | Genkit JS | `@arcjet/guard/genkit/v1` |
+| Google ADK JS | `@arcjet/guard/google-adk/v2` |
 | Strands Agents JS | `@arcjet/guard/strands-agents/v1` |
 | TanStack AI | `@arcjet/guard/tanstack-ai/v0` |
 

@@ -125,7 +125,9 @@ function walkForForbiddenImports(filePath: string, visited: Set<string>, errors:
       spec === "@strands-agents/sdk" ||
       spec.startsWith("@strands-agents/sdk/") ||
       spec === "@tanstack/ai" ||
-      spec.startsWith("@tanstack/ai/")
+      spec.startsWith("@tanstack/ai/") ||
+      spec === "@google/adk" ||
+      spec.startsWith("@google/adk/")
     ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }

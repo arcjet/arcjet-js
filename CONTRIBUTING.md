@@ -147,6 +147,30 @@ change them:
   ships 1.x. Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.
   Do not name anything `contentGuardMiddleware`. Docs slug is
   `/guards/tanstack-ai/`.
+  `google-adk/v2` is JS `@google/adk` `Runner` +
+  `BasePlugin.beforeToolCallback`: there is no `guardTool` (skip is
+  the plugin return, not throw-from-execute), tool calls go through
+  `guardPlugin`'s `beforeToolCallback` (DENY is a dictionary —
+  `ArcjetDenialResult` — so ADK skips `runAsync`; `undefined`
+  executes; do not throw — PluginManager treats a throw as a plugin
+  error, not skip), inbound is screened with `guard()` before
+  `Runner.runAsync` (`guard()` fails open — check `hasFailedOpen()`),
+  and `requireConfirmation` / `requestConfirmation` /
+  `SecurityPlugin` CONFIRM is HITL not policy. After a human yes,
+  Guard still runs. Put Arcjet first in `new Runner({ plugins })` —
+  PluginManager is first-win; returning a value short-circuits
+  remaining plugins. Do not use ADK `SecurityPlugin` as the Arcjet
+  policy gate. Brand-skip tools already wrapped by a sibling
+  `guardTool`. The plugin does not implement an inbound /
+  before-model prompt gate so a preceding `guard()` does not
+  double-call. Correlation is a caller-owned id from helper options
+  or context. Never mint. Never `invocationId`. Never `traceId`.
+  Never session auto-ids (`toolContext.sessionId` / `session.id`).
+  There is no unversioned `@arcjet/guard/google-adk` alias. Path is
+  `/v2` to match ADK 2.x. Do not double-wrap with
+  `@arcjet/guard/vercel-ai/v7`. This is Google ADK JS, not
+  `@google/genai`, not Python google-adk. Docs slug is
+  `/guards/google-adk/`.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would

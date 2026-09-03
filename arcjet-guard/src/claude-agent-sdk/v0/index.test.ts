@@ -164,6 +164,7 @@ test("does not export Eve-only or Mastra-only APIs onto the Claude namespace", (
     "mastraAgentContext",
     "strandsAgentContext",
     "tanstackAiContext",
+    "googleAdkContext",
     "guardProcessor",
     "canUseTool",
     "guardCanUseTool",

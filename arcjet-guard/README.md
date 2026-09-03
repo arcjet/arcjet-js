@@ -1632,6 +1632,105 @@ first — first-win composition means a preceding
 brands are skipped; inbound `guard()` is a separate call and does
 not skip this gate.
 
+- **`@arcjet/guard/google-adk/v2`** — Google ADK JS `@google/adk`
+  `Runner` + `BasePlugin.beforeToolCallback` integration. Exports
+  `guardPlugin` and `googleAdkContext`. This is **not** `@google/genai`
+  and **not** the Python google-adk SDK. There is no `guardTool`
+  (skip is the plugin return, not throw-from-execute), no
+  `guardInbound` (screen with `guard()` before `Runner.runAsync`;
+  `guard()` fails open — check `hasFailedOpen()`), and no
+  `guardApproval` (`requireConfirmation` / `requestConfirmation` /
+  `SecurityPlugin` CONFIRM is human HITL, not policy). After a human
+  yes, Guard still runs. Do not use ADK `SecurityPlugin` as the
+  Arcjet policy gate. Docs live at
+  [`/guards/google-adk/`](https://docs.arcjet.com/guards/google-adk/).
+
+  Put Arcjet **first** in `new Runner({ plugins })`. PluginManager
+  is first-win; if another plugin returns a value first, Guard never
+  runs. DENY is a dictionary (`ArcjetDenialResult`) so ADK skips
+  `runAsync` and the model sees the payload. `undefined` lets the
+  tool execute. The callback does not throw — PluginManager treats a
+  throw as a plugin error, not skip. On Guard error this helper
+  fail-closes: it ALWAYS returns a deny dict, never `undefined`
+  (unless `onGuardError: "allow"`). Tools already branded by a
+  sibling `guardTool` are skipped so Guard is not double-called.
+  Inbound `guard()` before `Runner.runAsync` does not brand tools
+  and does not skip this gate. The plugin does not implement an
+  inbound / before-model prompt gate so a preceding `guard()` does
+  not double-call. Correlation is a caller-owned id from helper
+  options or context. Never mint. Never `invocationId`. Never
+  `traceId`. Never session auto-ids.
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardPlugin, googleAdkContext } from "@arcjet/guard/google-adk/v2";
+  import { Runner } from "@google/adk";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const appContext = { sessionId: conversationId };
+  const inbound = detectPromptInjection();
+  const decision = await arcjet.guard({
+    label: "message.received",
+    rules: [inbound(userText)],
+    ...googleAdkContext({ context: appContext }),
+  });
+  if (decision.conclusion === "DENY") {
+    throw new Error("message blocked");
+  }
+  if (decision.hasFailedOpen()) {
+    throw new Error("inbound screening failed open");
+  }
+
+  const runner = new Runner({
+    appName: "my_app",
+    agent,
+    sessionService,
+    plugins: [
+      guardPlugin(arcjet, {
+        action: ({ toolName }) => `${toolName}.invoked`,
+        rules: ({ toolName }) => [limit({ key: toolName, requested: 1 })],
+        sessionId: conversationId,
+      }),
+    ],
+  });
+  ```
+
+#### Screen inbound before `Runner.runAsync` — there is no inbound hook.
+
+There is no first-class inbound deny-dict channel, so there is no
+`guardInbound`. Put prompt-injection (and other inbound rules) in the
+application before `runner.runAsync()`. Call `guard()` directly.
+`guard()` fails open — callers must check `hasFailedOpen()`.
+`onUserMessageCallback` replaces the user message; it is not this
+policy gate.
+
+#### `requireConfirmation` / `requestConfirmation` is HITL, not a policy gate.
+
+`requireConfirmation` / `toolContext.requestConfirmation` /
+`SecurityPlugin` CONFIRM is human-in-the-loop, not policy. After a
+human yes, Guard still runs on the tool call. Same trap as Mastra
+`requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`,
+Genkit `toolApproval`, OpenAI Agents `needsApproval`, LangChain
+`humanInTheLoopMiddleware`, and TanStack `needsApproval`. There is
+no `guardApproval`. Do not use ADK `SecurityPlugin` as the Arcjet
+policy gate.
+
+#### Deny inside `guardPlugin`'s `beforeToolCallback`. There is no `guardTool`.
+
+`beforeToolCallback` is the deny point. DENY is a dictionary
+(`ArcjetDenialResult`). ADK treats a returned dict as skip:
+`runAsync` does not run. `undefined` lets the tool execute. Do not
+throw from the callback. Put Arcjet first — first-win composition
+means a preceding plugin return skips Guard too. Sibling `guardTool`
+brands are skipped; inbound `guard()` is a separate call and does
+not skip this gate.
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -1701,6 +1800,10 @@ importing only core guards are not forced to install unneeded packages:
   peer, installed only to use `@arcjet/guard/tanstack-ai/v0`). The peer
   range is `>=0.8.0 <1`. There is no `/v1` until TanStack AI ships 1.x.
   Node stays Guard's existing floor.
+- **`@arcjet/guard/google-adk/v2`** requires `@google/adk` (optional
+  peer, installed only to use `@arcjet/guard/google-adk/v2`). The peer
+  range is `>=2 <3`. Path is `/v2` to match ADK 2.x. Node stays
+  Guard's existing floor. This is Google ADK JS, not `@google/genai`.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -1761,6 +1864,11 @@ pnpm install @tanstack/ai
 ```
 
 ```sh
+# @arcjet/guard/google-adk/v2
+pnpm install @google/adk
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1777,8 +1885,9 @@ is one path to learn and no layering to reason about.
 `@arcjet/guard/langchain/v1`, `@arcjet/guard/langgraph/v1`,
 `@arcjet/guard/openai-agents/v0`,
 `@arcjet/guard/genkit/v1`,
-`@arcjet/guard/strands-agents/v1`, and
-`@arcjet/guard/tanstack-ai/v0` now export
+`@arcjet/guard/strands-agents/v1`,
+`@arcjet/guard/tanstack-ai/v0`, and
+`@arcjet/guard/google-adk/v2` now export
 these helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
 agnostic layer without installing a vendor peer. That change is a follow-up
@@ -1806,6 +1915,7 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 | Genkit `guardTool` / `guardMiddleware`    | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Strands Agents `guardTool` / `guardHooks` | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | TanStack AI `guardMiddleware`             | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Google ADK `guardPlugin`                  | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -2187,6 +2297,8 @@ For an example with Strands Agents, see [`strands-agent`](https://github.com/arc
 
 For an example with TanStack AI, see [`tanstack-agent`](https://github.com/arcjet/examples/tree/main/examples/tanstack-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `chat()` (check `hasFailedOpen()`), `guardMiddleware` first in the middleware array (skip-deny, abort-deny, rate limit, fail-closed), and a caller-owned id on `chat({ context })`. `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL, not a policy gate; `onBeforeToolCall` is the deny point. Docs slug: [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
 
+For an example with Google ADK JS, see [`google-adk-agent`](https://github.com/arcjet/examples/tree/main/examples/google-adk-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `Runner.runAsync` (check `hasFailedOpen()`), `guardPlugin` first in `new Runner({ plugins })` (deny-dict skip, rate limit, fail-closed), and a caller-owned id on helper options or context. `requireConfirmation` / `requestConfirmation` / `SecurityPlugin` CONFIRM is HITL, not a policy gate; `beforeToolCallback` is the deny point. Docs slug: [`/guards/google-adk/`](https://docs.arcjet.com/guards/google-adk/).
+
 ## Agent skill
 
 Integration skills ship in this package's tarball (`skills/`) and are
@@ -2209,18 +2321,19 @@ npx @tanstack/intent@latest load @arcjet/guard#integrate-arcjet-guard-agents
 
 Load only the skill for the current vendor SDK:
 
-| SDK | Skill |
-| --- | --- |
-| Vercel AI SDK | `@arcjet/guard#integrate-arcjet-guard-agents` |
-| Vercel Eve | `@arcjet/guard#integrate-arcjet-guard-eve` |
-| Mastra | `@arcjet/guard#integrate-arcjet-guard-mastra` |
-| Claude Agent SDK | `@arcjet/guard#integrate-arcjet-guard-claude-agent-sdk` |
-| LangGraph | `@arcjet/guard#integrate-arcjet-guard-langgraph` |
-| LangChain JS `createAgent` | `@arcjet/guard#integrate-arcjet-guard-langchain` |
-| OpenAI Agents | `@arcjet/guard#integrate-arcjet-guard-openai-agents` |
-| Genkit | `@arcjet/guard#integrate-arcjet-guard-genkit` |
-| Strands Agents | `@arcjet/guard#integrate-arcjet-guard-strands-agents` |
-| TanStack AI | `@arcjet/guard#integrate-arcjet-guard-tanstack-ai` |
+| SDK                        | Skill                                                   |
+| -------------------------- | ------------------------------------------------------- |
+| Vercel AI SDK              | `@arcjet/guard#integrate-arcjet-guard-agents`           |
+| Vercel Eve                 | `@arcjet/guard#integrate-arcjet-guard-eve`              |
+| Mastra                     | `@arcjet/guard#integrate-arcjet-guard-mastra`           |
+| Claude Agent SDK           | `@arcjet/guard#integrate-arcjet-guard-claude-agent-sdk` |
+| LangGraph                  | `@arcjet/guard#integrate-arcjet-guard-langgraph`        |
+| LangChain JS `createAgent` | `@arcjet/guard#integrate-arcjet-guard-langchain`        |
+| OpenAI Agents              | `@arcjet/guard#integrate-arcjet-guard-openai-agents`    |
+| Genkit                     | `@arcjet/guard#integrate-arcjet-guard-genkit`           |
+| Strands Agents             | `@arcjet/guard#integrate-arcjet-guard-strands-agents`   |
+| TanStack AI                | `@arcjet/guard#integrate-arcjet-guard-tanstack-ai`      |
+| Google ADK JS              | `@arcjet/guard#integrate-arcjet-guard-google-adk`       |
 
 `intent.exclude` can drop a package or one skill. Editor hooks from
 `intent hooks install` are convenience, not a security boundary.
