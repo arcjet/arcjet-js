@@ -36,8 +36,9 @@ one decision rule:
 
 This namespace is JS **`@strands-agents/sdk` `Agent` + `tool({
 callback })` + Plugin / `addHook`**. Not the Python SDK. Do not also
-wrap the same tool with `@arcjet/guard/vercel-ai/v7` or
-`@arcjet/guard/langgraph/v1`. Zod is their peer, not ours.
+wrap the same tool with `@arcjet/guard/vercel-ai/v7`,
+`@arcjet/guard/langgraph/v1`, or `@arcjet/guard/claude-managed-agents/v0`.
+Zod is their peer, not ours.
 
 ## Screen inbound before `invoke()` / `stream()` — there is no inbound hook.
 

@@ -23,7 +23,8 @@ rule:
 - **Observe-only** (record that something happened) → `captureAction()`
 
 All three attach the same correlation ID so the Arcjet Console reconstructs
-the whole run as one Sequence.
+the whole run as one Sequence. This is not hosted Claude Managed Agents
+(`@arcjet/guard/claude-managed-agents/v0`).
 
 ## Questions to ask the human first
 

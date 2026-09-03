@@ -91,6 +91,10 @@
       "types": "./dist/claude-agent-sdk/v0/index.d.ts",
       "import": "./dist/claude-agent-sdk/v0/index.js"
     },
+    "./claude-managed-agents/v0": {
+      "types": "./dist/claude-managed-agents/v0/index.d.ts",
+      "import": "./dist/claude-managed-agents/v0/index.js"
+    },
     "./langchain/v1": {
       "types": "./dist/langchain/v1/index.d.ts",
       "import": "./dist/langchain/v1/index.js"
@@ -153,6 +157,7 @@
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.25",
     "@anthropic-ai/claude-agent-sdk": "0.3.233",
+    "@anthropic-ai/sdk": "0.123.0",
     "@google/adk": "2.0.0",
     "@langchain/core": "1.2.9",
     "@langchain/langgraph": "1.4.10",
@@ -175,6 +180,7 @@
   "peerDependencies": {
     "@ai-sdk/provider-utils": ">=5 <6",
     "@anthropic-ai/claude-agent-sdk": ">=0.1.0 <1",
+    "@anthropic-ai/sdk": ">=0.86.0 <1",
     "@google/adk": ">=2 <3",
     "@langchain/core": ">=1 <2",
     "@langchain/langgraph": ">=1 <2",
@@ -201,6 +207,9 @@
       "optional": true
     },
     "@anthropic-ai/claude-agent-sdk": {
+      "optional": true
+    },
+    "@anthropic-ai/sdk": {
       "optional": true
     },
     "@google/adk": {

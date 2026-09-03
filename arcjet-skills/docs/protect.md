@@ -145,22 +145,24 @@ address is available, adapters may fall back to forwarding headers and log one
 `client_ip_provenance="unverified-header"` warning for the lifetime of each
 SDK client. Configure every trusted proxy (`proxies`, or a helper such as
 `cloudflare()`). The application must be reachable only through infrastructure
-that overwrites or safely appends those headers.
+that overwrites or safely appends those headers. Malformed proxy entries are
+rejected. `0.0.0.0/0` and `::/0` warn because they trust every peer.
 
 If the application already has an independently trusted client IP, pass it as
-`ipSrc`. A non-empty value wins over automatic detection. An empty string is
-treated as omitted. Malformed values are rejected. Syntax validation does not
-prove provenance.
+`ipSrc` to both `protect()` and the diagnostics API. A non-empty value wins
+over automatic detection. An empty string is treated as omitted. Malformed
+values are rejected. Syntax validation does not prove provenance.
 
 Never silence an `unverified-header` warning by copying `X-Forwarded-For` (or
 another client-controlled header) into `ipSrc`. That relabels attacker input
 as trusted. Inspect representative requests with
 `client.clientIpDetails(request)` in `@arcjet/node`, or `findIpDetails()` /
 `resolveClientIp()` from `@arcjet/ip`. Check `ip`, `provenance`, `verified`,
-and `header`.
+and `header`. These diagnostics do not consume the once-per-client warning.
 
 `protect()` accepts nested-JSON `metadata`. It does not affect fingerprinting.
-Do not put secrets or PII in it.
+Do not put secrets or PII in it. When present, request decisions also expose
+optional IP threat intelligence (`decision.ip.threat`).
 
 When present, `decision.ip.threat` is optional IP threat intelligence. Check
 before reading.

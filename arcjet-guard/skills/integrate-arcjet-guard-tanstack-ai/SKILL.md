@@ -39,8 +39,9 @@ There is **no `guardTool`**. A throw from `execute` is swallowed into
 
 This namespace is TanStack AI **`chat({ middleware })` +
 `onBeforeToolCall`**. Not the Vercel AI SDK. Do not also wrap with
-`@arcjet/guard/vercel-ai/v7`. Client tools and provider-native tools
-with no local `execute` are out of scope.
+`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
+Client tools and provider-native tools with no local `execute` are out
+of scope.
 
 Docs live at
 [docs.arcjet.com/guards/tanstack-ai/](https://docs.arcjet.com/guards/tanstack-ai/).

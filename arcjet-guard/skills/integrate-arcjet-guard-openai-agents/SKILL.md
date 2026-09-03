@@ -89,8 +89,9 @@ Ask only what you cannot infer from the code; suggest defaults.
    `session.getSessionId()` from the helper: `MemorySession` mints a UUID
    when constructed without `sessionId`. Do not use `traceId` (the SDK
    mints one when omitted).
-5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.** `guardTool`
-   throws if the tool already carries the Arcjet protection brand.
+5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
+   `@arcjet/guard/claude-managed-agents/v0`.** `guardTool` throws if the
+   tool already carries the Arcjet protection brand.
 6. **A denial from `guardTool` is a structured object, not a throw.**
    Throwing would hit the SDK `errorFunction` (a generic string, or
    `ToolCallError` when `outputSchema` / `errorFunction: null`). The

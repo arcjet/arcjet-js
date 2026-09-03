@@ -48,6 +48,13 @@ const CHECKS = [
     resolve: ["@anthropic-ai/claude-agent-sdk"],
   },
   {
+    name: "claude-managed-agents",
+    dir: "claude-managed-agents",
+    version: "v0",
+    remove: ["@anthropic-ai/sdk"],
+    resolve: ["@anthropic-ai/sdk"],
+  },
+  {
     name: "langgraph",
     dir: "langgraph",
     version: "v1",

@@ -34,7 +34,8 @@ The three in-session helpers correlate by session id, so their decisions land
 on one Sequence. `guardInbound` runs before the session exists and correlates
 by whatever identity the channel has, so its decision lands on a _second_
 Sequence. `arcjetHooks` emits an `eve.session-started` record carrying both, which
-is what lets you pivot from one to the other.
+is what lets you pivot from one to the other. This is not hosted Claude
+Managed Agents (`@arcjet/guard/claude-managed-agents/v0`).
 
 ## Questions to ask the human first
 

@@ -90,8 +90,9 @@ Ask only what you cannot infer from the code; suggest defaults.
    inside a LangGraph callback — that generates a second id and splits the
    Sequence. `langgraphAgentContext` reads `thread_id` / `checkpoint_ns` /
    run id and omits `correlationId` when none of those is a valid id.
-5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.** LangGraph
-   tools are LangChain `tool()`, but this namespace brands them. `guardTool`
+5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
+   `@arcjet/guard/claude-managed-agents/v0`.** LangGraph tools are
+   LangChain `tool()`, but this namespace brands them. `guardTool`
    throws if the tool already carries the Arcjet protection brand.
    `guardToolNode` skips already-branded tools so Guard is not double-called.
 6. **A denial from `guardTool` is a structured object, not a throw.**

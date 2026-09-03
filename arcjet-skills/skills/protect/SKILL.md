@@ -87,13 +87,15 @@ when the decision must join another request or guard call.
 ## Client IP
 
 If the app already has a trusted client IP, pass `ipSrc`. An empty string
-is omitted. Never copy `X-Forwarded-For` or another client-controlled header
-into `ipSrc` — that relabels attacker input as trusted.
+is omitted. A malformed value is rejected. Never copy `X-Forwarded-For` or
+another client-controlled header into `ipSrc` — that relabels attacker
+input as trusted.
 
 When no usable public address is available, adapters may fall back to
 forwarding headers and log one `unverified-header` warning per client.
 Configure `proxies` (or `cloudflare()`). Inspect with
-`clientIpDetails()` / `findIpDetails()` before shipping.
+`clientIpDetails()` (`@arcjet/node`) or `findIpDetails()` /
+`resolveClientIp()` (`@arcjet/ip`) before shipping.
 
 Nested `metadata` is for the Console — no secrets, no PII.
 
@@ -105,7 +107,7 @@ Nested `metadata` is for the Console — no secrets, no PII.
 - Dry-run rules that look like they block
 - Both `allow` and `deny` on `detectBot`
 - `threshold` on `detectPromptInjection`
-- Copying `X-Forwarded-For` into `ipSrc`
+- Copying `X-Forwarded-For` into `ipSrc` to hide `unverified-header`
 - Hardcoded `ARCJET_KEY`
 
 ## Verify

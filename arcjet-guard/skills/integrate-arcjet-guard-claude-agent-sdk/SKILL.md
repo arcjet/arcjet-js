@@ -87,11 +87,12 @@ Ask only what you cannot infer from the code; suggest defaults.
    Sequence. `claudeAgentContext` reads `session_id` / `options.sessionId`
    and omits `correlationId` when neither is a valid id. Subagent
    `agent_id` is metadata, not the correlation id.
-6. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
-   `@arcjet/guard/agents`.** Claude tools are `tool()`, not AI SDK
-   `tool()`. `guardTool` throws if the tool already carries the Arcjet
-   protection brand. Applying `guardTool` and `guardHooks` PreToolUse to
-   the same authored tool double-calls the guard.
+6. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7`,
+   `@arcjet/guard/agents`, or `@arcjet/guard/claude-managed-agents/v0`.**
+   Claude tools are `tool()`, not AI SDK `tool()`, and this is not hosted
+   Claude Managed Agents. `guardTool` throws if the tool already carries
+   the Arcjet protection brand. Applying `guardTool` and `guardHooks`
+   PreToolUse to the same authored tool double-calls the guard.
 7. **A denial from `guardTool` is a `CallToolResult` with `isError: true`**,
    not a throw. If `onDeny` throws, the handler still does not run and the
    model still receives the default denial result.
