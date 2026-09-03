@@ -22,8 +22,10 @@
  * Three surfaces, and the things this namespace does not build:
  *
  * - **Inbound text** (`user.message` / `initial_events`) → `guardEvents()`
- *   **before** `sessions.events.send`. DENY does not send. There is no
- *   `guardInbound`.
+ *   **before** `sessions.events.send`. DENY does not send the user turn.
+ *   Non-`user.message` events in the same batch (for example a
+ *   `user.custom_tool_result`) are still sent so the session does not idle.
+ *   There is no `guardInbound`.
  * - **A custom tool you execute** (`agent.custom_tool_use`) →
  *   `guardCustomTool()`. DENY does not run the tool; it sends
  *   `user.custom_tool_result` with `is_error: true` and error text. Self-hosted
@@ -70,7 +72,7 @@
  * );
  *
  * if (event.type === "agent.custom_tool_use") {
- *   await guardCustomTool(
+ *   const gated = await guardCustomTool(
  *     arcjet,
  *     {
  *       event,
@@ -83,6 +85,15 @@
  *       context: ctx,
  *     },
  *   );
+ *   if (gated.allowed) {
+ *     await client.beta.sessions.events.send(session.id, {
+ *       events: [{
+ *         type: "user.custom_tool_result",
+ *         custom_tool_use_id: event.id,
+ *         content: [{ type: "text", text: JSON.stringify(gated.output) }],
+ *       }],
+ *     });
+ *   }
  * }
  * ```
  */

@@ -72,8 +72,41 @@ async function sendDenied(
   send: (result: UserCustomToolResultEventParams) => Promise<unknown>,
   result: UserCustomToolResultEventParams,
 ): Promise<GuardCustomToolResult<never>> {
-  await send(result);
+  try {
+    await send(result);
+  } catch (error) {
+    if (shouldWarn()) {
+      console.warn(
+        "@arcjet/guard: failed to send user.custom_tool_result after deny; returning the payload so the caller can retry:",
+        error,
+      );
+    }
+  }
   return { allowed: false, result };
+}
+
+function errorResultFromUnknown(
+  event: unknown,
+  message: string,
+): UserCustomToolResultEventParams | undefined {
+  if (event === null || typeof event !== "object") {
+    return undefined;
+  }
+  const record = event as { id?: unknown; session_thread_id?: unknown };
+  if (typeof record.id !== "string" || record.id.length === 0) {
+    return undefined;
+  }
+  const synthetic: AgentCustomToolUseEvent = {
+    type: "agent.custom_tool_use",
+    id: record.id,
+    name: "unknown",
+    input: {},
+    processed_at: "",
+  };
+  if (typeof record.session_thread_id === "string" && record.session_thread_id.length > 0) {
+    synthetic.session_thread_id = record.session_thread_id;
+  }
+  return errorResult(synthetic, message);
 }
 
 /**
@@ -157,6 +190,9 @@ export function guardCustomTool(
 function isRunnableTool(
   value: GuardCustomToolCall<unknown> | ManagedAgentsRunnableTool<any, any>,
 ): value is ManagedAgentsRunnableTool<any, any> {
+  // Hosted calls win when they carry a custom-tool-use `event`. A `betaTool`
+  // that also happens to have an `event` field is treated as hosted only if
+  // that field is an `agent.custom_tool_use`.
   return (
     typeof value === "object" &&
     value !== null &&
@@ -173,7 +209,11 @@ async function runHostedCustomTool<TOutput>(
 ): Promise<GuardCustomToolResult<TOutput>> {
   const { event, execute, send } = call;
   if (!isCustomToolUseEvent(event)) {
-    throw new Error(
+    const fallback = errorResultFromUnknown(event, unavailableReason());
+    if (fallback !== undefined) {
+      return sendDenied(send, fallback);
+    }
+    throw new TypeError(
       "@arcjet/guard: guardCustomTool() requires an agent.custom_tool_use event",
     );
   }

@@ -80,8 +80,13 @@ Ask only what you cannot infer from the code; suggest defaults.
    Anthropic-cloud bash/read/write.
 6. **On custom-tool DENY, send `user.custom_tool_result`.** Do not invent
    fields the schema lacks. `is_error` exists — use it. Do not run the
-   tool.
-7. **Do not add a `claude-managed-agents` example in this SDK repo.**
+   tool. On ALLOW, the caller must still send the success result or the
+   session idles.
+7. **Do not mix a gated user turn with a tool result in one send unless
+   you mean to.** `guardEvents` will still forward non-`user.message`
+   events when the turn is denied, so a batched `user.custom_tool_result`
+   is not dropped. Prefer sending tool results on their own.
+8. **Do not add a `claude-managed-agents` example in this SDK repo.**
    Examples belong in `arcjet/examples`.
 
 ## Step 1: Install and find the guard client

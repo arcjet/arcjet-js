@@ -13,7 +13,7 @@ import type {
   EventSendParams,
 } from "@anthropic-ai/sdk/resources/beta/sessions/events";
 
-import { decisionAllow, stubClient } from "../../../test/_shared/stub-client.ts";
+import { decisionAllow, decisionDenyPromptInjection, stubClient } from "../../../test/_shared/stub-client.ts";
 import { claudeManagedAgentsContext } from "./context.ts";
 import { guardCustomTool } from "./guard-custom-tool.ts";
 import { guardEvents } from "./guard-events.ts";
@@ -85,6 +85,31 @@ test("guardCustomTool send payload is assignable to user.custom_tool_result para
     {
       event,
       execute: () => Promise.resolve("ok"),
+      send: (result: UserCustomToolResultEventParams) => {
+        assignable<BetaManagedAgentsUserCustomToolResultEventParams>(result);
+        return Promise.resolve(result);
+      },
+    },
+    { action: "order.looked-up" },
+  );
+});
+
+test("deny result with session_thread_id is assignable to user.custom_tool_result params", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const event: BetaManagedAgentsAgentCustomToolUseEvent = {
+    type: "agent.custom_tool_use",
+    id: "sevt_1",
+    name: "lookup_order",
+    input: {},
+    processed_at: "2026-03-15T10:00:00Z",
+    session_thread_id: "thread_sub",
+  };
+
+  await guardCustomTool(
+    client,
+    {
+      event,
+      execute: () => Promise.resolve("nope"),
       send: (result: UserCustomToolResultEventParams) => {
         assignable<BetaManagedAgentsUserCustomToolResultEventParams>(result);
         return Promise.resolve(result);

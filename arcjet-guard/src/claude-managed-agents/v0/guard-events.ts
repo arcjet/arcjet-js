@@ -1,3 +1,4 @@
+import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -62,10 +63,13 @@ export type GuardEventsResult<T> =
  *
  * Anthropic runs the hosted tool loop. There is no PreToolUse. This helper
  * screens the text the app is about to send; on DENY (or a fail-closed
- * outage) `send` is not called.
+ * outage) `user.message` events are not sent.
  *
  * Events that are not `user.message` (interrupt, custom_tool_result, …)
  * pass through without an inbound screen — they are not a user turn.
+ * A mixed batch that includes a `user.message` still forwards those
+ * non-message events when the turn is denied, so a batched
+ * `user.custom_tool_result` does not leave the session idle.
  *
  * Default `always_allow` on Anthropic-cloud bash/read/write **cannot** be
  * gated here. `web_search` / `web_fetch` always run on Anthropic.
@@ -110,7 +114,8 @@ export async function guardEvents<
   send: (body: EventSendBody<TEvent>) => Promise<T>,
 ): Promise<GuardEventsResult<T>> {
   const events: TEvent[] = [...policy.events];
-  const hasUserMessage = events.some((event) => isUserMessageEvent(event));
+  const remainder = events.filter((event) => !isUserMessageEvent(event));
+  const hasUserMessage = remainder.length !== events.length;
 
   if (!hasUserMessage) {
     const sent = await send({ events });
@@ -127,11 +132,18 @@ export async function guardEvents<
         ? policy.inbound.rules({ text, events })
         : policy.inbound.rules;
   } catch (error) {
+    if (shouldWarn()) {
+      console.warn(
+        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
+        action,
+        error,
+      );
+    }
     if (policy.inbound.onGuardError === "allow") {
       const sent = await send({ events });
       return { allowed: true, sent };
     }
-    void error;
+    await sendRemainder(send, remainder);
     return {
       allowed: false,
       outcome: "UNAVAILABLE",
@@ -175,9 +187,20 @@ export async function guardEvents<
   });
 
   if (!verdict.allowed) {
+    await sendRemainder(send, remainder);
     return verdict;
   }
 
   const sent = await send({ events });
   return { allowed: true, sent };
+}
+
+async function sendRemainder<T, TEvent extends ManagedAgentsEventParams>(
+  send: (body: EventSendBody<TEvent>) => Promise<T>,
+  remainder: TEvent[],
+): Promise<void> {
+  if (remainder.length === 0) {
+    return;
+  }
+  await send({ events: remainder });
 }

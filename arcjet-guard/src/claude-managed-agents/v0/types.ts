@@ -96,13 +96,12 @@ export function isCustomToolUseEvent(value: unknown): value is AgentCustomToolUs
     id?: unknown;
     name?: unknown;
     input?: unknown;
-    processed_at?: unknown;
   };
   return (
     event.type === "agent.custom_tool_use" &&
     typeof event.id === "string" &&
+    event.id.length > 0 &&
     typeof event.name === "string" &&
-    typeof event.processed_at === "string" &&
     event.input !== null &&
     typeof event.input === "object"
   );

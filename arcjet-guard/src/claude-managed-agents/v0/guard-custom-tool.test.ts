@@ -69,6 +69,31 @@ test("ALLOW executes the tool and does not send a denial result", async () => {
   assert.equal(calls.length, 0);
 });
 
+test("ALLOW records caller correlation and tool metadata", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { send } = sendRecorder();
+
+  await guardCustomTool(
+    client,
+    {
+      event: customToolUse(),
+      execute: () => Promise.resolve("ok"),
+      send,
+    },
+    {
+      action: "order.looked-up",
+      rules: [fakeRule],
+      context: claudeManagedAgentsContext({ correlationId: "conversation-1" }),
+    },
+  );
+
+  assert.equal(recorded(guardCalls[0])["correlationId"], "conversation-1");
+  assert.equal(
+    recorded(recorded(guardCalls[0])["metadata"])["claude.managed-agents.tool"],
+    "lookup_order",
+  );
+});
+
 test("DENY does not execute and sends user.custom_tool_result with is_error", async () => {
   const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
   const { send, calls } = sendRecorder();
@@ -228,4 +253,133 @@ test("throws when wrapping a tool that is already guarded", () => {
     () => guardCustomTool(client, wrapped, { action: "once.ran" }),
     /already guarded/,
   );
+});
+
+test("hosted onGuardError allow still executes when the guard throws", async () => {
+  const { client } = stubClient(new Error("unreachable"));
+  const { send, calls } = sendRecorder();
+  let executed = 0;
+
+  const gated = await guardCustomTool(
+    client,
+    {
+      event: customToolUse(),
+      execute: () => {
+        executed += 1;
+        return Promise.resolve("ran");
+      },
+      send,
+    },
+    { action: "order.looked-up", onGuardError: "allow" },
+  );
+
+  assert.equal(gated.allowed, true);
+  assert.equal(executed, 1);
+  assert.equal(calls.length, 0);
+});
+
+test("invalid hosted event with an id sends an error result instead of throwing", async () => {
+  const { client } = stubClient(decisionAllow());
+  const { send, calls } = sendRecorder();
+  let executed = 0;
+
+  const gated = await guardCustomTool(
+    client,
+    {
+      event: { type: "agent.message", id: "sevt_bad" } as never,
+      execute: () => {
+        executed += 1;
+        return Promise.resolve("nope");
+      },
+      send,
+    },
+    { action: "order.looked-up" },
+  );
+
+  assert.equal(gated.allowed, false);
+  assert.equal(executed, 0);
+  assert.equal(calls[0]?.type, "user.custom_tool_result");
+  assert.equal(calls[0]?.custom_tool_use_id, "sevt_bad");
+  assert.equal(calls[0]?.is_error, true);
+});
+
+test("use event missing processed_at still gates and can execute", async () => {
+  const { client } = stubClient(decisionAllow());
+  const { send, calls } = sendRecorder();
+  const event = {
+    type: "agent.custom_tool_use" as const,
+    id: "sevt_no_ts",
+    name: "lookup_order",
+    input: { orderNumber: "1" },
+  };
+
+  const gated = await guardCustomTool(
+    client,
+    {
+      event: event as never,
+      execute: () => Promise.resolve("ok"),
+      send,
+    },
+    { action: "order.looked-up" },
+  );
+
+  assert.equal(gated.allowed, true);
+  if (gated.allowed) {
+    assert.equal(gated.output, "ok");
+  }
+  assert.equal(calls.length, 0);
+});
+
+test("send throw on deny still returns the error result", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  let executed = 0;
+
+  const gated = await guardCustomTool(
+    client,
+    {
+      event: customToolUse(),
+      execute: () => {
+        executed += 1;
+        return Promise.resolve("nope");
+      },
+      send: () => Promise.reject(new Error("network")),
+    },
+    { action: "order.looked-up" },
+  );
+
+  assert.equal(gated.allowed, false);
+  assert.equal(executed, 0);
+  if (!gated.allowed) {
+    assert.equal(gated.result.type, "user.custom_tool_result");
+    assert.equal(gated.result.is_error, true);
+    assert.equal(gated.result.custom_tool_use_id, "sevt_tool_1");
+  }
+});
+
+test("wrapped betaTool onGuardError allow still runs when the guard throws", async () => {
+  const { client } = stubClient(new Error("unreachable"));
+  const tool = {
+    name: "lookup_order",
+    run: (input: { orderNumber: string }) => Promise.resolve(`ok:${input.orderNumber}`),
+  };
+  const wrapped = guardCustomTool(client, tool, {
+    action: "order.looked-up",
+    onGuardError: "allow",
+  });
+  assert.equal(await wrapped.run({ orderNumber: "9" }), "ok:9");
+});
+
+test("wrapped betaTool factory throw fail-closes", async () => {
+  const { client } = stubClient(decisionAllow());
+  const tool = {
+    name: "lookup_order",
+    run: () => Promise.resolve("nope"),
+  };
+  const wrapped = guardCustomTool(client, tool, {
+    action: "order.looked-up",
+    rules: () => {
+      throw new Error("factory");
+    },
+  });
+  await assert.rejects(() => wrapped.run({ orderNumber: "1" }), /unavailable|not available/i);
 });

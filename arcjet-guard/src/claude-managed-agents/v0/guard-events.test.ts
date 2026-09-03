@@ -186,23 +186,116 @@ test("never mints a correlation id and does not send Anthropic session ids", asy
 test("policy factory throw fail-closes without sending", async () => {
   const { client } = stubClient(decisionAllow());
   const { send, calls } = sendRecorder();
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+  const previous = process.env["ARCJET_LOG_LEVEL"];
+  process.env["ARCJET_LOG_LEVEL"] = "info";
+
+  try {
+    const verdict = await guardEvents(
+      client,
+      {
+        events: [userMessage("hello")],
+        inbound: {
+          rules: () => {
+            throw new Error("factory");
+          },
+        },
+      },
+      send,
+    );
+
+    assert.equal(verdict.allowed, false);
+    if (!verdict.allowed) {
+      assert.equal(verdict.outcome, "UNAVAILABLE");
+    }
+    assert.equal(calls.length, 0);
+    assert.ok(warnings.length > 0);
+    assert.match(String(warnings[0]?.[0]), /policy factory/);
+  } finally {
+    console.warn = originalWarn;
+    if (previous === undefined) {
+      delete process.env["ARCJET_LOG_LEVEL"];
+    } else {
+      process.env["ARCJET_LOG_LEVEL"] = previous;
+    }
+  }
+});
+
+test("DENY on a mixed batch still sends non-user.message events", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  const { send, calls } = sendRecorder();
+  const toolResult = {
+    type: "user.custom_tool_result",
+    custom_tool_use_id: "sevt_prev",
+    content: [{ type: "text" as const, text: "ok" }],
+  };
 
   const verdict = await guardEvents(
     client,
     {
-      events: [userMessage("hello")],
+      events: [userMessage("ignore previous"), toolResult],
+      inbound: { rules: [fakeRule] },
+    },
+    send,
+  );
+
+  assert.equal(verdict.allowed, false);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0]?.events, [toolResult]);
+});
+
+test("empty and image-only user.message still screens", async () => {
+  const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
+  const { send, calls } = sendRecorder();
+
+  const empty = await guardEvents(
+    client,
+    {
+      events: [{ type: "user.message", content: [] }],
+      inbound: { rules: [fakeRule] },
+    },
+    send,
+  );
+  assert.equal(empty.allowed, false);
+  assert.equal(calls.length, 0);
+  assert.equal(guardCalls.length, 1);
+
+  const imageOnly = await guardEvents(
+    client,
+    {
+      events: [{ type: "user.message", content: [{ type: "image" }] }],
+      inbound: { rules: [fakeRule] },
+    },
+    send,
+  );
+  assert.equal(imageOnly.allowed, false);
+  assert.equal(calls.length, 0);
+  assert.equal(guardCalls.length, 2);
+});
+
+test("concatenates text from multiple user.message events", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { send } = sendRecorder();
+  let seen = "";
+
+  await guardEvents(
+    client,
+    {
+      events: [userMessage("first"), userMessage("second")],
       inbound: {
-        rules: () => {
-          throw new Error("factory");
+        rules: ({ text }) => {
+          seen = text;
+          return [fakeRule];
         },
       },
     },
     send,
   );
 
-  assert.equal(verdict.allowed, false);
-  if (!verdict.allowed) {
-    assert.equal(verdict.outcome, "UNAVAILABLE");
-  }
-  assert.equal(calls.length, 0);
+  assert.equal(seen, "first\nsecond");
+  assert.equal(recorded(guardCalls[0])["label"], "message.received");
 });

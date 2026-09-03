@@ -147,7 +147,7 @@ change them:
   ships 1.x. Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.
   Do not name anything `contentGuardMiddleware`. Docs slug is
   `/guards/tanstack-ai/`.
-  `claude-managed-agents/v0` is hosted Claude Managed Agents
+- **`claude-managed-agents/v0`** is hosted Claude Managed Agents
   (REST+SSE, beta `managed-agents-2026-04-01`): Anthropic runs the
   tool loop and there is no PreToolUse. This is **not**
   `claude-agent-sdk/v0` — do not reuse that adapter, its hooks, or
@@ -173,7 +173,10 @@ change them:
   beta — no unversioned alias, no `/v1`. Docs slug is
   `/guards/claude-managed-agents/` (shared JS+Python page). Do not
   touch `/guards/claude-agent-sdk/` or `/guards/claude-agent-sdk-py/`.
-  Do not add a `claude-managed-agents` example in this repo.
+  Do not add a `claude-managed-agents` example in this repo. The
+  workspace pins `@anthropic-ai/sdk` to `0.123.0` via a root
+  override so it does not collide with `@strands-agents/sdk`'s
+  optional `^0.109.1` peer.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would
