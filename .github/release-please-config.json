@@ -148,6 +148,11 @@
           "type": "generic",
           "path": "skills/integrate-arcjet-guard-tanstack-ai/SKILL.md",
           "glob": false
+        },
+        {
+          "type": "generic",
+          "path": "skills/integrate-arcjet-guard-cloudflare-think/SKILL.md",
+          "glob": false
         }
       ]
     },

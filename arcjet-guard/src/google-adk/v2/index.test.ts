@@ -159,6 +159,7 @@ test("does not export guardTool, inbound, approval, or sibling-only APIs", () =>
     "genkitContext",
     "strandsAgentContext",
     "tanstackAiContext",
+    "cloudflareThinkContext",
     "guardInterrupt",
     "guardHooks",
     "guardToolNode",

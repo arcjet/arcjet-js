@@ -111,6 +111,13 @@
       "allowedVersions": "<1"
     },
     {
+      "description": "Never automerge @cloudflare/think. It is pre-1.0, so a minor release may break. `@arcjet/guard/cloudflare-think/v0` types against beforeToolCall, ToolCallDecision, and ToolCallContext. The floor is 0.3.0 because that is when ToolCallDecision intercepts before execute; earlier hooks were post-execution. A green typecheck is necessary but not sufficient: the namespace also depends on Think wrapping execute on the Cloudflare Agents harness (Durable Objects, workspace/MCP/client tools) and on void/allow running execute while block/substitute skip it — runtime contracts a typecheck cannot see. Keep the range below 1.0; cloudflare-think/v1 is added deliberately, not by a bump. Do not mix with @arcjet/guard/vercel-ai/v7 on the same tools.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@cloudflare/think"],
+      "automerge": false,
+      "allowedVersions": "<1"
+    },
+    {
       "description": "Never automerge @anthropic-ai/sdk majors. `@arcjet/guard/claude-managed-agents/v0` types against client.beta.agents / sessions / environments, EventSendParams, agent.custom_tool_use, and user.custom_tool_result (including is_error). The floor is 0.86.0 — the first release with those namespaces. A green typecheck is necessary but not sufficient: default always_allow cloud tools cannot be gated, and EnvironmentWorker tools factory / betaTool({ run }) is a runtime contract. Keep the range below 1.0; claude-managed-agents/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["@anthropic-ai/sdk"],

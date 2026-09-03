@@ -157,6 +157,7 @@ test("does not export Eve / Mastra-only APIs onto the LangGraph namespace", () =
     "strandsAgentContext",
     "tanstackAiContext",
     "googleAdkContext",
+    "cloudflareThinkContext",
     "guardMiddleware",
     "guardInbound",
     "guardApproval",
