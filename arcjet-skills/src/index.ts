@@ -36,7 +36,7 @@ export interface SkillManifest {
 }
 
 const protectDescription: string =
-  "Add Arcjet request protection to JavaScript and TypeScript HTTP handlers. Use when protecting Next.js, Express, Fastify, SvelteKit, Remix, Bun, Deno, NestJS, or Node.js routes with rate limiting, bot detection, Shield, email validation, or sensitive info detection.";
+  "Add Arcjet request protection to JavaScript and TypeScript HTTP handlers. Use when protecting Next.js, Express, Fastify, SvelteKit, Remix, Astro, Nuxt, Bun, Deno, NestJS, or Node.js routes with rate limiting, bot detection, Shield, email validation, or sensitive info detection.";
 
 const chooseProtectionsDescription: string =
   "Choose which Arcjet rules address a security problem. Use when deciding between detectBot, shield, rate limits, detectPromptInjection, sensitiveInfo, validateEmail, filter, or Guard-only content moderation.";

@@ -14,6 +14,8 @@ For frequent use:
 npm install -g @arcjet/cli
 # or
 brew install arcjet/tap/arcjet
+# or (macOS Apple Silicon/Intel, Linux x86_64/arm64)
+curl -sSfL https://arcjet.com/cli/install.sh | bash
 ```
 
 Or download a release from https://github.com/arcjet/cli/releases.
