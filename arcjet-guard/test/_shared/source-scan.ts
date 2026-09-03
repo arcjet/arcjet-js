@@ -294,6 +294,7 @@ export const EXPECTED_ROOT_KEYS = [
   "./claude-managed-agents/v0",
   "./fetch",
   "./genkit/v1",
+  "./google-adk/v2",
   "./langchain/v1",
   "./langgraph/v1",
   "./mastra/v1",

@@ -42,7 +42,8 @@ and Claude Code erases the prompt.
 
 Claude's docs say `canUseTool` is skipped by `allowedTools`, allow rules,
 and `bypassPermissions` / `acceptEdits`. There is no `guardCanUseTool`.
-Do not put Arcjet policy on `canUseTool`.
+Do not put Arcjet policy on `canUseTool`. Same trap as Google ADK
+`requireConfirmation`: after a human yes, Guard still runs.
 
 ## PreToolUse is the only deny for unwrapped tools
 

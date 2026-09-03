@@ -82,7 +82,8 @@ State plainly why each applies to Eve, not other frameworks:
    policy is how you authorize who may approve the parked request. A rejected
    response leaves the approval pending; it does not deny the tool. HITL
    clients answer with `cancel`, not `deny`. Request-time denials are still
-   `{ type: "denied" }`.
+   `{ type: "denied" }`. Same trap as Google ADK `requireConfirmation`:
+   HITL is not a policy gate.
 
 5. **`defineDynamic` tools are not covered.** Eve's compiler hoists a dynamic
    tool's inline `execute` to a module-scope step function, so a wrapper is not

@@ -97,6 +97,13 @@
       "allowedVersions": "<1"
     },
     {
+      "description": "Never automerge @google/adk majors. `@arcjet/guard/google-adk/v2` types against BasePlugin.beforeToolCallback, Runner({ plugins }), PluginManager first-win short-circuit, and the deny-dict skip shape (a returned Record skips runAsync; undefined executes; a throw is a plugin error). A green typecheck is necessary but not sufficient: the namespace also depends on PluginManager calling methods by name (missing callbacks throw) and on returning a value short-circuiting remaining plugins — runtime contracts a typecheck cannot see. Keep the range on 2.x; google-adk/v3 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@google/adk"],
+      "automerge": false,
+      "allowedVersions": "<3"
+    },
+    {
       "description": "Never automerge @tanstack/ai. It is pre-1.0, so a minor release may break. `@arcjet/guard/tanstack-ai/v0` types against ChatMiddleware, onBeforeToolCall, BeforeToolCallDecision, and chat({ context }). A green typecheck is necessary but not sufficient: the namespace also depends on onBeforeToolCall first-win composition (a preceding toolCacheMiddleware skip means Guard never runs) and on execute throws being swallowed into { error } — runtime contracts a typecheck cannot see. Keep the range below 1.0; tanstack-ai/v1 is added deliberately, not by a bump.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["@tanstack/ai"],

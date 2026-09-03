@@ -43,7 +43,8 @@ the application before `graph.invoke`, or in the graph's first node.
 ## `interrupt()` is not a policy gate
 
 `interrupt()` / `interrupt_before=["tools"]` is human-in-the-loop, not
-policy. Same trap as Mastra `requireApproval` and Claude `canUseTool`.
+policy. Same trap as Mastra `requireApproval`, Claude `canUseTool`,
+and Google ADK `requireConfirmation`.
 There is no `guardInterrupt` and no `guardApproval`. Do not wrap them as
 Guard.
 

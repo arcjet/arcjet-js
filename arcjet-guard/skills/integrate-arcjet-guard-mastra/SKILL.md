@@ -29,7 +29,8 @@ decision rule:
 - **Correlation** → `mastraAgentContext()` reads `MASTRA_THREAD_ID_KEY`, then
   resource, then run. It never mints a new id.
 
-Mastra `requireApproval` is human HITL, not policy. There is no
+Mastra `requireApproval` is human HITL, not policy — same trap as
+Google ADK `requireConfirmation`. There is no
 `guardApproval`. Do not also wrap these tools with
 `@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
 

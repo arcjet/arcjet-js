@@ -256,6 +256,11 @@ or PII. Numbers are float64, so integers above `Number.MAX_SAFE_INTEGER`
 should be passed as strings. The SDK adds `AJ1017` warnings naming values it
 could not encode (`undefined`, a function, a `BigInt`, a circular reference).
 
+Human-in-the-loop APIs on other SDKs (`needsApproval`, `interrupt()`,
+`requireApproval`, Google ADK `requireConfirmation`) are not policy gates.
+This namespace gates with `guardTool` / `guardAction`. After a human yes,
+Guard still runs.
+
 ## Verify the integration
 
 1. `tsc --noEmit` (or the app's typecheck) passes.

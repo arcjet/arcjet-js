@@ -116,6 +116,11 @@
         },
         {
           "type": "generic",
+          "path": "skills/integrate-arcjet-guard-google-adk/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
           "path": "skills/integrate-arcjet-guard-langchain/SKILL.md",
           "glob": false
         },

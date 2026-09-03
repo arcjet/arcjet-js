@@ -27,19 +27,23 @@ always need an explicit `key` and `bucket`.
 
 **Rule:** `detectPromptInjection` (request-based and Guard). Use on untrusted
 text before it reaches a model or tool argument, and on tool results that
-fetch untrusted content. The rule is a binary detect.
+fetch untrusted content. The rule is a binary detect — there is no
+`threshold` or `score`.
 
 ## Unsafe content
 
-**Rule:** Guard `moderateContent` only (not available on `protect()`). Check
+**Rule:** Guard `moderateContent` only (not available on `protect()`). The
+result is `{ detected, billing? }` (`text_units` when present). Check
 `hasFailedOpen()` when evaluation is incomplete.
 
 ## Data loss prevention
 
-Detection runs locally. The default WebAssembly backend finds card numbers,
-email addresses, phone numbers, and IP addresses. Names, addresses, and
-government or financial identifiers need `@arcjet/sensitive-info-rampart`
-(`rampart()`), which needs a server runtime with filesystem access.
+Detection runs locally. The default WebAssembly backend finds exactly four
+structured types: card numbers, email addresses, phone numbers, and IP
+addresses. Names, addresses, and government or financial identifiers need
+`@arcjet/sensitive-info-rampart` (`rampart()`), which needs a server runtime
+with filesystem access. Listing a Rampart-only entity without that backend
+never matches.
 
 **Rules:** `sensitiveInfo` (request-based) and `localDetectSensitiveInfo`
 (Guard).

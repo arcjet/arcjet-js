@@ -62,8 +62,9 @@ this policy gate.
 
 `humanInTheLoopMiddleware` / `interrupt()` / approve-edit-reject-respond
 is human-in-the-loop. Same trap as Mastra `requireApproval`, Claude
-`canUseTool`, LangGraph `interrupt()`, Genkit `toolApproval`, and
-OpenAI Agents `needsApproval`. There is no `guardApproval`. Policy
+`canUseTool`, LangGraph `interrupt()`, Genkit `toolApproval`,
+OpenAI Agents `needsApproval`, and Google ADK `requireConfirmation`.
+There is no `guardApproval`. Policy
 sits on `wrapToolCall` only — do not deny in `afterModel`. HITL
 already lives there.
 
