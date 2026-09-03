@@ -14,9 +14,7 @@ import { claudeManagedAgentsContext } from "./context.ts";
 import { guardCustomTool } from "./guard-custom-tool.ts";
 import type { AgentCustomToolUseEvent, UserCustomToolResultEventParams } from "./types.ts";
 
-function customToolUse(
-  overrides?: Partial<AgentCustomToolUseEvent>,
-): AgentCustomToolUseEvent {
+function customToolUse(overrides?: Partial<AgentCustomToolUseEvent>): AgentCustomToolUseEvent {
   return {
     type: "agent.custom_tool_use",
     id: "sevt_tool_1",
@@ -249,10 +247,7 @@ test("throws when wrapping a tool that is already guarded", () => {
   const { client } = stubClient(decisionAllow());
   const tool = { name: "once", run: () => Promise.resolve("ok") };
   const wrapped = guardCustomTool(client, tool, { action: "once.ran" });
-  assert.throws(
-    () => guardCustomTool(client, wrapped, { action: "once.ran" }),
-    /already guarded/,
-  );
+  assert.throws(() => guardCustomTool(client, wrapped, { action: "once.ran" }), /already guarded/);
 });
 
 test("hosted onGuardError allow still executes when the guard throws", async () => {
@@ -373,7 +368,7 @@ test("wrapped betaTool factory throw fail-closes", async () => {
   const { client } = stubClient(decisionAllow());
   const tool = {
     name: "lookup_order",
-    run: () => Promise.resolve("nope"),
+    run: (_input: { orderNumber: string }) => Promise.resolve("nope"),
   };
   const wrapped = guardCustomTool(client, tool, {
     action: "order.looked-up",
@@ -381,5 +376,5 @@ test("wrapped betaTool factory throw fail-closes", async () => {
       throw new Error("factory");
     },
   });
-  await assert.rejects(() => wrapped.run({ orderNumber: "1" }), /unavailable|not available/i);
+  await assert.rejects(() => wrapped.run({ orderNumber: "1" }), /could not be completed/i);
 });

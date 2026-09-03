@@ -13,7 +13,11 @@ import type {
   EventSendParams,
 } from "@anthropic-ai/sdk/resources/beta/sessions/events";
 
-import { decisionAllow, decisionDenyPromptInjection, stubClient } from "../../../test/_shared/stub-client.ts";
+import {
+  decisionAllow,
+  decisionDenyPromptInjection,
+  stubClient,
+} from "../../../test/_shared/stub-client.ts";
 import { claudeManagedAgentsContext } from "./context.ts";
 import { guardCustomTool } from "./guard-custom-tool.ts";
 import { guardEvents } from "./guard-events.ts";

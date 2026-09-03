@@ -83,7 +83,9 @@ export interface ManagedAgentsRunnableTool<TInput = { [key: string]: unknown }, 
   run: (input: TInput, context?: unknown) => TOutput | Promise<TOutput>;
 }
 
-export function isUserMessageEvent(event: ManagedAgentsEventParams): event is UserMessageEventParams {
+export function isUserMessageEvent(
+  event: ManagedAgentsEventParams,
+): event is UserMessageEventParams {
   return event.type === "user.message" && "content" in event && Array.isArray(event.content);
 }
 

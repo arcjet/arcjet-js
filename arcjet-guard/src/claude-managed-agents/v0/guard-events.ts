@@ -33,7 +33,9 @@ export interface GuardEventsInbound {
  * Generic over the event array so a caller who passes
  * `EventSendParams["events"]` gets that type back on `send`.
  */
-export interface GuardEventsPolicy<TEvent extends ManagedAgentsEventParams = ManagedAgentsEventParams> {
+export interface GuardEventsPolicy<
+  TEvent extends ManagedAgentsEventParams = ManagedAgentsEventParams,
+> {
   /** Events that would be sent if the gate allows. */
   events: readonly TEvent[];
   inbound: GuardEventsInbound;

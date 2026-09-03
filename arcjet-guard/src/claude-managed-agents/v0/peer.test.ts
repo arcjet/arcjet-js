@@ -42,5 +42,8 @@ test("peer is @anthropic-ai/sdk, not @anthropic-ai/claude-agent-sdk", () => {
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies);
   assert.ok("@anthropic-ai/claude-agent-sdk" in peerDependencies);
-  assert.notEqual(peerDependencies["@anthropic-ai/sdk"], peerDependencies["@anthropic-ai/claude-agent-sdk"]);
+  assert.notEqual(
+    peerDependencies["@anthropic-ai/sdk"],
+    peerDependencies["@anthropic-ai/claude-agent-sdk"],
+  );
 });

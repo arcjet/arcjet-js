@@ -213,9 +213,7 @@ async function runHostedCustomTool<TOutput>(
     if (fallback !== undefined) {
       return sendDenied(send, fallback);
     }
-    throw new TypeError(
-      "@arcjet/guard: guardCustomTool() requires an agent.custom_tool_use event",
-    );
+    throw new TypeError("@arcjet/guard: guardCustomTool() requires an agent.custom_tool_use event");
   }
 
   const input = event.input;
@@ -223,7 +221,8 @@ async function runHostedCustomTool<TOutput>(
   let policyMetadata: ArcjetMetadata | undefined;
   try {
     rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-    policyMetadata = typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+    policyMetadata =
+      typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
   } catch (error) {
     if (shouldWarn()) {
       console.warn(
@@ -280,9 +279,7 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
     throw new TypeError("@arcjet/guard: guardCustomTool() requires a tool with a run function");
   }
   if (arcjetProtectedTool in tool) {
-    throw new Error(
-      "@arcjet/guard: guardCustomTool() cannot wrap a tool that is already guarded",
-    );
+    throw new Error("@arcjet/guard: guardCustomTool() cannot wrap a tool that is already guarded");
   }
 
   const originalRun = tool.run.bind(tool);
@@ -302,7 +299,8 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
     let policyMetadata: ArcjetMetadata | undefined;
     try {
       rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-      policyMetadata = typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+      policyMetadata =
+        typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
     } catch (error) {
       if (shouldWarn()) {
         console.warn(
