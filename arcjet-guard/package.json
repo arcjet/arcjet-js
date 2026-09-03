@@ -157,6 +157,7 @@
     "@langchain/core": "1.2.9",
     "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.59.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@openai/agents": "0.17.0",
     "@strands-agents/sdk": "1.14.0",
     "@tanstack/ai": "0.52.0",
