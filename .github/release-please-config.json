@@ -101,6 +101,11 @@
         },
         {
           "type": "generic",
+          "path": "skills/integrate-arcjet-guard-claude-managed-agents/SKILL.md",
+          "glob": false
+        },
+        {
+          "type": "generic",
           "path": "skills/integrate-arcjet-guard-eve/SKILL.md",
           "glob": false
         },
