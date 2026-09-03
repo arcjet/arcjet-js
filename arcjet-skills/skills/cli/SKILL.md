@@ -30,6 +30,9 @@ npx -y @arcjet/cli@latest sites get-key --site-id <site_id> --output json --fiel
 Write `key` to the project's env file as `ARCJET_KEY=ajkey_...`. Match
 existing env-file conventions and `.gitignore`. Never hardcode the key.
 
+Frequent use: `npm install -g @arcjet/cli`, `brew install arcjet/tap/arcjet`,
+or `curl -sSfL https://arcjet.com/cli/install.sh | bash`.
+
 `--output json` and `--fields` keep agent context small. Confirm with the
 user before write or delete operations (`--confirm`).
 

@@ -160,6 +160,7 @@ test("does not export guardTool, inbound, approval, or sibling-only APIs", () =>
     "openaiAgentsContext",
     "genkitContext",
     "strandsAgentContext",
+    "googleAdkContext",
     "guardInterrupt",
     "guardHooks",
     "guardToolNode",

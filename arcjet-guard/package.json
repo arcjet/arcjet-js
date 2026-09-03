@@ -107,6 +107,10 @@
       "types": "./dist/genkit/v1/index.d.ts",
       "import": "./dist/genkit/v1/index.js"
     },
+    "./google-adk/v2": {
+      "types": "./dist/google-adk/v2/index.d.ts",
+      "import": "./dist/google-adk/v2/index.js"
+    },
     "./strands-agents/v1": {
       "types": "./dist/strands-agents/v1/index.d.ts",
       "import": "./dist/strands-agents/v1/index.js"
@@ -127,7 +131,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/langchain/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts' 'test/strands-agents/**/*.test.ts' 'test/tanstack-ai/**/*.test.ts'",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/google-adk/**/*.test.ts' 'test/langchain/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts' 'test/strands-agents/**/*.test.ts' 'test/tanstack-ai/**/*.test.ts'",
     "validate-skills": "node ../.github/scripts/intent-cli.mjs validate",
     "stale-skills": "node ../.github/scripts/intent-cli.mjs stale --json",
     "test-peers-absent": "node scripts/test-peers-absent.mjs",
@@ -149,9 +153,11 @@
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.25",
     "@anthropic-ai/claude-agent-sdk": "0.3.233",
+    "@google/adk": "2.0.0",
     "@langchain/core": "1.2.9",
     "@langchain/langgraph": "1.4.10",
     "@mastra/core": "1.59.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@openai/agents": "0.17.0",
     "@strands-agents/sdk": "1.14.0",
     "@tanstack/ai": "0.52.0",
@@ -169,6 +175,7 @@
   "peerDependencies": {
     "@ai-sdk/provider-utils": ">=5 <6",
     "@anthropic-ai/claude-agent-sdk": ">=0.1.0 <1",
+    "@google/adk": ">=2 <3",
     "@langchain/core": ">=1 <2",
     "@langchain/langgraph": ">=1 <2",
     "@mastra/core": ">=1 <2",
@@ -194,6 +201,9 @@
       "optional": true
     },
     "@anthropic-ai/claude-agent-sdk": {
+      "optional": true
+    },
+    "@google/adk": {
       "optional": true
     },
     "@langchain/core": {

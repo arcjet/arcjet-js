@@ -50,8 +50,8 @@ this policy gate.
 
 `event.interrupt()` is human-in-the-loop. Same trap as Mastra
 `requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`,
-OpenAI Agents `needsApproval`, and LangChain
-`humanInTheLoopMiddleware`. There is no `guardApproval` /
+OpenAI Agents `needsApproval`, LangChain `humanInTheLoopMiddleware`,
+and Google ADK `requireConfirmation`. There is no `guardApproval` /
 `guardInterrupt`. Do not wrap `interrupt()` as Guard.
 
 ## Deny with `BeforeToolCallEvent.cancel` (and `guardTool` on authored callbacks). `BeforeToolsEvent.cancel` skips per-tool hooks — do not use it.

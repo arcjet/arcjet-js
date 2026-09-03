@@ -30,6 +30,7 @@ const NAMESPACES = [
   { dir: "langgraph", packages: ["@langchain/langgraph", "@langchain/core"] },
   { dir: "openai-agents", packages: ["@openai/agents"] },
   { dir: "genkit", packages: ["genkit", "@genkit-ai"] },
+  { dir: "google-adk", packages: ["@google/adk"] },
   { dir: "strands-agents", packages: ["@strands-agents/sdk"] },
   { dir: "tanstack-ai", packages: ["@tanstack/ai"] },
 ] as const;
@@ -113,6 +114,7 @@ test("the scanner detects a cross-vendor import when one is introduced", () => {
     { from: "genkit", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "strands-agents", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "tanstack-ai", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "google-adk", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "genkit", content: 'import type { Plugin } from "@strands-agents/sdk";\nvoid 0;' },
     {
       from: "mastra",
