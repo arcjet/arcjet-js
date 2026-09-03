@@ -36,7 +36,8 @@ decision rule:
 
 This namespace is JS **`genkit()` + `ai.defineTool` + `ai.generate`**.
 Not Go / Python Genkit. Do not also wrap the same tool with
-`@arcjet/guard/vercel-ai/v7`. Zod is Genkit's, not ours.
+`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
+Zod is Genkit's, not ours.
 
 ## Screen user text before `generate()` — there is no inbound hook. Middleware `model` is not Guard.
 

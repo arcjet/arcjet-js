@@ -119,9 +119,10 @@ Ask only what you cannot infer from the code; suggest defaults.
    `thread_id`, so decisions after the pause already correlate to the
    originating Sequence — do not derive an id from the interrupt or its
    resume value.
-5. **Do not double-wrap with `@arcjet/guard/langgraph/v1` or
-   `@arcjet/guard/vercel-ai/v7`.** `guardTool` throws if the tool
-   already carries the Arcjet protection brand. `guardMiddleware`
+5. **Do not double-wrap with `@arcjet/guard/langgraph/v1`,
+   `@arcjet/guard/vercel-ai/v7`, or
+   `@arcjet/guard/claude-managed-agents/v0`.** `guardTool` throws if the
+   tool already carries the Arcjet protection brand. `guardMiddleware`
    skips branded tools so Guard is not double-called.
 6. **Two denial envelopes. Do not collapse them.** `guardTool` returns
    a plain `ArcjetDenialResult`. `guardMiddleware` `wrapToolCall` MUST

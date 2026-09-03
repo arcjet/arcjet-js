@@ -31,7 +31,7 @@ decision rule:
 
 Mastra `requireApproval` is human HITL, not policy. There is no
 `guardApproval`. Do not also wrap these tools with
-`@arcjet/guard/vercel-ai/v7`.
+`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
 
 ## Questions to ask the human first
 
