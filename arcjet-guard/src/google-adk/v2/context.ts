@@ -13,11 +13,15 @@ import type { ArcjetMetadata } from "../../types.ts";
  * `session.id` — those can be ephemeral / session-service auto-ids.
  *
  * Accepts:
- * - a `Context` / `toolContext` envelope (only `state` and nested
- *   `context` are mined)
+ * - a `Context` / `toolContext` envelope (only session `state` is
+ *   mined — ADK `Context` has no nested `context` field)
+ * - a caller-owned wrap `{ context: appContext }` for inbound
+ *   `googleAdkContext({ context })` (that `context` bag is not an ADK
+ *   field)
  * - a session `state` bag (`toRecord()`, `get()`, or a plain object)
  * - the app context object itself
- * - helper `init.sessionId` / `init.correlationId`
+ * - helper `init.sessionId` / `init.correlationId` (wins over durable
+ *   `state`)
  */
 export interface GoogleAdkContextSource {
   context?: unknown;
@@ -151,16 +155,21 @@ function validMetadataString(values: unknown[]): string | undefined {
  * `toolContext.sessionId` / `session.id` (session auto-ids).
  *
  * Preference order for `correlationId`:
- * 1. Fields the integrator put on a nested `context` bag:
- *    `correlationId`, then `sessionId`, then `conversationId`
- * 2. The same keys on session `state` (`toRecord()` / `get()` / object)
- * 3. Documented copies on a bare app object (not an ADK Context envelope)
- * 4. `init.sessionId` / `init.correlationId` (a caller-owned fallback)
+ * 1. Fields the integrator put on a caller-owned wrap
+ *    (`googleAdkContext({ context: appContext })`):
+ *    `correlationId`, then `sessionId`, then `conversationId`.
+ *    ADK `Context` / `toolContext` has no such `context` field.
+ * 2. `init.sessionId` / `init.correlationId` (helper options /
+ *    `guardPlugin({ sessionId })`). This is the id for this helper and
+ *    wins over durable session `state`.
+ * 3. The same keys on session `state` (`toRecord()` / `get()` / object)
+ * 4. Documented copies on a bare app object (not an ADK Context envelope)
  *
- * Prefer `googleAdkContext({ context: appContext })` or put the id on
- * `state` / helper options. A `toolContext` that has `invocationId` is
- * treated as an ADK envelope, so a top-level `sessionId` on that object
- * is ignored.
+ * Prefer `guardPlugin({ sessionId })` or
+ * `googleAdkContext({ context: appContext })`. Putting the id only on
+ * `state` is a last resort — `state` persists across turns. A
+ * `toolContext` that has `invocationId` is treated as an ADK envelope,
+ * so a top-level `sessionId` on that object is ignored.
  *
  * An invalid candidate is skipped (and warned when `ARCJET_LOG_LEVEL`
  * asks for warnings). If nothing valid remains, `correlationId` is
@@ -208,14 +217,14 @@ export function googleAdkContext(
     { value: fromApp.correlationId, label: "context.correlationId" },
     { value: fromApp.sessionId, label: "context.sessionId" },
     { value: fromApp.conversationId, label: "context.conversationId" },
+    { value: init?.correlationId, label: "init.correlationId" },
+    { value: init?.sessionId, label: "init.sessionId" },
     { value: fromState.correlationId, label: "state.correlationId" },
     { value: fromState.sessionId, label: "state.sessionId" },
     { value: fromState.conversationId, label: "state.conversationId" },
     { value: fromEnvelope.correlationId, label: "correlationId" },
     { value: fromEnvelope.sessionId, label: "sessionId" },
     { value: fromEnvelope.conversationId, label: "conversationId" },
-    { value: init?.correlationId, label: "init.correlationId" },
-    { value: init?.sessionId, label: "init.sessionId" },
   ]);
 
   if (rejected !== undefined && correlationId === undefined && shouldWarn()) {
@@ -228,9 +237,9 @@ export function googleAdkContext(
 
   const session = validMetadataString([
     fromApp.sessionId,
+    init?.sessionId,
     fromState.sessionId,
     fromEnvelope.sessionId,
-    init?.sessionId,
   ]);
   if (session !== undefined) {
     derivedMetadata["google-adk.session"] = session;

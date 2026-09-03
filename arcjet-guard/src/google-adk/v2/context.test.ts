@@ -67,10 +67,31 @@ test("accepts a bare app context object", () => {
   assert.equal(result.metadata?.["google-adk.session"], "direct-sess");
 });
 
-test("init.sessionId is a last-resort caller-owned fallback", () => {
+test("init.sessionId is used when the caller bag has no id", () => {
   const result = googleAdkContext({ context: { user: "alice" } }, { sessionId: "policy-sess" });
   assert.equal(result.correlationId, "policy-sess");
   assert.equal(result.metadata?.["google-adk.session"], "policy-sess");
+});
+
+test("init.sessionId wins over durable session state", () => {
+  const result = googleAdkContext(
+    {
+      invocationId: "inv-auto",
+      sessionId: "sess-auto",
+      state: { sessionId: "sess-stale", conversationId: "conv-stale" },
+    },
+    { sessionId: "policy-sess" },
+  );
+  assert.equal(result.correlationId, "policy-sess");
+  assert.equal(result.metadata?.["google-adk.session"], "policy-sess");
+});
+
+test("nested caller wrap still wins over init.sessionId", () => {
+  const result = googleAdkContext(
+    { context: { sessionId: "sess-app" } },
+    { sessionId: "policy-sess" },
+  );
+  assert.equal(result.correlationId, "sess-app");
 });
 
 test("never mints an id when nothing valid is present", () => {
@@ -115,30 +136,25 @@ test("never reads invocationId, functionCallId, or traceId", () => {
   assert.equal(result.metadata, undefined);
 });
 
-test("a toolContext with invocationId is an envelope; nest caller ids on context or state", () => {
+test("a toolContext with invocationId is an envelope; sessionId is ignored", () => {
   const bare = googleAdkContext({
     invocationId: "inv-1",
     sessionId: "sess-lost",
   });
   assert.equal(bare.correlationId, undefined);
-
-  const nested = googleAdkContext({
-    invocationId: "inv-1",
-    sessionId: "sess-lost",
-    context: { sessionId: "sess-kept" },
-  });
-  assert.equal(nested.correlationId, "sess-kept");
 });
 
-test("reads nested context even when the envelope is an ADK Context", () => {
-  const result = googleAdkContext({
+test("ADK Context has no nested context field; caller wrap is not the SDK object", () => {
+  const adkShaped = googleAdkContext({
     invocationId: "inv-auto",
     sessionId: "sess-auto",
-    context: { sessionId: "sess-from-run" },
+    state: { sessionId: "sess-from-state" },
   });
+  assert.equal(adkShaped.correlationId, "sess-from-state");
+  assert.equal("context" in { invocationId: "inv-auto", sessionId: "sess-auto" }, false);
 
-  assert.equal(result.correlationId, "sess-from-run");
-  assert.equal(result.metadata?.["google-adk.session"], "sess-from-run");
+  const wrap = googleAdkContext({ context: { sessionId: "sess-from-wrap" } });
+  assert.equal(wrap.correlationId, "sess-from-wrap");
 });
 
 test("skips an invalid context session id and uses the next candidate", () => {

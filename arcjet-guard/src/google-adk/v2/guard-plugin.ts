@@ -43,9 +43,10 @@ export interface GuardPluginPolicy {
   /** Metadata merged over the derived Google ADK context. */
   metadata?: ArcjetMetadata | ((call: GuardPluginCall) => ArcjetMetadata);
   /**
-   * Fallback session id when the tool context does not carry a
-   * caller-owned one. Prefer putting the id you already chose on
-   * helper options or session `state`. Never mint a new id here.
+   * Caller-owned session id for this helper. Wins over durable session
+   * `state`. ADK `Context` has no nested `context` bag and
+   * `toolContext.sessionId` is ignored, so this is the reliable way to
+   * correlate tool calls. Never mint a new id here.
    */
   sessionId?: string | ((call: GuardPluginCall) => string | undefined);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -195,6 +196,32 @@ function noopVoid(): Promise<void> {
 }
 
 /**
+ * PluginManager calls methods by name. A 2.x minor that adds a hook
+ * would otherwise throw `plugin.X is not a function` — a plugin error,
+ * not skip. Unknown `before*` / `after*` / `on*` names no-op.
+ */
+function isPluginHookName(prop: PropertyKey): prop is string {
+  return typeof prop === "string" && /^(?:before|after|on)[A-Z]/.test(prop);
+}
+
+function withUnknownHookNoops(plugin: GoogleAdkGuardPlugin): GoogleAdkGuardPlugin {
+  return new Proxy(plugin, {
+    get(target, prop, _receiver): unknown {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- property bag read for the Proxy
+      const bag = target as unknown as Record<PropertyKey, unknown>;
+      const value = bag[prop];
+      if (value !== undefined) {
+        return value;
+      }
+      if (isPluginHookName(prop)) {
+        return noopUndefined;
+      }
+      return value;
+    },
+  });
+}
+
+/**
  * Structural `BasePlugin` with every PluginManager callback present.
  *
  * PluginManager calls methods by name on every plugin for every
@@ -335,6 +362,8 @@ export function guardPlugin(
   policy: GuardPluginPolicy = {},
 ): GoogleAdkGuardPlugin {
   // PluginManager accepts any object with the callback methods; it does
-  // not check `instanceof BasePlugin`.
-  return createGuardPlugin(client, policy);
+  // not check `instanceof BasePlugin`. The Proxy no-ops unknown
+  // `before*` / `after*` / `on*` names so a later 2.x PluginManager
+  // hook does not throw.
+  return withUnknownHookNoops(createGuardPlugin(client, policy));
 }

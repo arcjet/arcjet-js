@@ -1658,8 +1658,10 @@ not skip this gate.
   and does not skip this gate. The plugin does not implement an
   inbound / before-model prompt gate so a preceding `guard()` does
   not double-call. Correlation is a caller-owned id from helper
-  options or context. Never mint. Never `invocationId`. Never
-  `traceId`. Never session auto-ids.
+  options (`guardPlugin({ sessionId })`), which wins over durable
+  session `state`. ADK `Context` has no nested `context` field.
+  Never mint. Never `invocationId`. Never `traceId`. Never session
+  auto-ids.
 
   ```ts
   import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
@@ -2297,7 +2299,7 @@ For an example with Strands Agents, see [`strands-agent`](https://github.com/arc
 
 For an example with TanStack AI, see [`tanstack-agent`](https://github.com/arcjet/examples/tree/main/examples/tanstack-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `chat()` (check `hasFailedOpen()`), `guardMiddleware` first in the middleware array (skip-deny, abort-deny, rate limit, fail-closed), and a caller-owned id on `chat({ context })`. `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL, not a policy gate; `onBeforeToolCall` is the deny point. Docs slug: [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
 
-For an example with Google ADK JS, see [`google-adk-agent`](https://github.com/arcjet/examples/tree/main/examples/google-adk-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `Runner.runAsync` (check `hasFailedOpen()`), `guardPlugin` first in `new Runner({ plugins })` (deny-dict skip, rate limit, fail-closed), and a caller-owned id on helper options or context. `requireConfirmation` / `requestConfirmation` / `SecurityPlugin` CONFIRM is HITL, not a policy gate; `beforeToolCallback` is the deny point. Docs slug: [`/guards/google-adk/`](https://docs.arcjet.com/guards/google-adk/).
+For an example with Google ADK JS, see [`google-adk-agent`](https://github.com/arcjet/examples/tree/main/examples/google-adk-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `Runner.runAsync` (check `hasFailedOpen()`), `guardPlugin` first in `new Runner({ plugins })` (deny-dict skip, rate limit, fail-closed), and a caller-owned id on helper options (`guardPlugin({ sessionId })`; wins over durable `state`). ADK `Context` has no nested `context` field. `requireConfirmation` / `requestConfirmation` / `SecurityPlugin` CONFIRM is HITL, not a policy gate; `beforeToolCallback` is the deny point. Docs slug: [`/guards/google-adk/`](https://docs.arcjet.com/guards/google-adk/).
 
 ## Agent skill
 

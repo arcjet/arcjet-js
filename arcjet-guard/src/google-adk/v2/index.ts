@@ -36,10 +36,12 @@
  *   (`onUserMessageCallback` / `beforeModelCallback` are no-ops) so
  *   a preceding `guard()` does not double-call.
  * - **Correlation** → `googleAdkContext()` reads a caller-owned id
- *   from the helper options or a bag the integrator put on the run.
- *   It never mints a new id. It never reads `invocationId` (ADK
- *   always generates it). It never reads `traceId`. It never reads
- *   `toolContext.sessionId` / `session.id` (session auto-ids).
+ *   from helper options (`guardPlugin({ sessionId })`) or a wrap
+ *   (`googleAdkContext({ context: appContext })`). ADK `Context` has
+ *   no nested `context` field; `state` is durable and loses to helper
+ *   options. It never mints a new id. It never reads `invocationId`
+ *   (ADK always generates it). It never reads `traceId`. It never
+ *   reads `toolContext.sessionId` / `session.id` (session auto-ids).
  *
  * There is no `guardTool`. Skip is the plugin return, not
  * throw-from-execute. There is no `guardInbound` and no

@@ -111,15 +111,53 @@ test("rules see toolArgs, not the opaque functionCallId", async () => {
   assert.deepEqual(recorded(guardCalls[0])["rules"], [fakeRule]);
 });
 
-test("correlation comes from nested context.sessionId, never invocationId", async () => {
+test("correlation comes from policy.sessionId, never invocationId or session auto-id", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const plugin = guardPlugin(client, { action: "tool.invoked", sessionId: "policy-sess" });
+  await runHook(plugin, {
+    tool: { name: "lookup" },
+    toolArgs: {},
+    toolContext: {
+      invocationId: "inv-auto",
+      sessionId: "sess-auto",
+      functionCallId: "call-auto",
+      state: { sessionId: "sess-stale" },
+    },
+  });
+  assert.equal(recorded(guardCalls[0])["correlationId"], "policy-sess");
+});
+
+test("policy.sessionId wins over durable session state", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const plugin = guardPlugin(client, {
+    action: "tool.invoked",
+    sessionId: "policy-sess",
+  });
+  await runHook(plugin, {
+    tool: { name: "lookup" },
+    toolArgs: {},
+    toolContext: {
+      invocationId: "inv-auto",
+      sessionId: "sess-auto",
+      state: { toRecord: () => ({ sessionId: "sess-stale" }) },
+    },
+  });
+  assert.equal(recorded(guardCalls[0])["correlationId"], "policy-sess");
+});
+
+test("durable state is used only when helper options have no id", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const plugin = guardPlugin(client, { action: "tool.invoked" });
   await runHook(plugin, {
     tool: { name: "lookup" },
     toolArgs: {},
-    toolContext: toolContext({ sessionId: "sess-mw" }),
+    toolContext: {
+      invocationId: "inv-auto",
+      sessionId: "sess-auto",
+      state: { toRecord: () => ({ sessionId: "sess-state" }) },
+    },
   });
-  assert.equal(recorded(guardCalls[0])["correlationId"], "sess-mw");
+  assert.equal(recorded(guardCalls[0])["correlationId"], "sess-state");
 });
 
 test("policy.sessionId is used when tool context has none", async () => {
@@ -308,6 +346,22 @@ test("defaults the guard label to tool.invoked", async () => {
   const plugin = guardPlugin(client);
   await runHook(plugin, beforeToolParams("mcp_search"));
   assert.equal(recorded(guardCalls[0])["label"], "tool.invoked");
+});
+
+test("unknown before/after/on hooks no-op so a later 2.x PluginManager method does not throw", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const plugin = guardPlugin(client, { action: "tool.invoked" });
+  const hooks = plugin as unknown as Record<string, unknown>;
+  const future = hooks["beforeFutureCallback"];
+  assert.equal(typeof future, "function");
+  if (typeof future === "function") {
+    // oxlint-disable-next-line typescript/no-unsafe-call -- runtime no-op from the Proxy
+    await future();
+  }
+  assert.equal(typeof hooks["afterFutureHook"], "function");
+  assert.equal(typeof hooks["onFutureEvent"], "function");
+  assert.equal(hooks["notAHook"], undefined);
+  assert.equal(guardCalls.length, 0);
 });
 
 test("sessionId callback receives the tool name and input", async () => {

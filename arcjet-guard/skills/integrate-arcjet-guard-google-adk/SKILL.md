@@ -30,9 +30,11 @@ decision rule:
   `beforeModelCallback` are no-ops) so a preceding `guard()` does
   not double-call.
 - **Correlation** → `googleAdkContext()` reads a caller-owned id from
-  the helper options or a bag the integrator put on the run. It never
-  mints a new id. It never reads `invocationId` (ADK always generates
-  it). It never reads `traceId`. It never reads
+  helper options (`guardPlugin({ sessionId })`) or a wrap
+  (`googleAdkContext({ context: appContext })`). ADK `Context` has no
+  nested `context` field. Durable session `state` loses to helper
+  options. It never mints a new id. It never reads `invocationId`
+  (ADK always generates it). It never reads `traceId`. It never reads
   `toolContext.sessionId` / `session.id` (session auto-ids).
 
 There is **no `guardTool`**. Skip is the plugin return, not
@@ -80,9 +82,11 @@ Ask only what you cannot infer from the code; suggest defaults.
 2. What **limits**? (e.g. "10 lookups/min per order" → `tokenBucket`.)
 3. Who is the **user** for metadata — an opaque user/tenant ID (never PII)?
    Default: none. Pass it via `metadata` on the policy. Put the
-   conversation / session id you already have on helper options or
-   session `state`. That id is the correlation id. Do not use
-   `invocationId` or `toolContext.sessionId`.
+   conversation / session id you already have on helper options
+   (`guardPlugin({ sessionId })`). That id is the correlation id and
+   wins over durable session `state`. Do not use `invocationId` or
+   `toolContext.sessionId`. ADK `Context` has no nested `context`
+   field.
 4. Is an Arcjet outage unacceptable? Every helper defaults to
    `onGuardError: "deny"`. Ask explicitly about inbound screening before
    `Runner.runAsync`: failing closed there means the run does not start
@@ -104,8 +108,10 @@ Ask only what you cannot infer from the code; suggest defaults.
 4. **Correlation is read, never minted.** Do not call
    `createAgentContext` inside a plugin callback — that generates
    a second id and splits the Sequence. Put the id you already chose
-   on helper options or `state`. Do not read `invocationId`,
-   `traceId`, or `toolContext.sessionId`.
+   on `guardPlugin({ sessionId })`. That wins over durable `state`.
+   Do not read `invocationId`, `traceId`, or `toolContext.sessionId`.
+   Do not expect `toolContext.context` — ADK `Context` has no such
+   field.
 5. **Put Arcjet first.** PluginManager is first-win. If another
    plugin returns a dict first, Guard never runs.
 6. **Do not add `guardTool` and do not double-wrap with
@@ -222,21 +228,22 @@ so this call does not double-call Guard.
 
 ## Step 4: Correlation
 
-Put the id you already have on helper options or session `state`:
+Put the id you already have on helper options:
 
 ```ts
 guardPlugin(arcjet, { sessionId: conversationId });
 ```
 
-Preference order: `context.correlationId`, then `context.sessionId`,
-then `context.conversationId`, then the same keys on `state`, then
-`init.sessionId` / `init.correlationId`. If none is a valid 1–256
-printable-ASCII string, the call is uncorrelated rather than joined
-to a generated id nobody has.
+Preference order: caller wrap `context.correlationId` /
+`context.sessionId` / `context.conversationId` (only for
+`googleAdkContext({ context: appContext })` — ADK `Context` has no
+such field), then `init.sessionId` / `init.correlationId` (helper
+options; wins over durable `state`), then the same keys on session
+`state`. If none is a valid 1–256 printable-ASCII string, the call
+is uncorrelated rather than joined to a generated id nobody has.
 
-Pass a caller-owned bag as `googleAdkContext({ context: appContext })`.
-A `toolContext` that has `invocationId` looks like ADK's Context
-envelope, so top-level `sessionId` on that object is ignored.
+A `toolContext` that has `invocationId` is ADK's Context envelope, so
+top-level `sessionId` on that object is ignored.
 
 Never mint a new id. Never read `invocationId` (ADK always generates
 it). Never read `traceId`. Never read `toolContext.sessionId` /

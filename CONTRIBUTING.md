@@ -164,8 +164,10 @@ change them:
   `guardTool`. The plugin does not implement an inbound /
   before-model prompt gate so a preceding `guard()` does not
   double-call. Correlation is a caller-owned id from helper options
-  or context. Never mint. Never `invocationId`. Never `traceId`.
-  Never session auto-ids (`toolContext.sessionId` / `session.id`).
+  (`guardPlugin({ sessionId })`), which wins over durable session
+  `state`. ADK `Context` has no nested `context` field. Never mint.
+  Never `invocationId`. Never `traceId`. Never session auto-ids
+  (`toolContext.sessionId` / `session.id`).
   There is no unversioned `@arcjet/guard/google-adk` alias. Path is
   `/v2` to match ADK 2.x. Do not double-wrap with
   `@arcjet/guard/vercel-ai/v7`. This is Google ADK JS, not
