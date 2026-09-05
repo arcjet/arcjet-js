@@ -50,6 +50,8 @@ jobs:
           allowed-endpoints: >
             *.aaplimg.com:443
             *.apple-cloudkit.com:443
+            *.apple-cloudkit.fe2.apple-dns.net:443
+            *.apple-dns.net:443
             *.apple.com:443
             *.cdn-apple.com:443
             *.cloudflare.com:443
@@ -58,6 +60,7 @@ jobs:
             *.digicert.com:80
             *.events.data.microsoft.com:443
             *.fastly-edge.com:443
+            *.fe2.apple-dns.net:443
             *.g.aaplimg.com:443
             *.iadsdk.apple.com:443
             *.icloud.com:443
@@ -82,6 +85,7 @@ jobs:
             *.usertrust.com:443
             *.usertrust.com:80
             *.wns.windows.com:443
+            *.wrr.me.apple-dns.net:443
             api.github.com:443
             decide.arcjet.com:443
             github.com:443
@@ -161,6 +165,8 @@ jobs:
           allowed-endpoints: >
             *.aaplimg.com:443
             *.apple-cloudkit.com:443
+            *.apple-cloudkit.fe2.apple-dns.net:443
+            *.apple-dns.net:443
             *.apple.com:443
             *.cdn-apple.com:443
             *.cloudflare.com:443
@@ -169,6 +175,7 @@ jobs:
             *.digicert.com:80
             *.events.data.microsoft.com:443
             *.fastly-edge.com:443
+            *.fe2.apple-dns.net:443
             *.g.aaplimg.com:443
             *.iadsdk.apple.com:443
             *.icloud.com:443
@@ -193,6 +200,7 @@ jobs:
             *.usertrust.com:443
             *.usertrust.com:80
             *.wns.windows.com:443
+            *.wrr.me.apple-dns.net:443
             api.github.com:443
             decide.arcjet.com:443
             deno.com:443
@@ -289,6 +297,8 @@ jobs:
           allowed-endpoints: >
             *.aaplimg.com:443
             *.apple-cloudkit.com:443
+            *.apple-cloudkit.fe2.apple-dns.net:443
+            *.apple-dns.net:443
             *.apple.com:443
             *.cdn-apple.com:443
             *.cloudflare.com:443
@@ -297,6 +307,7 @@ jobs:
             *.digicert.com:80
             *.events.data.microsoft.com:443
             *.fastly-edge.com:443
+            *.fe2.apple-dns.net:443
             *.g.aaplimg.com:443
             *.iadsdk.apple.com:443
             *.icloud.com:443
@@ -321,6 +332,7 @@ jobs:
             *.usertrust.com:443
             *.usertrust.com:80
             *.wns.windows.com:443
+            *.wrr.me.apple-dns.net:443
             api.github.com:443
             decide.arcjet.com:443
             github.com:443
