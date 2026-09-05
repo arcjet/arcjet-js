@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/transport-v1.12.0) (2026-09-05)
+
+
+### 🪲 Bug Fixes
+
+* **transport:** port HTTP/2 PING keep-alive and connection recycling ([#6255](https://github.com/arcjet/arcjet-js/issues/6255)) ([#6256](https://github.com/arcjet/arcjet-js/issues/6256)) ([e2c3304](https://github.com/arcjet/arcjet-js/commit/e2c3304cf2f407e4f8d639b0759157ba3dc150e7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.11.0 to 1.12.0
+    * @arcjet/logger bumped from 1.11.0 to 1.12.0
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/transport-v1.11.0) (2026-08-25)
 
 

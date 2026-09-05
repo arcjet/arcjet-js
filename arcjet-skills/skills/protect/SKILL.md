@@ -7,7 +7,7 @@ metadata:
   author: arcjet
   type: core
   library: "@arcjet/skills"
-  library_version: "1.11.0" # x-release-please-version
+  library_version: "1.12.0" # x-release-please-version
 sources:
   - docs/protect.md
 ---

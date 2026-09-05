@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/decorate-v1.12.0) (2026-09-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/decorate:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.11.0 to 1.12.0
+    * @arcjet/sprintf bumped from 1.11.0 to 1.12.0
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/decorate-v1.11.0) (2026-08-25)
 
 

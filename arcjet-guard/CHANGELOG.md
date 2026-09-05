@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/guard-v1.12.0) (2026-09-05)
+
+
+### 🚀 New Features
+
+* **guard:** add Claude Managed Agents as `@arcjet/guard/claude-managed-agents/v0` ([#6265](https://github.com/arcjet/arcjet-js/issues/6265)) ([b137824](https://github.com/arcjet/arcjet-js/commit/b137824779c2e21886a8f8385ff008337f10d083))
+* **guard:** add Google ADK support as @arcjet/guard/google-adk/v2 ([#6264](https://github.com/arcjet/arcjet-js/issues/6264)) ([ed4edfb](https://github.com/arcjet/arcjet-js/commit/ed4edfb20a470c23817b51a52923359fb1b255f7))
+* **guard:** add TanStack AI support as @arcjet/guard/tanstack-ai/v0 ([#6260](https://github.com/arcjet/arcjet-js/issues/6260)) ([d730d57](https://github.com/arcjet/arcjet-js/commit/d730d57a124f03843f085d41f64b0355a09d1eab))
+* **guard:** record `degraded` when policy did not judge an action fully ([#6250](https://github.com/arcjet/arcjet-js/issues/6250)) ([bef4fec](https://github.com/arcjet/arcjet-js/commit/bef4fecbcd8fc104b733816f205adfa3ac3409b4))
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** import Eve Approval types from eve/tools/approval ([#6253](https://github.com/arcjet/arcjet-js/issues/6253)) ([fa4c092](https://github.com/arcjet/arcjet-js/commit/fa4c0922e56073be0b5d61a5a1c1192e2171cea2))
+* **transport:** port HTTP/2 PING keep-alive and connection recycling ([#6255](https://github.com/arcjet/arcjet-js/issues/6255)) ([#6256](https://github.com/arcjet/arcjet-js/issues/6256)) ([e2c3304](https://github.com/arcjet/arcjet-js/commit/e2c3304cf2f407e4f8d639b0759157ba3dc150e7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.11.0 to 1.12.0
+    * @arcjet/logger bumped from 1.11.0 to 1.12.0
+    * @arcjet/transport bumped from 1.11.0 to 1.12.0
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/guard-v1.11.0) (2026-08-25)
 
 
