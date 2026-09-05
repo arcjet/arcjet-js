@@ -75,6 +75,7 @@ jobs:
             *.pcms.apple.com:443
             *.pool.ntp.org:123
             *.safebrowsing.apple:443
+            *.safebrowsing.apple:80
             *.sectigo.com:443
             *.sectigo.com:80
             *.sls.update.microsoft.com:443
@@ -86,14 +87,20 @@ jobs:
             *.usertrust.com:80
             *.wns.windows.com:443
             *.wrr.me.apple-dns.net:443
+            0.pool.ntp.org:443
             api.github.com:443
             decide.arcjet.com:443
             github.com:443
+            h3.apis.apple.map.fastly.net:443
+            login.live.com:443
+            mesu-cdn.origin-apple.com.akadns.net:443
             objects.githubusercontent.com:443
+            ocsp.comodoca.com:443
             prod.ingestion-edge.prod.dataservices.mozgcp.net:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
             safebrowsing.googleapis.com:443
+            tas02.cwsmu.update.microsoft.com:443
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
@@ -190,6 +197,7 @@ jobs:
             *.pcms.apple.com:443
             *.pool.ntp.org:123
             *.safebrowsing.apple:443
+            *.safebrowsing.apple:80
             *.sectigo.com:443
             *.sectigo.com:80
             *.sls.update.microsoft.com:443
@@ -201,17 +209,23 @@ jobs:
             *.usertrust.com:80
             *.wns.windows.com:443
             *.wrr.me.apple-dns.net:443
+            0.pool.ntp.org:443
             api.github.com:443
             decide.arcjet.com:443
             deno.com:443
             dl.deno.land:443
             github.com:443
+            h3.apis.apple.map.fastly.net:443
+            login.live.com:443
+            mesu-cdn.origin-apple.com.akadns.net:443
             nodejs.org:443
             objects.githubusercontent.com:443
+            ocsp.comodoca.com:443
             prod.ingestion-edge.prod.dataservices.mozgcp.net:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
             safebrowsing.googleapis.com:443
+            tas02.cwsmu.update.microsoft.com:443
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
@@ -322,6 +336,7 @@ jobs:
             *.pcms.apple.com:443
             *.pool.ntp.org:123
             *.safebrowsing.apple:443
+            *.safebrowsing.apple:80
             *.sectigo.com:443
             *.sectigo.com:80
             *.sls.update.microsoft.com:443
@@ -333,15 +348,21 @@ jobs:
             *.usertrust.com:80
             *.wns.windows.com:443
             *.wrr.me.apple-dns.net:443
+            0.pool.ntp.org:443
             api.github.com:443
             decide.arcjet.com:443
             github.com:443
+            h3.apis.apple.map.fastly.net:443
+            login.live.com:443
+            mesu-cdn.origin-apple.com.akadns.net:443
             nodejs.org:443
             objects.githubusercontent.com:443
+            ocsp.comodoca.com:443
             prod.ingestion-edge.prod.dataservices.mozgcp.net:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
             safebrowsing.googleapis.com:443
+            tas02.cwsmu.update.microsoft.com:443
 
       # Checkout
       # Most toolchains require checkout first
