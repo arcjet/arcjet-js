@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...arcjet-v1.12.0) (2026-09-05)
+
+
+### 🚀 New Features
+
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.11.0 to 1.12.0
+    * @arcjet/cache bumped from 1.11.0 to 1.12.0
+    * @arcjet/duration bumped from 1.11.0 to 1.12.0
+    * @arcjet/headers bumped from 1.11.0 to 1.12.0
+    * @arcjet/protocol bumped from 1.11.0 to 1.12.0
+    * @arcjet/runtime bumped from 1.11.0 to 1.12.0
+    * @arcjet/skills bumped from 1.11.0 to 1.12.0
+    * @arcjet/stable-hash bumped from 1.11.0 to 1.12.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.11.0 to 1.12.0
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...arcjet-v1.11.0) (2026-08-25)
 
 

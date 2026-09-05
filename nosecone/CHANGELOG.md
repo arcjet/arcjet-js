@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...nosecone-v1.12.0) (2026-09-05)
+
+
+### 🧹 Miscellaneous Chores
+
+* **nosecone:** Synchronize arcjet-js versions
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...nosecone-v1.11.0) (2026-08-25)
 
 

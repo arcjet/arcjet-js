@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...v1.12.0) (2026-09-05)
+
+
+### 🚀 New Features
+
+* expose client IP provenance and diagnostics ([#6259](https://github.com/arcjet/arcjet-js/issues/6259)) ([b89a486](https://github.com/arcjet/arcjet-js/commit/b89a48695a8fcb575070055a0b2959556eefe3f9))
+* **guard:** add Claude Managed Agents as `@arcjet/guard/claude-managed-agents/v0` ([#6265](https://github.com/arcjet/arcjet-js/issues/6265)) ([b137824](https://github.com/arcjet/arcjet-js/commit/b137824779c2e21886a8f8385ff008337f10d083))
+* **guard:** add Google ADK support as @arcjet/guard/google-adk/v2 ([#6264](https://github.com/arcjet/arcjet-js/issues/6264)) ([ed4edfb](https://github.com/arcjet/arcjet-js/commit/ed4edfb20a470c23817b51a52923359fb1b255f7))
+* **guard:** add TanStack AI support as @arcjet/guard/tanstack-ai/v0 ([#6260](https://github.com/arcjet/arcjet-js/issues/6260)) ([d730d57](https://github.com/arcjet/arcjet-js/commit/d730d57a124f03843f085d41f64b0355a09d1eab))
+* **guard:** record `degraded` when policy did not judge an action fully ([#6250](https://github.com/arcjet/arcjet-js/issues/6250)) ([bef4fec](https://github.com/arcjet/arcjet-js/commit/bef4fecbcd8fc104b733816f205adfa3ac3409b4))
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** import Eve Approval types from eve/tools/approval ([#6253](https://github.com/arcjet/arcjet-js/issues/6253)) ([fa4c092](https://github.com/arcjet/arcjet-js/commit/fa4c0922e56073be0b5d61a5a1c1192e2171cea2))
+* **transport:** port HTTP/2 PING keep-alive and connection recycling ([#6255](https://github.com/arcjet/arcjet-js/issues/6255)) ([#6256](https://github.com/arcjet/arcjet-js/issues/6256)) ([e2c3304](https://github.com/arcjet/arcjet-js/commit/e2c3304cf2f407e4f8d639b0759157ba3dc150e7))
+
+
+### 📝 Documentation
+
+* clarify client IP header trust ([#6257](https://github.com/arcjet/arcjet-js/issues/6257)) ([96810ff](https://github.com/arcjet/arcjet-js/commit/96810ffeec7d74a581411427e7717f321b21a599))
+* move client IP warning under installation ([#6258](https://github.com/arcjet/arcjet-js/issues/6258)) ([d6caa44](https://github.com/arcjet/arcjet-js/commit/d6caa44bef36497211ddac3bb06764c2d222906e))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump fastify from 5.12.0 to 5.12.1 ([#6263](https://github.com/arcjet/arcjet-js/issues/6263)) ([314eaa7](https://github.com/arcjet/arcjet-js/commit/314eaa75f596709858c91daa172fab9c899f931c))
+
+
+### ✅ Continuous Integration
+
+* allow the background traffic from the Windows and macOS runners ([#6268](https://github.com/arcjet/arcjet-js/issues/6268)) ([5c57f7f](https://github.com/arcjet/arcjet-js/commit/5c57f7fc271ceb0413093d09252a1fefa2ab538c))
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...v1.11.0) (2026-08-25)
 
 
