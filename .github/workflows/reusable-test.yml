@@ -37,79 +37,59 @@ jobs:
     steps:
       - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
-          # The OS entries below are background traffic from the Windows and
-          # macOS runner images — push and notification services, connectivity
-          # probes, certificate revocation checks and time sync — not anything
-          # this repository requests. They are allowed so the egress policy
-          # reports a real anomaly rather than the runner talking to its vendor.
-          # The same list is used by every job that runs a non-Linux runner, so
-          # the three lists cannot drift apart.
+          # The wildcard entries below are background traffic from the Windows
+          # and macOS runner images — push and notification services, media and
+          # software CDNs, connectivity probes, certificate revocation and time
+          # sync — not anything this repository requests. StepSecurity documents
+          # wildcards for exactly this: "For services that rotate subdomains,
+          # such as AWS or Azure CDNs, use wildcard patterns to prevent
+          # repetitive alerts." Apple rotates its CDN names per lookup, so
+          # naming them one at a time does not converge. Each wildcard is scoped
+          # to a single vendor's own domain. The same list is used by every job
+          # with a non-Linux runner so the three cannot drift apart.
           allowed-endpoints: >
-            0.pool.ntp.org:123
-            api.apple-cloudkit.com:443
+            *.aaplimg.com:443
+            *.apple-cloudkit.com:443
+            *.apple.com:443
+            *.cdn-apple.com:443
+            *.cloudflare.com:443
+            *.data.microsoft.com:443
+            *.digicert.com:443
+            *.digicert.com:80
+            *.events.data.microsoft.com:443
+            *.fastly-edge.com:443
+            *.g.aaplimg.com:443
+            *.iadsdk.apple.com:443
+            *.icloud.com:443
+            *.itunes.apple.com:443
+            *.ls.apple.com:443
+            *.microsoft.com:443
+            *.msftconnecttest.com:443
+            *.msftconnecttest.com:80
+            *.msftncsi.com:443
+            *.msftncsi.com:80
+            *.mzstatic.com:443
+            *.pcms.apple.com:443
+            *.pool.ntp.org:123
+            *.safebrowsing.apple:443
+            *.sectigo.com:443
+            *.sectigo.com:80
+            *.sls.update.microsoft.com:443
+            *.smoot.apple.com:443
+            *.stepsecurity.io:443
+            *.telemetry.mozilla.org:443
+            *.update.microsoft.com:443
+            *.usertrust.com:443
+            *.usertrust.com:80
+            *.wns.windows.com:443
             api.github.com:443
-            api.smoot.apple.com:443
-            apps.mzstatic.com:443
-            bag.itunes.apple.com:443
-            cds.apple.com:443
-            cf.iadsdk.apple.com:443
-            client.wns.windows.com:443
-            configuration.apple.com:443
-            cp10.cloudflare.com:443
-            crl.sectigo.com:443
-            crl.sectigo.com:80
             decide.arcjet.com:443
-            device-config.pcms.apple.com:443
-            experiments.apple.com:443
-            fe2cr.update.microsoft.com:443
-            fpinit.itunes.apple.com:443
-            gateway.icloud.com:443
-            gdmf-ados.apple.com:443
             github.com:443
-            go.microsoft.com:443
-            gsp-ssl.ls.apple.com:443
-            gspe1-ssl.ls.apple.com:443
-            gspe35-ssl.ls.apple.com:443
-            help.apple.com:443
-            iadsdk.apple.com:443
-            incoming.telemetry.mozilla.org:443
-            init.itunes.apple.com:443
-            int1.stepsecurity.io:443
-            ipcdn.apple.com:443
-            ipv6.msftconnecttest.com:443
-            ipv6.msftconnecttest.com:80
-            ipv6.msftncsi.com:443
-            ipv6.msftncsi.com:80
-            itunes.apple.com:443
-            mask-api.icloud.com:443
-            mobile.events.data.microsoft.com:443
             objects.githubusercontent.com:443
-            ocsp.digicert.com:443
-            ocsp.digicert.com:80
-            ocsp.sectigo.com:443
-            ocsp.sectigo.com:80
-            ocsp.usertrust.com:443
-            ocsp.usertrust.com:80
-            ohttp-relay1.fastly-edge.com:443
-            pancake.apple.com:443
             prod.ingestion-edge.prod.dataservices.mozgcp.net:443
-            proxy.safebrowsing.apple:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
             safebrowsing.googleapis.com:443
-            sas.pcms.apple.com:443
-            settings-win.data.microsoft.com:443
-            stocks-data-service.apple.com:443
-            swallow.apple.com:443
-            tas02.sls.update.microsoft.com:443
-            token.safebrowsing.apple:443
-            updates.cdn-apple.com:443
-            www.msftconnecttest.com:443
-            www.msftconnecttest.com:80
-            www.msftncsi.com:443
-            www.msftncsi.com:80
-            xp.apple.com:443
-            xp.g.aaplimg.com:443
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
@@ -168,82 +148,62 @@ jobs:
     steps:
       - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
-          # The OS entries below are background traffic from the Windows and
-          # macOS runner images — push and notification services, connectivity
-          # probes, certificate revocation checks and time sync — not anything
-          # this repository requests. They are allowed so the egress policy
-          # reports a real anomaly rather than the runner talking to its vendor.
-          # The same list is used by every job that runs a non-Linux runner, so
-          # the three lists cannot drift apart.
+          # The wildcard entries below are background traffic from the Windows
+          # and macOS runner images — push and notification services, media and
+          # software CDNs, connectivity probes, certificate revocation and time
+          # sync — not anything this repository requests. StepSecurity documents
+          # wildcards for exactly this: "For services that rotate subdomains,
+          # such as AWS or Azure CDNs, use wildcard patterns to prevent
+          # repetitive alerts." Apple rotates its CDN names per lookup, so
+          # naming them one at a time does not converge. Each wildcard is scoped
+          # to a single vendor's own domain. The same list is used by every job
+          # with a non-Linux runner so the three cannot drift apart.
           allowed-endpoints: >
-            0.pool.ntp.org:123
-            api.apple-cloudkit.com:443
+            *.aaplimg.com:443
+            *.apple-cloudkit.com:443
+            *.apple.com:443
+            *.cdn-apple.com:443
+            *.cloudflare.com:443
+            *.data.microsoft.com:443
+            *.digicert.com:443
+            *.digicert.com:80
+            *.events.data.microsoft.com:443
+            *.fastly-edge.com:443
+            *.g.aaplimg.com:443
+            *.iadsdk.apple.com:443
+            *.icloud.com:443
+            *.itunes.apple.com:443
+            *.ls.apple.com:443
+            *.microsoft.com:443
+            *.msftconnecttest.com:443
+            *.msftconnecttest.com:80
+            *.msftncsi.com:443
+            *.msftncsi.com:80
+            *.mzstatic.com:443
+            *.pcms.apple.com:443
+            *.pool.ntp.org:123
+            *.safebrowsing.apple:443
+            *.sectigo.com:443
+            *.sectigo.com:80
+            *.sls.update.microsoft.com:443
+            *.smoot.apple.com:443
+            *.stepsecurity.io:443
+            *.telemetry.mozilla.org:443
+            *.update.microsoft.com:443
+            *.usertrust.com:443
+            *.usertrust.com:80
+            *.wns.windows.com:443
             api.github.com:443
-            api.smoot.apple.com:443
-            apps.mzstatic.com:443
-            bag.itunes.apple.com:443
-            cds.apple.com:443
-            cf.iadsdk.apple.com:443
-            client.wns.windows.com:443
-            configuration.apple.com:443
-            cp10.cloudflare.com:443
-            crl.sectigo.com:443
-            crl.sectigo.com:80
             decide.arcjet.com:443
             deno.com:443
-            device-config.pcms.apple.com:443
             dl.deno.land:443
-            experiments.apple.com:443
-            fe2cr.update.microsoft.com:443
-            fpinit.itunes.apple.com:443
-            gateway.icloud.com:443
-            gdmf-ados.apple.com:443
             github.com:443
-            go.microsoft.com:443
-            gsp-ssl.ls.apple.com:443
-            gspe1-ssl.ls.apple.com:443
-            gspe35-ssl.ls.apple.com:443
-            help.apple.com:443
-            iadsdk.apple.com:443
-            incoming.telemetry.mozilla.org:443
-            init.itunes.apple.com:443
-            int1.stepsecurity.io:443
-            ipcdn.apple.com:443
-            ipv6.msftconnecttest.com:443
-            ipv6.msftconnecttest.com:80
-            ipv6.msftncsi.com:443
-            ipv6.msftncsi.com:80
-            itunes.apple.com:443
-            mask-api.icloud.com:443
-            mobile.events.data.microsoft.com:443
             nodejs.org:443
             objects.githubusercontent.com:443
-            ocsp.digicert.com:443
-            ocsp.digicert.com:80
-            ocsp.sectigo.com:443
-            ocsp.sectigo.com:80
-            ocsp.usertrust.com:443
-            ocsp.usertrust.com:80
-            ohttp-relay1.fastly-edge.com:443
-            pancake.apple.com:443
             prod.ingestion-edge.prod.dataservices.mozgcp.net:443
-            proxy.safebrowsing.apple:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
             safebrowsing.googleapis.com:443
-            sas.pcms.apple.com:443
-            settings-win.data.microsoft.com:443
-            stocks-data-service.apple.com:443
-            swallow.apple.com:443
-            tas02.sls.update.microsoft.com:443
-            token.safebrowsing.apple:443
-            updates.cdn-apple.com:443
-            www.msftconnecttest.com:443
-            www.msftconnecttest.com:80
-            www.msftncsi.com:443
-            www.msftncsi.com:80
-            xp.apple.com:443
-            xp.g.aaplimg.com:443
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
@@ -316,80 +276,60 @@ jobs:
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
-          # The OS entries below are background traffic from the Windows and
-          # macOS runner images — push and notification services, connectivity
-          # probes, certificate revocation checks and time sync — not anything
-          # this repository requests. They are allowed so the egress policy
-          # reports a real anomaly rather than the runner talking to its vendor.
-          # The same list is used by every job that runs a non-Linux runner, so
-          # the three lists cannot drift apart.
+          # The wildcard entries below are background traffic from the Windows
+          # and macOS runner images — push and notification services, media and
+          # software CDNs, connectivity probes, certificate revocation and time
+          # sync — not anything this repository requests. StepSecurity documents
+          # wildcards for exactly this: "For services that rotate subdomains,
+          # such as AWS or Azure CDNs, use wildcard patterns to prevent
+          # repetitive alerts." Apple rotates its CDN names per lookup, so
+          # naming them one at a time does not converge. Each wildcard is scoped
+          # to a single vendor's own domain. The same list is used by every job
+          # with a non-Linux runner so the three cannot drift apart.
           allowed-endpoints: >
-            0.pool.ntp.org:123
-            api.apple-cloudkit.com:443
+            *.aaplimg.com:443
+            *.apple-cloudkit.com:443
+            *.apple.com:443
+            *.cdn-apple.com:443
+            *.cloudflare.com:443
+            *.data.microsoft.com:443
+            *.digicert.com:443
+            *.digicert.com:80
+            *.events.data.microsoft.com:443
+            *.fastly-edge.com:443
+            *.g.aaplimg.com:443
+            *.iadsdk.apple.com:443
+            *.icloud.com:443
+            *.itunes.apple.com:443
+            *.ls.apple.com:443
+            *.microsoft.com:443
+            *.msftconnecttest.com:443
+            *.msftconnecttest.com:80
+            *.msftncsi.com:443
+            *.msftncsi.com:80
+            *.mzstatic.com:443
+            *.pcms.apple.com:443
+            *.pool.ntp.org:123
+            *.safebrowsing.apple:443
+            *.sectigo.com:443
+            *.sectigo.com:80
+            *.sls.update.microsoft.com:443
+            *.smoot.apple.com:443
+            *.stepsecurity.io:443
+            *.telemetry.mozilla.org:443
+            *.update.microsoft.com:443
+            *.usertrust.com:443
+            *.usertrust.com:80
+            *.wns.windows.com:443
             api.github.com:443
-            api.smoot.apple.com:443
-            apps.mzstatic.com:443
-            bag.itunes.apple.com:443
-            cds.apple.com:443
-            cf.iadsdk.apple.com:443
-            client.wns.windows.com:443
-            configuration.apple.com:443
-            cp10.cloudflare.com:443
-            crl.sectigo.com:443
-            crl.sectigo.com:80
             decide.arcjet.com:443
-            device-config.pcms.apple.com:443
-            experiments.apple.com:443
-            fe2cr.update.microsoft.com:443
-            fpinit.itunes.apple.com:443
-            gateway.icloud.com:443
-            gdmf-ados.apple.com:443
             github.com:443
-            go.microsoft.com:443
-            gsp-ssl.ls.apple.com:443
-            gspe1-ssl.ls.apple.com:443
-            gspe35-ssl.ls.apple.com:443
-            help.apple.com:443
-            iadsdk.apple.com:443
-            incoming.telemetry.mozilla.org:443
-            init.itunes.apple.com:443
-            int1.stepsecurity.io:443
-            ipcdn.apple.com:443
-            ipv6.msftconnecttest.com:443
-            ipv6.msftconnecttest.com:80
-            ipv6.msftncsi.com:443
-            ipv6.msftncsi.com:80
-            itunes.apple.com:443
-            mask-api.icloud.com:443
-            mobile.events.data.microsoft.com:443
             nodejs.org:443
             objects.githubusercontent.com:443
-            ocsp.digicert.com:443
-            ocsp.digicert.com:80
-            ocsp.sectigo.com:443
-            ocsp.sectigo.com:80
-            ocsp.usertrust.com:443
-            ocsp.usertrust.com:80
-            ohttp-relay1.fastly-edge.com:443
-            pancake.apple.com:443
             prod.ingestion-edge.prod.dataservices.mozgcp.net:443
-            proxy.safebrowsing.apple:443
             registry.npmjs.org:443
             release-assets.githubusercontent.com:443
             safebrowsing.googleapis.com:443
-            sas.pcms.apple.com:443
-            settings-win.data.microsoft.com:443
-            stocks-data-service.apple.com:443
-            swallow.apple.com:443
-            tas02.sls.update.microsoft.com:443
-            token.safebrowsing.apple:443
-            updates.cdn-apple.com:443
-            www.msftconnecttest.com:443
-            www.msftconnecttest.com:80
-            www.msftncsi.com:443
-            www.msftncsi.com:80
-            xp.apple.com:443
-            xp.g.aaplimg.com:443
 
       # Checkout
       # Most toolchains require checkout first
