@@ -88,6 +88,8 @@ jobs:
             *.wns.windows.com:443
             *.wrr.me.apple-dns.net:443
             0.pool.ntp.org:443
+            api.apple-cloudkit.com:443
+            api.apple-cloudkit.fe2.apple-dns.net:443
             api.github.com:443
             decide.arcjet.com:443
             github.com:443
@@ -210,6 +212,8 @@ jobs:
             *.wns.windows.com:443
             *.wrr.me.apple-dns.net:443
             0.pool.ntp.org:443
+            api.apple-cloudkit.com:443
+            api.apple-cloudkit.fe2.apple-dns.net:443
             api.github.com:443
             decide.arcjet.com:443
             deno.com:443
@@ -349,6 +353,8 @@ jobs:
             *.wns.windows.com:443
             *.wrr.me.apple-dns.net:443
             0.pool.ntp.org:443
+            api.apple-cloudkit.com:443
+            api.apple-cloudkit.fe2.apple-dns.net:443
             api.github.com:443
             decide.arcjet.com:443
             github.com:443
