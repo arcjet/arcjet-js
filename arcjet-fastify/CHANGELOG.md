@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/fastify-v1.12.0) (2026-09-05)
+
+
+### 🚀 New Features
+
+* expose client IP provenance and diagnostics ([#6259](https://github.com/arcjet/arcjet-js/issues/6259)) ([b89a486](https://github.com/arcjet/arcjet-js/commit/b89a48695a8fcb575070055a0b2959556eefe3f9))
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump fastify from 5.12.0 to 5.12.1 ([#6263](https://github.com/arcjet/arcjet-js/issues/6263)) ([314eaa7](https://github.com/arcjet/arcjet-js/commit/314eaa75f596709858c91daa172fab9c899f931c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.11.0 to 1.12.0
+    * @arcjet/headers bumped from 1.11.0 to 1.12.0
+    * @arcjet/ip bumped from 1.11.0 to 1.12.0
+    * @arcjet/logger bumped from 1.11.0 to 1.12.0
+    * @arcjet/protocol bumped from 1.11.0 to 1.12.0
+    * @arcjet/transport bumped from 1.11.0 to 1.12.0
+    * arcjet bumped from 1.11.0 to 1.12.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.11.0 to 1.12.0
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/fastify-v1.11.0) (2026-08-25)
 
 

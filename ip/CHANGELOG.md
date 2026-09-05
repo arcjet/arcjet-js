@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/ip-v1.12.0) (2026-09-05)
+
+
+### 🚀 New Features
+
+* expose client IP provenance and diagnostics ([#6259](https://github.com/arcjet/arcjet-js/issues/6259)) ([b89a486](https://github.com/arcjet/arcjet-js/commit/b89a48695a8fcb575070055a0b2959556eefe3f9))
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/ip-v1.11.0) (2026-08-25)
 
 
