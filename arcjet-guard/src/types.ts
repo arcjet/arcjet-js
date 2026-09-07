@@ -363,6 +363,25 @@ export type RuleResultCustom<TData extends Record<string, string> = Record<strin
   readonly data: Readonly<TData>;
 };
 
+/**
+ * Result for a remote-policy rule decided by the policy's expression language.
+ *
+ * A v2 policy states its rules as an expression over the inputs it declares,
+ * rather than as a typed rule variant, so this carries the conclusion and
+ * nothing more. Which conditions fired is a property of the compiled artifact
+ * named by `policyRevision`, not something the result restates.
+ */
+export type RuleResultPolicyExpression = {
+  /** Whether the request was allowed or denied by this rule. */
+  readonly conclusion: "ALLOW" | "DENY";
+  /** The reason category — always `"POLICY_EXPRESSION"`. */
+  readonly reason: "POLICY_EXPRESSION";
+  /** Discriminant — always `"POLICY_EXPRESSION"`. */
+  readonly type: "POLICY_EXPRESSION";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
+};
+
 /** Result for a rule that was not evaluated. */
 export type RuleResultNotRun = {
   /** Always `"ALLOW"` — unevaluated rules never deny. */
@@ -451,6 +470,7 @@ export type RuleResult =
   | RuleResultModerateContent
   | RuleResultSensitiveInfo
   | RuleResultCustom
+  | RuleResultPolicyExpression
   | RuleResultNotRun
   | RuleResultError
   | RuleResultInputConstraint

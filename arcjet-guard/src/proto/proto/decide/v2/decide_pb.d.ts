@@ -890,7 +890,7 @@ export declare type ResultLocalSensitiveInfo = Message<"proto.decide.v2.ResultLo
   conclusion: GuardConclusion;
 
   /**
-   * Whether sensitive information was detected.
+   * Whether a denied, policy-violating sensitive entity was detected.
    *
    * @generated from field: bool detected = 2;
    */
@@ -987,6 +987,32 @@ export declare type ResultNotRun = Message<"proto.decide.v2.ResultNotRun"> & {
  * Use `create(ResultNotRunSchema)` to create a new message.
  */
 export declare const ResultNotRunSchema: GenMessage<ResultNotRun>;
+
+/**
+ * ResultPolicyExpression is the result of a remote-policy rule decided by the
+ * policy's expression language rather than by a typed rule variant.
+ *
+ * The expression names which declared rule IDs it denies; the server maps each
+ * to its declaration. An SDK that predates this variant decodes the containing
+ * oneof as unset and still enforces correctly, because enforcement follows the
+ * aggregate GuardDecision.conclusion rather than per-rule detail.
+ *
+ * @generated from message proto.decide.v2.ResultPolicyExpression
+ */
+export declare type ResultPolicyExpression = Message<"proto.decide.v2.ResultPolicyExpression"> & {
+  /**
+   * The conclusion for this rule (ALLOW or DENY).
+   *
+   * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
+   */
+  conclusion: GuardConclusion;
+};
+
+/**
+ * Describes the message proto.decide.v2.ResultPolicyExpression.
+ * Use `create(ResultPolicyExpressionSchema)` to create a new message.
+ */
+export declare const ResultPolicyExpressionSchema: GenMessage<ResultPolicyExpression>;
 
 /**
  * ResultError is the result for a rule that encountered an error during
@@ -1318,6 +1344,12 @@ export declare type GuardPolicyRuleResult = Message<"proto.decide.v2.GuardPolicy
      */
     value: ResultStringListMembership;
     case: "stringListMembership";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultPolicyExpression policy_expression = 19;
+     */
+    value: ResultPolicyExpression;
+    case: "policyExpression";
   } | {
     /**
      * @generated from field: proto.decide.v2.ResultLocalSensitiveInfo local_sensitive_info = 20;
@@ -1698,8 +1730,10 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
   localWarnings: Warning[];
 
   /**
-   * Opaque identity asserted by trusted application code. Optional unless the
-   * active remote policy requires it.
+   * Top-level opaque, stable principal identity asserted by trusted
+   * application code and derived from authenticated server-side state, never
+   * request, model, or tool input. The raw value is sent to Arcjet and retained
+   * as evidence. Optional unless the active remote policy requires it.
    *
    * @generated from field: optional string actor = 16;
    */
@@ -1899,6 +1933,8 @@ export declare type GuardLocalPolicyProjection = Message<"proto.decide.v2.GuardL
   label: string;
 
   /**
+   * Whether a non-empty actor, as defined on GuardRequest.actor, is required.
+   *
    * @generated from field: bool requires_actor = 4;
    */
   requiresActor: boolean;
@@ -2285,6 +2321,13 @@ export enum GuardRuleType {
    * @generated from enum value: GUARD_RULE_TYPE_STRING_LIST_MEMBERSHIP = 18;
    */
   STRING_LIST_MEMBERSHIP = 18,
+
+  /**
+   * Remote-policy rule decided by the policy's expression language.
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_POLICY_EXPRESSION = 19;
+   */
+  POLICY_EXPRESSION = 19,
 
   /**
    * Sensitive information detection (evaluated locally by the SDK).
