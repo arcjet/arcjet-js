@@ -485,9 +485,21 @@ function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult
         code: pr.result.value.code || "UNKNOWN",
       };
       break;
+    case "policyExpression":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "POLICY_EXPRESSION",
+        type: "POLICY_EXPRESSION",
+        warnings,
+      };
+      break;
     case "notRun":
       result = { conclusion: "ALLOW", reason: "NOT_RUN", type: "NOT_RUN", warnings };
       break;
+    // Every variant is matched explicitly, with no `default`: the
+    // exhaustiveness lint requires `undefined`, and `no-useless-switch-case`
+    // forbids pairing it with a `default`. A variant added to the proto
+    // therefore fails this build rather than silently reading as UNKNOWN.
     case undefined:
       result = { conclusion: "ALLOW", reason: "UNKNOWN", type: "UNKNOWN", warnings };
   }

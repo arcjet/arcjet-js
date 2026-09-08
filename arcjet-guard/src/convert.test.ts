@@ -27,6 +27,9 @@ import {
   ResultLocalCustomSchema,
   ResultErrorSchema,
   ResultNotRunSchema,
+  GuardPolicyRuleResultSchema,
+  ResultPolicyExpressionSchema,
+  GuardRuleExecution,
   GuardConclusion,
   GuardReason,
   GuardRuleType,
@@ -1667,5 +1670,66 @@ describe("decisionFromProto", () => {
     assert.ok(denied);
     assert.equal(denied.conclusion, "DENY");
     assert.equal(denied.remainingTokens, 0);
+  });
+});
+
+// A policy v2 states its rules as an expression, so `policyExpression` is the
+// variant every Rego rule reports through. `policyResultFromProto` had no case
+// for it, which left `result` unassigned and stopped the switch compiling —
+// but the behaviour that matters is what a caller reads, so this asserts the
+// conclusion rather than relying on the compiler alone. Both conclusions are
+// covered because only DENY shows the value comes from the message.
+function policyResponse(conclusion: GuardConclusion): GuardResponse {
+  return create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_policy",
+      conclusion,
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          resultId: "gres_expr",
+          policyId: "pol_1",
+          policyRevision: "rev-1",
+          ruleId: "deny-recipient",
+          type: GuardRuleType.POLICY_EXPRESSION,
+          mode: GuardRuleMode.LIVE,
+          execution: GuardRuleExecution.SERVER,
+          result: {
+            case: "policyExpression",
+            value: create(ResultPolicyExpressionSchema, { conclusion }),
+          },
+        }),
+      ],
+    }),
+  });
+}
+
+describe("policy expression results", () => {
+  test("preserves a denial", () => {
+    const decision = decisionFromProto(policyResponse(GuardConclusion.DENY), []);
+    const result = decision.policyResults?.[0];
+    assert.ok(result);
+    assert.equal(result.ruleId, "deny-recipient");
+    assert.equal(result.policyRevision, "rev-1");
+    assert.equal(result.result.type, "POLICY_EXPRESSION");
+    assert.equal(result.result.reason, "POLICY_EXPRESSION");
+    assert.equal(result.result.conclusion, "DENY");
+  });
+
+  test("preserves an allow, and does not read as UNKNOWN", () => {
+    // The regression this guards is silent in the other SDKs: an unhandled
+    // variant reads as UNKNOWN, which also reports ALLOW. Asserting the type
+    // stops this passing for the wrong reason.
+    const decision = decisionFromProto(policyResponse(GuardConclusion.ALLOW), []);
+    const result = decision.policyResults?.[0];
+    assert.ok(result);
+    assert.equal(result.result.type, "POLICY_EXPRESSION");
+    assert.equal(result.result.conclusion, "ALLOW");
+  });
+
+  test("carries the warnings array every result shape has", () => {
+    const decision = decisionFromProto(policyResponse(GuardConclusion.DENY), []);
+    const result = decision.policyResults?.[0];
+    assert.ok(result);
+    assert.deepEqual(result.result.warnings, []);
   });
 });
