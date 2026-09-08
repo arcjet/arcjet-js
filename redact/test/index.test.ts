@@ -259,5 +259,117 @@ describe("ArcjetRedact", () => {
       const unredacted = unredact(newText);
       assert.equal(unredacted, expectedUnredacted);
     });
+
+    // Reserved test data only: 4111111111111111 is the standard Visa test PAN
+    // and example.com is the RFC 2606 reserved domain.
+    describe("offsets", () => {
+      const pan = "4111111111111111";
+      const email = "victim@example.com";
+
+      test("it redacts entities preceded by non-ascii text", async () => {
+        // Wasm reports UTF-8 byte offsets, `substring` indexes UTF-16 code
+        // units. Every multi-byte character before an entity used to shift the
+        // cut by the excess bytes, leaving part of the entity — with a long
+        // enough prefix, all of it — in the "redacted" output.
+        for (const prefix of [
+          "",
+          "aaaaaaaaaaaa ",
+          "\u00e9 ",
+          "\u00e9\u00e9\u00e9\u00e9 ",
+          "Здравствуйте, ",
+          "您好，我的卡号是 ",
+          "🙂🙂🙂🙂 ",
+          "🙂".repeat(8) + " ",
+          "🙂".repeat(20) + " ",
+        ]) {
+          const text = `${prefix}Card ${pan} and mail ${email}`;
+          const [redacted, unredact] = await redact(text, {
+            entities: ["credit-card-number", "email"],
+          });
+          assert.equal(
+            redacted,
+            `${prefix}Card <Redacted credit card number #0> and mail <Redacted email #1>`,
+            `redacting with prefix ${JSON.stringify(prefix)}`,
+          );
+          assert.ok(!redacted.includes(pan), "card number survived redaction");
+          assert.ok(!redacted.includes(email), "email survived redaction");
+          assert.ok(redacted.isWellFormed(), "redacted text is not well-formed UTF-16");
+          assert.equal(unredact(redacted), text, "round trip is lossy");
+        }
+      });
+
+      test("it is unaffected by non-ascii text after an entity", async () => {
+        const text = `Card ${pan} and mail ${email} — спасибо`;
+        const [redacted] = await redact(text, {
+          entities: ["credit-card-number", "email"],
+        });
+        assert.equal(
+          redacted,
+          "Card <Redacted credit card number #0> and mail <Redacted email #1> — спасибо",
+        );
+      });
+
+      test("it redacts entities preceded by percent-encoded text", async () => {
+        // Detection runs on the percent-decoded text; reporting those offsets
+        // against the original shifted every span left.
+        for (const prefix of ["Hello%20world ", "a%2Bb%2Bc%2Bd%2Be ", "%E4%BD%A0 ", "%41%42 "]) {
+          const text = `${prefix}Card ${pan} end`;
+          const [redacted] = await redact(text, { entities: ["credit-card-number"] });
+          assert.equal(redacted, `${prefix}Card <Redacted credit card number #0> end`);
+        }
+      });
+
+      test("it redacts entities preceded by trimmed characters", async () => {
+        // A leading `.` is trimmed off the token but was not added to its start
+        // offset, so each one walked the span a byte to the left; sixteen of
+        // them left the card number entirely outside its own redaction.
+        for (const count of [1, 2, 4, 15, 16, 17, 32]) {
+          const dots = ".".repeat(count);
+          const text = `Card ${dots}${pan} end`;
+          const [redacted] = await redact(text, { entities: ["credit-card-number"] });
+          assert.equal(redacted, `Card ${dots}<Redacted credit card number #0> end`);
+          assert.ok(!redacted.includes(pan), `card number survived ${count} leading dots`);
+        }
+      });
+
+      test("it redacts a plus-addressed email exactly once", async () => {
+        // The tokenizer reports both `victim@example.com` and the whole
+        // `a+victim@example.com`, overlapping. Splicing both mangled the text
+        // around them and broke the round trip.
+        const text = `mail a+${email} end`;
+        const [redacted, unredact] = await redact(text, { entities: ["email"] });
+        assert.equal(redacted, "mail <Redacted email #0> end");
+        assert.equal(unredact(redacted), text);
+      });
+
+      test("it redacts crossing overlaps in full", async () => {
+        // Two detected spans can cross rather than nest: U+FDFA expands to
+        // several words under NFKC, so a custom detector matching a token
+        // either side of it yields spans that partly overlap. Resolving that
+        // by dropping the later span left the part of it past the first span
+        // in the output. The round trip still restores the original, so this
+        // has to assert on the redacted text.
+        const text = "AAA\u{FDFA}SECRET";
+        const [redacted, unredact] = await redact(text, {
+          entities: ["secret"],
+          detect: (tokens: string[]) =>
+            tokens.map((token) =>
+              token.includes("AAA") || token.includes("SECRET") ? ("secret" as const) : undefined,
+            ),
+        });
+
+        assert.ok(!redacted.includes("SECRET"), `detected value survived: ${redacted}`);
+        assert.ok(!redacted.includes("AAA"), `detected value survived: ${redacted}`);
+        assert.equal(unredact(redacted), text);
+      });
+
+      test("it handles long runs of separators", async () => {
+        // Separator-only tokens were skipped by recursing once each, so a few
+        // thousand spaces overflowed the stack instead of returning a result.
+        const text = `${"  ".repeat(20000)}${pan}`;
+        const [redacted] = await redact(text, { entities: ["credit-card-number"] });
+        assert.equal(redacted, `${"  ".repeat(20000)}<Redacted credit card number #0>`);
+      });
+    });
   });
 });

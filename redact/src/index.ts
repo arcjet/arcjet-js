@@ -125,6 +125,101 @@ function performReplacementInText(
   return text.substring(0, start) + replacement + text.substring(end);
 }
 
+/**
+ * Number of bytes a code point occupies in UTF-8.
+ *
+ * @param codePoint
+ *   Code point.
+ * @returns
+ *   Byte length.
+ */
+function utf8Length(codePoint: number): number {
+  if (codePoint < 0x80) return 1;
+  if (codePoint < 0x800) return 2;
+  // A lone surrogate has no UTF-8 encoding; it reaches Wasm as U+FFFD, which is
+  // also three bytes, so the arithmetic stays aligned either way.
+  if (codePoint < 0x10000) return 3;
+  return 4;
+}
+
+/**
+ * Resolve the UTF-8 byte offsets reported by Wasm to UTF-16 code unit indices.
+ *
+ * The detector counts bytes; `String.prototype.substring` counts UTF-16 code
+ * units. The two coincide for ASCII, so applying one as the other looks correct
+ * until the text contains a multi-byte character *before* an entity — at which
+ * point every replacement lands short by the number of excess bytes and part of
+ * the entity survives in the "redacted" output.
+ *
+ * An offset that falls inside a character is snapped outward — starts back to
+ * the beginning of that character, ends on to the end of it — so a span always
+ * covers at least the bytes the detector reported. Over-redacting is the safe
+ * direction here; under-redacting is the bug.
+ *
+ * @param text
+ *   Text the offsets refer to.
+ * @param redactions
+ *   Detected entities, carrying byte offsets.
+ * @returns
+ *   Spans in UTF-16 code unit indices, parallel to `redactions`.
+ */
+function resolveByteOffsets(
+  text: string,
+  redactions: ReadonlyArray<RedactedSensitiveInfoEntity>,
+): Array<{ start: number; end: number }> {
+  const wanted = new Set<number>();
+  for (const redaction of redactions) {
+    wanted.add(redaction.start);
+    wanted.add(redaction.end);
+  }
+
+  // Walk the string once, in ascending byte order, recording the code unit
+  // index each requested byte offset corresponds to.
+  const ascending = Array.from(wanted).sort((a, b) => a - b);
+  const floors = new Map<number, number>();
+  const ceilings = new Map<number, number>();
+  let cursor = 0;
+  let byteOffset = 0;
+  let stringIndex = 0;
+
+  while (cursor < ascending.length && ascending[cursor] <= 0) {
+    floors.set(ascending[cursor], 0);
+    ceilings.set(ascending[cursor], 0);
+    cursor++;
+  }
+
+  for (const character of text) {
+    if (cursor >= ascending.length) break;
+
+    const nextByteOffset = byteOffset + utf8Length(character.codePointAt(0)!);
+    const nextStringIndex = stringIndex + character.length;
+
+    while (cursor < ascending.length && ascending[cursor] <= nextByteOffset) {
+      const offset = ascending[cursor];
+      const onBoundary = offset === nextByteOffset;
+      floors.set(offset, onBoundary ? nextStringIndex : stringIndex);
+      ceilings.set(offset, nextStringIndex);
+      cursor++;
+    }
+
+    byteOffset = nextByteOffset;
+    stringIndex = nextStringIndex;
+  }
+
+  // Anything past the end of the text clamps to the end.
+  while (cursor < ascending.length) {
+    floors.set(ascending[cursor], text.length);
+    ceilings.set(ascending[cursor], text.length);
+    cursor++;
+  }
+
+  return redactions.map((redaction) => {
+    const start = floors.get(redaction.start) ?? 0;
+    const end = ceilings.get(redaction.end) ?? text.length;
+    return { start, end: Math.max(start, end) };
+  });
+}
+
 /* c8 ignore start */
 // Coverage is ignored on these no-op functions because they are never executed
 // due to the `skipCustomDetect` and `skipCustomReplace` options.
@@ -260,16 +355,22 @@ export async function redact<
 ): Promise<[string, Unredact]> {
   const redactions = await callRedactWasm(candidate, options);
 
+  // Wasm reports UTF-8 byte offsets; `substring` indexes UTF-16 code units.
+  // Resolve one to the other before splicing, or any multi-byte character
+  // before an entity shifts the cut and leaves part of the entity behind.
+  const spans = resolveByteOffsets(candidate, redactions);
+
   // Need to apply the redactions in reverse order so that the offsets aren't changed
   // when we redact with strings that are longer/shorter than the original.
   redactions.reverse();
+  spans.reverse();
 
-  for (const redaction of redactions) {
+  for (const [index, redaction] of redactions.entries()) {
     candidate = performReplacementInText(
       candidate,
       redaction.redacted,
-      redaction.start,
-      redaction.end,
+      spans[index].start,
+      spans[index].end,
     );
   }
 
