@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/analyze-v1.12.0) (2026-09-08)
+
+
+### 🪲 Bug Fixes
+
+* **analyze:** report sensitive-info offsets as string indices ([#6273](https://github.com/arcjet/arcjet-js/issues/6273)) ([202086d](https://github.com/arcjet/arcjet-js/commit/202086d29b9a6bf2655ac4f7582ec4404aca7b22))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.11.0 to 1.12.0
+    * @arcjet/protocol bumped from 1.11.0 to 1.12.0
+
 ## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/analyze-v1.11.0) (2026-08-25)
 
 

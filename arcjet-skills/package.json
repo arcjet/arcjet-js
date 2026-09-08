@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/skills",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Versioned Agent Skills for the Arcjet JavaScript SDK, shipped with TanStack Intent",
   "keywords": [
     "agent-skills",

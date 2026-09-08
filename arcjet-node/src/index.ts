@@ -31,7 +31,7 @@ import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.11.0"; // x-release-please-version
+const VERSION = "1.12.0"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
