@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/cache",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Arcjet cache interface and implementations",
   "keywords": [
     "arcjet",
