@@ -7,6 +7,7 @@ import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+import { withActiveGenkitContext } from "./active-context.ts";
 import { genkitContext } from "./context.ts";
 import type { GenkitContextSource } from "./context.ts";
 
@@ -42,8 +43,9 @@ export interface GuardMiddlewarePolicy {
   /**
    * Trusted actor identity, or a resolver `(call, ctx) => …` matching the
    * Genkit middleware `tool(req, ctx, next)` context. Derive it from
-   * authenticated generate context; never trust a model-produced tool input
-   * as the actor identity.
+   * authenticated generate context — including the active
+   * `generate({ context })` ALS context when the hook `ctx` omits it.
+   * Never trust a model-produced tool input as the actor identity.
    */
   actor?: ActorResolver<[GuardMiddlewareCall, unknown?]>;
   /**
@@ -279,13 +281,15 @@ export function guardMiddleware(
           let rules: RuleWithInput[] | undefined;
           let policyMetadata: ArcjetMetadata | undefined;
           let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
+          let hookCtx = ctx;
           try {
             action = resolveAction(policy, call);
             sessionId = resolveSessionId(policy, call);
             rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
             policyMetadata =
               typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-            remote = await resolveActorInputs(policy, call, ctx);
+            hookCtx = await withActiveGenkitContext(ctx);
+            remote = await resolveActorInputs(policy, call, hookCtx);
           } catch (error) {
             const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
             if (shouldWarn()) {
@@ -301,7 +305,7 @@ export function guardMiddleware(
             return denialPart(req, unavailableResult());
           }
 
-          const source = isContextSource(ctx) ? ctx : undefined;
+          const source = isContextSource(hookCtx) ? hookCtx : undefined;
           const agentCtx = genkitContext(
             source,
             sessionId === undefined ? undefined : { sessionId },

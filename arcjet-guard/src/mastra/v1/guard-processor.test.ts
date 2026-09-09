@@ -683,3 +683,53 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   assert.equal(calls.length, 1);
   assert.equal(guardCalls.length, 0);
 });
+
+test("onGuardError allow lets processInput continue when an actor resolver rejects", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const processor = guardProcessor(client, {
+    action: "message.received",
+    onGuardError: "allow",
+    actor: () => Promise.reject(new Error("actor failed")),
+  });
+  const { abort, calls } = abortSpy();
+  const messages = [userMessage("hello")];
+
+  const result = await processor.processInput!({
+    messages,
+    abort,
+    requestContext: requestContext("thread-1"),
+    systemMessages: [],
+    state: {},
+    messageList: {} as never,
+    retryCount: 0,
+  } as never);
+
+  assert.strictEqual(result, messages);
+  assert.equal(calls.length, 0);
+  assert.equal(guardCalls.length, 0);
+});
+
+test("onGuardError allow lets processInput continue when an input resolver rejects", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const processor = guardProcessor(client, {
+    action: "message.received",
+    onGuardError: "allow",
+    inputs: () => Promise.reject(new Error("mapping failed")),
+  });
+  const { abort, calls } = abortSpy();
+  const messages = [userMessage("hello")];
+
+  const result = await processor.processInput!({
+    messages,
+    abort,
+    requestContext: requestContext("thread-1"),
+    systemMessages: [],
+    state: {},
+    messageList: {} as never,
+    retryCount: 0,
+  } as never);
+
+  assert.strictEqual(result, messages);
+  assert.equal(calls.length, 0);
+  assert.equal(guardCalls.length, 0);
+});

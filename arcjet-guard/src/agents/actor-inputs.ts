@@ -16,7 +16,7 @@ export type ActorResolver<TArgs extends readonly unknown[]> =
 
 /**
  * Typed remote-policy inputs, or a resolver over the adapter's native call.
- * Build each value with {@link policyInput}.
+ * Build each value with {@link ../policy-input.ts}.
  */
 export type InputsResolver<TArgs extends readonly unknown[]> =
   | PolicyInputMap

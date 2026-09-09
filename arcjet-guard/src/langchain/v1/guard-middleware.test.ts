@@ -251,14 +251,27 @@ test("an input resolver failure follows the fail-closed unavailable path", async
       throw new Error("mapping failed");
     },
   });
+  let result: unknown;
   try {
-    await runHook(mw, toolRequest("lookup", { id: "one" }), async () => {
+    result = await runHook(mw, toolRequest("lookup", { id: "one" }), async () => {
       calls += 1;
       return { ok: true };
     });
   } catch {
     // Peer-absent CI cannot construct ToolMessage; the tool still must not run.
+    assert.equal(calls, 0);
+    assert.equal(guardCalls.length, 0);
+    return;
   }
   assert.equal(calls, 0);
   assert.equal(guardCalls.length, 0);
+  const content =
+    result !== null && typeof result === "object" && "content" in result ? result.content : result;
+  const payload = typeof content === "string" ? JSON.parse(content) : content;
+  assert.equal(
+    payload !== null && typeof payload === "object" && "reason" in payload
+      ? payload.reason
+      : undefined,
+    "ERROR",
+  );
 });

@@ -7,6 +7,7 @@ import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+import { withActiveGenkitContext } from "./active-context.ts";
 import { genkitContext } from "./context.ts";
 import type { GenkitContextSource } from "./context.ts";
 
@@ -67,8 +68,9 @@ export interface GuardToolPolicy<TInput> {
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
   /**
    * Trusted actor identity, or a resolver `(input, options) => …` matching
-   * a Genkit `ToolAction` call. Derive it from `options.context`; never
-   * trust a model-produced tool input as the actor identity.
+   * a Genkit `ToolAction` call. Derive it from `options.context` — including
+   * the active `generate({ context })` ALS context when the call options
+   * omit it. Never trust a model-produced tool input as the actor identity.
    */
   actor?: ActorResolver<[TInput, unknown?]>;
   /**
@@ -482,6 +484,7 @@ async function runGuardedTool<TInput>(
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
   let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
+  let callOptions = options;
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
     const typedArgs = args as TInput;
@@ -489,7 +492,8 @@ async function runGuardedTool<TInput>(
     rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
-    remote = await resolveActorInputs(policy, typedArgs, options);
+    callOptions = await withActiveGenkitContext(options);
+    remote = await resolveActorInputs(policy, typedArgs, callOptions);
   } catch (error) {
     if (shouldWarn()) {
       console.warn(
@@ -504,7 +508,7 @@ async function runGuardedTool<TInput>(
     return denialEnvelope(unavailableResult(), envelope);
   }
 
-  const source = isContextSource(options) ? options : undefined;
+  const source = isContextSource(callOptions) ? callOptions : undefined;
   const agentCtx = genkitContext(source, sessionId === undefined ? undefined : { sessionId });
 
   const toolName =

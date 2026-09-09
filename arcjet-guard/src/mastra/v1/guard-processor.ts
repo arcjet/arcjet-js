@@ -9,6 +9,7 @@ import type {
 
 import { resolveActorInputs } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
+import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -282,8 +283,18 @@ export function guardProcessor(
     let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
     try {
       remote = await resolveActorInputs(policy, input, requestCtx);
-    } catch {
-      denyTurn(abort, unavailableReason());
+    } catch (error) {
+      if (shouldWarn()) {
+        console.warn(
+          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
+          policy.action,
+          error,
+        );
+      }
+      if (policy.onGuardError === "allow") {
+        return;
+      }
+      return denyTurn(abort, unavailableReason());
     }
 
     await runGate(client, {

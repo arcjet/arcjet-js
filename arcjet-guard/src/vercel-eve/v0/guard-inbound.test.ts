@@ -572,6 +572,8 @@ test("an input resolver failure follows the fail-closed unavailable path", async
     },
   });
   assert.strictEqual(verdict.allowed, false);
-  assert.equal((verdict as any).reason, "UNAVAILABLE");
+  if (!verdict.allowed) {
+    assert.equal(verdict.outcome, "UNAVAILABLE");
+  }
   assert.equal(guardCalls.length, 0);
 });

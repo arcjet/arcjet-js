@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 import { test } from "node:test";
 
 import { collectTsFiles, extractTypedImportSpecifiers } from "../../../test/_shared/source-scan.ts";
@@ -78,10 +78,13 @@ test("type-only import scanner works on genkit fixtures", () => {
   }
 });
 
-test("all genkit imports in the genkit namespace are type-only", () => {
+const ALLOWED_DYNAMIC_CONTEXT_IMPORT = "@genkit-ai/core";
+
+test("all genkit imports in the genkit namespace are type-only except the ALS context load", () => {
   const namespaceDir = resolve(import.meta.dirname, "..");
   const filesToCheck = collectTsFiles(namespaceDir);
   const errors: string[] = [];
+  let allowedDynamic = 0;
 
   for (const filePath of filesToCheck) {
     let content: string;
@@ -93,9 +96,17 @@ test("all genkit imports in the genkit namespace are type-only", () => {
 
     const imports = extractTypedImportSpecifiers(content);
     for (const imp of imports) {
-      if (isGenkitPeer(imp.specifier) && !imp.typeOnly) {
-        errors.push(`${filePath}: value import of "${imp.specifier}" found; must be type-only`);
+      if (!isGenkitPeer(imp.specifier) || imp.typeOnly) {
+        continue;
       }
+      if (
+        imp.specifier === ALLOWED_DYNAMIC_CONTEXT_IMPORT &&
+        basename(filePath) === "active-context.ts"
+      ) {
+        allowedDynamic += 1;
+        continue;
+      }
+      errors.push(`${filePath}: value import of "${imp.specifier}" found; must be type-only`);
     }
   }
 
@@ -103,6 +114,11 @@ test("all genkit imports in the genkit namespace are type-only", () => {
     errors.length,
     0,
     `Type-only import violations in genkit namespace:\n${errors.join("\n")}`,
+  );
+  assert.equal(
+    allowedDynamic,
+    1,
+    "expected exactly one dynamic getContext load in active-context.ts",
   );
 });
 
