@@ -1,5 +1,7 @@
 import type { Plugin } from "@strands-agents/sdk";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
@@ -55,6 +57,17 @@ export interface GuardHooksPolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, event) => …` matching
+   * Strands `BeforeToolCallEvent`. Derive it from `invocationState`; never
+   * trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[GuardHooksCall, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, event) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardHooksCall, unknown?]>;
   /** Metadata merged over the derived Strands context. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /**
@@ -146,7 +159,11 @@ async function loadStrandsHooks(): Promise<StrandsHookSdk> {
       "@arcjet/guard: guardHooks() could not load BeforeToolCallEvent / AfterToolCallEvent from @strands-agents/sdk; the Plugin cannot register.",
     );
   }
-  if (hookOrder === null || typeof hookOrder !== "object" || typeof hookOrder.SDK_FIRST !== "number") {
+  if (
+    hookOrder === null ||
+    typeof hookOrder !== "object" ||
+    typeof hookOrder.SDK_FIRST !== "number"
+  ) {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(
       "@arcjet/guard: guardHooks() could not load HookOrder from @strands-agents/sdk; the Plugin cannot register.",
@@ -239,12 +256,14 @@ export function createBeforeToolCallHandler(
       let sessionId: string | undefined;
       let rules: RuleWithInput[] | undefined;
       let policyMetadata: ArcjetMetadata | undefined;
+      let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
       try {
         action = resolveAction(policy, call);
         sessionId = resolveSessionId(policy, call);
         rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
         policyMetadata =
           typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
+        remote = await resolveActorInputs(policy, call, event);
       } catch (error) {
         const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
         if (shouldWarn()) {
@@ -279,6 +298,7 @@ export function createBeforeToolCallHandler(
         rules,
         correlationId: agentCtx.correlationId,
         metadata: mergedMetadata,
+        ...remote,
         onAllow: () => {
           /* allow the tool to proceed — do not set event.cancel */
         },
@@ -309,7 +329,10 @@ export function createBeforeToolCallHandler(
       // A non-InterruptError throw from a hook aborts the invocation
       // and drops the envelope. Fail closed by setting cancel instead.
       if (shouldWarn()) {
-        console.warn("@arcjet/guard: guardHooks BeforeToolCallEvent threw; denying the tool:", error);
+        console.warn(
+          "@arcjet/guard: guardHooks BeforeToolCallEvent threw; denying the tool:",
+          error,
+        );
       }
       if (policy.onGuardError === "allow") {
         return;

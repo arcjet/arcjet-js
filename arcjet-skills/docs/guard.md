@@ -117,6 +117,13 @@ TanStack AI is `guardMiddleware` — do not use `guardTool` (an `execute`
 throw is swallowed). JS Strands Agents is official `@strands-agents/sdk`,
 not Python `strands`.
 
+Every JS wrapper policy accepts optional `actor` and `inputs` (static values
+or a resolver over that adapter's native call — parsed input plus trusted
+runtime/context, like Vercel AI's `(input, ctx)`). Build each
+input with `policyInput` so a remote policy that declares those names can
+evaluate. Omit them and the remote policy has nothing to read — its rules do
+not fire.
+
 Every adapter uses one `ArcjetDenialResult` payload
 (`{ arcjetDenied: true, reason, message, retryable }`). Delivery is
 per-framework: return the object (AI SDK, Mastra, OpenAI Agents, Genkit

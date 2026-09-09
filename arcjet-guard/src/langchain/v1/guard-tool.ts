@@ -1,3 +1,5 @@
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
@@ -66,6 +68,18 @@ export interface GuardToolPolicy<TInput> {
    * decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, config) => …` matching
+   * LangChain `func` / `invoke`. Derive it from authenticated server-side
+   * context (`configurable`, `ToolRuntime`); never trust a model-produced
+   * tool input as the actor identity.
+   */
+  actor?: ActorResolver<[TInput, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, config) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -266,7 +280,7 @@ export function guardTool<TTool extends LangChainTool<any>>(
   return wrapped;
 }
 
-function runGuardedTool<TTool extends LangChainTool<any>>(
+async function runGuardedTool<TTool extends LangChainTool<any>>(
   client: ArcjetAgentClient,
   tool: TTool,
   policy: GuardToolPolicy<LangChainToolInput<TTool>>,
@@ -280,6 +294,7 @@ function runGuardedTool<TTool extends LangChainTool<any>>(
   let sessionId: string | undefined;
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's structured input; policy factories are typed against it
     const typedArgs = args as LangChainToolInput<TTool>;
@@ -288,6 +303,7 @@ function runGuardedTool<TTool extends LangChainTool<any>>(
     rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
+    remote = await resolveActorInputs(policy, typedArgs, config);
   } catch (error) {
     const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
     if (shouldWarn()) {
@@ -300,7 +316,7 @@ function runGuardedTool<TTool extends LangChainTool<any>>(
     if (policy.onGuardError === "allow") {
       return execute();
     }
-    return Promise.resolve(unavailableResult());
+    return unavailableResult();
   }
 
   const source = isContextSource(config) ? config : undefined;
@@ -320,6 +336,7 @@ function runGuardedTool<TTool extends LangChainTool<any>>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    ...remote,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return denialResult(decision);

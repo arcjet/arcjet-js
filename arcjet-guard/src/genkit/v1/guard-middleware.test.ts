@@ -10,8 +10,9 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardMiddleware } from "./guard-middleware.ts";
 import { guardTool } from "./guard-tool.ts";
 import type { GenkitTool } from "./guard-tool.ts";
@@ -441,4 +442,41 @@ test("guardTool-wrapped fake is skipped when registered under its action name", 
   assert.equal(nextCalls, 1);
   // The middleware skipped; the only guard calls would come from next() (none here).
   assert.equal(guardCalls.length, 0);
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    inputs: (call) => ({
+      id: policyInput.server.string(String((call.input as { id?: string }).id)),
+    }),
+  });
+  await runHook(mw, toolRequest("lookup", { id: "one" }), async () => ({
+    toolResponse: { name: "lookup", output: { ok: true } },
+  }));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let calls = 0;
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = await runHook(mw, toolRequest("lookup", { id: "one" }), async () => {
+    calls += 1;
+    return { toolResponse: { name: "lookup", output: { ok: true } } };
+  });
+  assert.equal(calls, 0);
+  assert.equal(guardCalls.length, 0);
+  const part = result as { toolResponse: { output: unknown } };
+  assert.equal(asDenial<ArcjetDenialResult>(part.toolResponse.output).reason, "ERROR");
 });

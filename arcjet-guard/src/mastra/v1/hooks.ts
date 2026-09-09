@@ -5,13 +5,15 @@ import type {
   ToolHooks,
 } from "@mastra/core/tools";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -37,6 +39,18 @@ export interface GuardHooksPolicy {
    * guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, context) => …` matching
+   * Mastra `beforeToolCall`'s `hookContext.context`. Derive it from
+   * `requestContext`; never trust a model-produced tool input as the actor
+   * identity.
+   */
+  actor?: ActorResolver<[GuardHooksCall, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, context) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardHooksCall, unknown?]>;
   /** Metadata merged over the derived Mastra context. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -114,12 +128,14 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
           ...policyMetadata,
         };
+        const remote = await resolveActorInputs(policy, call, hookContext.context);
 
         return await runGate<void | ToolBeforeHookResult>(client, {
           action,
           rules,
           correlationId: agentCtx.correlationId,
           metadata,
+          ...remote,
           onAllow: () => {
             /* allow the tool to proceed */
           },

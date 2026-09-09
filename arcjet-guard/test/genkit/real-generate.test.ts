@@ -26,17 +26,15 @@ import { genkit, z } from "genkit";
 import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
 import { guardMiddleware } from "../../src/genkit/v1/guard-middleware.ts";
 import { guardTool } from "../../src/genkit/v1/guard-tool.ts";
+import { policyInput } from "../../src/policy-input.ts";
+import { recorded } from "../_shared/source-scan.ts";
 import { decisionAllow, decisionDenyPromptInjection, stubClient } from "../_shared/stub-client.ts";
 
 function createAi() {
   return genkit({});
 }
 
-function scriptedToolModel(
-  ai: ReturnType<typeof genkit>,
-  toolName: string,
-  input: unknown,
-) {
+function scriptedToolModel(ai: ReturnType<typeof genkit>, toolName: string, input: unknown) {
   let turns = 0;
   return ai.defineModel({ name: `scripted-${toolName}-${Math.random()}` }, async () => {
     turns += 1;
@@ -65,7 +63,9 @@ function scriptedToolModel(
   });
 }
 
-function denialFromMessages(messages: ReadonlyArray<{ role?: string; content?: ReadonlyArray<unknown> }>) {
+function denialFromMessages(
+  messages: ReadonlyArray<{ role?: string; content?: ReadonlyArray<unknown> }>,
+) {
   const toolMessage = messages.find((m) => m.role === "tool");
   assert.ok(toolMessage, "generate() must append a tool message after a tool call");
   const content = toolMessage.content ?? [];
@@ -283,4 +283,75 @@ test("outputSchema on a guarded tool does not turn DENY into an interrupt", asyn
   assert.notEqual(result.finishReason, "interrupted");
   const denial = denialFromMessages(result.messages);
   assert.equal(denial.arcjetDenied, true);
+});
+
+test("generate() context is available to guardTool actor/inputs resolvers", async () => {
+  const ai = createAi();
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const guarded = guardTool(
+    client,
+    ai.defineTool(
+      {
+        name: "lookup_order_actor",
+        description: "resolves actor from generate() ALS context",
+        inputSchema: z.object({ note: z.string() }),
+      },
+      async (input) => `ran:${input.note}`,
+    ),
+    {
+      action: "order.looked-up",
+      actor: (_input, options) =>
+        (options as { context?: { userId?: string } } | undefined)?.context?.userId ?? "anonymous",
+      inputs: (input: { note: string }) => ({ note: policyInput.server.string(input.note) }),
+    },
+  );
+
+  const model = scriptedToolModel(ai, "lookup_order_actor", { note: "hello" });
+  await ai.generate({
+    model,
+    prompt: "look up my order",
+    tools: [guarded],
+    context: { userId: "authenticated-user", sessionId: "sess-e2e" },
+  });
+
+  assert.equal(recorded(guardCalls[0]).actor, "authenticated-user");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    note: policyInput.server.string("hello"),
+  });
+});
+
+test("generate() context is available to guardMiddleware actor/inputs resolvers", async () => {
+  const ai = createAi();
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const unwrapped = ai.defineTool(
+    {
+      name: "mcp_search_actor",
+      description: "unwrapped tool gated by middleware",
+      inputSchema: z.object({ q: z.string() }),
+    },
+    async (input) => `ran:${input.q}`,
+  );
+
+  const model = scriptedToolModel(ai, "mcp_search_actor", { q: "hello" });
+  await ai.generate({
+    model,
+    prompt: "search",
+    tools: [unwrapped],
+    use: [
+      guardMiddleware(client, {
+        action: "tool.invoked",
+        actor: (_call, ctx) =>
+          (ctx as { context?: { userId?: string } } | undefined)?.context?.userId ?? "anonymous",
+        inputs: (call) => ({
+          q: policyInput.server.string(String((call.input as { q?: string }).q)),
+        }),
+      }),
+    ],
+    context: { userId: "authenticated-user", sessionId: "sess-mw" },
+  });
+
+  assert.equal(recorded(guardCalls[0]).actor, "authenticated-user");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    q: policyInput.server.string("hello"),
+  });
 });

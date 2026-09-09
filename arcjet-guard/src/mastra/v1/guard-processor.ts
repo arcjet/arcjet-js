@@ -7,12 +7,15 @@ import type {
   Processor,
 } from "@mastra/core/processors";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
+import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraRequestContextLike } from "./context.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -45,6 +48,17 @@ export interface GuardProcessorPolicy {
    * this still performs the guard call.
    */
   rules?: RuleWithInput[] | ((input: GuardProcessorInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, requestContext) => …`
+   * matching Mastra processor args. Derive it from `requestContext`; never
+   * trust model-produced text as the actor identity.
+   */
+  actor?: ActorResolver<[GuardProcessorInput, MastraRequestContextLike?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, requestContext) => …`.
+   * Build each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardProcessorInput, MastraRequestContextLike?]>;
   /** Metadata merged over the derived Mastra context. */
   metadata?: ArcjetMetadata | ((input: GuardProcessorInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -266,12 +280,29 @@ export function guardProcessor(
       "mastra.phase": phase,
       ...policyMetadata,
     };
+    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
+    try {
+      remote = await resolveActorInputs(policy, input, requestCtx);
+    } catch (error) {
+      if (shouldWarn()) {
+        console.warn(
+          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
+          policy.action,
+          error,
+        );
+      }
+      if (policy.onGuardError === "allow") {
+        return;
+      }
+      return denyTurn(abort, unavailableReason());
+    }
 
     await runGate(client, {
       action: policy.action,
       rules,
       correlationId: agentCtx.correlationId,
       metadata,
+      ...remote,
       onAllow: () => {
         /* allow the turn to continue */
       },

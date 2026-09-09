@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { recorded } from "../../../test/_shared/source-scan.ts";
 import {
   decisionAllow,
   decisionDenyPromptInjection,
@@ -11,6 +12,7 @@ import {
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
 import { deniedReason } from "../../agents/denial.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardInbound } from "./guard-inbound.ts";
 
 test("AC5.6: ALLOW → exactly { allowed: true } with no extra fields", async () => {
@@ -546,4 +548,32 @@ test("reason mirrors outcome for both verdict shapes", async () => {
   assert.equal(unavailable.reason, unavailable.outcome);
   // oxlint-disable-next-line typescript/no-deprecated -- asserting the alias still mirrors `outcome`
   assert.equal(unavailable.reason, "UNAVAILABLE");
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  await guardInbound(client, "hello", {
+    rules: [fakeRule],
+    actor: (text) => `actor-${text.length}`,
+    inputs: (text) => ({ text: policyInput.local.string(text) }),
+  });
+  assert.equal(recorded(guardCalls[0]).actor, "actor-5");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    text: policyInput.local.string("hello"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const verdict = await guardInbound(client, "hello", {
+    rules: [fakeRule],
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  assert.strictEqual(verdict.allowed, false);
+  if (!verdict.allowed) {
+    assert.equal(verdict.outcome, "UNAVAILABLE");
+  }
+  assert.equal(guardCalls.length, 0);
 });

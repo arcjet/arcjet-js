@@ -146,7 +146,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ```ts
 import { Runner } from "@google/adk";
 import { guardPlugin } from "@arcjet/guard/google-adk/v2";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
@@ -164,6 +164,10 @@ const runner = new Runner({
   plugins: [
     guardPlugin(arcjet, {
       action: ({ toolName }) => `${toolName}.invoked`,
+      actor: conversationId,
+      inputs: ({ toolName }) => ({
+        tool: policyInput.server.string(toolName),
+      }),
       rules: ({ toolName, input }) => {
         const note =
           typeof input === "object" && input !== null && "note" in input
@@ -181,6 +185,9 @@ const runner = new Runner({
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - On DENY the original `runAsync` never runs. Delivery is
   `{ arcjetDenied: true, reason, message, retryable }` — the dict
   ADK treats as skip.

@@ -138,7 +138,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { chat } from "@tanstack/ai";
 import { toolCacheMiddleware } from "@tanstack/ai/middlewares";
 import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
@@ -157,6 +157,10 @@ const stream = chat({
   middleware: [
     guardMiddleware(arcjet, {
       action: ({ toolName }) => `${toolName}.invoked`,
+      actor: conversationId,
+      inputs: ({ toolName }) => ({
+        tool: policyInput.server.string(toolName),
+      }),
       rules: ({ toolName, input }) => {
         const note =
           typeof input === "object" && input !== null && "note" in input
@@ -175,6 +179,9 @@ const stream = chat({
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - On DENY the original `execute` never runs. Default delivery is
   `{ type: "skip", result: { arcjetDenied: true, reason, message, retryable } }`.
 - `onDeny: "abort"` stops the chat run with `{ type: "abort", reason }`

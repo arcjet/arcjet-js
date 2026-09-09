@@ -10,6 +10,7 @@ import {
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardMiddleware } from "./guard-middleware.ts";
 import { guardTool } from "./guard-tool.ts";
 import type { LangChainTool } from "./guard-tool.ts";
@@ -223,4 +224,54 @@ test("sessionId callback receives the tool name and input", async () => {
   );
   assert.deepEqual(seen, { toolName: "mcp_search", input: { q: "hello" } });
   assert.equal(recorded(guardCalls[0])["correlationId"], "sess-from-callback");
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    inputs: (call) => ({
+      id: policyInput.server.string(String((call.input as { id?: string }).id)),
+    }),
+  });
+  await runHook(mw, toolRequest("lookup", { id: "one" }), async () => ({ ok: true }));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let calls = 0;
+  const mw = guardMiddleware(client, {
+    action: "tool.invoked",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  let result: unknown;
+  try {
+    result = await runHook(mw, toolRequest("lookup", { id: "one" }), async () => {
+      calls += 1;
+      return { ok: true };
+    });
+  } catch {
+    // Peer-absent CI cannot construct ToolMessage; the tool still must not run.
+    assert.equal(calls, 0);
+    assert.equal(guardCalls.length, 0);
+    return;
+  }
+  assert.equal(calls, 0);
+  assert.equal(guardCalls.length, 0);
+  const content =
+    result !== null && typeof result === "object" && "content" in result ? result.content : result;
+  const payload = typeof content === "string" ? JSON.parse(content) : content;
+  assert.equal(
+    payload !== null && typeof payload === "object" && "reason" in payload
+      ? payload.reason
+      : undefined,
+    "ERROR",
+  );
 });

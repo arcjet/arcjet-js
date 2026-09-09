@@ -1,7 +1,9 @@
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, Decision, DecisionDeny, RuleWithInput } from "../../types.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -19,6 +21,17 @@ import { runGate } from "./gate.ts";
 export interface GuardInboundOptions {
   /** Rules to evaluate against the inbound text. */
   rules: RuleWithInput[];
+  /**
+   * Trusted actor identity, or a resolver `(text) => …` over the inbound
+   * channel text. Derive it from authenticated session context closed over
+   * the call; never trust the inbound text as the actor identity.
+   */
+  actor?: ActorResolver<[string]>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the inbound text. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[string]>;
   /**
    * Guard label and capture action. Defaults to `"message.received"`.
    */
@@ -158,6 +171,7 @@ export async function guardInbound(
       rules: options.rules,
       correlationId: options.correlationId,
       metadata,
+      ...(await resolveActorInputs(options, text)),
       onAllow: (): InboundVerdict => ({ allowed: true }),
       onDeny: (decision: DecisionDeny): InboundVerdict => ({
         allowed: false,

@@ -103,17 +103,21 @@ test("resolves actor and typed inputs from parsed tool input", async () => {
   const { tool: testTool } = createTestTool();
   const wrapped = guardTool(client, testTool, {
     action: "test.action",
-    actor: (input) => `actor-${input.id}`,
+    actor: (_input, ctx) => String(ctx?.metadata?.["userId"]),
     inputs: (input) => ({ id: policyInput.server.string(input.id) }),
   });
 
   assert.ok(wrapped.execute !== undefined);
   await wrapped.execute(
     { id: "one" },
-    { toolCallId: "t1", messages: [], context: createAgentContext() },
+    {
+      toolCallId: "t1",
+      messages: [],
+      context: createAgentContext({ metadata: { userId: "user-9" } }),
+    },
   );
 
-  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.equal(recorded(guardCalls[0]).actor, "user-9");
   assert.deepEqual(recorded(guardCalls[0]).inputs, {
     id: policyInput.server.string("one"),
   });

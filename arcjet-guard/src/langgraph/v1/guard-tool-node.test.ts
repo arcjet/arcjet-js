@@ -10,8 +10,9 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
 import type { LangGraphToolNodeLike } from "./guard-tool-node.ts";
 import { guardToolNode } from "./guard-tool-node.ts";
 import type { LangGraphTool } from "./guard-tool.ts";
@@ -260,4 +261,43 @@ test("throws when the argument is neither a node nor a tools array", () => {
     () => guardToolNode(client, { name: "not-a-node" } as never),
     /ToolNode or an array/,
   );
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const mcp = createTool("mcp_search");
+  const wrapped = guardToolNode(client, [mcp], {
+    action: "mcp.invoked",
+    actor: (call, config) =>
+      `${String((config as { configurable?: { thread_id?: string } })?.configurable?.thread_id)}:${String((call.input as { id?: string }).id)}`,
+    inputs: (call) => ({
+      id: policyInput.server.string(String((call.input as { id?: string }).id)),
+    }),
+  });
+  await wrapped[0]!.func!({ id: "one" }, threadConfig("t"));
+  assert.equal(recorded(guardCalls[0]).actor, "t:one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let calls = 0;
+  const mcp = createTool("mcp_search", async () => {
+    calls += 1;
+    return { ok: true };
+  });
+  const wrapped = guardToolNode(client, [mcp], {
+    action: "mcp.invoked",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = asDenial<ArcjetDenialResult>(
+    await wrapped[0]!.func!({ id: "one" }, threadConfig("t")),
+  );
+  assert.equal(result.reason, "ERROR");
+  assert.equal(guardCalls.length, 0);
+  assert.equal(calls, 0);
 });

@@ -1,3 +1,5 @@
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -51,6 +53,17 @@ export interface GuardToolPolicy<TInput> {
    * call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, extra) => …` matching the
+   * Claude MCP `handler`. Derive it from `extra.session_id` / hook context;
+   * never trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[TInput, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, extra) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -173,11 +186,13 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
     let sessionId: string | undefined;
     let rules: RuleWithInput[] | undefined;
     let policyMetadata: ArcjetMetadata | undefined;
+    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
     try {
       sessionId = resolveSessionId(policy, input);
       rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
       policyMetadata =
         typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+      remote = await resolveActorInputs(policy, input, extra);
     } catch (error) {
       if (shouldWarn()) {
         console.warn(
@@ -213,6 +228,7 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      ...remote,
       onDeny: (decision: DecisionDeny) => {
         const fallback = denialCallToolResult(decision);
         if (policy.onDeny === undefined) {

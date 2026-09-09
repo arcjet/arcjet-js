@@ -160,7 +160,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/langchain/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
@@ -176,19 +176,21 @@ const detectPii = localDetectSensitiveInfo();
 
 export const lookupOrder = guardTool(
   arcjet,
-  tool(
-    async ({ orderNumber, note }) => ({ orderNumber, note, status: "shipped" }),
-    {
-      name: "lookup_order",
-      description: "Look up an order by number",
-      schema: z.object({
-        orderNumber: z.string(),
-        note: z.string(),
-      }),
-    },
-  ),
+  tool(async ({ orderNumber, note }) => ({ orderNumber, note, status: "shipped" }), {
+    name: "lookup_order",
+    description: "Look up an order by number",
+    schema: z.object({
+      orderNumber: z.string(),
+      note: z.string(),
+    }),
+  }),
   {
     action: "order.looked-up",
+    // Invoke config is the trusted half of LangChain `func`/`invoke`.
+    actor: (_input, runtime) => String(runtime?.configurable?.thread_id ?? userId),
+    inputs: (input) => ({
+      orderNumber: policyInput.server.string(input.orderNumber),
+    }),
     rules: (input) => [
       lookupLimit({ key: input.orderNumber, requested: 1 }),
       detectPii(input.note),
@@ -198,6 +200,9 @@ export const lookupOrder = guardTool(
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - On DENY the original `func` / `invoke` never runs. The caller
   receives `{ arcjetDenied: true, reason, message, retryable }`.
   Through `createAgent`, `baseHandler` wraps that object in a success

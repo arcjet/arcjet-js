@@ -57,7 +57,10 @@ test("reads documented envelope copies when the bag has no id", () => {
 });
 
 test("init.sessionId is a last-resort caller-owned fallback", () => {
-  const result = strandsAgentContext({ invocationState: { user: "alice" } }, { sessionId: "policy-sess" });
+  const result = strandsAgentContext(
+    { invocationState: { user: "alice" } },
+    { sessionId: "policy-sess" },
+  );
   assert.equal(result.correlationId, "policy-sess");
   assert.equal(result.metadata?.["strands.session"], "policy-sess");
 });

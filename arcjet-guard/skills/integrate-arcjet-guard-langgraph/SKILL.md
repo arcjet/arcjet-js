@@ -130,7 +130,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/langgraph/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
@@ -157,12 +157,19 @@ export const lookupOrder = guardTool(
   }),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 }), detectPii(input.note)],
   },
 );
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - On DENY the tool's `func` / `invoke` never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as the tool result
   content. If you invoke a guarded tool outside `ToolNode`, read that

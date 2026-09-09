@@ -71,8 +71,9 @@ result. Throwing `ToolInterruptError` sets `finishReason: "interrupted"`
 (do not do this).
 
 `generate({ use })` must receive a **plain object `{ name, instantiate }`**.
-A raw function becomes a *model* hook only. A function with `instantiate`
-+ `plugin` throws “must be called with ()”.
+A raw function becomes a _model_ hook only. A function with `instantiate`
+
+- `plugin` throws “must be called with ()”.
 
 ## Questions to ask the human first
 
@@ -85,7 +86,7 @@ Ask only what you cannot infer from the code; suggest defaults.
 3. Who is the **user** for metadata — an opaque user/tenant ID (never PII)?
    Default: none. Pass it via `metadata` on the policy. Put the
    conversation / session id you already have on
-   `ai.generate({ context: { sessionId } })` *and* on
+   `ai.generate({ context: { sessionId } })` _and_ on
    `guardMiddleware({ sessionId })` — the tool hook does not receive ALS
    context today. That id is the correlation id, not the user.
 4. Is an Arcjet outage unacceptable? Every helper defaults to
@@ -114,7 +115,7 @@ Ask only what you cannot infer from the code; suggest defaults.
    throws if the tool already carries the Arcjet protection brand.
 6. **A denial from `guardTool` is a structured object, not a throw.**
    Wrap the returned `ToolAction` (the callable `generate()` invokes),
-   not the inner handler. `outputSchema` validation runs *inside*
+   not the inner handler. `outputSchema` validation runs _inside_
    `action()`. Wrapping outside means DENY returns `ArcjetDenialResult`
    without schema check, so the model still sees a completed tool
    result. Wrapping the inner handler would throw on schema mismatch
@@ -146,11 +147,11 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ```ts
 import { genkit, z } from "genkit";
 import { guardTool } from "@arcjet/guard/genkit/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
-const ai = genkit({ /* plugins, default model */ });
+const ai = genkit({/* plugins, default model */});
 
 const lookupLimit = tokenBucket({
   refillRate: 10,
@@ -177,6 +178,10 @@ export const lookupOrder = guardTool(
   ),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderNumber: policyInput.server.string(input.orderNumber),
+    }),
     rules: (input) => [
       lookupLimit({ key: input.orderNumber, requested: 1 }),
       detectPii(input.note),
@@ -186,6 +191,9 @@ export const lookupOrder = guardTool(
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - On DENY the closed-over handler never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as
   `toolResponse.output`.

@@ -14,6 +14,7 @@ import {
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardTool } from "./guard-tool.ts";
 
 /**
@@ -744,4 +745,43 @@ test("a guarded tool invoked with no context still denies", async () => {
     await wrapped.execute({ id: "a" }, undefined as never);
   }, /denied/i);
   assert.equal(called, false, "execute never runs on DENY");
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createToolWithSymbols<{ id: string }, { success: boolean }>({
+    execute: async () => ({ success: true }),
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "test.action",
+    actor: (_input, ctx) => String(ctx?.toolName),
+    inputs: (input) => ({ id: policyInput.server.string(input.id) }),
+  });
+  await wrapped.execute!({ id: "one" }, { toolName: "test", callId: "c1" } as never);
+  assert.equal(recorded(guardCalls[0]).actor, "test");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createToolWithSymbols<{ id: string }, { success: boolean }>({
+    execute: async () => {
+      calls += 1;
+      return { success: true };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "test.action",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  await assert.rejects(async () => {
+    await wrapped.execute!({ id: "one" }, { toolName: "test", callId: "c1" } as never);
+  }, ArcjetGuardUnavailableError);
+  assert.equal(guardCalls.length, 0);
+  assert.equal(calls, 0);
 });

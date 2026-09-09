@@ -76,7 +76,7 @@ State plainly why each applies to Eve, not other frameworks:
 
 4. **`approval` is one field per tool or connection.** It can be a function
    (request-time only) or `{ request, response }`. You still cannot assign
-   `always()`/`once()`/`never()` from `eve/tools/approval` *alongside*
+   `always()`/`once()`/`never()` from `eve/tools/approval` _alongside_
    `guardApproval` — the slot holds one value. `onAllow: "user-approval"` is
    how you require a human after the request-time gate. The optional `response`
    policy is how you authorize who may approve the parked request. A rejected
@@ -127,7 +127,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/vercel-eve/v0";
-import { tokenBucket } from "@arcjet/guard";
+import { tokenBucket, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "../arcjet.js";
 
@@ -149,6 +149,10 @@ export default guardTool(
   }),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 })],
   },
 );
@@ -157,6 +161,9 @@ export default guardTool(
 - Omit `rules` to submit none. The guard call still happens, so the decision is
   correlatable and the tool can be managed via policy configured outside the
   code.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - `rules` may be a callback over the tool's parsed input, computed from the
   data being acted on.
 - On DENY the tool's `execute` never runs; Eve projects it as a failed

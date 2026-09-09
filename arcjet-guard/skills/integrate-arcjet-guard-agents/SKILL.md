@@ -93,13 +93,22 @@ Never stash it in module state or AsyncLocalStorage.
 
 ```ts
 import { guardTool, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
-import { tokenBucket } from "@arcjet/guard";
+import { tokenBucket, policyInput } from "@arcjet/guard";
 
-const lookupLimit = tokenBucket({ bucket: "lookups", refillRate: 5, intervalSeconds: 60, maxTokens: 10 });
+const lookupLimit = tokenBucket({
+  bucket: "lookups",
+  refillRate: 5,
+  intervalSeconds: 60,
+  maxTokens: 10,
+});
 
 const tools = {
   lookupOrder: guardTool(arcjet, lookupOrderTool, {
     action: "order.looked-up", // "resource.verb", past tense
+    actor: userId,
+    inputs: ({ orderNumber }) => ({
+      orderNumber: policyInput.server.string(orderNumber),
+    }),
     rules: ({ orderNumber }) => [lookupLimit({ key: `order:${orderNumber}`, requested: 1 })],
     // securityMetadata() maps the flat vocabulary to wire keys, so its fields
     // are strings. Nested values go alongside it in the raw metadata object.
@@ -111,6 +120,9 @@ const tools = {
 };
 ```
 
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - Omit `rules` to submit none. The guard call still happens, so the decision is
   correlatable and the call site stays reachable by policy configured outside
   the code — but it costs a round trip. Use `captureAction()` instead when you
@@ -224,8 +236,8 @@ two distinguishable in a handler. The fail-closed tool result carries a fixed
 `retryAfterSeconds: 5` backoff hint. The capture `outcome` on that path is
 `"unavailable"`, not `"denied"`, so an operator can query the two separately. The
 layering resolves a potential confusion: the core `@arcjet/guard` client still
-fails open by construction and *reports* it via `hasFailedOpen()`; these helpers
-*decide* to block on it.
+fails open by construction and _reports_ it via `hasFailedOpen()`; these helpers
+_decide_ to block on it.
 
 ## Metadata vocabulary
 
@@ -243,12 +255,12 @@ Metadata accepts any JSON-serializable value — nested objects and arrays
 included. The server enforces the following limits, dropping keys that exceed
 them and reporting each drop on `decision.warnings`:
 
-| Limit | Value | Over the limit |
-|---|---|---|
-| Top-level keys | 128 | extra keys dropped |
-| Serialized bytes per value | 4 KiB | that key dropped |
-| Nesting depth per value | 10 | that key dropped |
-| Key names | letters, digits, `-`, `.`, `_` | that key dropped |
+| Limit                      | Value                          | Over the limit     |
+| -------------------------- | ------------------------------ | ------------------ |
+| Top-level keys             | 128                            | extra keys dropped |
+| Serialized bytes per value | 4 KiB                          | that key dropped   |
+| Nesting depth per value    | 10                             | that key dropped   |
+| Key names                  | letters, digits, `-`, `.`, `_` | that key dropped   |
 
 Nothing about metadata can fail a call or change a decision; it is excluded
 from fingerprinting. Metadata is untrusted and **not redacted** — no secrets

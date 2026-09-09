@@ -1,12 +1,14 @@
 import type { ToolDefinition, ToolContext } from "eve/tools";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { denialResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
-import { denialResult } from "../../agents/denial.ts";
 
 /**
  * Policy for `guardTool()` — how to guard an authored tool's execution.
@@ -20,6 +22,17 @@ export interface GuardToolPolicy<TInput> {
   action: string;
   /** Rules to evaluate, static or computed from the tool's input. */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, ctx) => …` matching Eve
+   * `execute(input, ctx)`. Derive it from Eve `ToolContext` / session; never
+   * trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[TInput, ToolContext | undefined]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, ctx) => …`. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[TInput, ToolContext | undefined]>;
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -178,6 +191,7 @@ export function guardTool<TInput, TOutput>(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      resolvePolicy: () => resolveActorInputs(policy, input, ctx),
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may throw or return custom types; both paths are valid (throw never returns, custom type is returned)
       onDeny: ((decision) => {
         if (policy.onDeny === undefined) {

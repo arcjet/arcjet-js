@@ -5,6 +5,8 @@ import type {
   ToolCallHookContext,
 } from "@tanstack/ai";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
@@ -44,6 +46,17 @@ export interface GuardMiddlewarePolicy {
    * the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardMiddlewareCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, ctx) => …` matching
+   * `onBeforeToolCall(ctx, hookCtx)`. Derive it from `chat({ context })`;
+   * never trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[GuardMiddlewareCall, ChatMiddlewareContext]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, ctx) => …`. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardMiddlewareCall, ChatMiddlewareContext]>;
   /** Metadata merged over the derived TanStack AI context. */
   metadata?: ArcjetMetadata | ((call: GuardMiddlewareCall) => ArcjetMetadata);
   /**
@@ -141,14 +154,14 @@ function middlewareName(): string {
   return `arcjet-guard-${middlewareSeq}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
-function gateToolCall(
+async function gateToolCall(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy,
   ctx: ChatMiddlewareContext,
   hookCtx: ToolCallHookContext,
 ): Promise<BeforeToolCallDecision> {
   if (isBrandedTool(hookCtx.tool)) {
-    return Promise.resolve();
+    return undefined;
   }
 
   const toolName = hookCtx.toolName;
@@ -159,12 +172,14 @@ function gateToolCall(
   let sessionId: string | undefined;
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
     action = resolveAction(policy, call);
     sessionId = resolveSessionId(policy, call);
     rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
+    remote = await resolveActorInputs(policy, call, ctx);
   } catch (error) {
     const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
     if (shouldWarn()) {
@@ -175,9 +190,9 @@ function gateToolCall(
       );
     }
     if (policy.onGuardError === "allow") {
-      return Promise.resolve();
+      return undefined;
     }
-    return Promise.resolve(denyDecision(policy, unavailableResult(), "unavailable"));
+    return denyDecision(policy, unavailableResult(), "unavailable");
   }
 
   const source = isContextSource(ctx) ? ctx : undefined;
@@ -194,6 +209,7 @@ function gateToolCall(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    ...remote,
     onDeny: (decision: DecisionDeny) => denyDecision(policy, denialResult(decision), "deny"),
     onUnavailable: () => denyDecision(policy, unavailableResult(), "unavailable"),
     execute: () => Promise.resolve(),

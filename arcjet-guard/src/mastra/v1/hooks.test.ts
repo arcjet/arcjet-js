@@ -10,8 +10,9 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { MASTRA_THREAD_ID_KEY } from "./context.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { policyInput } from "../../policy-input.ts";
+import { MASTRA_THREAD_ID_KEY } from "./context.ts";
 import { guardHooks } from "./hooks.ts";
 
 function hookContext(input?: unknown) {
@@ -267,4 +268,38 @@ test("afterToolCall with non-object context does not throw", async () => {
     context: undefined,
     output: {},
   });
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    action: "mcp.invoked",
+    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    inputs: (call) => ({
+      id: policyInput.server.string(String((call.input as { id?: string }).id)),
+    }),
+  });
+  await hooks.beforeToolCall!(hookContext({ id: "one" }));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    action: "mcp.invoked",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = await hooks.beforeToolCall!(hookContext({ id: "one" }));
+  assert.ok(result);
+  assert.equal((result as { proceed: boolean }).proceed, false);
+  assert.equal(
+    asDenial<ArcjetDenialResult>((result as { output: unknown }).output).reason,
+    "ERROR",
+  );
+  assert.equal(guardCalls.length, 0);
 });

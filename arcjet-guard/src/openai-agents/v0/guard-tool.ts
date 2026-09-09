@@ -1,12 +1,14 @@
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { openaiAgentsContext } from "./context.ts";
 import type { OpenAIAgentsContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
 /**
  * Structural `tool()` / `FunctionTool`. Declared here so `guardTool` does
@@ -42,6 +44,18 @@ export interface GuardToolPolicy<TInput> {
    * the guard call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, runContext) => …` matching
+   * the authored `execute(input, runContext)`. Derive it from
+   * `runContext.context`; never trust a model-produced tool input as the
+   * actor identity.
+   */
+  actor?: ActorResolver<[TInput, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, runContext) => …`.
+   * Build each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -249,7 +263,7 @@ export function guardTool<TInput = unknown, TTool extends OpenAIAgentsTool = Ope
   return wrapped;
 }
 
-function runGuardedTool<TInput>(
+async function runGuardedTool<TInput>(
   client: ArcjetAgentClient,
   tool: OpenAIAgentsTool,
   policy: GuardToolPolicy<TInput>,
@@ -262,6 +276,7 @@ function runGuardedTool<TInput>(
   let sessionId: string | undefined;
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
     const typedArgs = args as TInput;
@@ -269,6 +284,7 @@ function runGuardedTool<TInput>(
     rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
+    remote = await resolveActorInputs(policy, typedArgs, runContext);
   } catch (error) {
     if (shouldWarn()) {
       console.warn(
@@ -280,7 +296,7 @@ function runGuardedTool<TInput>(
     if (policy.onGuardError === "allow") {
       return execute();
     }
-    return Promise.resolve(unavailableResult());
+    return unavailableResult();
   }
 
   const source = isContextSource(runContext) ? runContext : undefined;
@@ -300,6 +316,7 @@ function runGuardedTool<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    ...remote,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return denialResult(decision);

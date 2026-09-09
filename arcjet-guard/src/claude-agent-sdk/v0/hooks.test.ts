@@ -12,6 +12,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardHooks } from "./hooks.ts";
 
 function preToolInput(input?: unknown): HookInput {
@@ -459,4 +460,51 @@ test("exclude is inert when empty or absent", async () => {
 
     assert.equal(guardCalls.length, 1);
   }
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    action: "tool.invoked",
+    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    inputs: (call) => ({
+      id: policyInput.server.string(String((call.input as { id?: string }).id)),
+    }),
+  });
+  await runHook(hooks.PreToolUse, preToolInput({ id: "one" }));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    action: "tool.invoked",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = (await runHook(hooks.PreToolUse, preToolInput({ id: "one" }))) as {
+    hookSpecificOutput?: { permissionDecision?: string };
+  };
+  assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
+  assert.equal(guardCalls.length, 0);
+});
+
+test("inbound resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, {
+    inbound: {
+      action: "message.received",
+      actor: (input) => `actor-${input.prompt.length}`,
+      inputs: (input) => ({ prompt: policyInput.local.string(input.prompt) }),
+    },
+  });
+  await runHook(hooks.UserPromptSubmit, userPromptInput("hello"));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-5");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    prompt: policyInput.local.string("hello"),
+  });
 });
