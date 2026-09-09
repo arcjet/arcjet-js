@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/runtime-v1.13.0) (2026-09-09)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/runtime:** Synchronize arcjet-js versions
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/runtime-v1.12.0) (2026-09-08)
 
 
