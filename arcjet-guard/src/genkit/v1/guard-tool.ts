@@ -484,7 +484,7 @@ async function runGuardedTool<TInput>(
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
   let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  let callOptions = options;
+  let callOptions: unknown;
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
     const typedArgs = args as TInput;

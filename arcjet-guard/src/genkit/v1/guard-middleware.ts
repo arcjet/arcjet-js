@@ -281,7 +281,7 @@ export function guardMiddleware(
           let rules: RuleWithInput[] | undefined;
           let policyMetadata: ArcjetMetadata | undefined;
           let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-          let hookCtx = ctx;
+          let hookCtx: unknown;
           try {
             action = resolveAction(policy, call);
             sessionId = resolveSessionId(policy, call);
