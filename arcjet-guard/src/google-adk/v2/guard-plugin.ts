@@ -1,5 +1,7 @@
 import type { BasePlugin } from "@google/adk";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult, type ArcjetDenialResult } from "../../agents/denial.ts";
@@ -40,6 +42,18 @@ export interface GuardPluginPolicy {
    * the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardPluginCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool call. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<GuardPluginCall>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool call. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardPluginCall>;
   /** Metadata merged over the derived Google ADK context. */
   metadata?: ArcjetMetadata | ((call: GuardPluginCall) => ArcjetMetadata);
   /**
@@ -124,14 +138,14 @@ function pluginName(): string {
   return `arcjet-guard-${pluginSeq}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
-function gateToolCall(
+async function gateToolCall(
   client: ArcjetAgentClient,
   policy: GuardPluginPolicy,
   params: BeforeToolCallbackParams,
 ): Promise<Record<string, unknown> | undefined> {
   if (isBrandedTool(params.tool)) {
     // oxlint-disable-next-line unicorn/no-useless-undefined -- ADK skip is `undefined`, not void
-    return Promise.resolve(undefined);
+    return undefined;
   }
 
   const toolName = params.tool.name;
@@ -142,12 +156,14 @@ function gateToolCall(
   let sessionId: string | undefined;
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
     action = resolveAction(policy, call);
     sessionId = resolveSessionId(policy, call);
     rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
+    remote = await resolveActorInputs(policy, call);
   } catch (error) {
     const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
     if (shouldWarn()) {
@@ -159,9 +175,9 @@ function gateToolCall(
     }
     if (policy.onGuardError === "allow") {
       // oxlint-disable-next-line unicorn/no-useless-undefined -- ADK skip is `undefined`, not void
-      return Promise.resolve(undefined);
+      return undefined;
     }
-    return Promise.resolve(denyDict(unavailableResult()));
+    return denyDict(unavailableResult());
   }
 
   const source = isContextSource(params.toolContext) ? params.toolContext : undefined;
@@ -178,6 +194,7 @@ function gateToolCall(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    ...remote,
     onDeny: (decision: DecisionDeny) => denyDict(denialResult(decision)),
     onUnavailable: () => denyDict(unavailableResult()),
     // oxlint-disable-next-line unicorn/no-useless-undefined -- ALLOW is `undefined` so the tool runs

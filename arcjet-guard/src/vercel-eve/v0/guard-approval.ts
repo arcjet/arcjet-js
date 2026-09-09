@@ -1,5 +1,7 @@
 import type { SessionContext } from "eve/context";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
@@ -32,6 +34,17 @@ export interface GuardApprovalPolicy<TInput = Record<string, unknown>> {
   action: string;
   /** Rules to evaluate, static or computed from the approval context. */
   rules?: RuleWithInput[] | ((ctx: ApprovalContext<TInput>) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the approval context. Derive it
+   * from authenticated server-side context; never trust a model-produced tool
+   * input as the actor identity.
+   */
+  actor?: ActorResolver<ApprovalContext<TInput>>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the approval context. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<ApprovalContext<TInput>>;
   /** Metadata merged over the session-derived context's. */
   metadata?: ArcjetMetadata | ((ctx: ApprovalContext<TInput>) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -58,6 +71,17 @@ export interface GuardApprovalResponsePolicy<TInput = Record<string, unknown>> {
   action: string;
   /** Rules to evaluate, static or computed from the response context. */
   rules?: RuleWithInput[] | ((ctx: ApprovalResponseContext<TInput>) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the response context. Derive it
+   * from authenticated server-side context; never trust a model-produced tool
+   * input as the actor identity.
+   */
+  actor?: ActorResolver<ApprovalResponseContext<TInput>>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the response context. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<ApprovalResponseContext<TInput>>;
   /** Metadata merged over the session-derived context's. */
   metadata?: ArcjetMetadata | ((ctx: ApprovalResponseContext<TInput>) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -293,23 +317,31 @@ type ApprovalPolicyOptions<TResult> = {
 type ApprovalPolicyConfig<TCtx> = {
   action: string;
   rules?: RuleWithInput[] | ((ctx: TCtx) => RuleWithInput[]);
+  actor?: ActorResolver<TCtx>;
+  inputs?: InputsResolver<TCtx>;
   metadata?: ArcjetMetadata | ((ctx: TCtx) => ArcjetMetadata);
   onGuardError?: OnGuardError;
 };
 
 type CallbackResolution<TResult> =
-  | { status: "resolved"; rules: RuleWithInput[] | undefined; metadata: ArcjetMetadata }
+  | {
+      status: "resolved";
+      rules: RuleWithInput[] | undefined;
+      metadata: ArcjetMetadata;
+      actor?: string;
+      inputs?: Awaited<ReturnType<typeof resolveActorInputs>>["inputs"];
+    }
   | { status: "failed"; result: TResult };
 
-function resolveApprovalCallbacks<TCtx, TResult>(
+async function resolveApprovalCallbacks<TCtx, TResult>(
   client: ArcjetAgentClient,
   policy: ApprovalPolicyConfig<TCtx>,
   ctx: TCtx,
   options: ApprovalPolicyOptions<TResult>,
   agentCtx: ReturnType<typeof eveAgentContext>,
   metadata: ArcjetMetadata,
-): CallbackResolution<TResult> {
-  // Resolve both callbacks independently so a throw in one cannot skip
+): Promise<CallbackResolution<TResult>> {
+  // Resolve callbacks independently so a throw in one cannot skip
   // the other. Merge extra metadata only when the metadata callback resolves.
   let ruleResolutionFailed = false;
   let ruleResolutionError: unknown;
@@ -333,11 +365,25 @@ function resolveApprovalCallbacks<TCtx, TResult>(
     metadataResolutionError = error;
   }
 
-  if (ruleResolutionFailed || metadataResolutionFailed) {
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
+  let remoteResolutionFailed = false;
+  let remoteResolutionError: unknown;
+  try {
+    remote = await resolveActorInputs(policy, ctx);
+  } catch (error) {
+    remoteResolutionFailed = true;
+    remoteResolutionError = error;
+  }
+
+  if (ruleResolutionFailed || metadataResolutionFailed || remoteResolutionFailed) {
     const failClosed = policy.onGuardError !== "allow";
     const correlation =
       agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
-    const error = ruleResolutionFailed ? ruleResolutionError : metadataResolutionError;
+    const error = ruleResolutionFailed
+      ? ruleResolutionError
+      : metadataResolutionFailed
+        ? metadataResolutionError
+        : remoteResolutionError;
     warnCallbackFailure(options.warnKind, policy.action, failClosed, error);
     captureEvent(client, {
       action: policy.action,
@@ -350,7 +396,7 @@ function resolveApprovalCallbacks<TCtx, TResult>(
     };
   }
 
-  return { status: "resolved", rules, metadata: resolvedMetadata };
+  return { status: "resolved", rules, metadata: resolvedMetadata, ...remote };
 }
 
 async function evaluateApprovalPolicy<TCtx, TResult>(
@@ -369,7 +415,7 @@ async function evaluateApprovalPolicy<TCtx, TResult>(
       ...options.extraMetadata(),
     };
 
-    const resolved = resolveApprovalCallbacks(client, policy, ctx, options, agentCtx, metadata);
+    const resolved = await resolveApprovalCallbacks(client, policy, ctx, options, agentCtx, metadata);
     if (resolved.status === "failed") {
       return resolved.result;
     }
@@ -379,6 +425,8 @@ async function evaluateApprovalPolicy<TCtx, TResult>(
       rules: resolved.rules,
       correlationId: agentCtx.correlationId,
       metadata: resolved.metadata,
+      ...(resolved.actor !== undefined && { actor: resolved.actor }),
+      ...(resolved.inputs !== undefined && { inputs: resolved.inputs }),
       onAllow: options.onAllow,
       onDeny: options.onDeny,
       onUnavailable: options.onUnavailable,

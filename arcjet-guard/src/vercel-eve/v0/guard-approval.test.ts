@@ -12,6 +12,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import type { DecisionDeny } from "../../types.ts";
 import type {
   ApprovalContext,
@@ -1090,4 +1091,32 @@ test("response last-resort catch fails open when extra evaluation throws with on
       process.env.ARCJET_LOG_LEVEL = oldLogLevel;
     }
   }
+});
+
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    actor: (ctx) => `actor-${ctx.toolName}`,
+    inputs: (ctx) => ({ tool: policyInput.server.string(ctx.toolName) }),
+  });
+  await approval(createApprovalContext({ toolName: "lookup" }));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-lookup");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    tool: policyInput.server.string("lookup"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const status = await approval(createApprovalContext());
+  assert.equal((status as { type?: string }).type, "denied");
+  assert.equal(guardCalls.length, 0);
 });

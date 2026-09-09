@@ -93,13 +93,17 @@ Never stash it in module state or AsyncLocalStorage.
 
 ```ts
 import { guardTool, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
-import { tokenBucket } from "@arcjet/guard";
+import { tokenBucket, policyInput } from "@arcjet/guard";
 
 const lookupLimit = tokenBucket({ bucket: "lookups", refillRate: 5, intervalSeconds: 60, maxTokens: 10 });
 
 const tools = {
   lookupOrder: guardTool(arcjet, lookupOrderTool, {
     action: "order.looked-up", // "resource.verb", past tense
+    actor: userId,
+    inputs: ({ orderNumber }) => ({
+      orderNumber: policyInput.server.string(orderNumber),
+    }),
     rules: ({ orderNumber }) => [lookupLimit({ key: `order:${orderNumber}`, requested: 1 })],
     // securityMetadata() maps the flat vocabulary to wire keys, so its fields
     // are strings. Nested values go alongside it in the raw metadata object.
@@ -111,6 +115,9 @@ const tools = {
 };
 ```
 
+- Optional `actor` and `inputs` (static or a resolver) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - Omit `rules` to submit none. The guard call still happens, so the decision is
   correlatable and the call site stays reachable by policy configured outside
   the code — but it costs a round trip. Use `captureAction()` instead when you

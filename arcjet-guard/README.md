@@ -855,7 +855,12 @@ const decision = await arcjet.guard({
 ### Vendor SDK integration (`@arcjet/guard/<vendor-sdk>/v<major>`)
 
 Vendor-specific wrappers that integrate with particular SDKs, plus every agent
-helper. Currently available:
+helper. Every wrapper policy accepts optional `actor` and `inputs` — static
+values or resolvers over the adapter's call argument. Build each input with
+`policyInput` so a remote Guard policy that declares those names can evaluate.
+Omit them and the remote policy has nothing to read, so its rules do not fire.
+
+Currently available:
 
 - **`@arcjet/guard/vercel-ai/v7`** — Vercel AI SDK v7 integration. Exports
   `guardTool` and `aiToolsContext` for tool wrapping, alongside the helpers

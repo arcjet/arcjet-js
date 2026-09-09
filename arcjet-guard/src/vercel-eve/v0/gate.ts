@@ -7,6 +7,7 @@ import type {
   DecisionDeny,
   RuleWithInput,
 } from "../../types.ts";
+import type { PolicyInputMap } from "../../policy-input.ts";
 
 /**
  * The guard → capture sequence for a call site that decides whether something
@@ -48,6 +49,8 @@ export async function runGate<T>(
     rules: RuleWithInput[] | undefined;
     correlationId: string | undefined;
     metadata: ArcjetMetadata;
+    actor?: string;
+    inputs?: PolicyInputMap;
     onAllow: () => T;
     onDeny: (decision: DecisionDeny) => T;
     onUnavailable: (
@@ -67,6 +70,8 @@ export async function runGate<T>(
     onDeny,
     onUnavailable,
     onGuardError = "deny",
+    actor,
+    inputs,
   } = params;
 
   // Spread onto every guard/capture payload so `correlationId` is included
@@ -83,7 +88,14 @@ export async function runGate<T>(
     // call: it still produces a decision, which is what makes this call site
     // reachable by policy configured outside the code, and gives a
     // capture-only call a `decisionId` to correlate against.
-    decision = await client.guard({ label: action, rules: rules ?? [], ...correlation, metadata });
+    decision = await client.guard({
+      label: action,
+      rules: rules ?? [],
+      ...correlation,
+      metadata,
+      ...(actor !== undefined && { actor }),
+      ...(inputs !== undefined && { inputs }),
+    });
   } catch (error) {
     // Signal (a): the guard call itself threw. Rare — the client converts
     // transport failures into decisions rather than throwing.

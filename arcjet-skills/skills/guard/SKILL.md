@@ -77,6 +77,11 @@ Wrappers fail closed by default. HITL (`needsApproval`, `interrupt()`,
 `requireConfirmation`, `canUseTool`) is not a policy gate; Guard still runs
 after a human yes.
 
+Every wrapper policy accepts optional `actor` and `inputs` (static or a
+resolver) so a remote policy that declares those names can evaluate. Build
+each input with `policyInput`. Omit them and the remote policy has nothing
+to read — its rules do not fire.
+
 Google ADK is `guardPlugin` (no `guardTool`). TanStack AI is
 `guardMiddleware` (do not wrap `execute`). LangChain `createAgent` is
 `/langchain/v1`, not LangGraph.

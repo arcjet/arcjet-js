@@ -1,3 +1,5 @@
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -67,6 +69,18 @@ export interface GuardToolPolicy<TInput> {
    * call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool input. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<TInput>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool input. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<TInput>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -187,6 +201,7 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      resolvePolicy: () => resolveActorInputs(policy, input),
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may return a custom shape; the ALLOW path is TOutput
       onDeny: ((decision: DecisionDeny) => {
         if (policy.onDeny === undefined) {

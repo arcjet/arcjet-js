@@ -1,3 +1,5 @@
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
@@ -22,6 +24,17 @@ export interface GuardEventsInbound {
   rules?:
     | RuleWithInput[]
     | ((input: { text: string; events: readonly ManagedAgentsEventParams[] }) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the inbound events. Derive it
+   * from authenticated server-side context; never trust the message text as
+   * the actor identity.
+   */
+  actor?: ActorResolver<{ text: string; events: readonly ManagedAgentsEventParams[] }>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the inbound events. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<{ text: string; events: readonly ManagedAgentsEventParams[] }>;
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
   onGuardError?: OnGuardError;
 }
@@ -126,13 +139,16 @@ export async function guardEvents<
 
   const text = inboundTextFromEvents(events);
   const action = policy.inbound.action ?? "message.received";
+  const inboundArg = { text, events };
 
   let rules: RuleWithInput[] | undefined;
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
     rules =
       typeof policy.inbound.rules === "function"
-        ? policy.inbound.rules({ text, events })
+        ? policy.inbound.rules(inboundArg)
         : policy.inbound.rules;
+    remote = await resolveActorInputs(policy.inbound, inboundArg);
   } catch (error) {
     if (shouldWarn()) {
       console.warn(
@@ -173,6 +189,7 @@ export async function guardEvents<
     rules,
     correlationId: policy.context?.correlationId,
     metadata,
+    ...remote,
     onAllow: (): Permit => ({ allowed: true }),
     onDeny: (decision: DecisionDeny): Permit => ({
       allowed: false,

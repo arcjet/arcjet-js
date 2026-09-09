@@ -5,6 +5,8 @@ import type {
   ToolHooks,
 } from "@mastra/core/tools";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -37,6 +39,18 @@ export interface GuardHooksPolicy {
    * guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool call. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<GuardHooksCall>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool call. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardHooksCall>;
   /** Metadata merged over the derived Mastra context. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -114,12 +128,14 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
           ...policyMetadata,
         };
+        const remote = await resolveActorInputs(policy, call);
 
         return await runGate<void | ToolBeforeHookResult>(client, {
           action,
           rules,
           correlationId: agentCtx.correlationId,
           metadata,
+          ...remote,
           onAllow: () => {
             /* allow the tool to proceed */
           },

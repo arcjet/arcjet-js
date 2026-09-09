@@ -11,6 +11,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { DecisionDeny } from "../../types.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
@@ -518,4 +519,41 @@ test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
       process.env["ARCJET_LOG_LEVEL"] = previous;
     }
   }
+});
+
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createClaudeTool<{ id: string }>();
+  const wrapped = guardTool(client, tool, {
+    action: "test.action",
+    actor: (input) => `actor-${input.id}`,
+    inputs: (input) => ({ id: policyInput.server.string(input.id) }),
+  });
+  await wrapped.handler({ id: "one" }, sessionExtra("s"));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createClaudeTool({
+    handler: async () => {
+      calls += 1;
+      return { content: [{ type: "text" as const, text: "ok" }] };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "test.action",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = denialFromResult(await wrapped.handler({ id: "one" }, sessionExtra("s")));
+  assert.equal(result.reason, "ERROR");
+  assert.equal(guardCalls.length, 0);
+  assert.equal(calls, 0);
 });

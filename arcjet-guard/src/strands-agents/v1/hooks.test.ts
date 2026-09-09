@@ -10,6 +10,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import {
@@ -334,4 +335,36 @@ test("handler never throws even when the guard client throws", async () => {
   const event = hookEvent();
   await handler(event);
   assert.equal(denialFromCancel(event).reason, "ERROR");
+});
+
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const onBefore = createBeforeToolCallHandler(client, {
+    action: "tool.invoked",
+    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    inputs: (call) => ({
+      id: policyInput.server.string(String((call.input as { id?: string }).id)),
+    }),
+  });
+  await onBefore(hookEvent({ id: "one" }));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const onBefore = createBeforeToolCallHandler(client, {
+    action: "tool.invoked",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const event = hookEvent({ id: "one" });
+  await onBefore(event);
+  assert.equal(typeof event.cancel, "string");
+  assert.equal(denialFromCancel(event).reason, "ERROR");
+  assert.equal(guardCalls.length, 0);
 });

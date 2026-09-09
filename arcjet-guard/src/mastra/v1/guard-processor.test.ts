@@ -11,6 +11,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import { MASTRA_THREAD_ID_KEY } from "./context.ts";
 import { guardProcessor } from "./guard-processor.ts";
 
@@ -634,4 +635,52 @@ test("output extraText is included when messages are empty", async () => {
   } as never);
 
   assert.equal(seen, "only-result");
+});
+
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const processor = guardProcessor(client, {
+    action: "message.received",
+    actor: (input) => `actor-${input.text.length}`,
+    inputs: (input) => ({ text: policyInput.local.string(input.text) }),
+  });
+  const { abort } = abortSpy();
+  await processor.processInput!({
+    messages: [userMessage("hello")],
+    abort,
+    requestContext: requestContext("thread-1"),
+    systemMessages: [],
+    state: {},
+    messageList: {} as never,
+    retryCount: 0,
+  } as never);
+  assert.equal(recorded(guardCalls[0]).actor, "actor-5");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    text: policyInput.local.string("hello"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const processor = guardProcessor(client, {
+    action: "message.received",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const { abort, calls } = abortSpy();
+  await assert.rejects(async () => {
+    await processor.processInput!({
+      messages: [userMessage("hello")],
+      abort,
+      requestContext: requestContext("thread-1"),
+      systemMessages: [],
+      state: {},
+      messageList: {} as never,
+      retryCount: 0,
+    } as never);
+  }, /tripwire/);
+  assert.equal(calls.length, 1);
+  assert.equal(guardCalls.length, 0);
 });

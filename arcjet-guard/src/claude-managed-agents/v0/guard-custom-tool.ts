@@ -1,3 +1,5 @@
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
@@ -25,6 +27,18 @@ export interface GuardCustomToolPolicy<TInput = { [key: string]: unknown }> {
    * or returning `[]`, still submits a guard call.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool input. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<TInput>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool input. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<TInput>;
   /** Metadata merged over the context's (object, or per-call function). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -219,10 +233,12 @@ async function runHostedCustomTool<TOutput>(
   const input = event.input;
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
     rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+    remote = await resolveActorInputs(policy, input);
   } catch (error) {
     if (shouldWarn()) {
       console.warn(
@@ -249,6 +265,7 @@ async function runHostedCustomTool<TOutput>(
     rules,
     correlationId: policy.context?.correlationId,
     metadata,
+    ...remote,
     onDeny: (decision: DecisionDeny): GuardCustomToolResult<TOutput> => ({
       allowed: false,
       result: errorResult(event, deniedReason(decision)),
@@ -297,10 +314,12 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
   ): Promise<ReturnType<TTool["run"]>> => {
     let rules: RuleWithInput[] | undefined;
     let policyMetadata: ArcjetMetadata | undefined;
+    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
     try {
       rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
       policyMetadata =
         typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+      remote = await resolveActorInputs(policy, input);
     } catch (error) {
       if (shouldWarn()) {
         console.warn(
@@ -329,6 +348,7 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
       rules,
       correlationId: policy.context?.correlationId,
       metadata,
+      ...remote,
       onDeny: (decision: DecisionDeny) => {
         throw new Error(deniedReason(decision));
       },

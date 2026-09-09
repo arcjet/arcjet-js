@@ -10,6 +10,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import { claudeManagedAgentsContext } from "./context.ts";
 import { guardEvents } from "./guard-events.ts";
 import type { EventSendBody, UserMessageEventParams } from "./types.ts";
@@ -298,4 +299,50 @@ test("concatenates text from multiple user.message events", async () => {
 
   assert.equal(seen, "first\nsecond");
   assert.equal(recorded(guardCalls[0])["label"], "message.received");
+});
+
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { send } = sendRecorder();
+  const events = [userMessage("hello")];
+  await guardEvents(
+    client,
+    {
+      events,
+      inbound: {
+        action: "message.received",
+        actor: (input) => `actor-${input.text.length}`,
+        inputs: (input) => ({ text: policyInput.local.string(input.text) }),
+      },
+    },
+    send,
+  );
+  assert.equal(recorded(guardCalls[0]).actor, "actor-5");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    text: policyInput.local.string("hello"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { send, calls } = sendRecorder();
+  const events = [userMessage("hello")];
+  const verdict = await guardEvents(
+    client,
+    {
+      events,
+      inbound: {
+        action: "message.received",
+        inputs: () => {
+          throw new Error("mapping failed");
+        },
+      },
+    },
+    send,
+  );
+  assert.equal(verdict.allowed, false);
+  assert.equal(verdict.allowed === false ? verdict.outcome : undefined, "UNAVAILABLE");
+  assert.equal(guardCalls.length, 0);
+  assert.equal(calls.length, 0);
 });

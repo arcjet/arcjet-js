@@ -1,5 +1,7 @@
 import type { AgentMiddleware, WrapToolCallHook } from "langchain";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
@@ -40,6 +42,18 @@ export interface GuardMiddlewarePolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardMiddlewareCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool call. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<GuardMiddlewareCall>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool call. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardMiddlewareCall>;
   /** Metadata merged over the derived LangChain context. */
   metadata?: ArcjetMetadata | ((call: GuardMiddlewareCall) => ArcjetMetadata);
   /**
@@ -275,7 +289,7 @@ export function guardMiddleware(
   policy: GuardMiddlewarePolicy = {},
 ): LangChainGuardMiddleware {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body is structural; the hook type is what createAgent assigns without a cast
-  const wrapToolCall = ((request: unknown, handler: (request: unknown) => Promise<unknown>) => {
+  const wrapToolCall = (async (request: unknown, handler: (request: unknown) => Promise<unknown>) => {
     if (!isToolCallRequest(request)) {
       return handler(request);
     }
@@ -292,12 +306,14 @@ export function guardMiddleware(
     let sessionId: string | undefined;
     let rules: RuleWithInput[] | undefined;
     let policyMetadata: ArcjetMetadata | undefined;
+    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
     try {
       action = resolveAction(policy, call);
       sessionId = resolveSessionId(policy, call);
       rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
       policyMetadata =
         typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
+      remote = await resolveActorInputs(policy, call);
     } catch (error) {
       const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
       if (shouldWarn()) {
@@ -327,6 +343,7 @@ export function guardMiddleware(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      ...remote,
       // Unlike guard-tool.ts, these handlers return a promise: building the
       // denial has to await the dynamic `@langchain/core/messages` import.
       // `runGuarded` is `async` and returns the handler's value directly, so

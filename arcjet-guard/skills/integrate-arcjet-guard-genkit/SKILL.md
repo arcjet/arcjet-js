@@ -146,7 +146,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ```ts
 import { genkit, z } from "genkit";
 import { guardTool } from "@arcjet/guard/genkit/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
@@ -177,6 +177,10 @@ export const lookupOrder = guardTool(
   ),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderNumber: policyInput.server.string(input.orderNumber),
+    }),
     rules: (input) => [
       lookupLimit({ key: input.orderNumber, requested: 1 }),
       detectPii(input.note),
@@ -186,6 +190,9 @@ export const lookupOrder = guardTool(
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static or a resolver) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - On DENY the closed-over handler never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as
   `toolResponse.output`.

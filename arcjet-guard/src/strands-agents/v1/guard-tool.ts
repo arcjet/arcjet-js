@@ -1,3 +1,5 @@
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
@@ -58,6 +60,18 @@ export interface GuardToolPolicy<TInput> {
    * the guard call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool input. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<TInput>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool input. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<TInput>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -277,7 +291,7 @@ function installGuardedCallback<TInput>(
   });
 }
 
-function runGuardedCallback<TInput>(
+async function runGuardedCallback<TInput>(
   client: ArcjetAgentClient,
   tool: StrandsTool,
   policy: GuardToolPolicy<TInput>,
@@ -290,6 +304,7 @@ function runGuardedCallback<TInput>(
   let sessionId: string | undefined;
   let rules: RuleWithInput[] | undefined;
   let policyMetadata: ArcjetMetadata | undefined;
+  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
     const typedArgs = args as TInput;
@@ -297,6 +312,7 @@ function runGuardedCallback<TInput>(
     rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
+    remote = await resolveActorInputs(policy, typedArgs);
   } catch (error) {
     if (shouldWarn()) {
       console.warn(
@@ -326,6 +342,7 @@ function runGuardedCallback<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    ...remote,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return denialResult(decision);

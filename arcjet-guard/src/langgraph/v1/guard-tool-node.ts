@@ -1,3 +1,4 @@
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
@@ -35,6 +36,18 @@ export interface GuardToolNodePolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardToolNodeCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool call. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<GuardToolNodeCall>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool call. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardToolNodeCall>;
   /** Metadata merged over the derived LangGraph context. */
   metadata?: ArcjetMetadata | ((call: GuardToolNodeCall) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -93,6 +106,18 @@ function policyForTool(tool: LangGraphTool, policy: GuardToolNodePolicy): GuardT
         ? policy.metadata(call)
         : (policy.metadata ?? {});
     },
+    ...(policy.actor !== undefined && {
+      actor: (input) => {
+        const call = { toolName: tool.name, input };
+        return typeof policy.actor === "function" ? policy.actor(call) : policy.actor;
+      },
+    }),
+    ...(policy.inputs !== undefined && {
+      inputs: (input) => {
+        const call = { toolName: tool.name, input };
+        return typeof policy.inputs === "function" ? policy.inputs(call) : policy.inputs;
+      },
+    }),
     ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
     ...(policy.onDeny !== undefined && { onDeny: policy.onDeny }),
   };

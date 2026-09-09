@@ -7,6 +7,8 @@ import type {
   Processor,
 } from "@mastra/core/processors";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
@@ -45,6 +47,18 @@ export interface GuardProcessorPolicy {
    * this still performs the guard call.
    */
   rules?: RuleWithInput[] | ((input: GuardProcessorInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the processor input. Derive it
+   * from authenticated server-side context; never trust model-produced text as
+   * the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<GuardProcessorInput>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the processor input. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardProcessorInput>;
   /** Metadata merged over the derived Mastra context. */
   metadata?: ArcjetMetadata | ((input: GuardProcessorInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -266,12 +280,19 @@ export function guardProcessor(
       "mastra.phase": phase,
       ...policyMetadata,
     };
+    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
+    try {
+      remote = await resolveActorInputs(policy, input);
+    } catch {
+      denyTurn(abort, unavailableReason());
+    }
 
     await runGate(client, {
       action: policy.action,
       rules,
       correlationId: agentCtx.correlationId,
       metadata,
+      ...remote,
       onAllow: () => {
         /* allow the turn to continue */
       },

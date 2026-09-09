@@ -10,6 +10,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import { claudeManagedAgentsContext } from "./context.ts";
 import { guardCustomTool } from "./guard-custom-tool.ts";
 import type { AgentCustomToolUseEvent, UserCustomToolResultEventParams } from "./types.ts";
@@ -377,4 +378,54 @@ test("wrapped betaTool factory throw fail-closes", async () => {
     },
   });
   await assert.rejects(() => wrapped.run({ orderNumber: "1" }), /could not be completed/i);
+});
+
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { send } = sendRecorder();
+  await guardCustomTool(
+    client,
+    {
+      event: customToolUse({ input: { id: "one" } }),
+      execute: () => Promise.resolve("ok"),
+      send,
+    },
+    {
+      action: "order.looked-up",
+      actor: (input) => `actor-${String(input["id"])}`,
+      inputs: (input) => ({ id: policyInput.server.string(String(input["id"])) }),
+    },
+  );
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const { send, calls } = sendRecorder();
+  let executed = 0;
+  const gated = await guardCustomTool(
+    client,
+    {
+      event: customToolUse({ input: { id: "one" } }),
+      execute: () => {
+        executed += 1;
+        return Promise.resolve("ok");
+      },
+      send,
+    },
+    {
+      action: "order.looked-up",
+      inputs: () => {
+        throw new Error("mapping failed");
+      },
+    },
+  );
+  assert.equal(gated.allowed, false);
+  assert.equal(executed, 0);
+  assert.equal(guardCalls.length, 0);
+  assert.equal(calls.length, 1);
 });

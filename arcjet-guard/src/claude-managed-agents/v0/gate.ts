@@ -7,6 +7,7 @@ import type {
   DecisionDeny,
   RuleWithInput,
 } from "../../types.ts";
+import type { PolicyInputMap } from "../../policy-input.ts";
 
 /**
  * Permit-only gate for inbound Managed Agents events. Shared by `guardEvents`.
@@ -19,6 +20,8 @@ export async function runGate<T>(
     rules: RuleWithInput[] | undefined;
     correlationId: string | undefined;
     metadata: ArcjetMetadata;
+    actor?: string;
+    inputs?: PolicyInputMap;
     onAllow: () => T;
     onDeny: (decision: DecisionDeny) => T;
     onUnavailable: (
@@ -38,6 +41,8 @@ export async function runGate<T>(
     onDeny,
     onUnavailable,
     onGuardError = "deny",
+    actor,
+    inputs,
   } = params;
 
   const correlation = correlationId === undefined ? {} : { correlationId };
@@ -46,7 +51,14 @@ export async function runGate<T>(
   let decisionId: string | undefined;
   let decision: Decision | undefined;
   try {
-    decision = await client.guard({ label: action, rules: rules ?? [], ...correlation, metadata });
+    decision = await client.guard({
+      label: action,
+      rules: rules ?? [],
+      ...correlation,
+      metadata,
+      ...(actor !== undefined && { actor }),
+      ...(inputs !== undefined && { inputs }),
+    });
   } catch (error) {
     if (failClosed) {
       warnUnavailable(action, "threw", true, error);

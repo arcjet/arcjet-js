@@ -122,7 +122,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/claude-agent-sdk/v0";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
@@ -149,12 +149,19 @@ export const lookupOrder = guardTool(
   ),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 }), detectPii(input.note)],
   },
 );
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static or a resolver) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`.
 - On DENY the tool's handler never runs. The model receives
   `{ content, structuredContent: { arcjetDenied, reason, message, retryable }, isError: true }`.
 - Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.

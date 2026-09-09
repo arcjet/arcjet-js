@@ -8,6 +8,8 @@ import type {
   UserPromptSubmitHookInput,
 } from "@anthropic-ai/claude-agent-sdk";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -47,6 +49,17 @@ export interface GuardHooksInboundPolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((input: GuardHooksInbound) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the inbound prompt. Derive it
+   * from authenticated server-side context; never trust the prompt as the
+   * actor identity.
+   */
+  actor?: ActorResolver<GuardHooksInbound>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the inbound prompt. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardHooksInbound>;
   /** Metadata merged over the derived Claude context. */
   metadata?: ArcjetMetadata | ((input: GuardHooksInbound) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -104,6 +117,18 @@ export interface GuardHooksPolicy {
    * this still performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool call. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<GuardHooksCall>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool call. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardHooksCall>;
   /** Metadata merged over the derived Claude context for tool hooks. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /** How to respond when a tool-gate evaluation is unavailable. Default `"deny"`. */
@@ -297,12 +322,14 @@ export function guardHooks(
         ...(call.toolName.length > 0 && { "claude.tool": call.toolName }),
         ...policyMetadata,
       };
+      const remote = await resolveActorInputs(policy, call);
 
       return await runGate<HookJSONOutput>(client, {
         action,
         rules,
         correlationId: agentCtx.correlationId,
         metadata,
+        ...remote,
         onAllow: () => ({}),
         onDeny: (decision) => preToolUseDeny(deniedReason(decision)),
         onUnavailable: () => preToolUseDeny(unavailableReason()),
@@ -346,12 +373,14 @@ export function guardHooks(
         "claude.phase": "inbound",
         ...policyMetadata,
       };
+      const remote = await resolveActorInputs(inboundPolicy, inbound);
 
       return await runGate<HookJSONOutput>(client, {
         action,
         rules,
         correlationId: agentCtx.correlationId,
         metadata,
+        ...remote,
         onAllow: () => ({}),
         onDeny: (decision) => userPromptBlock(deniedReason(decision)),
         onUnavailable: () => userPromptBlock(unavailableReason()),

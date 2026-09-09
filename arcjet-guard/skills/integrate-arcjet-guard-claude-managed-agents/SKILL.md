@@ -147,7 +147,7 @@ events and send them only on ALLOW.
 ## Step 3: Gate custom tools you execute
 
 ```ts
-import { tokenBucket } from "@arcjet/guard";
+import { tokenBucket, policyInput } from "@arcjet/guard";
 import { guardCustomTool } from "@arcjet/guard/claude-managed-agents/v0";
 
 import { arcjet } from "./arcjet.js";
@@ -169,6 +169,10 @@ if (event.type === "agent.custom_tool_use") {
     },
     {
       action: "order.looked-up",
+      actor: userId,
+      inputs: (input) => ({
+        orderNumber: policyInput.server.string(String(input["orderNumber"])),
+      }),
       rules: (input) => [lookupLimit({ key: String(input["orderNumber"]), requested: 1 })],
       context: ctx,
     },
@@ -188,6 +192,10 @@ if (event.type === "agent.custom_tool_use") {
 Self-hosted: wrap `betaTool({ run })` with the same `guardCustomTool`
 (pass the tool as the second argument). The CLI worker cannot register
 custom tools.
+
+Optional `actor` and `inputs` (static or a resolver) are forwarded on the
+guard call so a remote policy that declares those names can evaluate.
+Build each input with `policyInput`.
 
 ## Step 4: Correlation
 

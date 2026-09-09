@@ -10,6 +10,7 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import { policyInput } from "../../policy-input.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import { guardPlugin } from "./guard-plugin.ts";
@@ -387,4 +388,34 @@ test("sessionId callback receives the tool name and input", async () => {
   });
   assert.deepEqual(seen, { toolName: "mcp_search", input: { q: "hello" } });
   assert.equal(recorded(guardCalls[0])["correlationId"], "sess-from-callback");
+});
+
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const plugin = guardPlugin(client, {
+    action: "tool.invoked",
+    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    inputs: (call) => ({
+      id: policyInput.server.string(String((call.input as { id?: string }).id)),
+    }),
+  });
+  await runHook(plugin, beforeToolParams("lookup", { id: "one" }));
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const plugin = guardPlugin(client, {
+    action: "tool.invoked",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = await runHook(plugin, beforeToolParams("lookup", { id: "one" }));
+  assert.equal(asDenial<ArcjetDenialResult>(result).reason, "ERROR");
+  assert.equal(guardCalls.length, 0);
 });

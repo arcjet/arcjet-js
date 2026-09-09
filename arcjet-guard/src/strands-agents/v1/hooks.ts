@@ -1,5 +1,7 @@
 import type { Plugin } from "@strands-agents/sdk";
 
+import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
@@ -55,6 +57,18 @@ export interface GuardHooksPolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver over the tool call. Derive it from
+   * authenticated server-side context; never trust a model-produced tool input
+   * as the actor identity — a policy can be conditioned on the actor, so a
+   * model-controlled value could escape scope.
+   */
+  actor?: ActorResolver<GuardHooksCall>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the tool call. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<GuardHooksCall>;
   /** Metadata merged over the derived Strands context. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /**
@@ -239,12 +253,14 @@ export function createBeforeToolCallHandler(
       let sessionId: string | undefined;
       let rules: RuleWithInput[] | undefined;
       let policyMetadata: ArcjetMetadata | undefined;
+      let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
       try {
         action = resolveAction(policy, call);
         sessionId = resolveSessionId(policy, call);
         rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
         policyMetadata =
           typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
+        remote = await resolveActorInputs(policy, call);
       } catch (error) {
         const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
         if (shouldWarn()) {
@@ -279,6 +295,7 @@ export function createBeforeToolCallHandler(
         rules,
         correlationId: agentCtx.correlationId,
         metadata: mergedMetadata,
+        ...remote,
         onAllow: () => {
           /* allow the tool to proceed — do not set event.cancel */
         },
