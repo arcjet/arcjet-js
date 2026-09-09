@@ -1,9 +1,9 @@
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { resolveActorInputs } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import type { ArcjetMetadata, Decision, DecisionDeny, RuleWithInput } from "../../types.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**

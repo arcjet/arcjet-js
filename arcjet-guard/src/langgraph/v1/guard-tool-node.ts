@@ -94,6 +94,8 @@ function resolveAction(policy: GuardToolNodePolicy, call: GuardToolNodeCall): st
 }
 
 function policyForTool(tool: LangGraphTool, policy: GuardToolNodePolicy): GuardToolPolicy<unknown> {
+  const actor = policy.actor;
+  const inputs = policy.inputs;
   return {
     action: (input) => resolveAction(policy, { toolName: tool.name, input }),
     rules: (input) => {
@@ -106,16 +108,16 @@ function policyForTool(tool: LangGraphTool, policy: GuardToolNodePolicy): GuardT
         ? policy.metadata(call)
         : (policy.metadata ?? {});
     },
-    ...(policy.actor !== undefined && {
-      actor: (input) => {
+    ...(actor !== undefined && {
+      actor: (input: unknown): string | Promise<string> => {
         const call = { toolName: tool.name, input };
-        return typeof policy.actor === "function" ? policy.actor(call) : policy.actor;
+        return typeof actor === "function" ? actor(call) : actor;
       },
     }),
-    ...(policy.inputs !== undefined && {
-      inputs: (input) => {
+    ...(inputs !== undefined && {
+      inputs: (input: unknown) => {
         const call = { toolName: tool.name, input };
-        return typeof policy.inputs === "function" ? policy.inputs(call) : policy.inputs;
+        return typeof inputs === "function" ? inputs(call) : inputs;
       },
     }),
     ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),

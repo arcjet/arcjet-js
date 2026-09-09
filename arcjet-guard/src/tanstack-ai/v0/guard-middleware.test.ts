@@ -10,9 +10,9 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardMiddleware } from "./guard-middleware.ts";
 import type { TanStackAiGuardMiddleware } from "./guard-middleware.ts";
 
@@ -349,7 +349,6 @@ test("sessionId callback receives the tool name and input", async () => {
   assert.deepEqual(seen, { toolName: "mcp_search", input: { q: "hello" } });
   assert.equal(recorded(guardCalls[0])["correlationId"], "sess-from-callback");
 });
-
 
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

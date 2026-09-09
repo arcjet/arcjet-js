@@ -418,9 +418,17 @@ function wrapToolAction<TInput>(
 
   if (originalRun !== undefined) {
     const newRun = (input?: unknown, options?: unknown): Promise<unknown> =>
-      runGuardedTool(client, tool, policy, input, options, () => Promise.resolve(originalRun(input, options)), {
-        wrapRunResult: true,
-      });
+      runGuardedTool(
+        client,
+        tool,
+        policy,
+        input,
+        options,
+        () => Promise.resolve(originalRun(input, options)),
+        {
+          wrapRunResult: true,
+        },
+      );
     Object.defineProperty(wrapped, "run", {
       value: newRun,
       writable: true,
@@ -494,7 +502,7 @@ async function runGuardedTool<TInput>(
     if (policy.onGuardError === "allow") {
       return execute();
     }
-    return Promise.resolve(denialEnvelope(unavailableResult(), envelope));
+    return denialEnvelope(unavailableResult(), envelope);
   }
 
   const source = isContextSource(options) ? options : undefined;

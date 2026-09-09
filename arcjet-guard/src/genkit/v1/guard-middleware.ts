@@ -115,7 +115,10 @@ function resolveAction(policy: GuardMiddlewarePolicy, call: GuardMiddlewareCall)
   return "tool.invoked";
 }
 
-function resolveSessionId(policy: GuardMiddlewarePolicy, call: GuardMiddlewareCall): string | undefined {
+function resolveSessionId(
+  policy: GuardMiddlewarePolicy,
+  call: GuardMiddlewareCall,
+): string | undefined {
   if (typeof policy.sessionId === "function") {
     return policy.sessionId(call);
   }
@@ -253,7 +256,11 @@ export function guardMiddleware(
           : undefined;
 
       return {
-        tool: async (req: unknown, ctx: unknown, next: (req: unknown, ctx: unknown) => Promise<unknown>) => {
+        tool: async (
+          req: unknown,
+          ctx: unknown,
+          next: (req: unknown, ctx: unknown) => Promise<unknown>,
+        ) => {
           if (!isToolRequestPart(req)) {
             return next(req, ctx);
           }
@@ -295,7 +302,10 @@ export function guardMiddleware(
           }
 
           const source = isContextSource(ctx) ? ctx : undefined;
-          const agentCtx = genkitContext(source, sessionId === undefined ? undefined : { sessionId });
+          const agentCtx = genkitContext(
+            source,
+            sessionId === undefined ? undefined : { sessionId },
+          );
 
           const metadata: ArcjetMetadata = {
             ...agentCtx.metadata,

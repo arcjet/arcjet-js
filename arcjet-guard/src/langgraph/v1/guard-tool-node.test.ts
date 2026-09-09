@@ -10,9 +10,9 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
 import type { LangGraphToolNodeLike } from "./guard-tool-node.ts";
 import { guardToolNode } from "./guard-tool-node.ts";
 import type { LangGraphTool } from "./guard-tool.ts";
@@ -262,7 +262,6 @@ test("throws when the argument is neither a node nor a tools array", () => {
     /ToolNode or an array/,
   );
 });
-
 
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

@@ -415,7 +415,14 @@ async function evaluateApprovalPolicy<TCtx, TResult>(
       ...options.extraMetadata(),
     };
 
-    const resolved = await resolveApprovalCallbacks(client, policy, ctx, options, agentCtx, metadata);
+    const resolved = await resolveApprovalCallbacks(
+      client,
+      policy,
+      ctx,
+      options,
+      agentCtx,
+      metadata,
+    );
     if (resolved.status === "failed") {
       return resolved.result;
     }

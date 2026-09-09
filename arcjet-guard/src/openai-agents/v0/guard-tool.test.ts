@@ -11,10 +11,10 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { DecisionDeny } from "../../types.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
+import type { DecisionDeny } from "../../types.ts";
 import type { OpenAIAgentsTool } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 
@@ -630,7 +630,6 @@ test("wraps invoke when the descriptor is non-writable", async () => {
   assert.equal(result.arcjetDenied, true);
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const tool = createFunctionTool();
@@ -661,9 +660,7 @@ test("an input resolver failure follows the fail-closed unavailable path", async
       throw new Error("mapping failed");
     },
   });
-  const result = asToolResult(
-    await wrapped.invoke(runContext("t"), JSON.stringify({ id: "one" })),
-  );
+  const result = asToolResult(await wrapped.invoke(runContext("t"), JSON.stringify({ id: "one" })));
   assert.equal(result.reason, "ERROR");
   assert.equal(guardCalls.length, 0);
   assert.equal(calls, 0);

@@ -11,10 +11,10 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { DecisionDeny } from "../../types.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
+import type { DecisionDeny } from "../../types.ts";
 import type { StrandsTool } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 
@@ -485,9 +485,7 @@ test("ZodTool inner _functionTool callback is gated so stream() cannot bypass", 
   assert.ok(wrapped._functionTool);
   assert.notStrictEqual(wrapped._functionTool, tool._functionTool);
 
-  const result = asToolResult(
-    await wrapped._functionTool!._callback({}, toolContext("t")),
-  );
+  const result = asToolResult(await wrapped._functionTool!._callback({}, toolContext("t")));
   assert.equal(calls, 0);
   assert.equal(result.arcjetDenied, true);
 
@@ -504,7 +502,6 @@ test("never reads traceId from invocationState", async () => {
   assert.equal("correlationId" in recorded(guardCalls[0]), false);
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const tool = createTool();
@@ -513,10 +510,9 @@ test("resolves actor and typed inputs onto the guard call", async () => {
     actor: (input: { id?: string }) => `actor-${input.id}`,
     inputs: (input: { id?: string }) => ({ id: policyInput.server.string(String(input.id)) }),
   });
-  await (wrapped as unknown as { _callback: (input: unknown, ctx?: unknown) => Promise<unknown> })._callback(
-    { id: "one" },
-    { invocationState: { sessionId: "t" } },
-  );
+  await (
+    wrapped as unknown as { _callback: (input: unknown, ctx?: unknown) => Promise<unknown> }
+  )._callback({ id: "one" }, { invocationState: { sessionId: "t" } });
   assert.equal(recorded(guardCalls[0]).actor, "actor-one");
   assert.deepEqual(recorded(guardCalls[0]).inputs, {
     id: policyInput.server.string("one"),

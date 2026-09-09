@@ -301,7 +301,6 @@ test("concatenates text from multiple user.message events", async () => {
   assert.equal(recorded(guardCalls[0])["label"], "message.received");
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const { send } = sendRecorder();
@@ -342,7 +341,9 @@ test("an input resolver failure follows the fail-closed unavailable path", async
     send,
   );
   assert.equal(verdict.allowed, false);
-  assert.equal(verdict.allowed === false ? verdict.outcome : undefined, "UNAVAILABLE");
+  if (!verdict.allowed) {
+    assert.equal(verdict.outcome, "UNAVAILABLE");
+  }
   assert.equal(guardCalls.length, 0);
   assert.equal(calls.length, 0);
 });

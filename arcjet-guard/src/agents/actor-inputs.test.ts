@@ -31,10 +31,11 @@ test("resolves actor and inputs from the call argument", async () => {
 test("awaits async resolvers", async () => {
   const resolved = await resolveActorInputs(
     {
-      actor: async (input: { id: string }) => `actor-${input.id}`,
-      inputs: async (input: { id: string }) => ({
-        id: policyInput.server.string(input.id),
-      }),
+      actor: (input: { id: string }) => Promise.resolve(`actor-${input.id}`),
+      inputs: (input: { id: string }) =>
+        Promise.resolve({
+          id: policyInput.server.string(input.id),
+        }),
     },
     { id: "two" },
   );

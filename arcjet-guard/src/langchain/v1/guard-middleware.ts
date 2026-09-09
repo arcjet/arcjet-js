@@ -289,7 +289,10 @@ export function guardMiddleware(
   policy: GuardMiddlewarePolicy = {},
 ): LangChainGuardMiddleware {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body is structural; the hook type is what createAgent assigns without a cast
-  const wrapToolCall = (async (request: unknown, handler: (request: unknown) => Promise<unknown>) => {
+  const wrapToolCall = (async (
+    request: unknown,
+    handler: (request: unknown) => Promise<unknown>,
+  ) => {
     if (!isToolCallRequest(request)) {
       return handler(request);
     }

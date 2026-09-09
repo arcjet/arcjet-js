@@ -13,8 +13,8 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardTool } from "./guard-tool.ts";
 
 /**
@@ -747,7 +747,6 @@ test("a guarded tool invoked with no context still denies", async () => {
   assert.equal(called, false, "execute never runs on DENY");
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const tool = createToolWithSymbols<{ id: string }, { success: boolean }>({
@@ -780,10 +779,9 @@ test("an input resolver failure follows the fail-closed unavailable path", async
       throw new Error("mapping failed");
     },
   });
-  await assert.rejects(
-    () => wrapped.execute!({ id: "one" }, { toolName: "test", callId: "c1" } as never),
-    ArcjetGuardUnavailableError,
-  );
+  await assert.rejects(async () => {
+    await wrapped.execute!({ id: "one" }, { toolName: "test", callId: "c1" } as never);
+  }, ArcjetGuardUnavailableError);
   assert.equal(guardCalls.length, 0);
   assert.equal(calls, 0);
 });

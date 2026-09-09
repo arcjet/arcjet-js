@@ -6,9 +6,7 @@ import type { PolicyInputMap } from "../policy-input.ts";
  * model-produced tool input as the actor identity — a policy can be
  * conditioned on the actor, so a model-controlled value could escape scope.
  */
-export type ActorResolver<TArg> =
-  | string
-  | ((arg: TArg) => string | Promise<string>);
+export type ActorResolver<TArg> = string | ((arg: TArg) => string | Promise<string>);
 
 /**
  * Typed remote-policy inputs, or a resolver over the adapter's call argument.

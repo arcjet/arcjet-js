@@ -77,7 +77,7 @@ Ask only what you cannot infer from the code; suggest defaults.
 3. Who is the **user** for metadata — an opaque user/tenant ID (never PII)?
    Default: none. Pass it via `metadata` on the policy. Put the
    conversation / session id you already have on
-   `agent.invoke(..., { invocationState: { sessionId } })` *and* on
+   `agent.invoke(..., { invocationState: { sessionId } })` _and_ on
    `guardHooks({ sessionId })`. That id is the correlation id, not the
    user.
 4. Is an Arcjet outage unacceptable? Every helper defaults to

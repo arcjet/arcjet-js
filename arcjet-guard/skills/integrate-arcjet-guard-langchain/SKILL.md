@@ -176,17 +176,14 @@ const detectPii = localDetectSensitiveInfo();
 
 export const lookupOrder = guardTool(
   arcjet,
-  tool(
-    async ({ orderNumber, note }) => ({ orderNumber, note, status: "shipped" }),
-    {
-      name: "lookup_order",
-      description: "Look up an order by number",
-      schema: z.object({
-        orderNumber: z.string(),
-        note: z.string(),
-      }),
-    },
-  ),
+  tool(async ({ orderNumber, note }) => ({ orderNumber, note, status: "shipped" }), {
+    name: "lookup_order",
+    description: "Look up an order by number",
+    schema: z.object({
+      orderNumber: z.string(),
+      note: z.string(),
+    }),
+  }),
   {
     action: "order.looked-up",
     actor: userId,

@@ -10,17 +10,16 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
-import {
-  createAfterToolCallHandler,
-  createBeforeToolCallHandler,
-  guardHooks,
-} from "./hooks.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
+import { createAfterToolCallHandler, createBeforeToolCallHandler, guardHooks } from "./hooks.ts";
 import type { StrandsBeforeToolCallEvent } from "./hooks.ts";
 
-function hookEvent(input?: unknown, extras?: Partial<StrandsBeforeToolCallEvent>): StrandsBeforeToolCallEvent {
+function hookEvent(
+  input?: unknown,
+  extras?: Partial<StrandsBeforeToolCallEvent>,
+): StrandsBeforeToolCallEvent {
   return {
     toolUse: {
       name: "mcp_search",
@@ -230,18 +229,14 @@ test("rules throw with onGuardError allow proceeds", async () => {
 test("empty toolName is omitted from metadata", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const handler = createBeforeToolCallHandler(client, {});
-  await handler(
-    hookEvent({}, { toolUse: { name: "", input: {} } }),
-  );
+  await handler(hookEvent({}, { toolUse: { name: "", input: {} } }));
   assert.equal("strands.tool" in recorded(recorded(guardCalls[0])["metadata"]), false);
 });
 
 test("non-string toolName is treated as empty", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const handler = createBeforeToolCallHandler(client, {});
-  await handler(
-    hookEvent({}, { toolUse: { name: 12, input: {} } }),
-  );
+  await handler(hookEvent({}, { toolUse: { name: 12, input: {} } }));
   assert.equal("strands.tool" in recorded(recorded(guardCalls[0])["metadata"]), false);
 });
 
@@ -336,7 +331,6 @@ test("handler never throws even when the guard client throws", async () => {
   await handler(event);
   assert.equal(denialFromCancel(event).reason, "ERROR");
 });
-
 
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

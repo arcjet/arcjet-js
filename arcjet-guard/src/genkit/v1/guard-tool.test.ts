@@ -11,10 +11,10 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { DecisionDeny } from "../../types.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
+import type { DecisionDeny } from "../../types.ts";
 import type { GenkitTool } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 
@@ -780,11 +780,10 @@ test("policy factory throw warns when ARCJET_LOG_LEVEL asks for warnings", async
   }
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const tool = createToolAction();
-  const wrapped = guardTool(client, tool as GenkitTool, {
+  const wrapped = guardTool(client, tool, {
     action: "test.action",
     actor: (input: { id?: string }) => `actor-${input.id}`,
     inputs: (input: { id?: string }) => ({ id: policyInput.server.string(String(input.id)) }),
@@ -805,7 +804,7 @@ test("an input resolver failure follows the fail-closed unavailable path", async
       return { ok: true };
     },
   });
-  const wrapped = guardTool(client, tool as GenkitTool, {
+  const wrapped = guardTool(client, tool, {
     action: "test.action",
     inputs: () => {
       throw new Error("mapping failed");

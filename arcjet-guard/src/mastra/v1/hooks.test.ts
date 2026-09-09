@@ -10,9 +10,9 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { policyInput } from "../../policy-input.ts";
 import { MASTRA_THREAD_ID_KEY } from "./context.ts";
-import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { guardHooks } from "./hooks.ts";
 
 function hookContext(input?: unknown) {
@@ -270,7 +270,6 @@ test("afterToolCall with non-object context does not throw", async () => {
   });
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const hooks = guardHooks(client, {
@@ -298,6 +297,9 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   const result = await hooks.beforeToolCall!(hookContext({ id: "one" }));
   assert.ok(result);
   assert.equal((result as { proceed: boolean }).proceed, false);
-  assert.equal(asDenial<ArcjetDenialResult>((result as { output: unknown }).output).reason, "ERROR");
+  assert.equal(
+    asDenial<ArcjetDenialResult>((result as { output: unknown }).output).reason,
+    "ERROR",
+  );
   assert.equal(guardCalls.length, 0);
 });

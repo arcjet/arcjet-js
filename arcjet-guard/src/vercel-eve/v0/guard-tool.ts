@@ -3,12 +3,12 @@ import type { ToolDefinition, ToolContext } from "eve/tools";
 import { resolveActorInputs } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { denialResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { eveAgentContext } from "./context.ts";
-import { denialResult } from "../../agents/denial.ts";
 
 /**
  * Policy for `guardTool()` — how to guard an authored tool's execution.

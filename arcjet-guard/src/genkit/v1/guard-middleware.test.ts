@@ -10,9 +10,9 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardMiddleware } from "./guard-middleware.ts";
 import { guardTool } from "./guard-tool.ts";
 import type { GenkitTool } from "./guard-tool.ts";
@@ -443,7 +443,6 @@ test("guardTool-wrapped fake is skipped when registered under its action name", 
   // The middleware skipped; the only guard calls would come from next() (none here).
   assert.equal(guardCalls.length, 0);
 });
-
 
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

@@ -316,7 +316,7 @@ async function runGuardedTool<TTool extends LangChainTool<any>>(
     if (policy.onGuardError === "allow") {
       return execute();
     }
-    return Promise.resolve(unavailableResult());
+    return unavailableResult();
   }
 
   const source = isContextSource(config) ? config : undefined;

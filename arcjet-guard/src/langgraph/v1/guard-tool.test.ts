@@ -11,10 +11,10 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { DecisionDeny } from "../../types.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
+import type { DecisionDeny } from "../../types.ts";
 import type { LangGraphTool } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 
@@ -518,7 +518,6 @@ test("DENY through a tool_call envelope returns the denial and scans only args",
   assert.equal(result.arcjetDenied, true);
   assert.equal(result.reason, "PROMPT_INJECTION");
 });
-
 
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

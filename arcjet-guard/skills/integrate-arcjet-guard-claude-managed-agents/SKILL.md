@@ -111,10 +111,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 ```ts
 import { detectPromptInjection } from "@arcjet/guard";
-import {
-  claudeManagedAgentsContext,
-  guardEvents,
-} from "@arcjet/guard/claude-managed-agents/v0";
+import { claudeManagedAgentsContext, guardEvents } from "@arcjet/guard/claude-managed-agents/v0";
 
 import { arcjet } from "./arcjet.js";
 
@@ -164,8 +161,7 @@ if (event.type === "agent.custom_tool_use") {
     {
       event,
       execute: (input) => lookupOrder(input),
-      send: (result) =>
-        client.beta.sessions.events.send(session.id, { events: [result] }),
+      send: (result) => client.beta.sessions.events.send(session.id, { events: [result] }),
     },
     {
       action: "order.looked-up",
@@ -179,11 +175,13 @@ if (event.type === "agent.custom_tool_use") {
   );
   if (gated.allowed) {
     await client.beta.sessions.events.send(session.id, {
-      events: [{
-        type: "user.custom_tool_result",
-        custom_tool_use_id: event.id,
-        content: [{ type: "text", text: JSON.stringify(gated.output) }],
-      }],
+      events: [
+        {
+          type: "user.custom_tool_result",
+          custom_tool_use_id: event.id,
+          content: [{ type: "text", text: JSON.stringify(gated.output) }],
+        },
+      ],
     });
   }
 }

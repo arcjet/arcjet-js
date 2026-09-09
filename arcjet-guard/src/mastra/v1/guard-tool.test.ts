@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion, eslint/strict-boolean-expressions -- test infrastructure and mocks
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion, eslint/strict-boolean-expressions, import/max-dependencies -- test infrastructure and mocks
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -13,11 +13,11 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
 import type { DecisionDeny } from "../../types.ts";
 import { MASTRA_THREAD_ID_KEY } from "./context.ts";
-import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import { guardTool } from "./guard-tool.ts";
 
 const TOOL_MARKER = Symbol.for("mastra.core.tools.Tool");
@@ -377,7 +377,6 @@ test("onDeny throw warns when ARCJET_LOG_LEVEL asks for warnings", async () => {
     }
   }
 });
-
 
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());

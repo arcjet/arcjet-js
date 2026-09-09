@@ -76,7 +76,7 @@ State plainly why each applies to Eve, not other frameworks:
 
 4. **`approval` is one field per tool or connection.** It can be a function
    (request-time only) or `{ request, response }`. You still cannot assign
-   `always()`/`once()`/`never()` from `eve/tools/approval` *alongside*
+   `always()`/`once()`/`never()` from `eve/tools/approval` _alongside_
    `guardApproval` — the slot holds one value. `onAllow: "user-approval"` is
    how you require a human after the request-time gate. The optional `response`
    policy is how you authorize who may approve the parked request. A rejected

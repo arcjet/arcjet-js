@@ -462,7 +462,6 @@ test("exclude is inert when empty or absent", async () => {
   }
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const hooks = guardHooks(client, {

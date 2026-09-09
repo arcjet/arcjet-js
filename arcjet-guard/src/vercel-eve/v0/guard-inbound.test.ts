@@ -11,8 +11,8 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { policyInput } from "../../policy-input.ts";
 import { deniedReason } from "../../agents/denial.ts";
+import { policyInput } from "../../policy-input.ts";
 import { guardInbound } from "./guard-inbound.ts";
 
 test("AC5.6: ALLOW → exactly { allowed: true } with no extra fields", async () => {
@@ -550,7 +550,6 @@ test("reason mirrors outcome for both verdict shapes", async () => {
   assert.equal(unavailable.reason, "UNAVAILABLE");
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   await guardInbound(client, "hello", {
@@ -572,7 +571,7 @@ test("an input resolver failure follows the fail-closed unavailable path", async
       throw new Error("mapping failed");
     },
   });
-  assert.equal(verdict.allowed, false);
-  assert.equal(verdict.allowed === false ? verdict.outcome : undefined, "UNAVAILABLE");
+  assert.strictEqual(verdict.allowed, false);
+  assert.equal((verdict as any).reason, "UNAVAILABLE");
   assert.equal(guardCalls.length, 0);
 });

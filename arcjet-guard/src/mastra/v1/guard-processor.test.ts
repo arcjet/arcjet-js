@@ -637,7 +637,6 @@ test("output extraText is included when messages are empty", async () => {
   assert.equal(seen, "only-result");
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const processor = guardProcessor(client, {

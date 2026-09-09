@@ -1093,7 +1093,6 @@ test("response last-resort catch fails open when extra evaluation throws with on
   }
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const approval = guardApproval(client, {

@@ -380,7 +380,6 @@ test("wrapped betaTool factory throw fail-closes", async () => {
   await assert.rejects(() => wrapped.run({ orderNumber: "1" }), /could not be completed/i);
 });
 
-
 test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const { send } = sendRecorder();

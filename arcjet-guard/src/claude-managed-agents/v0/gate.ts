@@ -1,5 +1,6 @@
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import type { PolicyInputMap } from "../../policy-input.ts";
 import type {
   ArcjetMetadata,
   Decision,
@@ -7,7 +8,6 @@ import type {
   DecisionDeny,
   RuleWithInput,
 } from "../../types.ts";
-import type { PolicyInputMap } from "../../policy-input.ts";
 
 /**
  * Permit-only gate for inbound Managed Agents events. Shared by `guardEvents`.

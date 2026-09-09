@@ -2,13 +2,13 @@ import { resolveActorInputs } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
 /**
  * Structural shape of a Mastra tool.

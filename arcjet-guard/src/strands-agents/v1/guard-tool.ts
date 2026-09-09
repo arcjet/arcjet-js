@@ -324,7 +324,7 @@ async function runGuardedCallback<TInput>(
     if (policy.onGuardError === "allow") {
       return execute();
     }
-    return Promise.resolve(unavailableResult());
+    return unavailableResult();
   }
 
   const source = contextSource(context);
