@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/fastify-v1.13.0) (2026-09-09)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/fastify:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.12.0 to 1.13.0
+    * @arcjet/headers bumped from 1.12.0 to 1.13.0
+    * @arcjet/ip bumped from 1.12.0 to 1.13.0
+    * @arcjet/logger bumped from 1.12.0 to 1.13.0
+    * @arcjet/protocol bumped from 1.12.0 to 1.13.0
+    * @arcjet/transport bumped from 1.12.0 to 1.13.0
+    * arcjet bumped from 1.12.0 to 1.13.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.12.0 to 1.13.0
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/fastify-v1.12.0) (2026-09-08)
 
 
