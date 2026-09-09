@@ -383,11 +383,16 @@ test("resolves actor and typed inputs onto the guard call", async () => {
   const tool = createMastraTool<{ id: string }>();
   const wrapped = guardTool(client, tool, {
     action: "test.action",
-    actor: (input) => `actor-${input.id}`,
+    actor: (_input, context) =>
+      String(
+        (
+          context as { requestContext?: { get: (key: string) => unknown } } | undefined
+        )?.requestContext?.get(MASTRA_THREAD_ID_KEY),
+      ),
     inputs: (input) => ({ id: policyInput.server.string(input.id) }),
   });
   await wrapped.execute!({ id: "one" }, threadContext("t"));
-  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.equal(recorded(guardCalls[0]).actor, "t");
   assert.deepEqual(recorded(guardCalls[0]).inputs, {
     id: policyInput.server.string("one"),
   });

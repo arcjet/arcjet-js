@@ -99,7 +99,11 @@ test("all genkit imports in the genkit namespace are type-only", () => {
     }
   }
 
-  assert.equal(errors.length, 0, `Type-only import violations in genkit namespace:\n${errors.join("\n")}`);
+  assert.equal(
+    errors.length,
+    0,
+    `Type-only import violations in genkit namespace:\n${errors.join("\n")}`,
+  );
 });
 
 test("scanner detects value imports when temporarily added", () => {

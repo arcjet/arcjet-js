@@ -28,17 +28,18 @@ export interface GuardCustomToolPolicy<TInput = { [key: string]: unknown }> {
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool input. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(input, eventOrContext) => …`.
+   * Hosted custom tools pass the `agent.custom_tool_use` event; self-hosted
+   * `run` passes the second `context` argument. Derive it from authenticated
+   * server-side context; never trust a model-produced tool input as the actor
+   * identity.
    */
-  actor?: ActorResolver<TInput>;
+  actor?: ActorResolver<[TInput, unknown?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool input. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(input, eventOrContext) => …`.
+   * Build each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<TInput>;
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -238,7 +239,7 @@ async function runHostedCustomTool<TOutput>(
     rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
-    remote = await resolveActorInputs(policy, input);
+    remote = await resolveActorInputs(policy, input, event);
   } catch (error) {
     if (shouldWarn()) {
       console.warn(
@@ -319,7 +320,7 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
       rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
       policyMetadata =
         typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
-      remote = await resolveActorInputs(policy, input);
+      remote = await resolveActorInputs(policy, input, context);
     } catch (error) {
       if (shouldWarn()) {
         console.warn(

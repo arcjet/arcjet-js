@@ -29,12 +29,12 @@ export interface GuardEventsInbound {
    * from authenticated server-side context; never trust the message text as
    * the actor identity.
    */
-  actor?: ActorResolver<{ text: string; events: readonly ManagedAgentsEventParams[] }>;
+  actor?: ActorResolver<[{ text: string; events: readonly ManagedAgentsEventParams[] }]>;
   /**
    * Typed remote-policy inputs, or a resolver over the inbound events. Build
    * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<{ text: string; events: readonly ManagedAgentsEventParams[] }>;
+  inputs?: InputsResolver<[{ text: string; events: readonly ManagedAgentsEventParams[] }]>;
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
   onGuardError?: OnGuardError;
 }

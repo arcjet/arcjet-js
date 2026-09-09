@@ -37,17 +37,16 @@ export interface GuardToolNodePolicy {
    */
   rules?: RuleWithInput[] | ((call: GuardToolNodeCall) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool call. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(call, config) => …` matching
+   * ToolNode `invoke(input, config)`. Derive it from `configurable`; never
+   * trust a model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<GuardToolNodeCall>;
+  actor?: ActorResolver<[GuardToolNodeCall, unknown?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool call. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(call, config) => …`. Build
+   * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardToolNodeCall>;
+  inputs?: InputsResolver<[GuardToolNodeCall, unknown?]>;
   /** Metadata merged over the derived LangGraph context. */
   metadata?: ArcjetMetadata | ((call: GuardToolNodeCall) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -109,15 +108,15 @@ function policyForTool(tool: LangGraphTool, policy: GuardToolNodePolicy): GuardT
         : (policy.metadata ?? {});
     },
     ...(actor !== undefined && {
-      actor: (input: unknown): string | Promise<string> => {
+      actor: (input: unknown, config?: unknown): string | Promise<string> => {
         const call = { toolName: tool.name, input };
-        return typeof actor === "function" ? actor(call) : actor;
+        return typeof actor === "function" ? actor(call, config) : actor;
       },
     }),
     ...(inputs !== undefined && {
-      inputs: (input: unknown) => {
+      inputs: (input: unknown, config?: unknown) => {
         const call = { toolName: tool.name, input };
-        return typeof inputs === "function" ? inputs(call) : inputs;
+        return typeof inputs === "function" ? inputs(call, config) : inputs;
       },
     }),
     ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),

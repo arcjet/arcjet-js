@@ -354,13 +354,13 @@ test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const mw = guardMiddleware(client, {
     action: "tool.invoked",
-    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    actor: (_call, ctx) => String((ctx.context as { sessionId?: string } | undefined)?.sessionId),
     inputs: (call) => ({
       id: policyInput.server.string(String((call.input as { id?: string }).id)),
     }),
   });
   await runHook(mw, toolHook("lookup", { id: "one" }));
-  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.equal(recorded(guardCalls[0]).actor, "sess-1");
   assert.deepEqual(recorded(guardCalls[0]).inputs, {
     id: policyInput.server.string("one"),
   });

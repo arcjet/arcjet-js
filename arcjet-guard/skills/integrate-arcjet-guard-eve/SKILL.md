@@ -161,7 +161,7 @@ export default guardTool(
 - Omit `rules` to submit none. The guard call still happens, so the decision is
   correlatable and the tool can be managed via policy configured outside the
   code.
-- Optional `actor` and `inputs` (static or a resolver) are forwarded on the
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
   Build each input with `policyInput`.
 - `rules` may be a callback over the tool's parsed input, computed from the

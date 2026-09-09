@@ -58,17 +58,16 @@ export interface GuardHooksPolicy {
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool call. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(call, event) => …` matching
+   * Strands `BeforeToolCallEvent`. Derive it from `invocationState`; never
+   * trust a model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<GuardHooksCall>;
+  actor?: ActorResolver<[GuardHooksCall, unknown?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool call. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(call, event) => …`. Build
+   * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardHooksCall>;
+  inputs?: InputsResolver<[GuardHooksCall, unknown?]>;
   /** Metadata merged over the derived Strands context. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /**
@@ -264,7 +263,7 @@ export function createBeforeToolCallHandler(
         rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
         policyMetadata =
           typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-        remote = await resolveActorInputs(policy, call);
+        remote = await resolveActorInputs(policy, call, event);
       } catch (error) {
         const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
         if (shouldWarn()) {

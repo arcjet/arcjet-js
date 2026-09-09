@@ -69,17 +69,17 @@ export interface GuardToolPolicy<TInput> {
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool input. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(input, config) => …` matching
+   * LangChain `func` / `invoke`. Derive it from authenticated server-side
+   * context (`configurable`, `ToolRuntime`); never trust a model-produced
+   * tool input as the actor identity.
    */
-  actor?: ActorResolver<TInput>;
+  actor?: ActorResolver<[TInput, unknown?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool input. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(input, config) => …`. Build
+   * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<TInput>;
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -303,7 +303,7 @@ async function runGuardedTool<TTool extends LangChainTool<any>>(
     rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
-    remote = await resolveActorInputs(policy, typedArgs);
+    remote = await resolveActorInputs(policy, typedArgs, config);
   } catch (error) {
     const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
     if (shouldWarn()) {

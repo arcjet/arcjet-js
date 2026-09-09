@@ -22,6 +22,8 @@ export interface GuardPluginCall {
   input: unknown;
 }
 
+type BeforeToolCallbackParams = Parameters<BasePlugin["beforeToolCallback"]>[0];
+
 /**
  * Policy for `guardPlugin()` — how to guard tools that execute
  * through a Runner `BasePlugin.beforeToolCallback`.
@@ -43,17 +45,16 @@ export interface GuardPluginPolicy {
    */
   rules?: RuleWithInput[] | ((call: GuardPluginCall) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool call. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(call, toolContext) => …` matching
+   * ADK `beforeToolCallback`. Derive it from `toolContext` / session `state`;
+   * never trust a model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<GuardPluginCall>;
+  actor?: ActorResolver<[GuardPluginCall, BeforeToolCallbackParams["toolContext"]?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool call. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(call, toolContext) => …`.
+   * Build each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardPluginCall>;
+  inputs?: InputsResolver<[GuardPluginCall, BeforeToolCallbackParams["toolContext"]?]>;
   /** Metadata merged over the derived Google ADK context. */
   metadata?: ArcjetMetadata | ((call: GuardPluginCall) => ArcjetMetadata);
   /**
@@ -66,8 +67,6 @@ export interface GuardPluginPolicy {
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
   onGuardError?: OnGuardError;
 }
-
-type BeforeToolCallbackParams = Parameters<BasePlugin["beforeToolCallback"]>[0];
 
 /**
  * The Runner plugin this helper returns.
@@ -163,7 +162,7 @@ async function gateToolCall(
     rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-    remote = await resolveActorInputs(policy, call);
+    remote = await resolveActorInputs(policy, call, params.toolContext);
   } catch (error) {
     const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
     if (shouldWarn()) {

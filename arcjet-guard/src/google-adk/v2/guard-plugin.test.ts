@@ -394,13 +394,13 @@ test("resolves actor and typed inputs onto the guard call", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const plugin = guardPlugin(client, {
     action: "tool.invoked",
-    actor: (call) => `actor-${String((call.input as { id?: string }).id)}`,
+    actor: (_call, tc) => String((tc as { userId?: string } | undefined)?.userId),
     inputs: (call) => ({
       id: policyInput.server.string(String((call.input as { id?: string }).id)),
     }),
   });
   await runHook(plugin, beforeToolParams("lookup", { id: "one" }));
-  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.equal(recorded(guardCalls[0]).actor, "user-auto");
   assert.deepEqual(recorded(guardCalls[0]).inputs, {
     id: policyInput.server.string("one"),
   });

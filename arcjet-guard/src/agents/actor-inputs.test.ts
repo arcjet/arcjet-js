@@ -28,6 +28,25 @@ test("resolves actor and inputs from the call argument", async () => {
   assert.deepEqual(resolved.inputs, { id: policyInput.server.string("one") });
 });
 
+test("forwards every native argument to the resolvers", async () => {
+  const resolved = await resolveActorInputs(
+    {
+      actor: (_input: { id: string }, runtime: { userId: string }) => runtime.userId,
+      inputs: (input: { id: string }, runtime: { userId: string }) => ({
+        id: policyInput.server.string(input.id),
+        user: policyInput.server.string(runtime.userId),
+      }),
+    },
+    { id: "one" },
+    { userId: "user-9" },
+  );
+  assert.equal(resolved.actor, "user-9");
+  assert.deepEqual(resolved.inputs, {
+    id: policyInput.server.string("one"),
+    user: policyInput.server.string("user-9"),
+  });
+});
+
 test("awaits async resolvers", async () => {
   const resolved = await resolveActorInputs(
     {
@@ -48,7 +67,7 @@ test("propagates a resolver throw so the caller can fail closed", async () => {
     () =>
       resolveActorInputs(
         {
-          inputs: () => {
+          inputs: (_arg: { id: string }) => {
             throw new Error("mapping failed");
           },
         },

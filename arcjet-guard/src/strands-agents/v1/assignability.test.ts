@@ -14,8 +14,8 @@ import { test } from "node:test";
 import type { InvokableTool, Plugin } from "@strands-agents/sdk";
 
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
-import { guardHooks } from "./hooks.ts";
 import { guardTool } from "./guard-tool.ts";
+import { guardHooks } from "./hooks.ts";
 
 declare const client: ArcjetAgentClient;
 declare const authoredTool: InvokableTool<{ orderNumber: string }, { status: string }>;

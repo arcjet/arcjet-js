@@ -47,17 +47,16 @@ export interface GuardMiddlewarePolicy {
    */
   rules?: RuleWithInput[] | ((call: GuardMiddlewareCall) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool call. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(call, ctx) => …` matching
+   * `onBeforeToolCall(ctx, hookCtx)`. Derive it from `chat({ context })`;
+   * never trust a model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<GuardMiddlewareCall>;
+  actor?: ActorResolver<[GuardMiddlewareCall, ChatMiddlewareContext]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool call. Build each
+   * Typed remote-policy inputs, or a resolver `(call, ctx) => …`. Build each
    * value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardMiddlewareCall>;
+  inputs?: InputsResolver<[GuardMiddlewareCall, ChatMiddlewareContext]>;
   /** Metadata merged over the derived TanStack AI context. */
   metadata?: ArcjetMetadata | ((call: GuardMiddlewareCall) => ArcjetMetadata);
   /**
@@ -180,7 +179,7 @@ async function gateToolCall(
     rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
     policyMetadata =
       typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-    remote = await resolveActorInputs(policy, call);
+    remote = await resolveActorInputs(policy, call, ctx);
   } catch (error) {
     const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
     if (shouldWarn()) {

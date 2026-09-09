@@ -48,17 +48,16 @@ export interface GuardProcessorPolicy {
    */
   rules?: RuleWithInput[] | ((input: GuardProcessorInput) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the processor input. Derive it
-   * from authenticated server-side context; never trust model-produced text as
-   * the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(input, requestContext) => …`
+   * matching Mastra processor args. Derive it from `requestContext`; never
+   * trust model-produced text as the actor identity.
    */
-  actor?: ActorResolver<GuardProcessorInput>;
+  actor?: ActorResolver<[GuardProcessorInput, MastraRequestContextLike?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the processor input. Build
-   * each value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(input, requestContext) => …`.
+   * Build each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardProcessorInput>;
+  inputs?: InputsResolver<[GuardProcessorInput, MastraRequestContextLike?]>;
   /** Metadata merged over the derived Mastra context. */
   metadata?: ArcjetMetadata | ((input: GuardProcessorInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -282,7 +281,7 @@ export function guardProcessor(
     };
     let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
     try {
-      remote = await resolveActorInputs(policy, input);
+      remote = await resolveActorInputs(policy, input, requestCtx);
     } catch {
       denyTurn(abort, unavailableReason());
     }

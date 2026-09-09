@@ -754,11 +754,11 @@ test("resolves actor and typed inputs onto the guard call", async () => {
   });
   const wrapped = guardTool(client, tool, {
     action: "test.action",
-    actor: (input) => `actor-${input.id}`,
+    actor: (_input, ctx) => String(ctx?.toolName),
     inputs: (input) => ({ id: policyInput.server.string(input.id) }),
   });
   await wrapped.execute!({ id: "one" }, { toolName: "test", callId: "c1" } as never);
-  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.equal(recorded(guardCalls[0]).actor, "test");
   assert.deepEqual(recorded(guardCalls[0]).inputs, {
     id: policyInput.server.string("one"),
   });

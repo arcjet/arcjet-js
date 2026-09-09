@@ -43,17 +43,17 @@ export interface GuardMiddlewarePolicy {
    */
   rules?: RuleWithInput[] | ((call: GuardMiddlewareCall) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool call. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(call, runtime) => …` matching
+   * `wrapToolCall`'s `request.runtime`. Derive it from
+   * `runtime.configurable`; never trust a model-produced tool input as the
+   * actor identity.
    */
-  actor?: ActorResolver<GuardMiddlewareCall>;
+  actor?: ActorResolver<[GuardMiddlewareCall, unknown?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool call. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(call, runtime) => …`. Build
+   * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardMiddlewareCall>;
+  inputs?: InputsResolver<[GuardMiddlewareCall, unknown?]>;
   /** Metadata merged over the derived LangChain context. */
   metadata?: ArcjetMetadata | ((call: GuardMiddlewareCall) => ArcjetMetadata);
   /**
@@ -316,7 +316,7 @@ export function guardMiddleware(
       rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
       policyMetadata =
         typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-      remote = await resolveActorInputs(policy, call);
+      remote = await resolveActorInputs(policy, call, request.runtime);
     } catch (error) {
       const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
       if (shouldWarn()) {

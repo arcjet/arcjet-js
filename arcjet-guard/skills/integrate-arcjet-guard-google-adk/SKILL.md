@@ -185,7 +185,7 @@ const runner = new Runner({
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
-- Optional `actor` and `inputs` (static or a resolver) are forwarded on the
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
   Build each input with `policyInput`.
 - On DENY the original `runAsync` never runs. Delivery is

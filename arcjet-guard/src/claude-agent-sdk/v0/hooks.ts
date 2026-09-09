@@ -50,16 +50,16 @@ export interface GuardHooksInboundPolicy {
    */
   rules?: RuleWithInput[] | ((input: GuardHooksInbound) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the inbound prompt. Derive it
-   * from authenticated server-side context; never trust the prompt as the
-   * actor identity.
+   * Trusted actor identity, or a resolver `(inbound, hookInput) => …` matching
+   * Claude `UserPromptSubmit`. Derive it from `session_id` / hook input; never
+   * trust the prompt as the actor identity.
    */
-  actor?: ActorResolver<GuardHooksInbound>;
+  actor?: ActorResolver<[GuardHooksInbound, UserPromptSubmitHookInput]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the inbound prompt. Build
-   * each value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(inbound, hookInput) => …`.
+   * Build each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardHooksInbound>;
+  inputs?: InputsResolver<[GuardHooksInbound, UserPromptSubmitHookInput]>;
   /** Metadata merged over the derived Claude context. */
   metadata?: ArcjetMetadata | ((input: GuardHooksInbound) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -118,17 +118,16 @@ export interface GuardHooksPolicy {
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool call. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(call, hookInput) => …` matching
+   * Claude `PreToolUse`. Derive it from `session_id` / hook input; never
+   * trust a model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<GuardHooksCall>;
+  actor?: ActorResolver<[GuardHooksCall, PreToolUseHookInput]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool call. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(call, hookInput) => …`. Build
+   * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<GuardHooksCall>;
+  inputs?: InputsResolver<[GuardHooksCall, PreToolUseHookInput]>;
   /** Metadata merged over the derived Claude context for tool hooks. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /** How to respond when a tool-gate evaluation is unavailable. Default `"deny"`. */
@@ -322,7 +321,7 @@ export function guardHooks(
         ...(call.toolName.length > 0 && { "claude.tool": call.toolName }),
         ...policyMetadata,
       };
-      const remote = await resolveActorInputs(policy, call);
+      const remote = await resolveActorInputs(policy, call, hookInput);
 
       return await runGate<HookJSONOutput>(client, {
         action,
@@ -373,7 +372,7 @@ export function guardHooks(
         "claude.phase": "inbound",
         ...policyMetadata,
       };
-      const remote = await resolveActorInputs(inboundPolicy, inbound);
+      const remote = await resolveActorInputs(inboundPolicy, inbound, hookInput);
 
       return await runGate<HookJSONOutput>(client, {
         action,

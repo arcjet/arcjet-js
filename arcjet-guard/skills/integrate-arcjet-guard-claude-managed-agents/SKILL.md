@@ -191,7 +191,7 @@ Self-hosted: wrap `betaTool({ run })` with the same `guardCustomTool`
 (pass the tool as the second argument). The CLI worker cannot register
 custom tools.
 
-Optional `actor` and `inputs` (static or a resolver) are forwarded on the
+Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
 guard call so a remote policy that declares those names can evaluate.
 Build each input with `policyInput`.
 

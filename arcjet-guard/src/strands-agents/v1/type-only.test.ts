@@ -71,7 +71,11 @@ test("type-only import scanner works on @strands-agents/sdk fixtures", () => {
     if (fixture.shouldHaveImport === false) {
       assert.equal(peerImports.length, 0, `${fixture.name}: should not have strands imports`);
     } else {
-      assert.equal(peerImports.length, 1, `${fixture.name}: should have exactly one strands import`);
+      assert.equal(
+        peerImports.length,
+        1,
+        `${fixture.name}: should have exactly one strands import`,
+      );
       assert.equal(
         peerImports[0]?.typeOnly,
         fixture.shouldBeTypeOnly ?? true,

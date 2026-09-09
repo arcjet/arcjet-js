@@ -534,11 +534,12 @@ test("resolves actor and typed inputs onto the guard call", async () => {
   const tool = createLangChainTool<{ id: string }>();
   const wrapped = guardTool(client, tool, {
     action: "test.action",
-    actor: (input) => `actor-${input.id}`,
+    actor: (_input, config) =>
+      String((config as { configurable?: { thread_id?: string } })?.configurable?.thread_id),
     inputs: (input) => ({ id: policyInput.server.string(input.id) }),
   });
   await wrapped.invoke!({ id: "one" }, threadConfig("t"));
-  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.equal(recorded(guardCalls[0]).actor, "t");
   assert.deepEqual(recorded(guardCalls[0]).inputs, {
     id: policyInput.server.string("one"),
   });

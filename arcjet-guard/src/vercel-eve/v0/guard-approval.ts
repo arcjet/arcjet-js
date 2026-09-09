@@ -35,16 +35,16 @@ export interface GuardApprovalPolicy<TInput = Record<string, unknown>> {
   /** Rules to evaluate, static or computed from the approval context. */
   rules?: RuleWithInput[] | ((ctx: ApprovalContext<TInput>) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the approval context. Derive it
-   * from authenticated server-side context; never trust a model-produced tool
-   * input as the actor identity.
+   * Trusted actor identity, or a resolver `(ctx) => …` matching Eve's
+   * `ApprovalPolicy`. Derive it from `ctx.session`; never trust
+   * model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<ApprovalContext<TInput>>;
+  actor?: ActorResolver<[ApprovalContext<TInput>]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the approval context. Build
-   * each value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(ctx) => …` over the approval
+   * context. Build each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<ApprovalContext<TInput>>;
+  inputs?: InputsResolver<[ApprovalContext<TInput>]>;
   /** Metadata merged over the session-derived context's. */
   metadata?: ArcjetMetadata | ((ctx: ApprovalContext<TInput>) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -72,16 +72,16 @@ export interface GuardApprovalResponsePolicy<TInput = Record<string, unknown>> {
   /** Rules to evaluate, static or computed from the response context. */
   rules?: RuleWithInput[] | ((ctx: ApprovalResponseContext<TInput>) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the response context. Derive it
-   * from authenticated server-side context; never trust a model-produced tool
-   * input as the actor identity.
+   * Trusted actor identity, or a resolver `(ctx) => …` matching Eve's
+   * response-time approval callback. Derive it from the responder session;
+   * never trust model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<ApprovalResponseContext<TInput>>;
+  actor?: ActorResolver<[ApprovalResponseContext<TInput>]>;
   /**
    * Typed remote-policy inputs, or a resolver over the response context. Build
    * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<ApprovalResponseContext<TInput>>;
+  inputs?: InputsResolver<[ApprovalResponseContext<TInput>]>;
   /** Metadata merged over the session-derived context's. */
   metadata?: ArcjetMetadata | ((ctx: ApprovalResponseContext<TInput>) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -317,8 +317,8 @@ type ApprovalPolicyOptions<TResult> = {
 type ApprovalPolicyConfig<TCtx> = {
   action: string;
   rules?: RuleWithInput[] | ((ctx: TCtx) => RuleWithInput[]);
-  actor?: ActorResolver<TCtx>;
-  inputs?: InputsResolver<TCtx>;
+  actor?: ActorResolver<[TCtx]>;
+  inputs?: InputsResolver<[TCtx]>;
   metadata?: ArcjetMetadata | ((ctx: TCtx) => ArcjetMetadata);
   onGuardError?: OnGuardError;
 };

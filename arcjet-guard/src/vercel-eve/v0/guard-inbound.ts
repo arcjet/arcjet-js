@@ -22,16 +22,16 @@ export interface GuardInboundOptions {
   /** Rules to evaluate against the inbound text. */
   rules: RuleWithInput[];
   /**
-   * Trusted actor identity, or a resolver over the inbound text. Derive it from
-   * authenticated server-side context; never trust the inbound text as the
-   * actor identity.
+   * Trusted actor identity, or a resolver `(text) => …` over the inbound
+   * channel text. Derive it from authenticated session context closed over
+   * the call; never trust the inbound text as the actor identity.
    */
-  actor?: ActorResolver<string>;
+  actor?: ActorResolver<[string]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the inbound text. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver over the inbound text. Build
+   * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<string>;
+  inputs?: InputsResolver<[string]>;
   /**
    * Guard label and capture action. Defaults to `"message.received"`.
    */

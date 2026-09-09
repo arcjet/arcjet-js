@@ -78,7 +78,8 @@ Wrappers fail closed by default. HITL (`needsApproval`, `interrupt()`,
 after a human yes.
 
 Every wrapper policy accepts optional `actor` and `inputs` (static or a
-resolver) so a remote policy that declares those names can evaluate. Build
+resolver over that adapter's native call — parsed input plus trusted
+runtime/context) so a remote policy that declares those names can evaluate. Build
 each input with `policyInput`. Omit them and the remote policy has nothing
 to read — its rules do not fire.
 

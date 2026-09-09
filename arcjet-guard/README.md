@@ -856,7 +856,9 @@ const decision = await arcjet.guard({
 
 Vendor-specific wrappers that integrate with particular SDKs, plus every agent
 helper. Every wrapper policy accepts optional `actor` and `inputs` — static
-values or resolvers over the adapter's call argument. Build each input with
+values or resolvers over that adapter's native call (parsed input plus the
+framework's trusted runtime or context, the same idea as Vercel AI's
+`(input, ctx)`). Build each input with
 `policyInput` so a remote Guard policy that declares those names can evaluate.
 Omit them and the remote policy has nothing to read, so its rules do not fire.
 

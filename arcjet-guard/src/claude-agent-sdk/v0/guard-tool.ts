@@ -54,17 +54,16 @@ export interface GuardToolPolicy<TInput> {
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool input. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(input, extra) => …` matching the
+   * Claude MCP `handler`. Derive it from `extra.session_id` / hook context;
+   * never trust a model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<TInput>;
+  actor?: ActorResolver<[TInput, unknown?]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool input. Build each
-   * value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver `(input, extra) => …`. Build
+   * each value with {@link policyInput}.
    */
-  inputs?: InputsResolver<TInput>;
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -193,7 +192,7 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
       rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
       policyMetadata =
         typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
-      remote = await resolveActorInputs(policy, input);
+      remote = await resolveActorInputs(policy, input, extra);
     } catch (error) {
       if (shouldWarn()) {
         console.warn(

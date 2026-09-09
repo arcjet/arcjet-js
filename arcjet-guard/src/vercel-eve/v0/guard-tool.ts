@@ -23,17 +23,16 @@ export interface GuardToolPolicy<TInput> {
   /** Rules to evaluate, static or computed from the tool's input. */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
   /**
-   * Trusted actor identity, or a resolver over the tool input. Derive it from
-   * authenticated server-side context; never trust a model-produced tool input
-   * as the actor identity — a policy can be conditioned on the actor, so a
-   * model-controlled value could escape scope.
+   * Trusted actor identity, or a resolver `(input, ctx) => …` matching Eve
+   * `execute(input, ctx)`. Derive it from Eve `ToolContext` / session; never
+   * trust a model-produced tool input as the actor identity.
    */
-  actor?: ActorResolver<TInput>;
+  actor?: ActorResolver<[TInput, ToolContext | undefined]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the tool input. Build each
+   * Typed remote-policy inputs, or a resolver `(input, ctx) => …`. Build each
    * value with {@link policyInput}.
    */
-  inputs?: InputsResolver<TInput>;
+  inputs?: InputsResolver<[TInput, ToolContext | undefined]>;
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -192,7 +191,7 @@ export function guardTool<TInput, TOutput>(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
-      resolvePolicy: () => resolveActorInputs(policy, input),
+      resolvePolicy: () => resolveActorInputs(policy, input, ctx),
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may throw or return custom types; both paths are valid (throw never returns, custom type is returned)
       onDeny: ((decision) => {
         if (policy.onDeny === undefined) {
