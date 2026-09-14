@@ -39,8 +39,15 @@ export interface RampartOptions extends ModelOptions {
    */
   recognizers?: ReadonlyArray<Recognizer>;
   /**
-   * Override the model runner. Intended for testing — supply a function that
-   * returns spans without loading the ONNX model.
+   * Replace the model runner entirely — supply a function that returns spans
+   * without loading the ONNX model.
+   *
+   * This is a supported extension point, used both for testing and for running
+   * detection somewhere the bundled runner cannot go. Prefer
+   * {@linkcode ModelOptions.classify} when only token classification needs to
+   * change: that keeps windowing, offset reconstruction, and aggregation in
+   * this package, so a custom runtime detects the same spans as every other
+   * one.
    */
   runModel?: ModelRunner;
 }
@@ -93,7 +100,9 @@ function mergeSpans(groups: ReadonlyArray<ReadonlyArray<DetectedSpan>>): Detecte
  * Pass the returned backend to the `sensitiveInfo` rule. It runs entirely
  * locally (Node.js, Bun, or Deno) using the model weights bundled with this
  * package, so no data leaves your environment. The model is loaded once on first
- * use and reused for every subsequent request.
+ * use and reused for every subsequent request. On runtimes the bundled loader
+ * cannot run on, such as Cloudflare Workers, supply your own classifier with
+ * {@link ModelOptions.classify}.
  *
  * Supported sensitive info types (all built-in {@link ArcjetSensitiveInfoType}
  * values, so they can be listed in `allow`/`deny` directly, or all at once via
