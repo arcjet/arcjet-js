@@ -112,13 +112,46 @@ backend; add a recognizer instead.
 > The model performs best on Latin-script text; see the [model card][rampart]
 > for accuracy and language details.
 
+## Custom runtimes
+
+The bundled loader needs a filesystem and dynamic module loading, which edge
+runtimes such as Cloudflare Workers don't provide. Pass `classify` to replace
+the loader alone: it receives one chunk of text, already windowed to the model's
+input budget, and returns the model's raw tokens for that chunk. Everything
+else — normalization, windowing, offset reconstruction, token aggregation, and
+overlap resolution with the recognizers — stays in this package, so detection on
+a custom runtime matches detection on Node.js.
+
+```ts
+import { rampart } from "@arcjet/sensitive-info-rampart";
+import type { RawToken } from "@arcjet/sensitive-info-rampart";
+
+const backend = rampart({
+  async classify(value: string): Promise<RawToken[]> {
+    // Run the model with your runtime's own ONNX bindings, then return one
+    // token per wordpiece.
+    return [{ entity: "B-SURNAME", score: 0.98, word: "rivera", index: 4 }];
+  },
+});
+```
+
+Each token needs the raw BIO label (`entity`), its confidence (`score`), the
+wordpiece text (`word`, keeping any `##` continuation prefix), and its position
+in the sequence (`index`). Character offsets are reconstructed from `word`, so
+you don't have to provide `start` and `end`.
+
+To replace detection entirely — including windowing — pass `runModel` instead,
+which takes the whole value and returns spans.
+
+
 ## Bundlers and frameworks
 
-This package loads a native ONNX runtime (`@huggingface/transformers` /
-`onnxruntime-node`) and reads its bundled model weights from disk at runtime, so
-it must not be bundled by a server build. It also requires a server runtime with
-filesystem and native-addon access (Node.js, Bun, or Deno) — it does not run on
-edge runtimes.
+By default this package loads a native ONNX runtime
+(`@huggingface/transformers` / `onnxruntime-node`) and reads its bundled model
+weights from disk at runtime, so it must not be bundled by a server build. That
+loader requires a server runtime with filesystem and native-addon access
+(Node.js, Bun, or Deno); to run the backend elsewhere, supply your own
+classifier — see [Custom runtimes](#custom-runtimes).
 
 ### Next.js
 

@@ -70,6 +70,23 @@ export interface ModelOptions {
    * Minimum confidence score for a token to count (default: `0.5`).
    */
   threshold?: number;
+  /**
+   * Classify one chunk of text, in place of the bundled `transformers.js`
+   * pipeline.
+   *
+   * The chunk is already windowed to the model's input budget, so an
+   * implementation only has to run the model over the text it is given and
+   * return the raw tokens. Normalization, windowing, offset reconstruction, and
+   * aggregation stay in this package, so they cannot drift from the behavior
+   * every other runtime gets.
+   *
+   * Use this on runtimes where the bundled loader cannot run — no filesystem
+   * and no dynamic module loading, such as Cloudflare Workers — by supplying a
+   * session created with that runtime's ONNX bindings. Nothing is loaded from
+   * disk when this is set, so `modelPath`, `modelId`, `dtype`, and `device` are
+   * ignored.
+   */
+  classify?: (value: string) => Promise<ReadonlyArray<RawToken>>;
 }
 
 const DEFAULT_THRESHOLD = 0.5;
@@ -314,6 +331,14 @@ async function loadClassifier(options: ModelOptions): Promise<Classifier> {
 const MAX_INPUT_CHARS = 480;
 const CHUNK_OVERLAP = 64;
 
+function isHighSurrogate(code: number): boolean {
+  return code >= 0xd800 && code <= 0xdbff;
+}
+
+function isLowSurrogate(code: number): boolean {
+  return code >= 0xdc00 && code <= 0xdfff;
+}
+
 /**
  * Create a {@linkcode ModelRunner} bound to the given options.
  *
@@ -329,7 +354,7 @@ export function createModelRunner(options: ModelOptions = {}): ModelRunner {
   const threshold = options.threshold ?? DEFAULT_THRESHOLD;
 
   return async function runModel(value) {
-    const classifier = await loadClassifier(options);
+    const classifier = options.classify ?? (await loadClassifier(options));
 
     if (value.length <= MAX_INPUT_CHARS) {
       const tokens = await classifier(value);
@@ -342,7 +367,20 @@ export function createModelRunner(options: ModelOptions = {}): ModelRunner {
     const spans: DetectedSpan[] = [];
     const step = MAX_INPUT_CHARS - CHUNK_OVERLAP;
     for (let start = 0; start < value.length; start += step) {
-      const chunk = value.slice(start, start + MAX_INPUT_CHARS);
+      // Window boundaries are counted in UTF-16 code units, so they can land in
+      // the middle of a surrogate pair. Nudge them off it — a lone surrogate is
+      // not text the model, or the normalization that reconstructs offsets, can
+      // make sense of. Each nudge moves a boundary by a single code unit, well
+      // within the overlap, so the pair is still scanned whole by a window.
+      if (isLowSurrogate(value.charCodeAt(start)) && isHighSurrogate(value.charCodeAt(start - 1))) {
+        start -= 1;
+      }
+      let end = start + MAX_INPUT_CHARS;
+      if (isHighSurrogate(value.charCodeAt(end - 1)) && isLowSurrogate(value.charCodeAt(end))) {
+        end -= 1;
+      }
+
+      const chunk = value.slice(start, end);
       const tokens = await classifier(chunk);
       for (const span of aggregateTokens(chunk, assignOffsets(chunk, tokens), threshold)) {
         spans.push({

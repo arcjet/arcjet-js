@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { aggregateTokens, assignOffsets, normalizeWithMap } from "../dist/model.js";
+import {
+  aggregateTokens,
+  assignOffsets,
+  createModelRunner,
+  normalizeWithMap,
+} from "../dist/model.js";
 import type { RawToken } from "../dist/model.js";
 
 test("normalizeWithMap lower-cases and strips accents, mapping back", function () {
@@ -152,4 +157,65 @@ test("aggregateTokens maps PHONE label to PHONE_NUMBER", function () {
     },
   ];
   assert.equal(aggregateTokens(value, tokens)[0].type, "PHONE_NUMBER");
+});
+
+test("createModelRunner classifies with `classify` instead of loading the model", async function () {
+  const value = "My name is Alex";
+  const seen: string[] = [];
+  const runModel = createModelRunner({
+    async classify(chunk) {
+      seen.push(chunk);
+      return [{ entity: "B-GIVEN_NAME", score: 0.99, word: "alex", index: 4 }];
+    },
+  });
+
+  const spans = await runModel(value);
+  assert.deepEqual(seen, [value]);
+  assert.deepEqual(spans, [{ start: 11, end: 15, type: "GIVEN_NAME" }]);
+});
+
+test("createModelRunner windows long input past `classify` and rebases offsets", async function () {
+  const needle = "Rivera";
+  const value = "a ".repeat(1000) + needle;
+  const chunks: string[] = [];
+  const runModel = createModelRunner({
+    async classify(chunk) {
+      chunks.push(chunk);
+      return chunk.includes(needle)
+        ? [{ entity: "B-SURNAME", score: 0.99, word: needle.toLowerCase(), index: 1 }]
+        : [];
+    },
+  });
+
+  const spans = await runModel(value);
+  // Every window stays within the model's input budget.
+  assert.ok(chunks.every((chunk) => chunk.length <= 480));
+  // The windows reach the end of the value rather than stopping at a prefix, so
+  // a match in the last few characters is still reported, at absolute offsets.
+  assert.ok(value.endsWith(chunks[chunks.length - 1]));
+  assert.ok(spans.some((span) => value.slice(span.start, span.end) === needle));
+});
+
+test("createModelRunner does not split a surrogate pair across windows", async function () {
+  const loneSurrogate = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+
+  // An astral character on the end of the first window (480) and on the start of
+  // the second (480 - 64 overlap), so both boundary adjustments are exercised.
+  for (const offset of [479, 415]) {
+    const value = "a".repeat(offset) + "\u{1F600}" + "b".repeat(600);
+    const chunks: string[] = [];
+    const runModel = createModelRunner({
+      async classify(chunk) {
+        chunks.push(chunk);
+        return [];
+      },
+    });
+
+    await runModel(value);
+    assert.ok(chunks.length > 1);
+    for (const chunk of chunks) {
+      assert.ok(!loneSurrogate.test(chunk), `window ${offset} split a surrogate pair`);
+    }
+    assert.ok(chunks.some((chunk) => chunk.includes("\u{1F600}")));
+  }
 });
