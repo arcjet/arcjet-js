@@ -2,6 +2,7 @@ import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { guardTool } from "./guard-tool.ts";
 import type { GuardToolPolicy, LangGraphTool } from "./guard-tool.ts";
@@ -222,6 +223,10 @@ export function guardToolNode(
   toolsOrNode: LangGraphToolNodeLike | readonly LangGraphTool[],
   policy: GuardToolNodePolicy = {},
 ): LangGraphToolNodeLike | LangGraphTool[] {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardToolNode");
+  }
   if (Array.isArray(toolsOrNode)) {
     const tools: readonly LangGraphTool[] = toolsOrNode;
     return tools.map((tool) => wrapUnbrandedTool(client, tool, policy));

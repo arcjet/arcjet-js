@@ -11,6 +11,7 @@ import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
@@ -108,6 +109,10 @@ function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
  * ```
  */
 export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy = {}): ToolHooks {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
   const hooks: ToolHooks = {
     async beforeToolCall(hookContext: ToolHookContext): Promise<void | ToolBeforeHookResult> {
       try {

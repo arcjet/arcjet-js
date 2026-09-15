@@ -5,6 +5,7 @@ import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { claudeAgentContext } from "./context.ts";
 import type { ClaudeContextSource } from "./context.ts";
@@ -157,6 +158,7 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
   tool: TTool,
   policy: GuardToolPolicy<ClaudeToolInput<TTool>>,
 ): TTool {
+  assertValidAction(policy.action, "guardTool");
   if (typeof tool.handler !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with a handler function");

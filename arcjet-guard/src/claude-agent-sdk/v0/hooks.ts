@@ -14,6 +14,7 @@ import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { claudeAgentContext } from "./context.ts";
 import type { ClaudeContextSource } from "./context.ts";
@@ -290,6 +291,13 @@ export function guardHooks(
   client: ArcjetAgentClient,
   policy: GuardHooksPolicy = {},
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
+  if (typeof policy.inbound?.action === "string" && policy.inbound.action !== "") {
+    assertValidAction(policy.inbound.action, "guardHooks inbound");
+  }
   const inboundPolicy: GuardHooksInboundPolicy = policy.inbound ?? {};
 
   const preToolUse: HookCallback = async (input): Promise<HookJSONOutput> => {

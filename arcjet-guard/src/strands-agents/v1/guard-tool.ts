@@ -6,6 +6,7 @@ import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { strandsAgentContext } from "./context.ts";
 import type { StrandsContextSource } from "./context.ts";
@@ -218,6 +219,7 @@ export function guardTool<TInput = unknown, TTool extends StrandsTool = StrandsT
   tool: TTool,
   policy: GuardToolPolicy<TInput>,
 ): TTool {
+  assertValidAction(policy.action, "guardTool");
   if (!isCallbackHolder(tool) || typeof tool._callback !== "function") {
     throw new Error(
       "@arcjet/guard: guardTool() requires a tool() result with a callback. Pass the result of tool({ callback }), not the config object.",

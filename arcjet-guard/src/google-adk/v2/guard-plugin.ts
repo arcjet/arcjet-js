@@ -8,6 +8,7 @@ import { denialResult, unavailableResult, type ArcjetDenialResult } from "../../
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { googleAdkContext } from "./context.ts";
 import type { GoogleAdkContextSource } from "./context.ts";
@@ -384,6 +385,10 @@ export function guardPlugin(
   client: ArcjetAgentClient,
   policy: GuardPluginPolicy = {},
 ): GoogleAdkGuardPlugin {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardPlugin");
+  }
   // PluginManager accepts any object with the callback methods; it does
   // not check `instanceof BasePlugin`. The Proxy no-ops unknown
   // hook-shaped names (`*Callback` / `*Selection` / `*Compaction`) so
