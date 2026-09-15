@@ -20,6 +20,20 @@
     "oxlint": "1.77.0",
     "turbo": "2.10.12"
   },
+  "overrides": {
+    "@huggingface/transformers": {
+      "sharp": ">=0.35.4"
+    },
+    "@nosecone/sveltekit": {
+      "@sveltejs/kit": {
+        "cookie": ">=0.7.2"
+      }
+    },
+    "miniflare": {
+      "sharp": ">=0.35.4",
+      "undici": ">=7.29.0"
+    }
+  },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0",
     "npm": "^12.0.0"
