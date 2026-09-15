@@ -72,8 +72,8 @@
     "arcjet": "1.12.0"
   },
   "devDependencies": {
-    "astro": "7.2.2",
-    "tsdown": "0.22.14",
+    "astro": "7.3.2",
+    "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
   "peerDependencies": {

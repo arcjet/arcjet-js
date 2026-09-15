@@ -56,9 +56,9 @@
     "test": "npm run build && npm run test-coverage && npm run validate-skills && node ../.github/scripts/check-skill-source-stale.mjs"
   },
   "devDependencies": {
-    "@tanstack/intent": "0.3.8",
+    "@tanstack/intent": "0.4.0",
     "@types/node": "22.20.1",
-    "tsdown": "0.22.14",
+    "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
   "engines": {
