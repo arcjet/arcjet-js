@@ -549,7 +549,7 @@ function requestFromContext(context: ExecutionContext) {
  * See: <https://docs.nestjs.com/guards>.
  */
 let ArcjetGuard = class ArcjetGuard implements CanActivate {
-  aj: ArcjetNest<PlainObject>;
+  aj: ArcjetNest;
 
   /**
    * Create a Nest guard for the Arcjet.
@@ -559,7 +559,7 @@ let ArcjetGuard = class ArcjetGuard implements CanActivate {
    * @returns
    *   Arcjet Nest guard.
    */
-  constructor(aj: ArcjetNest<PlainObject>) {
+  constructor(aj: ArcjetNest) {
     this.aj = aj;
   }
 

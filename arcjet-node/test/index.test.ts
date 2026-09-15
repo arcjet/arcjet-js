@@ -1307,7 +1307,7 @@ test("`arcjetNode`", async function (t) {
   await t.test("should support a custom rule", async function () {
     const restore = capture();
     // Custom rule that denies requests when a `q` search parameter is `"alpha"`.
-    const denySearchAlpha: ArcjetRule<{}> = {
+    const denySearchAlpha: ArcjetRule = {
       mode: "LIVE",
       priority: 1,
       async protect(_context, details) {

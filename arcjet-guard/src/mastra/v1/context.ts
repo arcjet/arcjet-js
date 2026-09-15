@@ -50,7 +50,6 @@ function isRequestContextLike(value: unknown): value is MastraRequestContextLike
     value !== null &&
     typeof value === "object" &&
     "get" in value &&
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural `get` check without importing Mastra
     typeof (value as { get?: unknown }).get === "function"
   );
 }

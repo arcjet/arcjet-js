@@ -1,13 +1,10 @@
+import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
-import assert from "node:assert/strict";
 
-import * as v7Namespace from "./index.ts";
-import * as agentsBarrel from "../../agents/index.ts";
 import type { Tool } from "ai";
 
-import type { ArcjetDenialResult, GuardToolPolicy } from "./index.ts";
 import {
   collectTsFiles,
   extractImportSpecifiers,
@@ -15,6 +12,9 @@ import {
   EXPECTED_ROOT_KEYS,
   EXPECTED_CONDITIONS,
 } from "../../../test/_shared/source-scan.ts";
+import * as agentsBarrel from "../../agents/index.ts";
+import * as v7Namespace from "./index.ts";
+import type { ArcjetDenialResult, GuardToolPolicy } from "./index.ts";
 
 // `Object.keys` on a namespace import never lists type-only exports, so assert
 // them at type level instead: this stops compiling if the barrel drops one.
@@ -28,7 +28,11 @@ verifyTypeExports();
 
 // AC1.3: Namespace exports guardTool and aiToolsContext as functions
 test("AC1.3: exports guardTool and aiToolsContext", () => {
-  assert.equal(typeof v7Namespace.guardTool, "function", "guardTool must be exported as a function");
+  assert.equal(
+    typeof v7Namespace.guardTool,
+    "function",
+    "guardTool must be exported as a function",
+  );
   assert.equal(
     typeof v7Namespace.aiToolsContext,
     "function",
@@ -39,7 +43,13 @@ test("AC1.3: exports guardTool and aiToolsContext", () => {
 // AC1.4: Proxy identity — shared exports have same function identity
 test("AC1.4: shared exports have same function identity", () => {
   // These shared exports must be the same function objects, not wrappers
-  const sharedExports = ["guardAction", "captureAction", "securityMetadata", "createAgentContext", "ArcjetDeniedError"] as const;
+  const sharedExports = [
+    "guardAction",
+    "captureAction",
+    "securityMetadata",
+    "createAgentContext",
+    "ArcjetDeniedError",
+  ] as const;
 
   for (const exportName of sharedExports) {
     const v7Value = (v7Namespace as Record<string, unknown>)[exportName];
@@ -84,10 +94,7 @@ test("AC1.2: v7 namespace exports the agnostic helpers", () => {
 
   for (const symbol of requiredSymbols) {
     const value = (v7Namespace as Record<string, unknown>)[symbol];
-    assert.ok(
-      value !== undefined,
-      `@arcjet/guard/vercel-ai/v7 must export ${symbol}`,
-    );
+    assert.ok(value !== undefined, `@arcjet/guard/vercel-ai/v7 must export ${symbol}`);
   }
 });
 
@@ -148,10 +155,7 @@ test("AC1.5 and AC1.6: export map has correct subpaths", () => {
   }
 
   // Must have ./vercel-ai/v7
-  assert.ok(
-    exportKeys.includes("./vercel-ai/v7"),
-    'export map must have "./vercel-ai/v7"',
-  );
+  assert.ok(exportKeys.includes("./vercel-ai/v7"), 'export map must have "./vercel-ai/v7"');
 
   // ./agents must NOT exist. The agnostic layer is internal: it reaches users
   // only through a vendor namespace until it has been proven against more than
@@ -206,11 +210,7 @@ test("AC1.1: root barrel exports launchArcjet and rule builders", async () => {
 
   for (const funcName of requiredFunctions) {
     const func = (rootBarrel as Record<string, unknown>)[funcName];
-    assert.equal(
-      typeof func,
-      "function",
-      `root barrel must export ${funcName} as a function`,
-    );
+    assert.equal(typeof func, "function", `root barrel must export ${funcName} as a function`);
   }
 });
 

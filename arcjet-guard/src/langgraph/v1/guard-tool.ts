@@ -186,7 +186,6 @@ export function guardTool<TTool extends LangGraphTool<any>>(
   // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
   const invoke = typeof tool.invoke === "function" ? tool.invoke : undefined;
   if (func === undefined && invoke === undefined) {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with a func or invoke function");
   }
   if (arcjetProtectedTool in tool) {
@@ -204,7 +203,7 @@ export function guardTool<TTool extends LangGraphTool<any>>(
   const originalInvoke = invoke?.bind(tool);
 
   // Preserve class prototype and non-enumerable markers.
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
   const wrapped = Object.defineProperties(

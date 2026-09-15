@@ -334,7 +334,6 @@ export function enforceMetadataBudget(maps: ReadonlyArray<Record<string, string>
       total += size;
     }
     for (const key of over) {
-      // oxlint-disable-next-line typescript/no-dynamic-delete -- trimming a caller-keyed map
       delete map[key];
       dropped.push(sanitizeKey(key));
     }

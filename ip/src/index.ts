@@ -117,7 +117,7 @@ function resolveCandidate(
 function isTrustedProxy(
   ip: string,
   segments: ReadonlyArray<number>,
-  proxies?: ReadonlyArray<string | Cidr> | null | undefined,
+  proxies?: ReadonlyArray<string | Cidr> | null,
 ) {
   if (Array.isArray(proxies) && proxies.length > 0) {
     return proxies.some((proxy) => {
@@ -461,7 +461,7 @@ class Parser {
     });
   }
 
-  readNumber(radix: 10 | 16, maxDigits?: number | undefined, allowZeroPrefix: boolean = false) {
+  readNumber(radix: 10 | 16, maxDigits?: number, allowZeroPrefix: boolean = false) {
     return this.readAtomically((p) => {
       let result = 0;
       let digitCount = 0;
@@ -1179,10 +1179,7 @@ function getHeader(headers: HeaderLike["headers"], headerKey: string) {
  * @returns
  *   Found IP address; empty string if not found.
  */
-export function findIpDetails(
-  request: RequestLike,
-  options?: Options | null | undefined,
-): ClientIpDetails {
+export function findIpDetails(request: RequestLike, options?: Options | null): ClientIpDetails {
   const { platform, proxies: rawProxies } = options || {};
   const proxies: Array<Cidr | string> = [];
   const services: Array<ProxyService> = [];
@@ -1571,7 +1568,7 @@ export function findIpDetails(
 }
 
 /** Find a client IP address while preserving the legacy string API. */
-export function findIp(request: RequestLike, options?: Options | null | undefined): string {
+export function findIp(request: RequestLike, options?: Options | null): string {
   return findIpDetails(request, options).ip;
 }
 
@@ -1595,7 +1592,7 @@ export function findIp(request: RequestLike, options?: Options | null | undefine
  */
 export function resolveClientIp(
   request: RequestLike,
-  options?: ResolveOptions | null | undefined,
+  options?: ResolveOptions | null,
 ): ClientIpDetails {
   const { ipSrc, development, platform, proxies } = options ?? {};
   if (typeof ipSrc === "string" && ipSrc !== "") {

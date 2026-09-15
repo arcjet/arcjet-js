@@ -243,9 +243,7 @@ function getWasmOptions<
   ListedEntities extends ArcjetSensitiveInfoType | Exclude<DetectedEntities, undefined> =
     | ArcjetSensitiveInfoType
     | Exclude<DetectedEntities, undefined>,
->(
-  options?: RedactOptions<DetectedEntities, ListedEntities> | undefined,
-): RedactSensitiveInfoConfig {
+>(options?: RedactOptions<DetectedEntities, ListedEntities>): RedactSensitiveInfoConfig {
   if (typeof options === "object" && options !== null) {
     const entities = options.entities;
 
@@ -288,7 +286,7 @@ async function callRedactWasm<
     | Exclude<DetectedEntities, undefined>,
 >(
   candidate: string,
-  options?: RedactOptions<DetectedEntities, ListedEntities> | undefined,
+  options?: RedactOptions<DetectedEntities, ListedEntities>,
 ): Promise<RedactedSensitiveInfoEntity[]> {
   let convertedDetect = noOpDetect;
   if (typeof options?.detect === "function") {

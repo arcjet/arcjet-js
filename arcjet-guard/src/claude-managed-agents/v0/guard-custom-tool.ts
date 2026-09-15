@@ -301,7 +301,7 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
   }
 
   const originalRun = tool.run.bind(tool);
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed any
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed any
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- copy every own descriptor
   const wrapped = Object.defineProperties(
@@ -343,7 +343,6 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
       ...policyMetadata,
     };
 
-    // oxlint-disable-next-line typescript/no-unsafe-return -- TTool["run"] is the wrapped tool's output
     return runGuarded<ReturnType<TTool["run"]>>(client, {
       action: policy.action,
       rules,

@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion, typescript/require-await, eslint/require-await, eslint/max-classes-per-file -- two BasePlugin fixtures for first-win
+// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion, typescript/require-await, eslint/require-await -- two BasePlugin fixtures for first-win
 /**
  * Behaviour against the real `@google/adk` `PluginManager` /
  * `Context` / `State`, rather than the structural fakes in

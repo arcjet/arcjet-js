@@ -142,7 +142,6 @@ async function loadStrandsHooks(): Promise<StrandsHookSdk> {
     const code =
       error !== null && typeof error === "object" && "code" in error ? error.code : undefined;
     if (code === "ERR_MODULE_NOT_FOUND") {
-      // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
       throw new Error(
         "@arcjet/guard: install @strands-agents/sdk (>=1.1.0 <2) to use guardHooks() from @arcjet/guard/strands-agents/v1",
         { cause: error },
@@ -164,7 +163,6 @@ async function loadStrandsHooks(): Promise<StrandsHookSdk> {
     typeof hookOrder !== "object" ||
     typeof hookOrder.SDK_FIRST !== "number"
   ) {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(
       "@arcjet/guard: guardHooks() could not load HookOrder from @strands-agents/sdk; the Plugin cannot register.",
     );

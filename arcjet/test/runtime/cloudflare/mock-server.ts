@@ -65,7 +65,6 @@ export async function startHttpServer(
 
   const server = http.createServer(connectNodeAdapter({ routes }));
   await new Promise<void>((resolve) => server.listen(port, "127.0.0.1", resolve));
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- always AddressInfo after listen()
   const addr = server.address() as import("node:net").AddressInfo;
   return {
     baseUrl: `http://127.0.0.1:${addr.port}`,

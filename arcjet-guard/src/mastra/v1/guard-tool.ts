@@ -166,7 +166,7 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
   const originalExecute = tool.execute.bind(tool);
 
   // Preserve class prototype and non-enumerable markers (`MASTRA_TOOL_MARKER`).
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
   const wrapped = Object.defineProperties(
@@ -194,7 +194,6 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
       typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
     const mergedMetadata = { ...metadata, ...policyMetadata };
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- denial / unavailable results are structured objects the model reads; the tool's TOutput is the ALLOW path
     const result = await runGuarded<MastraToolOutput<TTool>>(client, {
       action: policy.action,
       rules,

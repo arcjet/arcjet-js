@@ -26,8 +26,8 @@ test("assignOffsets locates tokens in the original text", function () {
     { entity: "B-SURNAME", score: 0.99, word: "rivera", index: 5 },
   ];
   const withOffsets = assignOffsets(value, tokens);
-  assert.equal(value.slice(withOffsets[0].start!, withOffsets[0].end!), "Alex");
-  assert.equal(value.slice(withOffsets[1].start!, withOffsets[1].end!), "Rivera");
+  assert.equal(value.slice(withOffsets[0].start, withOffsets[0].end), "Alex");
+  assert.equal(value.slice(withOffsets[1].start, withOffsets[1].end), "Rivera");
 });
 
 test("assignOffsets handles ## sub-word pieces and ordering", function () {
@@ -38,7 +38,7 @@ test("assignOffsets handles ## sub-word pieces and ordering", function () {
     { entity: "B-SURNAME", score: 0.9, word: "ri", index: 1 },
   ];
   const withOffsets = assignOffsets(value, tokens).sort((a, b) => a.start! - b.start!);
-  assert.equal(value.slice(withOffsets[0].start!, withOffsets[1].end!), "Rivera");
+  assert.equal(value.slice(withOffsets[0].start, withOffsets[1].end), "Rivera");
 });
 
 test("assignOffsets leaves unlocatable tokens without offsets", function () {

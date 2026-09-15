@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-assignment, typescript/no-unnecessary-type-assertion, typescript/unbound-method -- test fixtures built from the real SDK types
+// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-assignment, typescript/no-unnecessary-type-assertion -- test fixtures built from the real SDK types
 /**
  * Behaviour against the real `@langchain/langgraph` and `@langchain/core`
  * classes, rather than hand-written fakes.

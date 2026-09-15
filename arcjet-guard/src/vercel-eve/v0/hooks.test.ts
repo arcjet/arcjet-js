@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/no-unsafe-call, eslint/strict-boolean-expressions, eslint/explicit-function-return-type, eslint/no-unnecessary-type-assertion -- test infrastructure
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-argument, eslint/no-unnecessary-type-assertion -- test infrastructure
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -25,11 +25,9 @@ function createMockClient(): ArcjetAgentClient & {
   return {
     captureCalls,
     guard(_opts) {
-      // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-return -- test mock
       return Promise.resolve({ allowed: true } as any);
     },
     capture(opts: CaptureOptions) {
-      // oxlint-disable-next-line typescript/no-unsafe-assignment -- test mock
       captureCalls.push({
         action: opts.action,
         correlationId: opts.correlationId,
@@ -43,7 +41,6 @@ function createMockClient(): ArcjetAgentClient & {
 function createThrowingClient(): ArcjetAgentClient {
   return {
     guard(_opts) {
-      // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-return -- test mock
       return Promise.resolve({ allowed: true } as any);
     },
     capture() {
@@ -93,7 +90,6 @@ test("AC6.2: action.result with status 'completed' captures outcome 'success' an
 
   assert.ok(definition.events?.["action.result"], "action.result handler must exist");
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -136,7 +132,6 @@ test("AC6.2: action.result with status 'failed' captures outcome 'error'", async
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -167,7 +162,6 @@ test("AC6.2: action.result with status 'rejected' captures outcome 'denied'", as
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -196,7 +190,6 @@ test("AC6.2: action.result with unrecognised status does not capture outcome key
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -228,7 +221,6 @@ test("AC6.3: session.started captures continuation-token and channel when presen
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["session.started"];
   assert.ok(handler, "session.started handler must exist");
 
@@ -253,7 +245,6 @@ test("AC6.3: session.started captures session id even when channel is empty", as
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["session.started"];
   assert.ok(handler, "session.started handler must exist");
   const mockCtx = {
@@ -263,7 +254,6 @@ test("AC6.3: session.started captures session id even when channel is empty", as
   };
   const mockEvent = { data: {} };
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- asserted above
   await handler!(mockEvent as any, mockCtx as any);
 
   assert.equal(client.captureCalls.length, 1);
@@ -282,7 +272,6 @@ test("AC3.2: action.result with delegated session correlates to root session id"
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: {
@@ -318,7 +307,6 @@ test("AC6.3: session.started captures the session-derived correlationId", async 
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["session.started"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -339,7 +327,6 @@ test("AC6.2: session.failed handler captures action, outcome, and error.code", a
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["session.failed"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -367,7 +354,6 @@ test("AC6.2: turn.started handler captures action, correlationId, and eve.turn",
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["turn.started"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -395,7 +381,6 @@ test("AC6.2: turn.completed handler captures action, outcome, and eve.turn", asy
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["turn.completed"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -424,7 +409,6 @@ test("AC6.2: turn.failed handler captures action, outcome, error.code, and eve.t
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["turn.failed"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -455,7 +439,6 @@ test("AC6.4: subagent.called captures eve.child-session, eve.subagent, and eve.c
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["subagent.called"];
   assert.ok(handler, "subagent.called handler must exist");
 
@@ -486,7 +469,6 @@ test("AC6.4: subagent.completed does not have eve.child-session", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["subagent.completed"];
   assert.ok(handler, "subagent.completed handler must exist");
 

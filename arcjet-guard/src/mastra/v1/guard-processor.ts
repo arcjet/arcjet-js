@@ -70,7 +70,6 @@ function isRequestContextLike(value: unknown): value is MastraRequestContextLike
     value !== null &&
     typeof value === "object" &&
     "get" in value &&
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural `get` check without importing Mastra
     typeof (value as { get?: unknown }).get === "function"
   );
 }
@@ -82,7 +81,6 @@ function textFromPart(part: unknown): string {
   if (typeof part !== "object" || part === null) {
     return "";
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- message parts are untyped Mastra content
   const typed = part as { type?: unknown; text?: unknown };
   if (typed.type === "text" && typeof typed.text === "string") {
     return typed.text;
@@ -105,7 +103,6 @@ function messageText(message: unknown): string {
   if (typeof message !== "object" || message === null) {
     return "";
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Mastra messages are structurally typed
   const rec = message as { content?: unknown; parts?: unknown };
   if (typeof rec.content === "string") {
     return rec.content;
@@ -120,7 +117,6 @@ function messageText(message: unknown): string {
   if (typeof rec.content !== "object" || rec.content === null) {
     return "";
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nested Mastra content envelope
   const nested = rec.content as { parts?: unknown; content?: unknown };
   const fromNested = textFromParts(nested.parts);
   if (fromNested.length > 0) {
@@ -160,7 +156,6 @@ function idsFromMessages(messages: unknown[]): {
     if (typeof message !== "object" || message === null) {
       continue;
     }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- MastraDBMessage carries optional thread/resource
     const rec = message as { threadId?: unknown; resourceId?: unknown };
     const threadId = typeof rec.threadId === "string" ? rec.threadId : undefined;
     const resourceId = typeof rec.resourceId === "string" ? rec.resourceId : undefined;
@@ -319,7 +314,6 @@ export function guardProcessor(
     async processInput(args: ProcessInputArgs): Promise<ProcessInputResult> {
       await screen(args.messages, args.abort, args.requestContext, "input");
       if (args.state !== undefined && args.state !== null) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- module-scoped Symbol marker on Mastra's shared state bag
         (args.state as Record<PropertyKey, unknown>)[inputScreened] = true;
       }
       return args.messages;
@@ -336,8 +330,7 @@ export function guardProcessor(
       const state =
         args.state === undefined || args.state === null
           ? undefined
-          : // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- read the module-scoped Symbol marker
-            (args.state as Record<PropertyKey, unknown>);
+          : (args.state as Record<PropertyKey, unknown>);
       if (args.stepNumber === 0 && state?.[inputScreened] === true) {
         return args.messages;
       }

@@ -70,7 +70,7 @@ test("Properties", async function (t) {
   });
 
   await t.test("should infer no properties w/ a rule defined w/o properties", async function () {
-    const rule: ArcjetRule<{}> = {
+    const rule: ArcjetRule = {
       mode: "LIVE",
       priority: 1,
       async protect() {
@@ -317,7 +317,7 @@ test("Properties", async function (t) {
   );
 
   await t.test("should infer properties w/ `characteristics`", async function () {
-    const rule: ArcjetRule<{}> = {
+    const rule: ArcjetRule = {
       mode: "LIVE",
       priority: 1,
       async protect() {
@@ -376,7 +376,7 @@ test("Properties", async function (t) {
   });
 
   await t.test("should infer properties w/ `withRule`", async function () {
-    const noPropertiesRule: ArcjetRule<{}> = {
+    const noPropertiesRule: ArcjetRule = {
       mode: "LIVE",
       priority: 1,
       async protect() {

@@ -537,7 +537,7 @@ test("createClient", async (t) => {
             calls++;
 
             // oxlint-disable-next-line promise/always-return
-            promise.then(() => {
+            void promise.then(() => {
               assert.equal(calls, 1);
               calls++;
 

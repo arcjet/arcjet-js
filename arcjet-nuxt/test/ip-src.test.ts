@@ -47,7 +47,7 @@ test("explicit ipSrc overrides the H3 request address and is stripped", async fu
     },
   };
 
-  await client.protect(event as any, { ipSrc: "203.0.113.10" });
+  await client.protect(event, { ipSrc: "203.0.113.10" });
 
   assert.equal(details.ip, "203.0.113.10");
   assert.deepEqual(details.extra, {});

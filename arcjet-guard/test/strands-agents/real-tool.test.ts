@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-assignment, typescript/no-unnecessary-type-assertion, typescript/no-unsafe-type-assertion, typescript/unbound-method, typescript/require-await, eslint/require-await -- test fixtures built from the real SDK types
+// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion -- test fixtures built from the real SDK types
 /**
  * Behaviour against the real `@strands-agents/sdk` `tool()`, rather
  * than hand-written fakes.
@@ -41,9 +41,12 @@ function toolContext(sessionId: string, input: unknown) {
   };
 }
 
-async function streamResult(toolObj: {
-  stream: (context: never) => AsyncGenerator<unknown, unknown, unknown>;
-}, context: unknown): Promise<unknown> {
+async function streamResult(
+  toolObj: {
+    stream: (context: never) => AsyncGenerator<unknown, unknown, unknown>;
+  },
+  context: unknown,
+): Promise<unknown> {
   const generator = toolObj.stream(context as never);
   let next = await generator.next();
   while (next.done !== true) {

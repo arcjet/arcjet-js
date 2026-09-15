@@ -13,7 +13,4 @@
  * @packageDocumentation
  */
 
-export {
-  createHttp2Transport,
-  type Http2TransportHandle,
-} from "@arcjet/transport/http2";
+export { createHttp2Transport, type Http2TransportHandle } from "@arcjet/transport/http2";

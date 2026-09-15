@@ -228,7 +228,6 @@ export function guardToolNode(
   }
 
   if (!isToolNodeLike(toolsOrNode)) {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardToolNode() requires a ToolNode or an array of tools");
   }
 

@@ -1270,8 +1270,7 @@ test("convert", async (t) => {
           assert.fail("should not call `validate`");
         },
         version: 0,
-        // TODO: `{}` is confusing in TypeScript, and likely points to a bug.
-      } as ArcjetShieldRule<{}>);
+      });
 
       assert.deepEqual(
         rule,
@@ -1325,7 +1324,7 @@ test("convert", async (t) => {
           assert.fail("should not call `validate`");
         },
         version: 0,
-      } as ArcjetPromptInjectionDetectionRule);
+      });
 
       assert.deepEqual(
         rule,

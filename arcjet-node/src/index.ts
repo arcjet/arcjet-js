@@ -297,7 +297,7 @@ export interface ArcjetNode<Props extends PlainObject> {
    */
   clientIpDetails(
     request: ArcjetNodeRequest,
-    options?: { ipSrc?: string | undefined } | undefined,
+    options?: { ipSrc?: string | undefined },
   ): ClientIpDetails;
 
   /**

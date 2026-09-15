@@ -738,11 +738,7 @@ function validateString(path: string, value: unknown): asserts value is string {
  * @throws
  *   When not a function.
  */
-function validateFunction(
-  path: string,
-  value: unknown,
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
-): asserts value is Function {
+function validateFunction(path: string, value: unknown): asserts value is Function {
   if (typeof value !== "function") {
     throw new Error(`invalid type for \`${path}\` - expected function`);
   }

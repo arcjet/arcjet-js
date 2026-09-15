@@ -59,7 +59,6 @@ function isCallToolResult(value: unknown): value is ClaudeCallToolResult {
   if (value === null || typeof value !== "object") {
     return false;
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural CallToolResult check
   return Array.isArray((value as { content?: unknown }).content);
 }
 

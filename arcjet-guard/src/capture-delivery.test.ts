@@ -202,7 +202,7 @@ describe("createCaptureDelivery", () => {
     assert.equal(pending.length, 1);
     assert.deepEqual(sent, []);
 
-        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // Drain via flush() rather than waiting on the batch timer. The timer is
     // unref'd so it cannot hold the process open, which means on Node 22 the
     // event loop can drain before it fires — the promise then never settles and
     // the test dies with "Promise resolution is still pending". flush() makes
@@ -241,7 +241,7 @@ describe("createCaptureDelivery", () => {
       delivery.capture(event(`tool.${index}`));
     }
 
-        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // Drain via flush() rather than waiting on the batch timer. The timer is
     // unref'd so it cannot hold the process open, which means on Node 22 the
     // event loop can drain before it fires — the promise then never settles and
     // the test dies with "Promise resolution is still pending". flush() makes
@@ -280,7 +280,7 @@ describe("createCaptureDelivery", () => {
 
     assert.equal(supplied.length, 1);
     assert.equal(discovered.length, 0);
-        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // Drain via flush() rather than waiting on the batch timer. The timer is
     // unref'd so it cannot hold the process open, which means on Node 22 the
     // event loop can drain before it fires — the promise then never settles and
     // the test dies with "Promise resolution is still pending". flush() makes
@@ -312,7 +312,7 @@ describe("createCaptureDelivery", () => {
     });
 
     assert.equal(pending.length, 1);
-        // Drain via flush() rather than waiting on the batch timer. The timer is
+    // Drain via flush() rather than waiting on the batch timer. The timer is
     // unref'd so it cannot hold the process open, which means on Node 22 the
     // event loop can drain before it fires — the promise then never settles and
     // the test dies with "Promise resolution is still pending". flush() makes

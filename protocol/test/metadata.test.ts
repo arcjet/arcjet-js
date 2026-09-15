@@ -21,7 +21,6 @@ test("@arcjet/protocol metadata", async function (t) {
     // enumerable entries, so both would silently send nothing.
     const notPlainObjects: unknown[] = [[1, 2], new Map([["a", 1]]), new Date(), "nope", 7];
     for (const value of notPlainObjects) {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- testing runtime behavior on wrong types
       assert.deepEqual(encodeMetadata(value as ArcjetMetadata), {
         metadataJson: {},
         localWarnings: [],
@@ -143,7 +142,6 @@ test("@arcjet/protocol metadata", async function (t) {
     // Plain assignment routes `__proto__` to the inherited setter, dropping the
     // key with no warning; the server never gets the chance to reject it.
     // `JSON.parse` is the realistic way an own `__proto__` key appears.
-    // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
     const parsed: ArcjetMetadata = JSON.parse('{"__proto__": 1, "ok": 2}');
     const { metadataJson, localWarnings } = encodeMetadata(parsed);
     // Own-property order is insertion order, so no sorting needed.

@@ -317,7 +317,7 @@ function createGetBody(state: State, details: ArcjetReactRouterRequest) {
  * @returns
  *   Client.
  */
-export function createRemoteClient(options?: RemoteClientOptions | null | undefined): Client {
+export function createRemoteClient(options?: RemoteClientOptions | null): Client {
   const settings = options ?? {};
   const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
 

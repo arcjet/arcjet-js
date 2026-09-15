@@ -159,7 +159,7 @@ describe("reads the body from the readable stream", () => {
       client.on("response", async (res) => {
         try {
           const body = await readBody(res, { limit: 1024 });
-          assert.match(String(body), /Cannot read stream that exceeds limit/);
+          assert.match(body, /Cannot read stream that exceeds limit/);
         } finally {
           server.close(done);
         }

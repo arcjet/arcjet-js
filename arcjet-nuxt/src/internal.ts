@@ -392,7 +392,7 @@ function createGetBody(state: State, event: ArcjetH3Event) {
  * @returns
  *   Client.
  */
-export function createRemoteClient(options?: RemoteClientOptions | null | undefined): Client {
+export function createRemoteClient(options?: RemoteClientOptions | null): Client {
   const settings = options ?? {};
   const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
 

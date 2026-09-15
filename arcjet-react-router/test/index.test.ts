@@ -213,7 +213,7 @@ test("`default`", async function (t) {
       assert.deepEqual(parameters, undefined);
 
       await integration.protect({
-        context: { ip: 123 } as any,
+        context: { ip: 123 },
         request: new Request("https://example.com/"),
       });
 
@@ -267,7 +267,7 @@ test("`default`", async function (t) {
 
     await t.test("should support `options.proxies`", async function () {
       let ip: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 0,
         async protect(_, request) {
@@ -325,7 +325,7 @@ test("`default`", async function (t) {
       process.env.MODE = "";
       process.env.NODE_ENV = "";
 
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 0,
         async protect(_, request) {
@@ -378,7 +378,7 @@ test("`default`", async function (t) {
       process.env.MODE = "";
       process.env.NODE_ENV = "";
 
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 0,
         async protect(_, request) {
@@ -425,7 +425,7 @@ test("`default`", async function (t) {
 
     await t.test("should prefer an IP from `details.context`", async function () {
       let ip: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 0,
         async protect(_, request) {

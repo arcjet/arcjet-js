@@ -112,7 +112,6 @@ export function writeRegistration(client: ArcjetGuard): void {
 /** Empty the slot. @internal */
 export function clearRegistration(): void {
   const globalWithArcjet: GlobalWithArcjet = globalThis;
-  // oxlint-disable-next-line typescript/no-dynamic-delete -- clearing the slot
   delete globalWithArcjet[symbolArcjetClient];
 }
 
