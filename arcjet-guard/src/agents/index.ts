@@ -29,6 +29,7 @@ export {
   guardAction,
 } from "./guard-action.ts";
 export type { CaptureActionOptions, GuardActionPolicy, OnGuardError } from "./guard-action.ts";
+export { ArcjetInvalidLabelError, validateGuardLabel } from "./label.ts";
 export type { ArcjetDenialResult } from "./denial.ts";
 export type { ArcjetAgentClient } from "./capture.ts";
 // Re-exported from the root so a caller building a `captureAction()` payload

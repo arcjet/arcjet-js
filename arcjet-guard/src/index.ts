@@ -156,6 +156,9 @@ export type {
   CaptureOptions,
   GuardOptions,
 } from "./types.ts";
+// A guard label is compared against a published policy exactly, so a label
+// the service would reject matches nothing. Check one you build yourself.
+export { ArcjetInvalidLabelError, validateGuardLabel } from "./agents/label.ts";
 export { policyInput } from "./policy-input.ts";
 export type { PolicyInput, PolicyInputMap } from "./policy-input.ts";
 

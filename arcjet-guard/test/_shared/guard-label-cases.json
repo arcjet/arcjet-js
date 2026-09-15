@@ -1,0 +1,27 @@
+{
+  "revision": 1,
+  "source": "proto/decide/v2/guard-label-cases.json in the arcjet monorepo",
+  "adr": "docs/adrs/2026-09-15-each-sdk-checks-a-guard-label-before-sending-it.md",
+  "grammar": "1-256 bytes; lowercase ASCII letters, digits, '-', '.', '_'; must start and end with a lowercase letter or digit",
+  "note": "The 256-byte boundary is not a case here, because a 257-character string is unreadable in JSON. Each consumer generates it: 256 'a' characters valid, 257 invalid.",
+  "cases": [
+    { "label": "tool.invoked", "valid": true },
+    { "label": "send_email.invoked", "valid": true },
+    { "label": "mcp__email__send_email.invoked", "valid": true },
+    { "label": "tools.foo-bar.42", "valid": true },
+    { "label": "a", "valid": true },
+    { "label": "9", "valid": true },
+    { "label": "getWeather.invoked", "valid": false, "reason": "uppercase" },
+    { "label": "Tools.Test", "valid": false, "reason": "uppercase" },
+    { "label": "café.invoked", "valid": false, "reason": "non-ascii" },
+    { "label": "_leading.invoked", "valid": false, "reason": "boundary" },
+    { "label": "trailing_", "valid": false, "reason": "boundary" },
+    { "label": "-bad", "valid": false, "reason": "boundary" },
+    { "label": "bad-", "valid": false, "reason": "boundary" },
+    { "label": ".bad", "valid": false, "reason": "boundary" },
+    { "label": "bad.", "valid": false, "reason": "boundary" },
+    { "label": "bad!", "valid": false, "reason": "character" },
+    { "label": "Not A Label", "valid": false, "reason": "uppercase and space" },
+    { "label": "", "valid": false, "reason": "empty" }
+  ]
+}
