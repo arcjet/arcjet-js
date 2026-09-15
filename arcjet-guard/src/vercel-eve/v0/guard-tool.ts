@@ -152,7 +152,6 @@ export function guardTool<TInput, TOutput>(
   ) as ToolDefinition<TInput, TOutput>;
 
   // Override execute with the guarded version
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- ToolDefinition.execute may return AsyncIterable, but wrapping ensures Promise; onDeny may return custom types via policy override
   // Eve always supplies the context, but a guarded tool invoked directly — from
   // a unit test, or the "invoke the protected function" verification step the
   // docs describe — may not. Everything below treats it as optional so that
@@ -185,7 +184,6 @@ export function guardTool<TInput, TOutput>(
       typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
     const mergedMetadata = { ...metadata, ...policyMetadata };
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny's unknown return is widened by unknown cast; static type analysis requires cast, but runtime never reaches it if throws or if onDeny custom handler is `never` type
     const result = await runGuarded<TOutput>(client, {
       action: policy.action,
       rules,

@@ -1,4 +1,3 @@
-// oxlint-disable eslint/explicit-function-return-type -- test infrastructure
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

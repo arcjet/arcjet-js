@@ -396,7 +396,6 @@ function wrapToolAction<TInput>(
 ): GenkitTool {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GenkitTool's never[] call is the accept-any-ToolAction trick; invoke with the runtime args
   const originalCall = tool.bind(tool) as (input?: unknown, options?: unknown) => unknown;
-  // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
   const originalRun =
     typeof tool.run === "function"
       ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- same never[] accept-any trick as originalCall

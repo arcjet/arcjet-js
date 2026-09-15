@@ -1,5 +1,4 @@
 import type { ArcjetMetadata } from "../types.ts";
-
 import { ulid } from "./ulid.ts";
 
 /**

@@ -23,9 +23,7 @@ import { eveAgentContext } from "./context.ts";
 import { guardApproval } from "./guard-approval.ts";
 
 // Factory for creating approval contexts with overrides
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
 function createApprovalContext(overrides?: Partial<ApprovalContext>): ApprovalContext {
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure for mock SessionContext
   const mockSessionContext: any = {
     session: {
       id: "ses_123",
@@ -53,11 +51,9 @@ function createApprovalContext(overrides?: Partial<ApprovalContext>): ApprovalCo
 }
 
 // Factory for creating approval response contexts with overrides
-// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
 function createApprovalResponseContext(
   overrides?: Partial<ApprovalResponseContext>,
 ): ApprovalResponseContext {
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   const mockAuth: any = {
     getToken: () => Promise.resolve({ token: "t" }),
     requireAuth: () => {
@@ -202,7 +198,7 @@ test("AC4.5: rules function receives ApprovalContext and its output reaches guar
     },
   });
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-explicit-any -- test infrastructure
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
   const ctx = createApprovalContext({ toolInput: { id: "123" } } as any);
   await approval(ctx);
 
@@ -218,7 +214,6 @@ test("AC4.7: with onGuardError: allow, both signals resolve to 'not-applicable',
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -254,7 +249,6 @@ test("AC4.7: with default onGuardError: deny, unavailable warning does NOT match
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -499,7 +493,6 @@ test("callback throwing rules → warns and captures with outcome: unavailable",
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -545,7 +538,6 @@ test("AC4.7: with onGuardError: allow, failed-open signal → resolve to not-app
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -581,7 +573,6 @@ test("AC4.7: with onGuardError: deny, failed-open signal → deny unavailable, w
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -700,7 +691,6 @@ test("last-resort catch emits warning when onDeny throws with onGuardError: allo
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -803,7 +793,6 @@ test("response fail-open unavailable → { status: 'allowed' }", async () => {
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -1049,7 +1038,6 @@ test("response last-resort catch fails open when extra evaluation throws with on
   process.env.ARCJET_LOG_LEVEL = "warn";
   const originalWarn = console.warn;
   const warnings: Array<{ format: string; args: unknown[] }> = [];
-  // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
   console.warn = (format: string, ...args: any[]) => {
     warnings.push({ format, args });
   };
@@ -1061,7 +1049,6 @@ test("response last-resort catch fails open when extra evaluation throws with on
       response: { action: "resource.approved", onGuardError: "allow" },
     });
 
-    // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
     const ctx: any = createApprovalResponseContext();
     // Throws from `responsePhaseMetadata` via `options.extraMetadata()` when
     // that helper reads `ctx.request`.

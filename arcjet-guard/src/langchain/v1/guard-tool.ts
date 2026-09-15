@@ -210,7 +210,6 @@ export function guardTool<TTool extends LangChainTool<any>>(
   // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
   const invoke = typeof tool.invoke === "function" ? tool.invoke : undefined;
   if (func === undefined && invoke === undefined) {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with a func or invoke function");
   }
   if (arcjetProtectedTool in tool) {
@@ -237,7 +236,7 @@ export function guardTool<TTool extends LangChainTool<any>>(
   // clone would resolve back to the unguarded original and this wrapper
   // would stop gating. `test/langchain/real-agent.test.ts` pins today's
   // shape end to end, so re-check it when bumping the `langchain` peer.
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
   const wrapped = Object.defineProperties(

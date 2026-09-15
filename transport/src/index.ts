@@ -66,7 +66,7 @@ export function createTransport(baseUrl: string, options?: TransportOptions): Tr
       : { HTTP_PROXY: proxyUrl };
     const agentOptions: http.AgentOptions & { proxyEnv: NodeJS.ProcessEnv } = {
       keepAlive: true,
-      proxyEnv: proxyEnvironment as unknown as NodeJS.ProcessEnv,
+      proxyEnv: proxyEnvironment,
     };
 
     const agent = isHttps ? new https.Agent(agentOptions) : new http.Agent(agentOptions);

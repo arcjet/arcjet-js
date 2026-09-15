@@ -142,8 +142,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should call `validate` and `protect` on rules", async function () {
       const calls: Array<string> = [];
-      // TODO: should be possible to pass directly w/o type annotation.
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -176,7 +175,7 @@ test("`arcjet`", async function (t) {
     });
 
     await t.test("should yield a deny decision if a rule denies", async function () {
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -206,7 +205,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should shortcircuit when a rule denies", async function () {
       const calls: Array<string> = [];
-      const after: ArcjetRule<{}> = {
+      const after: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -226,7 +225,7 @@ test("`arcjet`", async function (t) {
         },
         version: 0,
       };
-      const deny: ArcjetRule<{}> = {
+      const deny: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -262,7 +261,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should call rules from lower priority numbers to higher", async function () {
       const calls: Array<number> = [];
-      const rules = [3, 1, 2, 7, 2].map(function (priority): ArcjetRule<{}> {
+      const rules = [3, 1, 2, 7, 2].map(function (priority): ArcjetRule {
         return {
           mode: "LIVE",
           priority,
@@ -299,7 +298,7 @@ test("`arcjet`", async function (t) {
       let called = false;
       let errorParameters: unknown;
       // @ts-expect-error: test runtime behavior.
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -343,7 +342,7 @@ test("`arcjet`", async function (t) {
       let called = false;
       let errorParameters: unknown;
       // @ts-expect-error: test runtime behavior.
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         type: "",
@@ -376,7 +375,7 @@ test("`arcjet`", async function (t) {
     });
 
     await t.test("should ignore a rule whose `protect` does not yield a result", async function () {
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         // @ts-expect-error: test runtime behavior.
@@ -400,7 +399,7 @@ test("`arcjet`", async function (t) {
       "should log but otherwise ignore a rule whose `protect` rejects",
       async function () {
         let errorParameters: unknown;
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect() {
@@ -433,7 +432,7 @@ test("`arcjet`", async function (t) {
       "should log but otherwise ignore a rule whose `protect` rejects a string",
       async function () {
         let errorParameters: unknown;
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect() {
@@ -466,7 +465,7 @@ test("`arcjet`", async function (t) {
       "should log but otherwise ignore a rule whose `protect` rejects a non-error non-string",
       async function () {
         let errorParameters: unknown;
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect() {
@@ -501,7 +500,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should work w/ 10 rules", async function () {
       let calls = 0;
-      const rules = Array.from({ length: 10 }, function (): ArcjetRule<{}> {
+      const rules = Array.from({ length: 10 }, function (): ArcjetRule {
         return {
           mode: "LIVE",
           priority: 1,
@@ -537,7 +536,7 @@ test("`arcjet`", async function (t) {
     await t.test("should log and yield an error decision w/ 11 rules", async function () {
       let calls = 0;
       let errorParameters: unknown;
-      const rules = Array.from({ length: 11 }, function (): ArcjetRule<{}> {
+      const rules = Array.from({ length: 11 }, function (): ArcjetRule {
         return {
           mode: "LIVE",
           priority: 1,
@@ -580,7 +579,7 @@ test("`arcjet`", async function (t) {
     await t.test("should pass request fields to `validate` and `protect`", async function () {
       let protectDetails: unknown;
       let validateDetails: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -716,7 +715,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should ignore `metadata` whose prototype cannot be read", async function () {
       let metadata: unknown = "unset";
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -760,7 +759,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should ignore non-object `metadata` request fields", async function () {
       let metadata: unknown = "unset";
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -790,7 +789,7 @@ test("`arcjet`", async function (t) {
         ...createRequest(),
         // A non-object is dropped rather than throwing: metadata must never fail
         // a call.
-        metadata: "nope" as unknown as Record<string, unknown>,
+        metadata: "nope",
       });
 
       assert.equal(metadata, undefined);
@@ -798,7 +797,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should ignore non-string `email` request fields", async function () {
       let email: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -834,7 +833,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should support `headers` as a plain object", async function () {
       let headers: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -871,7 +870,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should support `headers` w/ array values", async function () {
       let headers: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -908,7 +907,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should support `headers` as a `Headers` instance", async function () {
       let headers: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -945,7 +944,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should support unknown fields w/ different types", async function () {
       let extra: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(_context, details) {
@@ -1007,7 +1006,7 @@ test("`arcjet`", async function (t) {
       let decideCalls = 0;
       let reportCalls = 0;
       let cacheHits = 0;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(context) {
@@ -1074,7 +1073,7 @@ test("`arcjet`", async function (t) {
       let decideCalls = 0;
       let reportCalls = 0;
       let cacheHits = 0;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(context) {
@@ -1141,7 +1140,7 @@ test("`arcjet`", async function (t) {
       let decideCalls = 0;
       let reportCalls = 0;
       let cacheHits = 0;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(context) {
@@ -1209,7 +1208,7 @@ test("`arcjet`", async function (t) {
       let reportCalls = 0;
       let cacheHits = 0;
       let warnParameters: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(context) {
@@ -1318,7 +1317,7 @@ test("`arcjet`", async function (t) {
       let decideCalled = false;
       let errorParameters: unknown;
       let reportCalled = false;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -1362,7 +1361,7 @@ test("`arcjet`", async function (t) {
 
     await t.test("should call `client.decide` w/ rules", async function () {
       let decideRules: unknown;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -1480,7 +1479,7 @@ test("`arcjet`", async function (t) {
       async function () {
         let decideCalled = false;
         let reportCalled = false;
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect() {
@@ -1534,7 +1533,7 @@ test("`arcjet`", async function (t) {
         state: "RUN",
         ttl: 0,
       });
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {
@@ -1576,7 +1575,7 @@ test("`arcjet`", async function (t) {
         const currentVercelRequestContext = global[vercelRequestContext];
         let reportWaitUntil: unknown;
         let decideCalled = false;
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect() {
@@ -1675,7 +1674,7 @@ test("`arcjet`", async function (t) {
       let reportCalls = 0;
       let cacheHits = 0;
       // There still needs to be a rule to get things from the cache.
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect(context) {
@@ -1754,7 +1753,7 @@ test("`arcjet`", async function (t) {
         let reportCalls = 0;
         let cacheHits = 0;
         // There still needs to be a rule to get things from the cache.
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect(context) {
@@ -1834,7 +1833,7 @@ test("`arcjet`", async function (t) {
         let reportCalls = 0;
         let cacheHits = 0;
         // There still needs to be a rule to get things from the cache.
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect(context) {
@@ -1914,7 +1913,7 @@ test("`arcjet`", async function (t) {
         let reportCalls = 0;
         let cacheHits = 0;
         // There still needs to be a rule to get things from the cache.
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect(context) {
@@ -1994,7 +1993,7 @@ test("`arcjet`", async function (t) {
         let reportCalls = 0;
         let cacheHits = 0;
         // There still needs to be a rule to get things from the cache.
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect(context) {
@@ -2074,7 +2073,7 @@ test("`arcjet`", async function (t) {
         let reportCalls = 0;
         let cacheHits = 0;
         // There still needs to be a rule to get things from the cache.
-        const rule: ArcjetRule<{}> = {
+        const rule: ArcjetRule = {
           mode: "LIVE",
           priority: 1,
           async protect(context) {
@@ -2149,7 +2148,7 @@ test("`arcjet`", async function (t) {
   await t.test("`.withRule()`", async function (t) {
     await t.test("should work", async function () {
       let calls = 0;
-      const rule: ArcjetRule<{}> = {
+      const rule: ArcjetRule = {
         mode: "LIVE",
         priority: 1,
         async protect() {

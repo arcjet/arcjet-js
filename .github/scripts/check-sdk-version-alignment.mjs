@@ -77,7 +77,7 @@ for (const name of watched) {
 
   failed = true;
   console.error(`\nFAIL ${name} resolves to ${byVersion.size} different versions:`);
-  for (const [version, locations] of [...byVersion].sort()) {
+  for (const [version, locations] of [...byVersion].sort(([a], [b]) => a.localeCompare(b))) {
     console.error(`  ${version}`);
     for (const location of locations) console.error(`    ${location}`);
   }

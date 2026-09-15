@@ -146,8 +146,7 @@ function isNoProxy(url: URL, noProxy: string | undefined): boolean {
   // `url.hostname` wraps IPv6 addresses in brackets (e.g. `[::1]`); strip them
   // so entries can be written with or without brackets.
   const hostname = url.hostname.toLowerCase().replaceAll(/^\[|\]$/g, "");
-  const port =
-    url.port === "" ? (url.protocol === "https:" ? "443" : "80") : url.port;
+  const port = url.port === "" ? (url.protocol === "https:" ? "443" : "80") : url.port;
 
   for (const raw of noProxy.split(/[\s,]+/)) {
     if (raw === "") {
@@ -198,11 +197,7 @@ function parseNoProxyEntry(raw: string): {
   const bracketed = entry.match(/^\[(.+)\](?::([0-9]+))?$/);
   if (bracketed === null) {
     const colon = entry.lastIndexOf(":");
-    if (
-      colon !== -1 &&
-      colon === entry.indexOf(":") &&
-      /^[0-9]+$/.test(entry.slice(colon + 1))
-    ) {
+    if (colon !== -1 && colon === entry.indexOf(":") && /^[0-9]+$/.test(entry.slice(colon + 1))) {
       host = entry.slice(0, colon);
       port = entry.slice(colon + 1);
     }

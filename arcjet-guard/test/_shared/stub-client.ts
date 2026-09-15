@@ -9,9 +9,8 @@
  * carry many more.
  */
 
-import type { Decision, DecisionDeny, RuleWithInput } from "../../src/types.ts";
-
 import type { ArcjetAgentClient } from "../../src/agents/capture.ts";
+import type { Decision, DecisionDeny, RuleWithInput } from "../../src/types.ts";
 
 /**
  * Factory for stub guard clients with in-memory decision and capture tracking.

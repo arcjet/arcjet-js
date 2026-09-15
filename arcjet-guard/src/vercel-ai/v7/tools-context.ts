@@ -1,7 +1,7 @@
 import type { InferToolSetContext, ToolSet } from "@ai-sdk/provider-utils";
 
-import { arcjetProtectedTool } from "../../agents/internal.ts";
 import type { ArcjetAgentContext } from "../../agents/context.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
 
 /**
  * Extract context for tools protected by Arcjet.

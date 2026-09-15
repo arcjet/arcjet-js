@@ -3,8 +3,8 @@ import { test } from "node:test";
 
 import type { ToolSet } from "@ai-sdk/provider-utils";
 
-import { aiToolsContext } from "./tools-context.ts";
 import { createAgentContext } from "../../agents/context.ts";
+import { aiToolsContext } from "./tools-context.ts";
 
 test("aiToolsContext: includes only branded tools", () => {
   const ctx = createAgentContext({ correlationId: "test_123" });
@@ -27,7 +27,11 @@ test("aiToolsContext: includes only branded tools", () => {
   // Result should have context only for the protected tool
   assert.equal(Object.keys(result).length, 1);
   assert.ok("protected_tool" in result);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Accessing untyped result object from aiToolsContext
-  assert.equal((result as unknown as Record<string, unknown>).protected_tool, ctx, "should be same reference");
+  assert.equal(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Accessing untyped result object from aiToolsContext
+    (result as unknown as Record<string, unknown>).protected_tool,
+    ctx,
+    "should be same reference",
+  );
   assert.ok(!("unprotected_tool" in result));
 });

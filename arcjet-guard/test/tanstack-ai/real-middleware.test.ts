@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion -- test fixtures built from the real SDK types
+// oxlint-disable typescript/no-unsafe-type-assertion -- test fixtures built from the real SDK types
 /**
  * Behaviour against the real `@tanstack/ai` `ChatMiddleware` /
  * `toolCacheMiddleware`, rather than the structural fakes in

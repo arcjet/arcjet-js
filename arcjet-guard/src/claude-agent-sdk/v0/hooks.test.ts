@@ -342,7 +342,6 @@ test("registers PreToolUse, UserPromptSubmit, and PostToolUse only", () => {
   const { client } = stubClient(decisionAllow());
   const hooks = guardHooks(client);
   const names = Object.keys(hooks);
-  // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
   names.sort();
   assert.deepEqual(names, ["PostToolUse", "PreToolUse", "UserPromptSubmit"]);
 });

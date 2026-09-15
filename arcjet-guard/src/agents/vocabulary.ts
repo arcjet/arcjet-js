@@ -109,9 +109,7 @@ const WIRE_KEY_ENTRIES = Object.entries(WIRE_KEYS) as ReadonlyArray<
  * // → context has metadata: { user: "user_alice", "data-class": "confidential", destination: "audit_service" }
  * ```
  */
-export function securityMetadata(
-  fields: SecurityMetadataFields,
-): ArcjetMetadata {
+export function securityMetadata(fields: SecurityMetadataFields): ArcjetMetadata {
   const result: Record<string, string> = {};
 
   for (const [field, wireKey] of WIRE_KEY_ENTRIES) {

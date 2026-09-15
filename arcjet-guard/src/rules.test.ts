@@ -358,24 +358,21 @@ describe("localDetectSensitiveInfo", () => {
   // guard is the last line for JavaScript callers and for anyone who casts.
   test("throws when a deny type needs a backend that is not configured", () => {
     assert.throws(
-      () =>
-        localDetectSensitiveInfo(unnarrowed({ deny: ["GIVEN_NAME"] })),
+      () => localDetectSensitiveInfo(unnarrowed({ deny: ["GIVEN_NAME"] })),
       /config error: the "GIVEN_NAME" type is only detected when a `backend`/,
     );
   });
 
   test("throws when an allow type needs a backend that is not configured", () => {
     assert.throws(
-      () =>
-        localDetectSensitiveInfo(unnarrowed({ allow: ["SSN"] })),
+      () => localDetectSensitiveInfo(unnarrowed({ allow: ["SSN"] })),
       /config error: the "SSN" type is only detected when a `backend`/,
     );
   });
 
   test("lists every unsupported type in the error, without duplicates", () => {
     assert.throws(
-      () =>
-        localDetectSensitiveInfo(unnarrowed({ deny: ["GIVEN_NAME", "SURNAME", "GIVEN_NAME"] })),
+      () => localDetectSensitiveInfo(unnarrowed({ deny: ["GIVEN_NAME", "SURNAME", "GIVEN_NAME"] })),
       /the "GIVEN_NAME", "SURNAME" types are only detected/,
     );
   });

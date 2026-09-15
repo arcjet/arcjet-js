@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/explicit-function-return-type -- test infrastructure
+// oxlint-disable eslint/no-unsafe-type-assertion -- test infrastructure
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

@@ -7,17 +7,18 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "lint": "oxlint --disable-nested-config",
+    "lint": "oxlint",
     "test-api": "turbo run test-api",
     "test-coverage": "turbo run test-coverage",
     "test": "turbo test",
-    "format": "oxfmt --disable-nested-config",
-    "format:check": "oxfmt --disable-nested-config --check",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "oxfmt": "0.63.0",
-    "oxlint": "1.77.0",
+    "oxfmt": "0.67.0",
+    "oxlint": "1.82.0",
+    "oxlint-tsgolint": "7.0.2001",
     "turbo": "2.10.12"
   },
   "overrides": {

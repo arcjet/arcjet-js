@@ -210,7 +210,6 @@ export function guardTool<TInput = unknown, TTool extends OpenAIAgentsTool = Ope
   tool: TTool,
   policy: GuardToolPolicy<TInput>,
 ): TTool {
-  // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
   if (typeof tool.invoke !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(
@@ -227,7 +226,7 @@ export function guardTool<TInput = unknown, TTool extends OpenAIAgentsTool = Ope
 
   // Preserve own descriptors (needsApproval, inputGuardrails, …). Those
   // surfaces are not policy gates and are copied, not wrapped.
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
   const wrapped = Object.defineProperties(

@@ -77,7 +77,6 @@ test("accepts a bare ActionContext object", () => {
 test("accepts a tool-handler envelope { context, interrupt, resumed } and ignores interrupt/resumed", () => {
   const result = genkitContext({
     context: { sessionId: "from-handler" },
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting we do not read these as correlation
     ...({ interrupt: () => "nope", resumed: { status: "APPROVED" } } as Record<string, unknown>),
   });
 
@@ -124,7 +123,6 @@ test("rejects a session id over 256 characters and does not mint", () => {
 test("never reads traceId, even when it is the only string present", () => {
   const result = genkitContext({
     context: { traceId: "trace-minted-by-sdk" },
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting we do not invent a traceId field on the source
     ...({ traceId: "envelope-trace" } as Record<string, unknown>),
   });
 
@@ -135,7 +133,6 @@ test("never reads traceId, even when it is the only string present", () => {
 test("does not call getSessionId on a session-shaped object", () => {
   let called = 0;
   const result = genkitContext({
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- session is not a documented source field
     ...({
       session: {
         getSessionId: () => {

@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/no-unsafe-call, eslint/strict-boolean-expressions, eslint/explicit-function-return-type, eslint/no-unnecessary-type-assertion, eslint/require-await -- test infrastructure and mocks don't need await
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/no-unsafe-call, eslint/strict-boolean-expressions, eslint/no-unnecessary-type-assertion, eslint/require-await -- test infrastructure and mocks don't need await
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -496,7 +496,6 @@ test("AC5.5: tool with execute: undefined throws at wrap time", () => {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally pass undefined to test runtime check
   const tool = createToolWithSymbols<any, any>({ execute: undefined as any });
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test passes intentionally-incorrect tool
   assert.throws(
     () => guardTool(client, tool as any, { action: "test.executed" }),
     (err: any) => {
@@ -511,7 +510,6 @@ test("AC5.5: tool with execute: non-function throws at wrap time", () => {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally pass string to test runtime check
   const tool = createToolWithSymbols<any, any>({ execute: "not a function" as any });
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test passes intentionally-incorrect tool
   assert.throws(
     () => guardTool(client, tool as any, { action: "test.executed" }),
     (err: any) => {
@@ -643,7 +641,6 @@ test("onDeny: 'result' → denial resolves to ArcjetDenialResult with arcjetDeni
 
   const result = await wrapped.execute!({}, ctx);
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test checks the result structure
   assert.ok(typeof result === "object" && result !== null);
   assert.equal((result as any).arcjetDenied, true);
   assert.equal((result as any).reason, "PROMPT_INJECTION");
@@ -674,7 +671,6 @@ test("onDeny: 'result' on RATE_LIMIT → includes retryable: true and retryAfter
 
   const result = await wrapped.execute!({}, ctx);
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test checks the result structure
   assert.equal((result as any).retryable, true);
   assert.ok(typeof (result as any).retryAfterSeconds === "number");
 });
@@ -705,7 +701,6 @@ test("onDeny: 'result' works even when tool declares outputSchema (guardrail is 
   // Even though outputSchema exists, result resolves (schema validation happens at message level, not tool level)
   const result = await wrapped.execute!({}, ctx);
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test checks the result structure
   assert.equal((result as any).arcjetDenied, true);
 });
 

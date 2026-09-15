@@ -132,7 +132,6 @@ test("AC3.3: warning fires with ARCJET_LOG_LEVEL=warn", () => {
 
     const consoleWarnCalls: string[] = [];
     const originalWarn = console.warn;
-    // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
     console.warn = (msg: any): void => {
       // oxlint-disable-next-line typescript/no-unsafe-argument -- test infrastructure
       consoleWarnCalls.push(msg);
@@ -170,7 +169,6 @@ test("AC3.3: no warning without ARCJET_LOG_LEVEL", () => {
 
     const consoleWarnCalls: string[] = [];
     const originalWarn = console.warn;
-    // oxlint-disable-next-line typescript/no-explicit-any -- test infrastructure
     console.warn = (msg: any): void => {
       // oxlint-disable-next-line typescript/no-unsafe-argument -- test infrastructure
       consoleWarnCalls.push(msg);
@@ -470,7 +468,7 @@ test("AC3.6: encoder round-trip with no AJ1017 warnings (smoke test)", () => {
 });
 
 test("missing session falls back to generated ULID without throwing", () => {
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion -- testing with structural mock
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- testing with structural mock
   const ctx = {
     // Missing session property entirely
   } as any;

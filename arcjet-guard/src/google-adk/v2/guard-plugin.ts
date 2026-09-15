@@ -143,7 +143,6 @@ async function gateToolCall(
   params: BeforeToolCallbackParams,
 ): Promise<Record<string, unknown> | undefined> {
   if (isBrandedTool(params.tool)) {
-    // oxlint-disable-next-line unicorn/no-useless-undefined -- ADK skip is `undefined`, not void
     return undefined;
   }
 
@@ -173,7 +172,6 @@ async function gateToolCall(
       );
     }
     if (policy.onGuardError === "allow") {
-      // oxlint-disable-next-line unicorn/no-useless-undefined -- ADK skip is `undefined`, not void
       return undefined;
     }
     return denyDict(unavailableResult());

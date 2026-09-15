@@ -219,7 +219,6 @@ export function guardTool<TInput = unknown, TTool extends StrandsTool = StrandsT
   policy: GuardToolPolicy<TInput>,
 ): TTool {
   if (!isCallbackHolder(tool) || typeof tool._callback !== "function") {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(
       "@arcjet/guard: guardTool() requires a tool() result with a callback. Pass the result of tool({ callback }), not the config object.",
     );
@@ -230,7 +229,7 @@ export function guardTool<TInput = unknown, TTool extends StrandsTool = StrandsT
     );
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
   const wrapped = Object.defineProperties(
@@ -246,7 +245,7 @@ export function guardTool<TInput = unknown, TTool extends StrandsTool = StrandsT
     // closes over the authored callback at construction. Copy it so
     // the original tool's stream() path stays unguarded for the
     // caller who still holds that reference, then gate the copy.
-    // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
     const innerProto = Object.getPrototypeOf(inner) as object | null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
     const innerCopy = Object.defineProperties(

@@ -173,7 +173,7 @@
     "genkit": "1.41.0",
     "langchain": "1.5.10",
     "miniflare": "4.20260730.0",
-    "oxlint-tsgolint": "0.24.0",
+    "oxlint-tsgolint": "7.0.2001",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },

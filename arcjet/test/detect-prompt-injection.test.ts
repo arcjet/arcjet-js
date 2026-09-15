@@ -185,7 +185,7 @@ test("detectPromptInjection", async function (t) {
     assert.equal(result2.state, "CACHED");
     assert.equal(result2.conclusion, "DENY");
     assert.ok(result2.reason instanceof ArcjetPromptInjectionReason);
-    assert.equal((result2.reason as ArcjetPromptInjectionReason).injectionDetected, true);
+    assert.equal(result2.reason.injectionDetected, true);
     assert.equal("score" in result2.reason, false);
   });
 
@@ -294,7 +294,7 @@ test("integration with arcjet client", async function (t) {
     assert.ok(decision instanceof ArcjetDenyDecision);
     assert.equal(decision.conclusion, "DENY");
     assert.ok(decision.reason instanceof ArcjetPromptInjectionReason);
-    assert.equal((decision.reason as ArcjetPromptInjectionReason).injectionDetected, true);
+    assert.equal(decision.reason.injectionDetected, true);
     assert.equal("score" in decision.reason, false);
   });
 
@@ -341,7 +341,7 @@ test("integration with arcjet client", async function (t) {
     assert.ok(decision instanceof ArcjetAllowDecision);
     assert.equal(decision.conclusion, "ALLOW");
     assert.ok(decision.reason instanceof ArcjetPromptInjectionReason);
-    assert.equal((decision.reason as ArcjetPromptInjectionReason).injectionDetected, false);
+    assert.equal(decision.reason.injectionDetected, false);
     assert.equal("score" in decision.reason, false);
   });
 

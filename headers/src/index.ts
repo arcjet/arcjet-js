@@ -17,7 +17,7 @@ type HeadersInit =
  *   [MDN Reference](https://developer.mozilla.org/docs/Web/API/Headers).
  */
 export class ArcjetHeaders extends Headers {
-  constructor(init?: HeadersInit | undefined) {
+  constructor(init?: HeadersInit) {
     super();
     if (typeof init !== "undefined" && typeof init !== "string" && init !== null) {
       if (isIterable(init)) {

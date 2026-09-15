@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion, typescript/unbound-method -- test infrastructure and mocks
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion -- test infrastructure and mocks
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

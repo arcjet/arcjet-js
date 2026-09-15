@@ -34,9 +34,6 @@ export function createTransport(baseUrl: string, options?: TransportOptions): Tr
   });
 }
 
-function fetchProxy(
-  input: Request | URL | string,
-  init?: RequestInit | undefined,
-): Promise<Response> {
+function fetchProxy(input: Request | URL | string, init?: RequestInit): Promise<Response> {
   return fetch(input, { ...init, redirect: "follow" });
 }

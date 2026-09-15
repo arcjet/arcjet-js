@@ -89,7 +89,6 @@ async function startH2ServerViaNode(): Promise<{
   // Cancel the rest of the stream — we only need the first line
   await child.stdout.cancel();
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
   const info = JSON.parse(buf.split("\n")[0]) as { baseUrl: string; ca: string };
 
   return {

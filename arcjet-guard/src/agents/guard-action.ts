@@ -68,7 +68,6 @@ export class ArcjetDeniedError extends Error {
  * signals are caught and result in this error. This is distinct from
  * `ArcjetDeniedError`, which is thrown when a rule actively denies the action.
  */
-// oxlint-disable-next-line eslint/max-classes-per-file -- Paired exception class for unavailable vs denied paths
 export class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
   readonly decision?: DecisionAllow;
