@@ -8,6 +8,7 @@ import type {
 } from "../types.ts";
 import { captureEvent, shouldWarn } from "./capture.ts";
 import type { ArcjetAgentClient } from "./capture.ts";
+import { labelRejectedByService } from "./label.ts";
 
 /**
  * The guard → deny → execute → capture sequence shared by `guardTool()` and
@@ -138,6 +139,18 @@ export async function runGuarded<T>(
       warnUnavailable(action, "failed-open", false);
       // fall through to execute, with nothing judged
       judgedFully = false;
+    }
+    // The service replaced the label, so no published policy could have
+    // matched and the guard did not run. Unevaluated policy, not an allow.
+    if (decision.conclusion === "ALLOW" && labelRejectedByService(decision) && failClosed) {
+      warnUnavailable(action, "failed-open", true);
+      captureEvent(client, {
+        action,
+        ...correlation,
+        ...(decisionId !== undefined && { decisionId }),
+        metadata: { ...metadata, outcome: "unavailable" },
+      });
+      return onUnavailable({ kind: "failed-open", decision });
     }
     if (decision.conclusion === "DENY") {
       captureEvent(client, {

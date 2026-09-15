@@ -18,6 +18,30 @@
  * not gate.
  */
 
+/**
+ * The code the service attaches when it rejected a label and substituted
+ * `invalid-label`.
+ */
+export const LABEL_REJECTED_CODE = "AJ1023";
+
+/**
+ * Whether the service reported that it rejected this decision's label.
+ *
+ * When it did, the label it evaluated was `invalid-label`, so no published
+ * policy could have matched and the guard did not run. That is unevaluated
+ * policy rather than an allow, and every caller routes it through
+ * `onGuardError` — which is why this lives in one place rather than in each of
+ * the six decision classifiers.
+ *
+ * A capture call has no response to carry the code, so capture uses
+ * {@link labelProblem} instead.
+ */
+export function labelRejectedByService(decision: {
+  readonly warnings: readonly { readonly code: string }[];
+}): boolean {
+  return decision.warnings.some((warning) => warning.code === LABEL_REJECTED_CODE);
+}
+
 const MAX_LABEL_BYTES = 256;
 
 const encoder = new TextEncoder();
