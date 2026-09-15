@@ -26,6 +26,8 @@ test("assignOffsets locates tokens in the original text", function () {
     { entity: "B-SURNAME", score: 0.99, word: "rivera", index: 5 },
   ];
   const withOffsets = assignOffsets(value, tokens);
+  assert.notEqual(withOffsets[0].start, undefined);
+  assert.notEqual(withOffsets[1].start, undefined);
   assert.equal(value.slice(withOffsets[0].start, withOffsets[0].end), "Alex");
   assert.equal(value.slice(withOffsets[1].start, withOffsets[1].end), "Rivera");
 });

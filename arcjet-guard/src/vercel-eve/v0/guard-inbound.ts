@@ -173,10 +173,10 @@ export async function guardInbound(
       metadata,
       ...(await resolveActorInputs(options, text)),
       onAllow: (): InboundVerdict => ({ allowed: true }),
+      // oxlint-disable typescript/no-deprecated -- populating the alias until it is removed in the next major
       onDeny: (decision: DecisionDeny): InboundVerdict => ({
         allowed: false,
         outcome: "DENY",
-        // oxlint-disable-next-line typescript/no-deprecated -- populating the alias until it is removed in the next major
         reason: "DENY",
         decision,
         message: deniedReason(decision),
@@ -184,10 +184,10 @@ export async function guardInbound(
       onUnavailable: (): InboundVerdict => ({
         allowed: false,
         outcome: "UNAVAILABLE",
-        // oxlint-disable-next-line typescript/no-deprecated -- populating the alias until it is removed in the next major
         reason: "UNAVAILABLE",
         message: unavailableReason(),
       }),
+      // oxlint-enable typescript/no-deprecated
       onGuardError: options.onGuardError ?? "deny",
     });
   } catch {
