@@ -38,12 +38,13 @@ jobs:
       # repo, which typechecks as two distinct declarations of the same type.
       - name: Check vendor SDK version alignment
         run: node .github/scripts/check-sdk-version-alignment.mjs
+      # Type-aware lint and type checking both need each package's
+      # dependencies built (for their .d.ts).
+      - name: Build
+        run: npm run build
       - name: Lint (oxlint)
         run: npm run lint
       - name: Format check (oxfmt)
         run: npm run format:check
-      # Type checking needs each package's dependencies built (for their .d.ts).
-      - name: Build
-        run: npm run build
       - name: Type check (tsgo)
         run: npm run typecheck
