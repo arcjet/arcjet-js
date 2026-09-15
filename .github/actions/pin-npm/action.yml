@@ -10,4 +10,4 @@ runs:
   steps:
     - name: Install pinned npm
       shell: bash
-      run: npm install -g npm@12.0.1
+      run: npm install -g npm@12.0.2
