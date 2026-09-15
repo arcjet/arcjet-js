@@ -30,36 +30,38 @@ const proxyEnvironmentKeys = [
 const tunnelSockets = new WeakMap<net.Server, Set<net.Socket>>();
 
 /**
- * Open server-side HTTP/2 sessions per origin server.
+ * Open connections per HTTP/2 origin server.
  *
  * The client's `Http2SessionManager` keeps its session — and the underlying
  * socket — alive for reuse with a long idle timeout, so a direct HTTP/2 origin's
- * `server.close()` would wait on that idle connection (hanging the runner on
- * some Node versions; `closeAllConnections()` doesn't tear down an HTTP/2
- * *session*). We track sessions per server via {@linkcode trackHttp2Sessions}
- * and destroy them in {@linkcode close} to release the client connection.
+ * `server.close()` would wait on that idle connection (`closeAllConnections()`
+ * doesn't tear down an HTTP/2 *session*). Tracking the sessions is not enough
+ * either: a session that has already reached `closed` ignores `destroy()` and
+ * no longer exposes a usable `socket`, leaving the TCP connection — and the
+ * runner — alive. We track the accepted sockets per server via
+ * {@linkcode trackHttp2Connections} and destroy them in {@linkcode close}.
  */
-const http2Sessions = new WeakMap<net.Server, Set<http2.ServerHttp2Session>>();
+const http2Connections = new WeakMap<net.Server, Set<net.Socket>>();
 
 /**
- * Track the HTTP/2 sessions a server accepts so {@linkcode close} can destroy
- * them. Use this for direct HTTP/2 origins (those reached without a `CONNECT`
- * tunnel, whose teardown otherwise closes the client connection).
+ * Track the connections a server accepts so {@linkcode close} can destroy them.
+ * Use this for direct HTTP/2 origins (those reached without a `CONNECT` tunnel,
+ * whose teardown otherwise closes the client connection).
  *
  * @param server
- *   HTTP/2 server to track sessions for.
+ *   HTTP/2 server to track connections for.
  * @returns
  *   The same server, for chaining with `http2.createServer(...)`.
  */
-export function trackHttp2Sessions<T extends http2.Http2Server | http2.Http2SecureServer>(
+export function trackHttp2Connections<T extends http2.Http2Server | http2.Http2SecureServer>(
   server: T,
 ): T {
-  const sessions = new Set<http2.ServerHttp2Session>();
-  server.on("session", (session) => {
-    sessions.add(session);
-    session.on("close", () => sessions.delete(session));
+  const sockets = new Set<net.Socket>();
+  server.on("connection", (socket: net.Socket) => {
+    sockets.add(socket);
+    socket.on("close", () => sockets.delete(socket));
   });
-  http2Sessions.set(server, sessions);
+  http2Connections.set(server, sockets);
   return server;
 }
 
@@ -122,13 +124,13 @@ export async function close(server: net.Server): Promise<void> {
         socket.destroy();
       }
     }
-    // Destroy any tracked HTTP/2 sessions so a client holding an idle session
-    // (see `http2Sessions`) doesn't keep `server.close()` — and the process —
-    // waiting on its idle timeout.
-    const sessions = http2Sessions.get(server);
-    if (sessions) {
-      for (const session of sessions) {
-        session.destroy();
+    // Destroy any tracked HTTP/2 connections so a client holding an idle
+    // session (see `http2Connections`) doesn't keep `server.close()` — and the
+    // process — waiting on its idle timeout.
+    const connections = http2Connections.get(server);
+    if (connections) {
+      for (const connection of connections) {
+        connection.destroy();
       }
     }
   });
