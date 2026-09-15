@@ -9,7 +9,7 @@ import { Code, ConnectError, createClient } from "@connectrpc/connect";
 import { createTransport as createTransportEdge } from "../dist/edge-light.js";
 import { createTransport } from "../dist/index.js";
 import { ElizaService, SayRequestSchema, SayResponseSchema } from "./eliza_pb.ts";
-import { close, listen, trackHttp2Sessions } from "./proxy.ts";
+import { close, listen, trackHttp2Connections } from "./proxy.ts";
 import { within } from "./within.ts";
 
 interface WireRequest {
@@ -69,7 +69,7 @@ async function withWireServer(
     return;
   }
 
-  const server = trackHttp2Sessions(http2.createServer());
+  const server = trackHttp2Connections(http2.createServer());
   server.on("stream", async (stream, headers) => {
     // Client cancellation resets the stream. The reset is the behavior under
     // test, not an uncaught server error.

@@ -21,7 +21,7 @@ import {
   createProxy,
   generateSelfSignedCert,
   listen,
-  trackHttp2Sessions,
+  trackHttp2Connections,
   withHttpProxyEnvironment,
 } from "./proxy.ts";
 
@@ -105,7 +105,7 @@ test("@arcjet/transport", async function (t) {
     const port = uniquePort++;
     const url = "http://localhost:" + port;
 
-    const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
+    const server = trackHttp2Connections(http2.createServer(elizaRoutes()));
 
     await new Promise(function (resolve) {
       server.listen({ port }, function () {
@@ -195,7 +195,7 @@ test("@arcjet/transport", async function (t) {
       // A cleartext HTTP/2 (h2c) origin lets us drive a real round trip through
       // the tunnel without certificates: the `CONNECT` proxy tunnels TCP and
       // the transport speaks HTTP/2 over it end-to-end.
-      const origin = trackHttp2Sessions(http2.createServer(elizaRoutes()));
+      const origin = trackHttp2Connections(http2.createServer(elizaRoutes()));
       const originUrl = await listen(origin);
       const authority = new URL(originUrl).host;
 
@@ -321,7 +321,7 @@ test("@arcjet/transport", async function (t) {
       // hostname.
       const hostname = "localhost";
       const { key, cert } = generateSelfSignedCert(hostname);
-      const origin = trackHttp2Sessions(http2.createSecureServer({ key, cert }));
+      const origin = trackHttp2Connections(http2.createSecureServer({ key, cert }));
       origin.on("stream", function (stream) {
         stream.respond({ ":status": 200 });
         stream.end("ok");
@@ -388,7 +388,7 @@ test("@arcjet/transport", async function (t) {
     const port = uniquePort++;
     const url = "http://localhost:" + port;
 
-    const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
+    const server = trackHttp2Connections(http2.createServer(elizaRoutes()));
 
     await new Promise(function (resolve) {
       server.listen({ port }, function () {
@@ -454,7 +454,7 @@ test("@arcjet/transport", async function (t) {
     const port = uniquePort++;
     const url = "http://localhost:" + port;
 
-    const server = trackHttp2Sessions(http2.createServer(elizaRoutes()));
+    const server = trackHttp2Connections(http2.createServer(elizaRoutes()));
 
     await new Promise(function (resolve) {
       server.listen({ port }, function () {
