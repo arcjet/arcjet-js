@@ -2,7 +2,7 @@
 name: guard
 description: "Add Arcjet Guard to non-HTTP JavaScript: agent tool calls, MCP handlers, queue workers, and background jobs. Use when there is no HTTP request object, or when the user asks to guard tools, rate-limit agent actions, or block prompt injection on tool arguments."
 license: Apache-2.0
-compatibility: JavaScript and TypeScript apps using @arcjet/guard on Node.js >= 22.
+compatibility: JavaScript and TypeScript apps using @arcjet/guard on Node.js >=22.21.0 <23 || >=24.5.0.
 metadata:
   author: arcjet
   type: core
@@ -38,8 +38,8 @@ Declare rules at module scope so `.deniedResult(decision)` works.
 
 Hardcode the `label`. Do not interpolate in a generic dispatcher.
 
-Labels: lowercase letters, digits, `-`, `.` only; start and end with a letter
-or digit. `tools.get-weather`, not `tools.get_weather`.
+Hardcode labels as slugs. Prefer lowercase letters, digits, `-`, and `.`
+(`tools.get-weather`). Start and end with a letter or digit.
 
 ```ts
 const decision = await arcjet.guard("tools.get-weather", {

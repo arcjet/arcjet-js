@@ -248,8 +248,9 @@ ID), `agent` (which automated actor), `workflow` (logical workflow name),
 (`reversible`/`compensable`/`irreversible`), `resource` (what's acted on,
 e.g. `repo:owner/name#123`). The `action` is not metadata — it is the guard
 label / capture action: `resource.verb` past tense, validated server-side as
-a slug (lowercase letters, digits, dash, and dot only — no underscores or
-uppercase). Use `order.looked-up`, not `order.looked_up`.
+a slug. Prefer lowercase letters, digits, dash, and dot
+(`order.looked-up`) so every SDK accepts them. Start and end with a letter
+or digit.
 
 Metadata accepts any JSON-serializable value — nested objects and arrays
 included. The server enforces the following limits, dropping keys that exceed
