@@ -51,24 +51,47 @@ export interface ArcjetDenialResult {
 }
 
 /**
- * Seconds until a rate-limited call may be retried, or `undefined` when the
- * decision carries no reset time to derive one from.
+ * Upper bound on a retry hint.
  *
- * Only meaningful for a `RATE_LIMIT` denial. A co-occurring rule that allowed
- * can still leave a `resetAtUnixSeconds` in `decision.results`, so the caller
- * decides whether to consult this at all — the reason check stays with the
- * caller rather than being duplicated here.
+ * A reset near the uint32 ceiling would otherwise yield a nonsensical wait
+ * here, and a negative one on a 32-bit consumer.
+ */
+const MAX_RETRY_AFTER_SECONDS = 24 * 60 * 60;
+
+/**
+ * Seconds until a rate-limited call may be retried, or `undefined` when no
+ * denying rate-limit rule carries a usable reset.
+ *
+ * Only meaningful for a `RATE_LIMIT` denial; the reason check stays with the
+ * caller rather than being duplicated here. Among the results, only rules that
+ * denied are considered, and the latest reset among them is reported — that is
+ * when the call would actually be permitted, whereas the earliest (or the
+ * first in submission order) invites a retry that the longer rule denies
+ * again.
  *
  * @internal Exported for use by the vendor namespaces, so every one of them
  * reports the same retry-after; not part of the public API.
  */
 export function retryAfterSeconds(decision: DecisionDeny): number | undefined {
+  let latest: number | undefined;
+
   for (const result of decision.results) {
-    if ("resetAtUnixSeconds" in result && typeof result.resetAtUnixSeconds === "number") {
-      return Math.max(0, Math.ceil(result.resetAtUnixSeconds - Date.now() / 1000));
+    if (result.conclusion !== "DENY") continue;
+    if (!("resetAtUnixSeconds" in result) || typeof result.resetAtUnixSeconds !== "number") {
+      continue;
     }
+
+    const reset = result.resetAtUnixSeconds;
+    // Zero is proto3's default for an omitted field, not a reset in 1970.
+    // Treating it as real would tell the model to retry immediately.
+    if (reset <= 0) continue;
+
+    if (latest === undefined || reset > latest) latest = reset;
   }
-  return undefined;
+
+  if (latest === undefined) return undefined;
+
+  return Math.min(Math.max(0, Math.ceil(latest - Date.now() / 1000)), MAX_RETRY_AFTER_SECONDS);
 }
 
 /** Model- and user-readable explanation of a denial. */

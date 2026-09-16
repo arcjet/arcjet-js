@@ -102,6 +102,32 @@ export function decisionDenyRateLimitNoReset(): DecisionDeny {
 }
 
 /**
+ * Stub DENY decision (RATE_LIMIT) carrying several rate-limit results.
+ *
+ * Each entry becomes one TOKEN_BUCKET result, in submission order, so a test
+ * can place an allowing rule before a denying one — the shape no test covered
+ * before and the one that hid the retry-after defect.
+ */
+export function decisionDenyRateLimitMulti(
+  results: readonly { conclusion: "ALLOW" | "DENY"; resetAtUnixSeconds: number }[],
+): DecisionDeny {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
+  return {
+    conclusion: "DENY",
+    reason: "RATE_LIMIT",
+    id: "gdec_deny_rl_multi",
+    results: results.map((result) => ({
+      conclusion: result.conclusion,
+      reason: "RATE_LIMIT",
+      type: "TOKEN_BUCKET",
+      resetAtUnixSeconds: result.resetAtUnixSeconds,
+    })),
+    warnings: [],
+    hasFailedOpen: () => false,
+  } as unknown as DecisionDeny;
+}
+
+/**
  * Stub fail-open ALLOW decision.
  *
  * `id` is empty because that is what the client synthesizes on a fail-open

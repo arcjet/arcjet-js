@@ -9,6 +9,7 @@ import {
   decisionDenyPromptInjection,
   decisionDenyPromptInjectionWithReset,
   decisionDenyRateLimit,
+  decisionDenyRateLimitMulti,
   decisionDenyRateLimitNoReset,
 } from "../../test/_shared/stub-client.ts";
 import {
@@ -19,6 +20,12 @@ import {
   unavailableResult,
   UNAVAILABLE_RETRY_AFTER_SECONDS,
 } from "./denial.ts";
+
+/** Wall clock moves between building a stub and reading the result. */
+function assertAboutSeconds(actual: number | undefined, expected: number): void {
+  assert.ok(typeof actual === "number", `expected a number, got ${actual}`);
+  assert.ok(Math.abs(actual - expected) <= 1, `expected about ${expected} seconds, got ${actual}`);
+}
 
 describe("shared denial payload", () => {
   test("rate-limit denial is retryable and may carry retry-after", () => {
@@ -42,6 +49,77 @@ describe("shared denial payload", () => {
     assert.equal(result.retryAfterSeconds, undefined);
     assert.match(deniedReason(decision), /It may be retried later\./);
     assert.ok(!deniedReason(decision).includes("seconds"), "Should not mention seconds");
+  });
+
+  /**
+   * Which reset a multi-rule denial reports.
+   *
+   * The hint says when the call would actually be permitted, so only rules
+   * that denied are considered and the latest of their resets wins. Reporting
+   * the earliest, or the first in submission order, invites a retry that is
+   * denied again by the longer rule.
+   */
+  describe("several rate-limit rules on one denial", () => {
+    test("a rule that allowed does not supply the hint, even when submitted first", () => {
+      const now = Math.floor(Date.now() / 1000);
+      const decision = decisionDenyRateLimitMulti([
+        { conclusion: "ALLOW", resetAtUnixSeconds: now + 5 },
+        { conclusion: "DENY", resetAtUnixSeconds: now + 300 },
+      ]);
+
+      assertAboutSeconds(retryAfterSeconds(decision), 300);
+    });
+
+    /**
+     * The case that actually proves the conclusion filter.
+     *
+     * With the allowing rule's reset *earlier*, taking the latest reset gives
+     * the right answer whether or not the filter is there. Only an allowing
+     * rule with a later reset tells the two apart.
+     */
+    test("a rule that allowed is ignored even when its reset is later", () => {
+      const now = Math.floor(Date.now() / 1000);
+      const decision = decisionDenyRateLimitMulti([
+        { conclusion: "ALLOW", resetAtUnixSeconds: now + 900 },
+        { conclusion: "DENY", resetAtUnixSeconds: now + 60 },
+      ]);
+
+      assertAboutSeconds(retryAfterSeconds(decision), 60);
+    });
+
+    test("the latest reset among denying rules is reported", () => {
+      const now = Math.floor(Date.now() / 1000);
+      const decision = decisionDenyRateLimitMulti([
+        { conclusion: "DENY", resetAtUnixSeconds: now + 60 },
+        { conclusion: "DENY", resetAtUnixSeconds: now + 600 },
+      ]);
+
+      assertAboutSeconds(retryAfterSeconds(decision), 600);
+    });
+
+    test("a zero reset is an omitted field, not a reset in 1970", () => {
+      const decision = decisionDenyRateLimitMulti([{ conclusion: "DENY", resetAtUnixSeconds: 0 }]);
+
+      assert.equal(retryAfterSeconds(decision), undefined);
+    });
+
+    test("the hint is clamped to 24 hours", () => {
+      const now = Math.floor(Date.now() / 1000);
+      const decision = decisionDenyRateLimitMulti([
+        { conclusion: "DENY", resetAtUnixSeconds: now + 48 * 60 * 60 },
+      ]);
+
+      assert.equal(retryAfterSeconds(decision), 24 * 60 * 60);
+    });
+
+    test("no denying rule means no hint", () => {
+      const now = Math.floor(Date.now() / 1000);
+      const decision = decisionDenyRateLimitMulti([
+        { conclusion: "ALLOW", resetAtUnixSeconds: now + 5 },
+      ]);
+
+      assert.equal(retryAfterSeconds(decision), undefined);
+    });
   });
 
   test("prompt-injection denial is not retryable", () => {
