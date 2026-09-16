@@ -178,6 +178,8 @@ export const agent = new Agent({
 - On DENY, `processInput` / `processInputStep` call `abort()` and Mastra
   raises a tripwire. If `abort()` were to return, the processor still
   throws so the turn cannot fail open.
+- `guardProcessor` fails closed by default. A raw `guard()` call does not —
+  inbound sites that skip this helper must also check `hasFailedOpen()`.
 - The same processor implements `processOutputResult` so it can sit on
   `outputProcessors` as well. Use a separate action name for outbound.
 - Default `onGuardError: "deny"` — if the guard cannot be evaluated, the

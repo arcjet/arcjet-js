@@ -198,6 +198,8 @@ for await (const message of query({
 
 - On DENY, `UserPromptSubmit` returns `{ decision: "block", reason }` and
   the prompt is erased. The model never sees it.
+- `guardHooks` inbound fails closed by default. A raw `guard()` call does
+  not — inbound sites that skip this helper must also check `hasFailedOpen()`.
 - Default `onGuardError: "deny"` — if the guard cannot be evaluated, the
   prompt is blocked. Use `"allow"` on `inbound` when the human cost of
   rejecting a legitimate message exceeds the security cost of an outage.

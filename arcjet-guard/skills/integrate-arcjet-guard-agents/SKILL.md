@@ -237,7 +237,8 @@ two distinguishable in a handler. The fail-closed tool result carries a fixed
 `"unavailable"`, not `"denied"`, so an operator can query the two separately. The
 layering resolves a potential confusion: the core `@arcjet/guard` client still
 fails open by construction and _reports_ it via `hasFailedOpen()`; these helpers
-_decide_ to block on it.
+_decide_ to block on it. Inbound sites that call `guard()` directly must
+also check `hasFailedOpen()`.
 
 ## Metadata vocabulary
 

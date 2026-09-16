@@ -257,11 +257,8 @@ const decision = await arcjet.guard({
   ...langchainContext({ configurable: { thread_id: conversationId } }),
 });
 
-if (decision.conclusion === "DENY") {
+if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
   throw new Error("message blocked");
-}
-if (decision.hasFailedOpen()) {
-  throw new Error("inbound screening failed open");
 }
 
 await agent.invoke(

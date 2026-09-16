@@ -261,6 +261,8 @@ export default defineChannel({
       // The same value is the guard's correlation id and the channel-local
       // continuation address, which is what makes the two Sequences joinable.
       const correlationId = conversationId;
+      // `guardInbound` fails closed by default. A raw `guard()` call does not —
+      // inbound sites that skip this helper must also check `hasFailedOpen()`.
       const verdict = await guardInbound(arcjet, message, {
         rules: [detectPromptInjection()(message)],
         action: "message.received",
