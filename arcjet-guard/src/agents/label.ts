@@ -12,10 +12,11 @@
  * call time as `AJ1023`. Too strict is not.
  *
  * The cases both sides agree on are in `test/_shared/guard-label-cases.json`,
- * copied from the `arcjet` monorepo. See
- * `docs/adrs/2026-09-15-each-sdk-checks-a-guard-label-before-sending-it.md`
- * there for why every SDK carries a copy and what the shared cases do and do
- * not gate.
+ * copied from the source of truth in the `arcjet` monorepo. Every validator
+ * that decides whether a label is usable reads them, so a copy that drifts
+ * fails by name. Nothing enforces that this copy is current, because the
+ * monorepo is private and this repository is public — a change to the grammar
+ * updates every copy in the same change.
  */
 
 /**

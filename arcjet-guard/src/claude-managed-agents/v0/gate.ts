@@ -102,6 +102,11 @@ export async function runGate<T>(
       });
       return onUnavailable({ kind: "failed-open", decision });
     }
+    if (decision.conclusion === "ALLOW" && labelRejectedByService(decision)) {
+      // Failing open here still means the guard did not run, so say so rather
+      // than letting this read as an evaluated allow.
+      warnUnavailable(action, "failed-open", false);
+    }
     if (decision.conclusion === "DENY") {
       captureEvent(client, {
         action,

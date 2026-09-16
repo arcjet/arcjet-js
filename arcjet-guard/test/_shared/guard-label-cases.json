@@ -1,7 +1,7 @@
 {
   "revision": 1,
   "source": "proto/decide/v2/guard-label-cases.json in the arcjet monorepo",
-  "adr": "docs/adrs/2026-09-15-each-sdk-checks-a-guard-label-before-sending-it.md",
+  "why": "Every validator that decides whether a guard label is usable reads these cases, so a copy that drifts fails by name. A label is matched against a published policy by exact string comparison, so the rule cannot differ between them.",
   "grammar": "1-256 bytes; lowercase ASCII letters, digits, '-', '.', '_'; must start and end with a lowercase letter or digit",
   "note": "The 256-byte boundary is not a case here, because a 257-character string is unreadable in JSON. Each consumer generates it: 256 'a' characters valid, 257 invalid.",
   "cases": [
