@@ -323,6 +323,7 @@ const aj = arcjet({
       },
       bots: {
         mode: "LIVE",
+        allow: [], // block all detected bots
       },
       email: {
         mode: "LIVE",

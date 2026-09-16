@@ -238,7 +238,7 @@ const decision = await arcjet.guard({
   ...strandsAgentContext({ invocationState }),
 });
 
-if (decision.conclusion === "DENY") {
+if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
   throw new Error("message blocked");
 }
 

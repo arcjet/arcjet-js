@@ -260,6 +260,9 @@ const decision = await arcjet.guard({
 if (decision.conclusion === "DENY" && decision.reason === "PROMPT_INJECTION") {
   throw new Error("Prompt injection detected — please rephrase your message");
 }
+if (decision.hasFailedOpen()) {
+  throw new Error("Prompt injection check failed open");
+}
 
 const result = piRule.result(decision);
 // Billing is undefined when the service does not report usage. Prompt
@@ -290,6 +293,9 @@ const decision = await arcjet.guard({
 if (decision.conclusion === "DENY" && decision.reason === "MODERATE_CONTENT") {
   throw new Error("Harmful content detected — please rephrase your message");
 }
+if (decision.hasFailedOpen()) {
+  throw new Error("Content moderation check failed open");
+}
 
 const result = moderate.result(decision);
 // `detected` is true when harmful content was found. Billing is undefined
@@ -319,6 +325,9 @@ const decision = await arcjet.guard({
 
 if (decision.conclusion === "DENY" && decision.reason === "SENSITIVE_INFO") {
   throw new Error("Sensitive information detected");
+}
+if (decision.hasFailedOpen()) {
+  throw new Error("Sensitive information check failed open");
 }
 ```
 
@@ -1395,12 +1404,9 @@ gate for those — its `wrapToolCall` denies by returning a real
     ...openaiAgentsContext({ context: appContext, conversationId }),
   });
 
-  if (decision.conclusion === "DENY") {
+  if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
     throw new Error("message blocked");
   }
-  // `guard()` fails open, so an ALLOW is not proof the rules ran. Gate on
-  // `decision.hasFailedOpen()` here if this call site must fail closed; the
-  // agent helpers below already default to that.
   await run(agent, userText, { context: appContext });
   ```
 
@@ -1482,7 +1488,7 @@ they are not a deny. There is no `guardHooks` and no `guardToolNode`.
     ...genkitContext({ context: appContext }),
   });
 
-  if (decision.conclusion === "DENY") {
+  if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
     throw new Error("message blocked");
   }
   await ai.generate({
@@ -1579,7 +1585,7 @@ correlation.
     ...strandsAgentContext({ invocationState }),
   });
 
-  if (decision.conclusion === "DENY") {
+  if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
     throw new Error("message blocked");
   }
   const agent = new Agent({

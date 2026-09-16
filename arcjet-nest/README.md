@@ -592,7 +592,7 @@ than creating a new instance per request.
 ```ts
 // chat.controller.ts — extend per-route with withRule()
 import { ArcjetNest, InjectArcjet, detectBot, tokenBucket } from "@arcjet/nest";
-import { Controller, Post, Req } from "@nestjs/common";
+import { Body, Controller, Post, Req } from "@nestjs/common";
 import type { Request } from "express";
 
 @Controller("chat")

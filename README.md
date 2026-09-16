@@ -691,7 +691,7 @@ async function handleToolCall(
     rules: [rl, piRule(userMessage)],
   });
 
-  if (decision.conclusion === "DENY") {
+  if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
     throw new Error(`Blocked: ${decision.reason}`);
   }
 

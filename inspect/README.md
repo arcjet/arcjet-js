@@ -48,7 +48,7 @@ npm install @arcjet/inspect
 
 ```ts
 import http from "node:http";
-import arcjet, { detectBot } from "@arcjet/next";
+import arcjet, { detectBot } from "@arcjet/node";
 import { isMissingUserAgent } from "@arcjet/inspect";
 
 // Get your Arcjet key at <https://app.arcjet.com>.
