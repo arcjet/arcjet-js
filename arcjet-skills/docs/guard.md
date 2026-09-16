@@ -37,18 +37,8 @@ Hardcode labels as slugs. Prefer lowercase letters, digits, `-`, and `.`
 and end with a letter or digit; max 256 bytes. Do not interpolate user input.
 
 ```ts
-import { tokenBucket } from "@arcjet/guard";
-
-const toolCallLimit = tokenBucket({
-  bucket: "tools.get-weather",
-  refillRate: 10,
-  intervalSeconds: 60,
-  maxTokens: 100,
-});
-
-const decision = await arcjet.guard({
-  label: "tools.get-weather",
-  rules: [toolCallLimit({ key: userId, requested: 1 })],
+const decision = await arcjet.guard("tools.get-weather", {
+  rules: [/* ... */],
   metadata: { user: { id: userId } },
 });
 
@@ -61,9 +51,6 @@ if (decision.conclusion === "DENY") {
     throw new Error("input flagged as prompt injection");
   }
   return { error: decision.reason };
-}
-if (decision.hasFailedOpen()) {
-  throw new Error("guard failed open");
 }
 ```
 

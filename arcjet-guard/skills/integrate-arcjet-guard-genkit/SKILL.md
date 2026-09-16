@@ -258,7 +258,7 @@ const decision = await arcjet.guard({
   ...genkitContext({ context: appContext }),
 });
 
-if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
+if (decision.conclusion === "DENY") {
   throw new Error("message blocked");
 }
 

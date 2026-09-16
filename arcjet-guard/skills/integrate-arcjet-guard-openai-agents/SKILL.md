@@ -196,7 +196,7 @@ const decision = await arcjet.guard({
   ...openaiAgentsContext({ context: appContext, conversationId }),
 });
 
-if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
+if (decision.conclusion === "DENY") {
   throw new Error("message blocked");
 }
 

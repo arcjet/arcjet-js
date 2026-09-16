@@ -136,8 +136,6 @@ const verdict = await guardEvents(
 if (!verdict.allowed) {
   return verdict.message;
 }
-// `guardEvents` fails closed by default. A raw `guard()` call does not —
-// inbound sites that skip this helper must also check `hasFailedOpen()`.
 ```
 
 The same helper gates `sessions.create({ initial_events })` — pass those

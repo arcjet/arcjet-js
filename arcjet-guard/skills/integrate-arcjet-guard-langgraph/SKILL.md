@@ -193,7 +193,7 @@ const decision = await arcjet.guard({
   ...langgraphAgentContext(config),
 });
 
-if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
+if (decision.conclusion === "DENY") {
   throw new Error("message blocked");
 }
 

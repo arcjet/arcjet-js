@@ -215,8 +215,11 @@ const decision = await arcjet.guard({
   ...googleAdkContext({ context: { sessionId: conversationId } }),
 });
 
-if (decision.conclusion === "DENY" || decision.hasFailedOpen()) {
+if (decision.conclusion === "DENY") {
   throw new Error("message blocked");
+}
+if (decision.hasFailedOpen()) {
+  throw new Error("inbound screening failed open");
 }
 
 for await (const event of runner.runAsync({
