@@ -57,10 +57,12 @@ test("exports the correct runtime values (AC5.1)", () => {
   const expectedRuntimeNames = [
     "ArcjetDeniedError",
     "ArcjetGuardUnavailableError",
+    "ArcjetInvalidLabelError",
     "captureAction",
     "createAgentContext",
     "guardAction",
     "securityMetadata",
+    "validateGuardLabel",
   ];
 
   assert.deepEqual(

@@ -6,6 +6,7 @@ import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import type {
   Approval,
@@ -159,6 +160,10 @@ export function guardApproval<TInput = Record<string, unknown>>(
   client: ArcjetAgentClient,
   policy: GuardApprovalPolicy<TInput>,
 ): Approval<TInput> {
+  assertValidAction(policy.action, "guardApproval");
+  if (policy.response !== undefined) {
+    assertValidAction(policy.response.action, "guardApproval response");
+  }
   const request = createRequestApproval(client, policy);
   if (policy.response === undefined) {
     return request;

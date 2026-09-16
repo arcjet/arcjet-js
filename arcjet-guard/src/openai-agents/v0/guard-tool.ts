@@ -6,6 +6,7 @@ import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { openaiAgentsContext } from "./context.ts";
 import type { OpenAIAgentsContextSource } from "./context.ts";
@@ -210,6 +211,7 @@ export function guardTool<TInput = unknown, TTool extends OpenAIAgentsTool = Ope
   tool: TTool,
   policy: GuardToolPolicy<TInput>,
 ): TTool {
+  assertValidAction(policy.action, "guardTool");
   if (typeof tool.invoke !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(

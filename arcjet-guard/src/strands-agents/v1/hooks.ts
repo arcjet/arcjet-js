@@ -7,6 +7,7 @@ import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { strandsAgentContext } from "./context.ts";
 import type { StrandsContextSource } from "./context.ts";
@@ -239,6 +240,10 @@ export function createBeforeToolCallHandler(
   client: ArcjetAgentClient,
   policy: GuardHooksPolicy = {},
 ): (event: StrandsBeforeToolCallEvent) => Promise<void> {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
   return async (event: StrandsBeforeToolCallEvent): Promise<void> => {
     try {
       if (event.tool !== undefined && arcjetProtectedTool in event.tool) {
@@ -348,6 +353,10 @@ export function createAfterToolCallHandler(
   client: ArcjetAgentClient,
   policy: GuardHooksPolicy = {},
 ): (event: StrandsAfterToolCallEvent) => void {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
   return (event: StrandsAfterToolCallEvent): void => {
     try {
       const call: GuardHooksCall = {

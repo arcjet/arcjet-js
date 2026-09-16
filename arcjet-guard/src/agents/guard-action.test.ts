@@ -8,6 +8,7 @@ import {
   stubClient,
   decisionAllow,
   decisionDenyRateLimit,
+  decisionAllowLabelRejected,
   decisionFailOpenAllow,
   fakeRule,
 } from "../../test/_shared/stub-client.ts";
@@ -527,4 +528,51 @@ test("End to end against a real client: no rules does not read as an unavailable
   assert.strictEqual(result, sentinel);
 
   await arcjet.flush();
+});
+
+/**
+ * A label the service rejected is unevaluated policy.
+ *
+ * `AJ1023` means the label was replaced with `invalid-label`, so no published
+ * policy could have matched. The decision still reads ALLOW and
+ * `hasFailedOpen()` is false, which is exactly why this used to look like a
+ * guard that ran and permitted the call.
+ */
+test("a label the service rejected denies by default", async () => {
+  const { client } = stubClient(decisionAllowLabelRejected());
+  const ctx = createAgentContext({ correlationId: "c1" });
+  let ran = false;
+
+  await assert.rejects(
+    () =>
+      guardAction(client, ctx, { action: "tool.invoked" }, () => {
+        ran = true;
+        return Promise.resolve("ran");
+      }),
+    ArcjetGuardUnavailableError,
+  );
+  assert.equal(ran, false, "the guarded function must not run");
+});
+
+test("a label the service rejected runs under onGuardError allow", async () => {
+  const { client } = stubClient(decisionAllowLabelRejected());
+  const ctx = createAgentContext({ correlationId: "c2" });
+
+  const out = await guardAction(
+    client,
+    ctx,
+    { action: "tool.invoked", onGuardError: "allow" },
+    () => Promise.resolve("ran"),
+  );
+  assert.equal(out, "ran");
+});
+
+test("a decision with no AJ1023 is unaffected", async () => {
+  const { client } = stubClient(decisionAllow());
+  const ctx = createAgentContext({ correlationId: "c3" });
+
+  const out = await guardAction(client, ctx, { action: "tool.invoked" }, () =>
+    Promise.resolve("ran"),
+  );
+  assert.equal(out, "ran");
 });

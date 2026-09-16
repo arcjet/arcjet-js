@@ -9,7 +9,16 @@ import { Logger } from "@arcjet/logger";
  */
 export type ArcjetDiagnostic = {
   /** Stable machine-readable code. */
-  code: "AJ1001" | "AJ1017" | "AJ3000" | "AJ3001" | "AJ3002" | "AJ3003" | "AJ3004" | "AJ3006";
+  code:
+    | "AJ1001"
+    | "AJ1017"
+    | "AJ1023"
+    | "AJ3000"
+    | "AJ3001"
+    | "AJ3002"
+    | "AJ3003"
+    | "AJ3004"
+    | "AJ3006";
   /** Static human-readable description. */
   message: string;
   /** Number of events affected, when relevant. */

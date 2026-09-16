@@ -13,6 +13,7 @@ import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { tanstackAiContext } from "./context.ts";
 import type { TanStackAiContextSource } from "./context.ts";
@@ -288,6 +289,10 @@ export function guardMiddleware(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy = {},
 ): TanStackAiGuardMiddleware {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardMiddleware");
+  }
   const onBeforeToolCall = async (
     ctx: ChatMiddlewareContext,
     hookCtx: ToolCallHookContext,

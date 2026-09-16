@@ -133,6 +133,30 @@ export function decisionDenyRateLimitMulti(
  * `id` is empty because that is what the client synthesizes on a fail-open
  * path; a correlatable id cannot occur here.
  */
+/**
+ * Stub ALLOW decision whose label the service rejected.
+ *
+ * `AJ1023` means the label was replaced with `invalid-label`, so no published
+ * policy could have matched. The conclusion still reads ALLOW and
+ * `hasFailedOpen()` is false — which is precisely why this looked like a
+ * successful guard before the code was routed through `onGuardError`.
+ */
+export function decisionAllowLabelRejected(): Decision {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of Decision
+  return {
+    conclusion: "ALLOW",
+    id: "gdec_invalid_label",
+    results: [],
+    warnings: [
+      {
+        code: "AJ1023",
+        message: 'label is invalid and was replaced with "invalid-label"',
+      },
+    ],
+    hasFailedOpen: () => false,
+  } as unknown as Decision;
+}
+
 export function decisionFailOpenAllow(): Decision {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of Decision
   return {

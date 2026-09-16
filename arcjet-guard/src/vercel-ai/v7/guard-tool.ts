@@ -10,6 +10,7 @@ import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { DecisionDeny, RuleWithInput, ArcjetMetadata } from "../../types.ts";
 
 // Re-exported because this is the module the type was declared in before it
@@ -230,6 +231,7 @@ export function guardTool<T extends Tool>(
   tool: T,
   policy: GuardToolPolicy<T>,
 ): Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAgentContext | undefined> {
+  assertValidAction(policy.action, "guardTool");
   if (typeof tool.execute !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility; changing to TypeError is an observable API change
     throw new Error("@arcjet/guard: guardTool() requires a tool with an execute function");

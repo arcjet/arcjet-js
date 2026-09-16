@@ -13,6 +13,7 @@ import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraRequestContextLike } from "./context.ts";
@@ -232,6 +233,7 @@ export function guardProcessor(
   client: ArcjetAgentClient,
   policy: GuardProcessorPolicy,
 ): GuardProcessor {
+  assertValidAction(policy.action, "guardProcessor");
   const processorId = policy.id ?? "arcjet-guard";
   const processorName = policy.name ?? "Arcjet Guard";
 

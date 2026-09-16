@@ -1,5 +1,6 @@
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { labelRejectedByService } from "../../agents/label.ts";
 import type { PolicyInputMap } from "../../policy-input.ts";
 import type {
   ArcjetMetadata,
@@ -146,6 +147,23 @@ export async function runGate<T>(
       // fall through to allow tail
     }
 
+    // The service replaced the label, so no published policy could have
+    // matched and the guard did not run. Unevaluated policy, not an allow.
+    if (decision.conclusion === "ALLOW" && labelRejectedByService(decision) && failClosed) {
+      warnUnavailable(action, "failed-open", true);
+      captureEvent(client, {
+        action,
+        ...correlation,
+        ...(decisionId !== undefined && { decisionId }),
+        metadata: { ...metadata, outcome: "unavailable" },
+      });
+      return onUnavailable({ kind: "failed-open", decision });
+    }
+    if (decision.conclusion === "ALLOW" && labelRejectedByService(decision)) {
+      // Failing open here still means the guard did not run, so say so rather
+      // than letting this read as an evaluated allow.
+      warnUnavailable(action, "failed-open", false);
+    }
     if (decision.conclusion === "DENY") {
       captureEvent(client, {
         action,

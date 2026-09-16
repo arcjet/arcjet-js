@@ -6,6 +6,7 @@ import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
@@ -153,6 +154,7 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
   tool: TTool,
   policy: GuardToolPolicy<MastraToolInput<TTool>>,
 ): TTool {
+  assertValidAction(policy.action, "guardTool");
   if (typeof tool.execute !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with an execute function");

@@ -6,6 +6,7 @@ import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import type { ClaudeManagedAgentsContext } from "./context.ts";
 import type {
@@ -196,6 +197,7 @@ export function guardCustomTool(
   callOrTool: GuardCustomToolCall<unknown> | ManagedAgentsRunnableTool<any, any>,
   policy: GuardCustomToolPolicy,
 ): Promise<GuardCustomToolResult<unknown>> | ManagedAgentsRunnableTool<any, any> {
+  assertValidAction(policy.action, "guardCustomTool");
   if (isRunnableTool(callOrTool)) {
     return wrapRunnableTool(client, callOrTool, policy);
   }
