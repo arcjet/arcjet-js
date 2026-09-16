@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/nuxt-v1.13.0) (2026-09-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.12.0 to 1.13.0
+    * @arcjet/env bumped from 1.12.0 to 1.13.0
+    * @arcjet/headers bumped from 1.12.0 to 1.13.0
+    * @arcjet/ip bumped from 1.12.0 to 1.13.0
+    * @arcjet/logger bumped from 1.12.0 to 1.13.0
+    * @arcjet/protocol bumped from 1.12.0 to 1.13.0
+    * @arcjet/transport bumped from 1.12.0 to 1.13.0
+    * arcjet bumped from 1.12.0 to 1.13.0
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/nuxt-v1.12.0) (2026-09-08)
 
 

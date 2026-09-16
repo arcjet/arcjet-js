@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...nosecone-v1.13.0) (2026-09-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...nosecone-v1.12.0) (2026-09-08)
 
 

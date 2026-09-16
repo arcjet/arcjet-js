@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/guard-v1.13.0) (2026-09-16)
+
+
+### 🚀 New Features
+
+* **guard:** add actor and inputs to every adapter policy ([#6277](https://github.com/arcjet/arcjet-js/issues/6277)) ([cd0355d](https://github.com/arcjet/arcjet-js/commit/cd0355d8aacbd973151d68f6dadf2c125eb29a3b))
+* **guard:** check a guard label before sending it ([#6289](https://github.com/arcjet/arcjet-js/issues/6289)) ([19fa51a](https://github.com/arcjet/arcjet-js/commit/19fa51af47c8405f52653c29d0761c045b5312ba))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** report the latest reset from a denying rate-limit rule ([#6288](https://github.com/arcjet/arcjet-js/issues/6288)) ([4c71c9c](https://github.com/arcjet/arcjet-js/commit/4c71c9ce9e4a90ebe3fdc4fcc8d54293f9e7a5ed))
+
+
+### 📝 Documentation
+
+* **skills:** sync Guard policy MCP flow and portable labels ([#6293](https://github.com/arcjet/arcjet-js/issues/6293)) ([0943ee3](https://github.com/arcjet/arcjet-js/commit/0943ee3e2d9f46534935c3cf03b93c5091595731))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### 📚 Tests
+
+* track connections so HTTP/2 tests terminate in node 24.20.0 ([#6285](https://github.com/arcjet/arcjet-js/issues/6285)) ([567dc00](https://github.com/arcjet/arcjet-js/commit/567dc009ac09d38e8110d054b6174e4f0bd8bbc3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.12.0 to 1.13.0
+    * @arcjet/logger bumped from 1.12.0 to 1.13.0
+    * @arcjet/transport bumped from 1.12.0 to 1.13.0
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/guard-v1.12.0) (2026-09-08)
 
 

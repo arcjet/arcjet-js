@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...v1.13.0) (2026-09-16)
+
+
+### 🚀 New Features
+
+* **guard:** add actor and inputs to every adapter policy ([#6277](https://github.com/arcjet/arcjet-js/issues/6277)) ([cd0355d](https://github.com/arcjet/arcjet-js/commit/cd0355d8aacbd973151d68f6dadf2c125eb29a3b))
+* **guard:** check a guard label before sending it ([#6289](https://github.com/arcjet/arcjet-js/issues/6289)) ([19fa51a](https://github.com/arcjet/arcjet-js/commit/19fa51af47c8405f52653c29d0761c045b5312ba))
+* **sensitive-info-rampart:** add `classify` option for custom runtimes ([#6284](https://github.com/arcjet/arcjet-js/issues/6284)) ([fdaeebb](https://github.com/arcjet/arcjet-js/commit/fdaeebb2473f489f736f34f19a23fc9df91f8ce7))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** report the latest reset from a denying rate-limit rule ([#6288](https://github.com/arcjet/arcjet-js/issues/6288)) ([4c71c9c](https://github.com/arcjet/arcjet-js/commit/4c71c9ce9e4a90ebe3fdc4fcc8d54293f9e7a5ed))
+
+
+### 📝 Documentation
+
+* **skills:** sync Guard policy MCP flow and portable labels ([#6293](https://github.com/arcjet/arcjet-js/issues/6293)) ([0943ee3](https://github.com/arcjet/arcjet-js/commit/0943ee3e2d9f46534935c3cf03b93c5091595731))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### 📚 Tests
+
+* track connections so HTTP/2 tests terminate in node 24.20.0 ([#6285](https://github.com/arcjet/arcjet-js/issues/6285)) ([567dc00](https://github.com/arcjet/arcjet-js/commit/567dc009ac09d38e8110d054b6174e4f0bd8bbc3))
+
+
+### 🔨 Build System
+
+* **deps:** bump js-yaml ([#6283](https://github.com/arcjet/arcjet-js/issues/6283)) ([7c999ad](https://github.com/arcjet/arcjet-js/commit/7c999ade2f5a5d9b4af500988a1f3a2c9c897f00))
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...v1.12.0) (2026-09-08)
 
 
