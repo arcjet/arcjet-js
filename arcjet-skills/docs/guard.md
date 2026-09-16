@@ -32,10 +32,9 @@ Declare rules at module scope so `.deniedResult(decision)` and
 Call `guard()` where you already know the operation. Hardcode the `label`.
 Do not interpolate names in a generic dispatcher.
 
-Labels are slugs: lowercase letters, digits, dash, and dot only; must start
-and end with a letter or digit; max 256 bytes. Use `tools.get-weather`, not
-`tools.get_weather`. Metadata keys may contain underscores; labels and
-rate-limit `bucket` names may not.
+Hardcode labels as slugs. Prefer lowercase letters, digits, `-`, and `.`
+(`tools.get-weather`) so every SDK and the public docs accept them. Start
+and end with a letter or digit; max 256 bytes. Do not interpolate user input.
 
 ```ts
 const decision = await arcjet.guard("tools.get-weather", {
