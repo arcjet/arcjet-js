@@ -151,6 +151,32 @@ describe("capture", () => {
     assert.equal(request.events[0].occurredAtUnixMs, BigInt(occurredAt.getTime()));
   });
 
+  /**
+   * A capture has no response to carry `AJ1023` back, so the client-side check
+   * is the only signal available. Capture records what the application did, so
+   * it warns and still sends the action as written rather than failing.
+   */
+  test("warns on an action no policy can match, and still sends it", async () => {
+    const { promise, resolve } = deferred<CaptureRequest>();
+    const transport = mockCaptureTransport((request) => {
+      resolve(request);
+      return create(CaptureResponseSchema, {});
+    });
+    const arcjet = launchArcjetWithTransport({ key: "ajkey_dummy", transport });
+
+    arcjet.capture({ action: "getWeather.invoked" });
+    await arcjet.flush();
+
+    const event = (await promise).events[0];
+    assert.equal(event.action, "getWeather.invoked", "sent as written");
+    assert.deepEqual(
+      event.localWarnings.map((warning) => warning.code),
+      ["AJ1023"],
+    );
+    assert.match(event.localWarnings[0].message, /no policy will match it/);
+    assert.match(event.localWarnings[0].message, /uppercase letter "W"/);
+  });
+
   test("strips malformed optional fields and reports local warnings", async () => {
     const { promise, resolve } = deferred<CaptureRequest>();
     const transport = mockCaptureTransport((request) => {

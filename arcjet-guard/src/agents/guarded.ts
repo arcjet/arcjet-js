@@ -152,6 +152,12 @@ export async function runGuarded<T>(
       });
       return onUnavailable({ kind: "failed-open", decision });
     }
+    if (decision.conclusion === "ALLOW" && labelRejectedByService(decision)) {
+      warnUnavailable(action, "failed-open", false);
+      // fall through to execute, with nothing judged: the guard did not run,
+      // so the captured event must not read as a success.
+      judgedFully = false;
+    }
     if (decision.conclusion === "DENY") {
       captureEvent(client, {
         action,

@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, test } from "node:test";
 
+import { decisionAllow, stubClient } from "../../test/_shared/stub-client.ts";
+import { createAgentContext } from "./context.ts";
+import { captureAction } from "./guard-action.ts";
 import { ArcjetInvalidLabelError, assertValidAction, labelProblem } from "./label.ts";
 
 interface LabelCase {
@@ -98,5 +101,17 @@ describe("guard label check", () => {
   test("the reported problem names the offending character", () => {
     assert.match(labelProblem("getWeather.invoked") ?? "", /"W"/);
     assert.match(labelProblem("tools.a b") ?? "", /" "/);
+  });
+});
+
+describe("capture warns rather than raising", () => {
+  test("captureAction never throws on a label no policy can match", () => {
+    const { client, captureCalls } = stubClient(decisionAllow());
+    const ctx = createAgentContext({ correlationId: "c1" });
+
+    assert.doesNotThrow(() => {
+      captureAction(client, ctx, { action: "getWeather.invoked" });
+    });
+    assert.equal(captureCalls.length, 1, "the capture is still sent as written");
   });
 });

@@ -15,6 +15,7 @@ import {
   createClient as createConnectClient,
 } from "@connectrpc/connect";
 
+import { labelProblem } from "./agents/label.ts";
 import {
   createCaptureDelivery,
   type CaptureDeliveryOptions,
@@ -429,10 +430,12 @@ export function normalizeCaptureEvent(
         ? BigInt(Date.now())
         : BigInt(normalized.occurredAt.getTime());
     const encoded = encodeMetadata(normalized.metadata);
+    const labelIssue = labelProblem(normalized.action);
     const warnings = [
       ...normalized.localWarnings,
       ...encoded.localWarnings,
       ...enforceMetadataBudget([encoded.metadataJson]),
+      ...(labelIssue === undefined ? [] : [captureLabelInvalid(labelIssue)]),
     ];
     for (const warning of warnings) {
       diagnose(warning);
@@ -579,6 +582,21 @@ function readWaitUntil(opts: unknown): WaitUntil | undefined {
  */
 function isWaitUntil(value: unknown): value is WaitUntil {
   return typeof value === "function";
+}
+
+/**
+ * Describe a capture action the service will not match to a policy.
+ *
+ * A capture has no response to carry `AJ1023` back, so the client-side check is
+ * the only signal available here. It warns and still sends the action as
+ * written: a capture records what the application did, and there is nothing to
+ * fail closed on.
+ */
+function captureLabelInvalid(problem: string): LocalWarning {
+  return {
+    code: "AJ1023",
+    message: `capture.action is invalid (${problem}); no policy will match it`,
+  };
 }
 
 /** Describe an optional capture field dropped by client-side normalization. */

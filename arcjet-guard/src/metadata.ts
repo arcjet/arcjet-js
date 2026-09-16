@@ -49,7 +49,7 @@ export type ArcjetMetadata = Record<string, unknown>;
  */
 export interface LocalWarning {
   /** Machine-readable code. */
-  code: "AJ1001" | "AJ1017";
+  code: "AJ1001" | "AJ1017" | "AJ1023";
   /**
    * Human-readable description. Names only the offending keys, never the
    * values, and only after escaping and length-bounding them — warnings are
