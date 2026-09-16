@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/skills-v1.13.0) (2026-09-16)
+
+
+### 🚀 New Features
+
+* **guard:** add actor and inputs to every adapter policy ([#6277](https://github.com/arcjet/arcjet-js/issues/6277)) ([cd0355d](https://github.com/arcjet/arcjet-js/commit/cd0355d8aacbd973151d68f6dadf2c125eb29a3b))
+
+
+### 📝 Documentation
+
+* **skills:** sync Guard policy MCP flow and portable labels ([#6293](https://github.com/arcjet/arcjet-js/issues/6293)) ([0943ee3](https://github.com/arcjet/arcjet-js/commit/0943ee3e2d9f46534935c3cf03b93c5091595731))
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/skills-v1.12.0) (2026-09-08)
 
 

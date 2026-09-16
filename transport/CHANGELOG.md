@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/transport-v1.13.0) (2026-09-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### 📚 Tests
+
+* track connections so HTTP/2 tests terminate in node 24.20.0 ([#6285](https://github.com/arcjet/arcjet-js/issues/6285)) ([567dc00](https://github.com/arcjet/arcjet-js/commit/567dc009ac09d38e8110d054b6174e4f0bd8bbc3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.12.0 to 1.13.0
+    * @arcjet/logger bumped from 1.12.0 to 1.13.0
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/transport-v1.12.0) (2026-09-08)
 
 

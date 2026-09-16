@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/sensitive-info-rampart-v1.13.0) (2026-09-16)
+
+
+### 🚀 New Features
+
+* **sensitive-info-rampart:** add `classify` option for custom runtimes ([#6284](https://github.com/arcjet/arcjet-js/issues/6284)) ([fdaeebb](https://github.com/arcjet/arcjet-js/commit/fdaeebb2473f489f736f34f19a23fc9df91f8ce7))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.12.0 to 1.13.0
+    * arcjet bumped from 1.12.0 to 1.13.0
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.12.0 to 1.13.0
+    * arcjet bumped from 1.12.0 to 1.13.0
+
 ## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/sensitive-info-rampart-v1.12.0) (2026-09-08)
 
 
