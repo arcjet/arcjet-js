@@ -47,8 +47,9 @@ wrap the same tool with `@arcjet/guard/langgraph/v1` or
 `@arcjet/guard/vercel-ai/v7`.
 
 Docs live at
-[docs.arcjet.com/guards/langchain-js/](https://docs.arcjet.com/guards/langchain-js/).
-Do **not** use `/guards/langchain/` — that is the live Python page.
+[docs.arcjet.com/guards/langchain/](https://docs.arcjet.com/guards/langchain/),
+which covers JavaScript and Python in tabs. `/guards/langchain-js/`
+redirects there.
 
 ## Screen inbound before `agent.invoke` — there is no inbound hook. SDK middleware that is not `wrapToolCall` is not Guard.
 
@@ -111,7 +112,7 @@ Ask only what you cannot infer from the code; suggest defaults.
    `afterModel`.
 3. **The import path is versioned and there is no alias.**
    `@arcjet/guard/langchain/v1`. `@arcjet/guard/langchain` does not
-   resolve. Docs are `/guards/langchain-js/`, not `/guards/langchain/`.
+   resolve. Docs are `/guards/langchain/`; read the JavaScript tab.
 4. **Correlation is read, never minted.** Do not call `createAgentContext`
    inside a middleware / tool callback — that generates a second id and
    splits the Sequence. Put the id you already chose on
