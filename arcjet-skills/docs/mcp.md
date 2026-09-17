@@ -71,5 +71,5 @@ OAuth. The first connection redirects to sign in with an Arcjet account.
 - Bootstrap: `list-teams` → `list-sites` → `get-site-key` → write `ARCJET_KEY`
 - Investigate: `analyze-traffic` → `list-requests` → `investigate-ip`
 - Remote rules: `create-rule` (DRY_RUN) → `get-dry-run-impact` → `promote-rule`
-- Guard policies: `list-guard-policies` → `describe-guard-policy` → `validate-guard-policy` → `put-guard-policy`. Authoring is MCP-only; the CLI has no policy commands. Application policies select by `label` / wrapper `action`. Coding-agent policies attach by **Execute on** (Tool call or Prompt), not by label.
+- Guard policies: `list-guard-policies` → `describe-guard-policy` → `validate-guard-policy` → `put-guard-policy`. Authoring is MCP-only; the CLI has no policy commands. Application policies select by `label` / wrapper `action`. Coding-agent policies attach by **Execute on** (Tool call or Prompt), not by label. Install Claude Code / Copilot HTTP hooks from https://docs.arcjet.com/coding-agents — copy the templates. The hook URL must not name a policy and must omit `?surface=` (managed settings reach CLI, IDE, Desktop, and cloud; a hard-coded `cli` mislabels most traffic).
 - Briefing: `get-security-briefing`

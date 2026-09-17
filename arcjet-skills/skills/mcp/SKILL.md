@@ -45,4 +45,6 @@ Investigate: `analyze-traffic`, `list-requests`, `list-guards`,
 commands): `list-guard-policies` → `describe-guard-policy` →
 `validate-guard-policy` → `put-guard-policy`. Application policies select by
 `label` / `action`. Coding-agent policies attach by **Execute on** (Tool call
-or Prompt).
+or Prompt). Install Claude Code / Copilot hooks from
+https://docs.arcjet.com/coding-agents — copy the templates. The hook URL
+must not name a policy and must omit `?surface=`.

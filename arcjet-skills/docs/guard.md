@@ -11,6 +11,10 @@ MCP server handlers, queue workers, and background jobs.
 The word "server" on MCP is misleading. MCP tools are invoked over stdio or
 SSE and do not receive an HTTP request.
 
+Claude Code / Copilot HTTP hooks are not `@arcjet/guard`. Author the
+policy via MCP and install hooks from https://docs.arcjet.com/coding-agents
+(omit `?surface=`).
+
 ## Client
 
 ```ts
@@ -32,12 +36,15 @@ Declare rules at module scope so `.deniedResult(decision)` and
 Call `guard()` where you already know the operation. Hardcode the `label`.
 Do not interpolate names in a generic dispatcher.
 
-Hardcode labels as slugs. Prefer lowercase letters, digits, `-`, and `.`
-(`tools.get-weather`) so every SDK and the public docs accept them. Start
-and end with a letter or digit; max 256 bytes. Do not interpolate user input.
+Hardcode labels as slugs: lowercase letters, digits, `-`, `.`, and `_`
+(`tools.get-weather`). Start and end with a letter or digit; max 256 bytes.
+Prefer dash/dot in new labels. Do not interpolate user input. Check a label
+you build yourself with `validateGuardLabel` — a slug the service will not
+match reads as `ALLOW` with `hasFailedOpen()` false.
 
 ```ts
-const decision = await arcjet.guard("tools.get-weather", {
+const decision = await arcjet.guard({
+  label: "tools.get-weather",
   rules: [/* ... */],
   metadata: { user: { id: userId } },
 });

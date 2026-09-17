@@ -68,3 +68,10 @@ rate limiting.
 
 **Rule:** `filter` (request-based only). Can also be a remote rule via CLI or
 MCP.
+
+## Claude Code / Copilot (no application SDK)
+
+Not `protect()` or `@arcjet/guard`. Publish a coding-agent policy attached
+to **Execute on** (Tool call or Prompt) via `@arcjet/skills#mcp`, then
+install HTTP hooks from https://docs.arcjet.com/coding-agents. Copy the
+templates: the hook URL must not name a policy and must omit `?surface=`.

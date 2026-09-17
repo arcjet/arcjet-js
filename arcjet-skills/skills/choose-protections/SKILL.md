@@ -42,3 +42,7 @@ entities never match without `backend: rampart()`.
 
 Remote bot and filter rules can be managed with the CLI or MCP without a
 redeploy — load `@arcjet/skills#cli` or `@arcjet/skills#mcp`.
+
+Claude Code / Copilot hooks are not this table. Publish a coding-agent
+policy via `@arcjet/skills#mcp` and install hooks from
+https://docs.arcjet.com/coding-agents (omit `?surface=`).

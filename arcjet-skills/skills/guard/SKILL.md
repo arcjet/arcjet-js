@@ -2,7 +2,7 @@
 name: guard
 description: "Add Arcjet Guard to non-HTTP JavaScript: agent tool calls, MCP handlers, queue workers, and background jobs. Use when there is no HTTP request object, or when the user asks to guard tools, rate-limit agent actions, or block prompt injection on tool arguments."
 license: Apache-2.0
-compatibility: JavaScript and TypeScript apps using @arcjet/guard on Node.js >=22.21.0 <23 || >=24.5.0.
+compatibility: JavaScript and TypeScript apps using @arcjet/guard on Node.js >=22.21.0 <23 || >=24.5.0, Bun >=1.3.0, Deno stable/lts, or Cloudflare Workers (compat date 2025-09-01).
 metadata:
   author: arcjet
   type: core
@@ -16,6 +16,9 @@ sources:
 
 Use `@arcjet/guard` when there is no HTTP request. MCP tools, queue workers,
 and agent tool calls are Guard. HTTP routes are `@arcjet/skills#protect`.
+Claude Code / Copilot **hooks** (no app SDK) are not this skill — author
+the policy via `@arcjet/skills#mcp` and install hooks from
+https://docs.arcjet.com/coding-agents (omit `?surface=`).
 
 For a specific vendor SDK, load the matching skill from `@arcjet/guard`
 (`@arcjet/guard#integrate-arcjet-guard-agents`, `-eve`, `-mastra`,
@@ -33,16 +36,20 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 One client at module scope. Get the key with `@arcjet/skills#cli` first.
 Declare rules at module scope so `.deniedResult(decision)` works.
+`registerArcjet` enables free `guard()` / `capture()` / `flush()` when you
+cannot thread a client. Free `guard()` fail-opens if nothing is registered.
 
 ## One `guard()` per operation
 
 Hardcode the `label`. Do not interpolate in a generic dispatcher.
 
-Hardcode labels as slugs. Prefer lowercase letters, digits, `-`, and `.`
-(`tools.get-weather`). Start and end with a letter or digit.
+Hardcode labels as slugs: lowercase letters, digits, `-`, `.`, and `_`
+(`tools.get-weather`). Start and end with a letter or digit. Prefer dash/dot
+in new labels. Check a label you build yourself with `validateGuardLabel`.
 
 ```ts
-const decision = await arcjet.guard("tools.get-weather", {
+const decision = await arcjet.guard({
+  label: "tools.get-weather",
   rules: [/* ... */],
   metadata: { user: { id: userId } },
 });

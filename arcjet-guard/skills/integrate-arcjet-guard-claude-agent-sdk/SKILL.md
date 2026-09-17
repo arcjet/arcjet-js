@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-claude-agent-sdk
 description: Integrate Arcjet security into a Claude Agent SDK agent using @arcjet/guard — wrap tool() handlers, screen inbound prompts with UserPromptSubmit, and deny unwrapped built-in/MCP tools with PreToolUse. Use when asked to add Arcjet to a Claude Agent SDK or Claude Code agent, rate limit its tools, screen inbound messages, or block prompt injection / PII.
 license: Apache-2.0
-compatibility: Requires the target app to use the Claude Agent SDK (@anthropic-ai/claude-agent-sdk >=0.1.0 <1) on Node.js >= 22.
+compatibility: Requires the target app to use the Claude Agent SDK (@anthropic-ai/claude-agent-sdk >=0.1.0 <1) on Node.js >=22.21.0 <23 || >=24.5.0.
 metadata:
   author: arcjet
   type: core
@@ -87,12 +87,13 @@ Ask only what you cannot infer from the code; suggest defaults.
    Sequence. `claudeAgentContext` reads `session_id` / `options.sessionId`
    and omits `correlationId` when neither is a valid id. Subagent
    `agent_id` is metadata, not the correlation id.
-6. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7`,
-   `@arcjet/guard/agents`, or `@arcjet/guard/claude-managed-agents/v0`.**
-   Claude tools are `tool()`, not AI SDK `tool()`, and this is not hosted
-   Claude Managed Agents. `guardTool` throws if the tool already carries
-   the Arcjet protection brand. Applying `guardTool` and `guardHooks`
-   PreToolUse to the same authored tool double-calls the guard.
+6. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
+   `@arcjet/guard/claude-managed-agents/v0`.** There is no public
+   `@arcjet/guard/agents` export. Claude tools are `tool()`, not AI SDK
+   `tool()`, and this is not hosted Claude Managed Agents. `guardTool`
+   throws if the tool already carries the Arcjet protection brand. Applying
+   `guardTool` and `guardHooks` PreToolUse to the same authored tool
+   double-calls the guard.
 7. **A denial from `guardTool` is a `CallToolResult` with `isError: true`**,
    not a throw. If `onDeny` throws, the handler still does not run and the
    model still receives the default denial result.

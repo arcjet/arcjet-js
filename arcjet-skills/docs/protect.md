@@ -156,9 +156,10 @@ values are rejected. Syntax validation does not prove provenance.
 Never silence an `unverified-header` warning by copying `X-Forwarded-For` (or
 another client-controlled header) into `ipSrc`. That relabels attacker input
 as trusted. Inspect representative requests with
-`client.clientIpDetails(request)` in `@arcjet/node`, or `findIpDetails()` /
-`resolveClientIp()` from `@arcjet/ip`. Check `ip`, `provenance`, `verified`,
-and `header`. These diagnostics do not consume the once-per-client warning.
+`aj.clientIpDetails(request)` on the constructed `@arcjet/node` client, or
+`findIpDetails()` / `resolveClientIp()` from `@arcjet/ip`. Check `ip`,
+`provenance`, `verified`, and `header`. These diagnostics do not consume
+the once-per-client warning.
 
 `protect()` accepts nested-JSON `metadata`. It does not affect fingerprinting.
 Do not put secrets or PII in it. When present, request decisions also expose
