@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.13.1](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/guard-v1.13.1) (2026-09-18)
+
+
+### 📝 Documentation
+
+* **guard:** point the LangChain skill at the page that exists ([#6294](https://github.com/arcjet/arcjet-js/issues/6294)) ([3b5dcbc](https://github.com/arcjet/arcjet-js/commit/3b5dcbc76cd30ea52db777b5def280a199519f6c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.13.1
+    * @arcjet/logger bumped from 1.13.0 to 1.13.1
+    * @arcjet/transport bumped from 1.13.0 to 1.13.1
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/guard-v1.13.0) (2026-09-16)
 
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.13.1](https://github.com/arcjet/arcjet-js/compare/v1.13.0...v1.13.1) (2026-09-18)
+
+
+### 📝 Documentation
+
+* **guard:** point the LangChain skill at the page that exists ([#6294](https://github.com/arcjet/arcjet-js/issues/6294)) ([3b5dcbc](https://github.com/arcjet/arcjet-js/commit/3b5dcbc76cd30ea52db777b5def280a199519f6c))
+
+
+### 🔨 Build System
+
+* **deps:** bump devalue from 5.8.2 to 5.9.2 ([#6296](https://github.com/arcjet/arcjet-js/issues/6296)) ([fcf0376](https://github.com/arcjet/arcjet-js/commit/fcf0376e92181d1cc73f64b207a8656ea85e4dd1))
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...v1.13.0) (2026-09-16)
 
 

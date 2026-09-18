@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.1](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/headers-v1.13.1) (2026-09-18)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/headers:** Synchronize arcjet-js versions
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/headers-v1.13.0) (2026-09-16)
 
 
