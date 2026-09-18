@@ -167,6 +167,7 @@ test("does not export Agent SDK or Eve-only APIs", () => {
     "guardInbound",
     "claudeAgentContext",
     "eveAgentContext",
+    "cloudflareThinkContext",
     "guardApproval",
     "arcjetHooks",
     "canUseTool",

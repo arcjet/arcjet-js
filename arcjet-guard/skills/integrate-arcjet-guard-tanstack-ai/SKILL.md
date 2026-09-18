@@ -66,8 +66,8 @@ gate.
 human-in-the-loop. After a human yes, Guard still runs on the tool
 call. Same trap as Mastra `requireApproval`, Claude `canUseTool`,
 LangGraph `interrupt()`, Genkit `toolApproval`, OpenAI Agents
-`needsApproval`, LangChain `humanInTheLoopMiddleware`, and Google ADK
-`requireConfirmation`. There is no
+`needsApproval`, LangChain `humanInTheLoopMiddleware`, Google ADK
+`requireConfirmation`, and Cloudflare Think `needsApproval`. There is no
 `guardApproval`.
 
 ## Questions to ask the human first

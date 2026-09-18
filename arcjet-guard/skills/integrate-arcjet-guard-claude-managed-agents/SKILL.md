@@ -42,6 +42,7 @@ event. `web_search` / `web_fetch` always run on Anthropic. MCP: Anthropic
 is the client; customer-side Guard is on custom tools and MCP servers
 **you** host. `user.tool_confirmation` is HITL (`always_ask`), not a
 policy gate — do not add a confirmation helper as the happy path.
+Same trap as Cloudflare Think `needsApproval`.
 
 `protect()` stays fail-open. These helpers are fail-closed.
 

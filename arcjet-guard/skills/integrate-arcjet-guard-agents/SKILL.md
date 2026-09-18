@@ -270,7 +270,8 @@ should be passed as strings. The SDK adds `AJ1017` warnings naming values it
 could not encode (`undefined`, a function, a `BigInt`, a circular reference).
 
 Human-in-the-loop APIs on other SDKs (`needsApproval`, `interrupt()`,
-`requireApproval`, Google ADK `requireConfirmation`) are not policy gates.
+`requireApproval`, Google ADK `requireConfirmation`, Cloudflare Think
+`needsApproval`) are not policy gates.
 This namespace gates with `guardTool` / `guardAction`. After a human yes,
 Guard still runs.
 
