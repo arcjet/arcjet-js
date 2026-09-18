@@ -293,3 +293,56 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   assert.equal(asDenial<ArcjetDenialResult>(decision.output).reason, "ERROR");
   assert.equal(guardCalls.length, 0);
 });
+
+test("preserves an explicit null tool input for policy callbacks", async () => {
+  const { client } = stubClient(decisionAllow());
+  let seen: unknown;
+  const hooks = guardHooks(client, {
+    action: "tool.invoked",
+    rules: ({ input }) => {
+      seen = input;
+      return [fakeRule];
+    },
+  });
+  await runHook(hooks, toolCtx("lookup", null));
+  assert.equal(seen, null);
+});
+
+test("normalizes a missing tool input to an empty object", async () => {
+  const { client } = stubClient(decisionAllow());
+  let seen: unknown;
+  const hooks = guardHooks(client, {
+    action: "tool.invoked",
+    rules: ({ input }) => {
+      seen = input;
+      return [fakeRule];
+    },
+  });
+  const ctx = toolCtx("lookup");
+  delete (ctx as { input?: unknown }).input;
+  await runHook(hooks, ctx);
+  assert.deepEqual(seen, {});
+});
+
+test("writes a printable tool name onto cloudflare-think.tool", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, { action: "tool.invoked" });
+  await runHook(hooks, toolCtx("lookup"));
+  assert.equal(recorded(recorded(guardCalls[0])["metadata"])["cloudflare-think.tool"], "lookup");
+});
+
+test("omits a non-printable tool name from metadata", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, { action: "tool.invoked" });
+  await runHook(hooks, toolCtx("bad\nname"));
+  assert.equal("cloudflare-think.tool" in recorded(recorded(guardCalls[0])["metadata"]), false);
+});
+
+test("does not mine a sessionId sitting on the Think tool-call envelope", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const hooks = guardHooks(client, { action: "tool.invoked" });
+  await runHook(hooks, { ...toolCtx("lookup"), sessionId: "envelope-sess" });
+  const call = recorded(guardCalls[0]);
+  assert.equal("correlationId" in call, false);
+  assert.equal("cloudflare-think.session" in recorded(call["metadata"]), false);
+});

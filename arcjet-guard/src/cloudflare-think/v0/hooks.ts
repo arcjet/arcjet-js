@@ -4,13 +4,13 @@ import { resolveActorInputs } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { correlationIdProblem } from "../../agents/context.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { cloudflareThinkContext } from "./context.ts";
-import type { CloudflareThinkContextSource } from "./context.ts";
 
 /**
  * Input passed to `rules` / `metadata` / `action` callbacks on
@@ -83,10 +83,6 @@ export type CloudflareThinkGuardHooks = {
   beforeToolCall: (ctx: ToolCallContext) => Promise<ToolCallDecision | void>;
 };
 
-function isContextSource(value: unknown): value is CloudflareThinkContextSource {
-  return value !== null && typeof value === "object";
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object";
 }
@@ -129,13 +125,24 @@ function denyDecision(
   return { action: "substitute", output: payload };
 }
 
+/**
+ * Same filter as `validMetadataString` on session/conversation: drop
+ * empty or non-printable names so `cloudflare-think.tool` matches
+ * how the other derived keys are handled.
+ */
+function metadataToolName(toolName: string): string | undefined {
+  return correlationIdProblem(toolName) === undefined ? toolName : undefined;
+}
+
 async function gateToolCall(
   client: ArcjetAgentClient,
   policy: GuardHooksPolicy,
   ctx: ToolCallContext,
 ): Promise<ToolCallDecision | void> {
   const toolName = ctx.toolName;
-  const input: unknown = ctx.input ?? {};
+  // Preserve explicit `null` (a nullable tool schema). Only missing
+  // `undefined` is normalized to `{}` for policy callbacks.
+  const input: unknown = ctx.input === undefined ? {} : ctx.input;
   const call: GuardHooksCall = { toolName, input };
 
   let action: string;
@@ -165,15 +172,17 @@ async function gateToolCall(
     return denyDecision(policy, unavailableResult(), "unavailable");
   }
 
-  const source = isContextSource(ctx) ? ctx : undefined;
+  // Think's ToolCallContext is an envelope, not a caller-owned bag.
+  // Correlation comes only from `policy.sessionId` via init.
   const agentCtx = cloudflareThinkContext(
-    source,
+    undefined,
     sessionId === undefined ? undefined : { sessionId },
   );
 
+  const tool = metadataToolName(toolName);
   const metadata: ArcjetMetadata = {
     ...agentCtx.metadata,
-    ...(toolName.length > 0 && { "cloudflare-think.tool": toolName }),
+    ...(tool !== undefined && { "cloudflare-think.tool": tool }),
   };
   const mergedMetadata = { ...metadata, ...policyMetadata };
 
