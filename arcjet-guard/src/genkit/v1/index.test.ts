@@ -152,6 +152,7 @@ test("does not export Eve / Mastra / Claude / LangGraph / OpenAI-only APIs", () 
     "openaiAgentsContext",
     "strandsAgentContext",
     "tanstackAiContext",
+    "cloudflareThinkContext",
     "googleAdkContext",
     "guardInbound",
     "guardApproval",

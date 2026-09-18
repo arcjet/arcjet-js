@@ -228,6 +228,7 @@ test("no vendor namespace declares its own denial payload", () => {
     "mastra",
     "claude-agent-sdk",
     "claude-managed-agents",
+    "cloudflare-think",
     "langchain",
     "langgraph",
     "openai-agents",

@@ -165,6 +165,7 @@ test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only A
     "genkitContext",
     "tanstackAiContext",
     "googleAdkContext",
+    "cloudflareThinkContext",
     "guardInbound",
     "guardApproval",
     "guardInterrupt",

@@ -173,6 +173,24 @@ change them:
   `@arcjet/guard/vercel-ai/v7`. This is Google ADK JS, not
   `@google/genai`, not Python google-adk. Docs slug is
   `/guards/google-adk/`.
+- **`cloudflare-think/v0`** is `@cloudflare/think` `Think` + class
+  `beforeToolCall`: there is no `guardTool` (the gate is the hook
+  return, not throw-from-execute), tool calls go through
+  `guardHooks`' `beforeToolCall` (default DENY is
+  `{ action: "substitute", output: ArcjetDenialResult }`; optional
+  `onDeny: "block"` only; fail-closed stays substitute; do not
+  throw), inbound is screened with `guard()` before the turn
+  (`guard()` fails open — check `hasFailedOpen()`), and
+  `needsApproval` is HITL not policy. After a human yes, Guard
+  still runs. Correlation is a caller-owned id from helper options
+  (`guardHooks({ sessionId })`). Never mint. Never `toolCallId`.
+  Never `requestId` / `traceId` / Durable Object `name` / `id`.
+  There is no unversioned `@arcjet/guard/cloudflare-think` alias
+  and no `/v1` until Think ships 1.x. The peer floor is `>=0.3.0
+  <1` because 0.3.0 is the first release whose `beforeToolCall`
+  returns a functional `ToolCallDecision`. Do not double-wrap with
+  `@arcjet/guard/vercel-ai/v7`. Think is not the Vercel AI SDK.
+  Docs slug is `/guards/cloudflare-think/`.
 - **`claude-managed-agents/v0`** is hosted Claude Managed Agents
   (REST+SSE, beta `managed-agents-2026-04-01`): Anthropic runs the
   tool loop and there is no PreToolUse. This is **not**

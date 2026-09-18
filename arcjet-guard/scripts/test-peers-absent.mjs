@@ -55,6 +55,13 @@ const CHECKS = [
     resolve: ["@anthropic-ai/sdk"],
   },
   {
+    name: "cloudflare-think",
+    dir: "cloudflare-think",
+    version: "v0",
+    remove: ["@cloudflare/think"],
+    resolve: ["@cloudflare/think"],
+  },
+  {
     name: "langgraph",
     dir: "langgraph",
     version: "v1",

@@ -102,6 +102,7 @@ Prefer the versioned Guard namespaces over hand-wrapping every tool:
 | Google ADK JS | `@arcjet/guard/google-adk/v2` |
 | Strands Agents JS | `@arcjet/guard/strands-agents/v1` |
 | TanStack AI | `@arcjet/guard/tanstack-ai/v0` |
+| Cloudflare Think | `@arcjet/guard/cloudflare-think/v0` |
 
 Unversioned aliases do not resolve. Load the matching
 `@arcjet/guard#integrate-arcjet-guard-*` skill for the integration you are
@@ -113,8 +114,9 @@ Framework wrappers fail closed by default when Guard is unavailable. Core
 JS LangChain `createAgent` is `@arcjet/guard/langchain/v1`, not LangGraph.
 JS Google ADK is `guardPlugin` on the Runner — there is no `guardTool`.
 TanStack AI is `guardMiddleware` — do not use `guardTool` (an `execute`
-throw is swallowed). JS Strands Agents is official `@strands-agents/sdk`,
-not Python `strands`.
+throw is swallowed). Cloudflare Think is `guardHooks` on
+`beforeToolCall` — default DENY is substitute. JS Strands Agents is
+official `@strands-agents/sdk`, not Python `strands`.
 
 Every JS wrapper policy accepts optional `actor` and `inputs` (static values
 or a resolver over that adapter's native call — parsed input plus trusted
@@ -129,7 +131,8 @@ per-framework: return the object (AI SDK, Mastra, OpenAI Agents, Genkit
 `toolResponse.output`, LangGraph, LangChain `guardTool`, Google ADK plugin
 dict, Strands `guardTool`); wrap it (Claude Agent SDK `isError: true`,
 LangChain `guardMiddleware` `ToolMessage`, Strands `guardHooks` cancel
-string, TanStack `onBeforeToolCall` skip); or throw `ArcjetDeniedError`
+string, TanStack `onBeforeToolCall` skip, Cloudflare Think
+`beforeToolCall` substitute); or throw `ArcjetDeniedError`
 (Eve, unless `onDeny: "result"`). A throw from a return-style adapter
 drops the fields.
 
