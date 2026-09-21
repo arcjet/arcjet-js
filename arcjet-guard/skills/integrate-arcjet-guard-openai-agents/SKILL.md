@@ -43,7 +43,7 @@ own tripwires, not this policy gate. Do not wrap them as Guard.
 `needsApproval` / `requireApproval` / `onApproval` is human-in-the-loop.
 The run pauses; `result.state.approve` / `reject`. Same trap as Mastra
 `requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`, and
-Google ADK `requireConfirmation`.
+Google ADK `requireConfirmation`, and Cloudflare Think `needsApproval`.
 There is no `guardApproval`. Do not wrap them as Guard.
 
 ## `tool()` execute is the deny point; hosted, MCP, and handoffs are not

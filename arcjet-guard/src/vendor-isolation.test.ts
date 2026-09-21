@@ -27,6 +27,7 @@ const NAMESPACES = [
   { dir: "mastra", packages: ["@mastra/core"] },
   { dir: "claude-agent-sdk", packages: ["@anthropic-ai/claude-agent-sdk"] },
   { dir: "claude-managed-agents", packages: ["@anthropic-ai/sdk"] },
+  { dir: "cloudflare-think", packages: ["@cloudflare/think"] },
   { dir: "langchain", packages: ["langchain", "@langchain/core"] },
   { dir: "langgraph", packages: ["@langchain/langgraph", "@langchain/core"] },
   { dir: "openai-agents", packages: ["@openai/agents"] },
@@ -116,6 +117,7 @@ test("the scanner detects a cross-vendor import when one is introduced", () => {
     { from: "strands-agents", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "tanstack-ai", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "google-adk", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "cloudflare-think", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "genkit", content: 'import type { Plugin } from "@strands-agents/sdk";\nvoid 0;' },
     {
       from: "mastra",

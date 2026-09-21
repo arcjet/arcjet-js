@@ -71,7 +71,8 @@ policy gate.
 Guard still runs on the tool call. Same trap as Mastra
 `requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`,
 Genkit `toolApproval`, OpenAI Agents `needsApproval`, LangChain
-`humanInTheLoopMiddleware`, and TanStack `needsApproval`. There is no
+`humanInTheLoopMiddleware`, TanStack `needsApproval`, and Cloudflare
+Think `needsApproval`. There is no
 `guardApproval`.
 
 ## Questions to ask the human first

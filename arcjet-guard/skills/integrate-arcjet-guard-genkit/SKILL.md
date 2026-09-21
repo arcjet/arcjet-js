@@ -52,7 +52,8 @@ the model call, not user text. It is not this policy gate.
 `toolApproval` / `restartTool` / `finishReason === "interrupted"` is
 human-in-the-loop. Same trap as Mastra `requireApproval`, Claude
 `canUseTool`, LangGraph `interrupt()`, OpenAI Agents
-`needsApproval`, and Google ADK `requireConfirmation`. There is no
+`needsApproval`, Google ADK `requireConfirmation`, and Cloudflare Think
+`needsApproval`. There is no
 `guardApproval`. Do not wrap them as Guard.
 
 ## Deny inside `defineTool` (and `guardMiddleware`'s `tool` hook). MCP and filesystem-injected tools skip an unwrapped handler.

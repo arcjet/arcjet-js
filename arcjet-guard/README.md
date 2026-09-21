@@ -1820,6 +1820,93 @@ means a preceding plugin return skips Guard too. Sibling `guardTool`
 brands are skipped; inbound `guard()` is a separate call and does
 not skip this gate.
 
+- **`@arcjet/guard/cloudflare-think/v0`** — Cloudflare Think
+  `@cloudflare/think` `Think` + class `beforeToolCall` integration.
+  Exports `guardHooks` and `cloudflareThinkContext`. This is **not**
+  the Vercel AI SDK — do not also wrap with
+  `@arcjet/guard/vercel-ai/v7`. There is no `guardTool` (the gate is
+  the hook return, not throw-from-execute), no `guardInbound`
+  (screen with `guard()` before the turn; `guard()` fails open —
+  check `hasFailedOpen()`), and no `guardApproval` (`needsApproval`
+  is human HITL, not policy). After a human yes, Guard still runs.
+  Docs live at
+  [`/guards/cloudflare-think/`](https://docs.arcjet.com/guards/cloudflare-think/).
+
+  Default DENY is `{ action: "substitute", output:
+ArcjetDenialResult }` so the tool never runs and the model sees
+  the payload. Optional `onDeny: "block"` skips the tool with a
+  reason string — the model does not get `ArcjetDenialResult`. The
+  hook does not throw. Fail-closed unavailable stays substitute
+  even when `onDeny` is `"block"`. Correlation is a caller-owned id
+  from helper options (`guardHooks({ sessionId })`). Never mint.
+  Never `toolCallId`. Never `requestId` / `traceId` / Durable
+  Object `name` / `id`. Client tools with no local `execute` are
+  out of scope. The peer floor is `>=0.3.0 <1` because 0.3.0 is
+  the first release whose `beforeToolCall` returns a functional
+  `ToolCallDecision`.
+
+  ```ts
+  import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
+  import { guardHooks, cloudflareThinkContext } from "@arcjet/guard/cloudflare-think/v0";
+  import { Think } from "@cloudflare/think";
+
+  const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+  const limit = tokenBucket({
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 10,
+  });
+
+  const appContext = { sessionId: conversationId };
+  const inbound = detectPromptInjection();
+  const decision = await arcjet.guard({
+    label: "message.received",
+    rules: [inbound(userText)],
+    ...cloudflareThinkContext({ context: appContext }),
+  });
+  if (decision.conclusion === "DENY") {
+    throw new Error("message blocked");
+  }
+  if (decision.hasFailedOpen()) {
+    throw new Error("inbound screening failed open");
+  }
+
+  const hooks = guardHooks(arcjet, {
+    action: ({ toolName }) => `${toolName}.invoked`,
+    rules: ({ toolName }) => [limit({ key: toolName, requested: 1 })],
+    sessionId: conversationId,
+  });
+
+  export class SupportAgent extends Think<Env> {
+    override beforeToolCall = hooks.beforeToolCall;
+  }
+  ```
+
+#### Screen inbound before the Think turn — there is no inbound hook.
+
+There is no first-class inbound deny channel, so there is no
+`guardInbound`. Put prompt-injection (and other inbound rules) in the
+application before the turn. Call `guard()` directly. `guard()` fails
+open — callers must check `hasFailedOpen()`.
+
+#### `needsApproval` is HITL, not a policy gate.
+
+Think `needsApproval` is human-in-the-loop, not policy. After a
+human yes, Guard still runs on the tool call. Same trap as Mastra
+`requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`,
+Genkit `toolApproval`, OpenAI Agents `needsApproval`, LangChain
+`humanInTheLoopMiddleware`, TanStack `needsApproval`, and Google
+ADK `requireConfirmation`. There is no `guardApproval`.
+
+#### Deny inside `guardHooks`' `beforeToolCall`. There is no `guardTool`.
+
+`beforeToolCall` is the deny point. Default DENY is
+`{ action: "substitute", output: ArcjetDenialResult }`. Optional
+`onDeny: "block"` returns `{ action: "block", reason }` (the denial
+`message` string) and skips the tool — the model does not get
+`ArcjetDenialResult`. `onDeny: "block"` applies to real DENY only;
+unavailable stays substitute. Do not throw from the hook.
+
 ### Naming and versions
 
 Integration paths are `@arcjet/guard/<vendor-sdk>/v<major>` — the SDK being
@@ -1899,6 +1986,12 @@ importing only core guards are not forced to install unneeded packages:
   peer, installed only to use `@arcjet/guard/google-adk/v2`). The peer
   range is `>=2 <3`. Path is `/v2` to match ADK 2.x. Node stays
   Guard's existing floor. This is Google ADK JS, not `@google/genai`.
+- **`@arcjet/guard/cloudflare-think/v0`** requires `@cloudflare/think`
+  (optional peer, installed only to use
+  `@arcjet/guard/cloudflare-think/v0`). The peer range is
+  `>=0.3.0 <1`. There is no `/v1` until Think ships 1.x. Node stays
+  Guard's existing floor. This is Cloudflare Think, not the Vercel
+  AI SDK.
 
 **pnpm caveat**: pnpm does not reliably honour
 `peerDependenciesMeta.*.optional` (pnpm#5152, #8142), especially with
@@ -1969,6 +2062,11 @@ pnpm install @google/adk
 ```
 
 ```sh
+# @arcjet/guard/cloudflare-think/v0
+pnpm install @cloudflare/think
+```
+
+```sh
 # or skip the peer install and relax the check:
 pnpm install --no-strict-peer-dependencies
 ```
@@ -1987,8 +2085,9 @@ is one path to learn and no layering to reason about.
 `@arcjet/guard/openai-agents/v0`,
 `@arcjet/guard/genkit/v1`,
 `@arcjet/guard/strands-agents/v1`,
-`@arcjet/guard/tanstack-ai/v0`, and
-`@arcjet/guard/google-adk/v2` now export
+`@arcjet/guard/tanstack-ai/v0`,
+`@arcjet/guard/google-adk/v2`, and
+`@arcjet/guard/cloudflare-think/v0` now export
 these helpers. The open next step is
 promoting them to the root `@arcjet/guard` export so a caller can get the
 agnostic layer without installing a vendor peer. That change is a follow-up
@@ -2018,6 +2117,7 @@ with its own ADR; there is still no public `@arcjet/guard/agents`.
 | Strands Agents `guardTool` / `guardHooks`               | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | TanStack AI `guardMiddleware`                           | Deny (fail closed)                          | `onGuardError: "allow"`            |
 | Google ADK `guardPlugin`                                | Deny (fail closed)                          | `onGuardError: "allow"`            |
+| Cloudflare Think `guardHooks`                           | Deny (fail closed)                          | `onGuardError: "allow"`            |
 
 `onGuardError` is broader than Arcjet Cloud availability. It governs both an
 unexpected throw from `guard()` and an ALLOW decision whose `hasFailedOpen()`
@@ -2292,6 +2392,7 @@ that a tool did not run:
 | Claude Agent SDK | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                                                                                                                                        | A throw is a raw exception; omitting `isError` looks like success                                                                                    |
 | Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                                                                                                                                         | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`                                                         |
 | TanStack AI      | `{ type: "skip", result: ArcjetDenialResult }` from `onBeforeToolCall`. Optional `onDeny: "abort"` returns `{ type: "abort", reason }`                                                                                  | A throw from `execute` is swallowed into `{ error }`. A throw from the hook aborts the run as an error, not a policy denial                          |
+| Cloudflare Think | `{ action: "substitute", output: ArcjetDenialResult }` from `beforeToolCall`. Optional `onDeny: "block"` returns `{ action: "block", reason }`                                                                          | A throw from the hook is a hook error, not a policy denial. Fail-closed unavailable stays substitute                                                 |
 
 ```ts
 const result: ArcjetDenialResult = {
@@ -2401,6 +2502,8 @@ For an example with TanStack AI, see [`tanstack-agent`](https://github.com/arcje
 
 For an example with Google ADK JS, see [`google-adk-agent`](https://github.com/arcjet/examples/tree/main/examples/google-adk-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `Runner.runAsync` (check `hasFailedOpen()`), `guardPlugin` first in `new Runner({ plugins })` (deny-dict skip, rate limit, fail-closed), and a caller-owned id on helper options (`guardPlugin({ sessionId })`; wins over durable `state`). ADK `Context` has no nested `context` field. `requireConfirmation` / `requestConfirmation` / `SecurityPlugin` CONFIRM is HITL, not a policy gate; `beforeToolCallback` is the deny point. Docs slug: [`/guards/google-adk/`](https://docs.arcjet.com/guards/google-adk/).
 
+For an example with Cloudflare Think, see [`cloudflare-think-agent`](https://github.com/arcjet/examples/tree/main/examples/cloudflare-think-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before the turn (check `hasFailedOpen()`), `guardHooks` `beforeToolCall` (substitute-deny, block-deny, rate limit, fail-closed), and a caller-owned id on helper options (`guardHooks({ sessionId })`). `needsApproval` is HITL, not a policy gate; `beforeToolCall` is the deny point. Docs slug: [`/guards/cloudflare-think/`](https://docs.arcjet.com/guards/cloudflare-think/).
+
 For Claude Managed Agents, do not add a `claude-managed-agents` example in this repo (later in [`arcjet/examples`](https://github.com/arcjet/examples)): `guardEvents` before `sessions.events.send` / `initial_events`, `guardCustomTool` on `agent.custom_tool_use` (deny sends `user.custom_tool_result`; the tool does not run), and a caller-owned id via `claudeManagedAgentsContext`. This is not the Claude Agent SDK. Default `always_allow` cannot be gated. Docs slug: [`/guards/claude-managed-agents/`](https://docs.arcjet.com/guards/claude-managed-agents/) (shared JS+Python page). Do not touch [`/guards/claude-agent-sdk/`](https://docs.arcjet.com/guards/claude-agent-sdk/) or [`/guards/claude-agent-sdk-py/`](https://docs.arcjet.com/guards/claude-agent-sdk-py/).
 
 ## Agent skill
@@ -2439,6 +2542,7 @@ Load only the skill for the current vendor SDK:
 | Strands Agents             | `@arcjet/guard#integrate-arcjet-guard-strands-agents`        |
 | TanStack AI                | `@arcjet/guard#integrate-arcjet-guard-tanstack-ai`           |
 | Google ADK JS              | `@arcjet/guard#integrate-arcjet-guard-google-adk`            |
+| Cloudflare Think           | `@arcjet/guard#integrate-arcjet-guard-cloudflare-think`      |
 
 `intent.exclude` can drop a package or one skill. Editor hooks from
 `intent hooks install` are convenience, not a security boundary.
