@@ -175,7 +175,11 @@ test("AC4.9: captureAction emits capture with context's correlation ID and merge
   const captureCall = captureCalls[0] as Record<string, unknown>;
   assert.equal(captureCall.action, "notification.sent");
   assert.equal(captureCall.correlationId, "run-1");
-  assert.strictEqual(captureCall.decisionId, undefined, "no decisionId for captureAction");
+  assert.equal(
+    Object.hasOwn(captureCall, "decisionId"),
+    false,
+    "decisionId should be absent when the caller supplies none",
+  );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured metadata
   const metadata = captureCall.metadata as Record<string, unknown>;
   assert.deepEqual(
@@ -183,6 +187,27 @@ test("AC4.9: captureAction emits capture with context's correlation ID and merge
     { agent: "review-bot", destination: "slack" },
     "metadata should merge context then options (no outcome key)",
   );
+});
+
+test("captureAction forwards decisionId, joining the capture to a decision", () => {
+  const { client, captureCalls } = stubClient(decisionAllow());
+
+  const ctx = createAgentContext({
+    correlationId: "run-1",
+    metadata: { agent: "review-bot" },
+  });
+
+  captureAction(client, ctx, {
+    action: "review.prompt-injection",
+    decisionId: "gdec_01m20pwvwwf3296ecn8ecm2p9k",
+    metadata: { outcome: "detected" },
+  });
+
+  assert.equal(captureCalls.length, 1, "capture should be called once");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured values
+  const captureCall = captureCalls[0] as Record<string, unknown>;
+  assert.equal(captureCall.decisionId, "gdec_01m20pwvwwf3296ecn8ecm2p9k");
+  assert.equal(captureCall.correlationId, "run-1");
 });
 
 test("AC4.4: guard throws, onGuardError: 'allow' → fn runs, result passes through, fail-open warning", async () => {
