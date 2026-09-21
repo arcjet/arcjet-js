@@ -50,7 +50,7 @@ function toolCtx(name: string, input: unknown = {}): ToolCallContext {
     messages: [],
     abortSignal: undefined,
     stepNumber: 0,
-  } as ToolCallContext;
+  };
 }
 
 function readInstalledThinkTypes(): string {
@@ -61,8 +61,14 @@ function readInstalledThinkTypes(): string {
   assert.equal(pkg.version, "0.19.0");
   const thinkDts = readFileSync(resolve(pkgRoot, "dist/think.d.ts"), "utf-8");
   const chunk = /from "\.\/([^"]+)"/.exec(thinkDts);
-  assert.ok(chunk?.[1], "think.d.ts must re-export the bundled types");
-  const chunkFile = chunk[1].replace(/\.js$/, ".d.ts");
+  if (chunk === null) {
+    assert.fail("think.d.ts must re-export the bundled types");
+  }
+  const chunkName = chunk[1];
+  if (chunkName === undefined || chunkName === "") {
+    assert.fail("think.d.ts must re-export the bundled types");
+  }
+  const chunkFile = chunkName.replace(/\.js$/, ".d.ts");
   return `${thinkDts}\n${readFileSync(resolve(pkgRoot, "dist", chunkFile), "utf-8")}`;
 }
 

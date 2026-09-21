@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/explicit-function-return-type, eslint/require-await, eslint/strict-boolean-expressions, typescript/strict-boolean-expressions, unicorn/no-object-as-default-parameter -- test infrastructure and mocks
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/explicit-function-return-type, eslint/require-await, eslint/strict-boolean-expressions, typescript/strict-boolean-expressions -- test infrastructure and mocks
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -15,11 +15,11 @@ import { policyInput } from "../../policy-input.ts";
 import { guardHooks } from "./hooks.ts";
 import type { CloudflareThinkGuardHooks } from "./hooks.ts";
 
-function toolCtx(name: string, input: unknown = {}) {
+function toolCtx(name: string, input?: unknown) {
   return {
     toolName: name,
     toolCallId: "call-auto",
-    input,
+    input: input === undefined ? {} : input,
     messages: [],
     abortSignal: undefined,
     stepNumber: 0,
