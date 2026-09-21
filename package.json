@@ -22,6 +22,8 @@
     "turbo": "2.10.12"
   },
   "overrides": {
+    "@ai-sdk/anthropic": "4.0.36",
+    "@ai-sdk/openai": "4.0.36",
     "@huggingface/transformers": {
       "sharp": ">=0.35.4"
     },
