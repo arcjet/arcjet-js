@@ -89,8 +89,14 @@ jobs:
             api.apple-cloudkit.com:443
             api.apple-cloudkit.fe2.apple-dns.net:443
             api.github.com:443
-            # macOS softwareupdated requests this distribution host.
+            ${{ runner.os == 'macOS' && 'fpinit.itunes.apple.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'gateway.icloud.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 's.mzstatic.com:443' || '' }}
             ${{ runner.os == 'macOS' && 'swdist.apple.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'updates-http.cdn-apple.com:80' || '' }}
+            ${{ runner.os == 'macOS' && 'xp.apple.com:443' || '' }}
+            ${{ runner.os == 'Windows' && 'download.windowsupdate.com:80' || '' }}
+            ${{ runner.os == 'Windows' && 'download.windowsupdate.com:443' || '' }}
             decide.arcjet.com:443
             github.com:443
             h3.apis.apple.map.fastly.net:443
@@ -213,6 +219,14 @@ jobs:
             api.apple-cloudkit.com:443
             api.apple-cloudkit.fe2.apple-dns.net:443
             api.github.com:443
+            ${{ runner.os == 'macOS' && 'fpinit.itunes.apple.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'gateway.icloud.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 's.mzstatic.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'swdist.apple.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'updates-http.cdn-apple.com:80' || '' }}
+            ${{ runner.os == 'macOS' && 'xp.apple.com:443' || '' }}
+            ${{ runner.os == 'Windows' && 'download.windowsupdate.com:80' || '' }}
+            ${{ runner.os == 'Windows' && 'download.windowsupdate.com:443' || '' }}
             decide.arcjet.com:443
             deno.com:443
             dl.deno.land:443
@@ -354,6 +368,14 @@ jobs:
             api.apple-cloudkit.com:443
             api.apple-cloudkit.fe2.apple-dns.net:443
             api.github.com:443
+            ${{ runner.os == 'macOS' && 'fpinit.itunes.apple.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'gateway.icloud.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 's.mzstatic.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'swdist.apple.com:443' || '' }}
+            ${{ runner.os == 'macOS' && 'updates-http.cdn-apple.com:80' || '' }}
+            ${{ runner.os == 'macOS' && 'xp.apple.com:443' || '' }}
+            ${{ runner.os == 'Windows' && 'download.windowsupdate.com:80' || '' }}
+            ${{ runner.os == 'Windows' && 'download.windowsupdate.com:443' || '' }}
             decide.arcjet.com:443
             github.com:443
             h3.apis.apple.map.fastly.net:443
