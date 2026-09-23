@@ -28,14 +28,12 @@ jobs:
         # on each tarball). Re-add it once that proxy is reliable on Windows.
         include:
           - os: ubuntu-latest
-            bun-asset: bun-linux-x64.zip
           - os: macos-latest
-            bun-asset: bun-darwin-aarch64.zip
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           # The wildcard entries below are background traffic from the Windows
           # and macOS runner images — push and notification services, media and
@@ -106,14 +104,12 @@ jobs:
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
-      - uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.2.19
-          # Skip the tags API lookup; download the zip from GitHub releases.
-          bun-download-url: https://github.com/oven-sh/bun/releases/download/bun-v1.2.19/${{ matrix.bun-asset }}
       - run: bun install && bun run build
       - run: bun test
         working-directory: arcjet-bun
@@ -128,7 +124,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           # This job only reads a needs result, so it needs no endpoint of its
           # own. The list is still required: `block` with none at all also drops
@@ -159,7 +155,7 @@ jobs:
       contents: read
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           # The wildcard entries below are background traffic from the Windows
           # and macOS runner images — push and notification services, media and
@@ -233,18 +229,18 @@ jobs:
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
           egress-policy: block
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
       - name: Wait for Windows DNS proxy
         if: runner.os == 'Windows'
         run: sleep 5
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 22
       - name: Pin npm
         uses: ./.github/actions/pin-npm
-      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
           deno-version: v2.4.2
       - run: npm ci && npm run build
@@ -262,7 +258,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           # Same as the Bun gate above: a non-empty list is what lets
           # harden-runner keep its own API and the runner's own calls allowed.
@@ -297,7 +293,7 @@ jobs:
     steps:
       # Environment security
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           # sudo/container lockdown is Linux-only; a no-op or error on other OS.
           disable-sudo-and-containers: ${{ runner.os == 'Linux' }}
@@ -373,7 +369,7 @@ jobs:
       # Checkout
       # Most toolchains require checkout first
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
 
@@ -383,7 +379,7 @@ jobs:
 
       # Language toolchains
       - name: Install Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: ${{ matrix.node }}
 
@@ -424,7 +420,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           allowed-endpoints: >
             api.github.com:443
@@ -437,19 +433,19 @@ jobs:
             release-assets.githubusercontent.com:443
           disable-sudo-and-containers: true
           egress-policy: block
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 22
       - name: Pin npm
         uses: ./.github/actions/pin-npm
-      - uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         if: matrix.runtime == 'bun'
         with:
           bun-version: ${{ matrix.bun-version }}
-      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         if: matrix.runtime == 'deno'
         with:
           deno-version: ${{ matrix.deno-version }}
@@ -465,7 +461,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           # The runtime test calls a local mock DecideService server, so the
           # Arcjet decide endpoint is never hit. `workers.cloudflare.com` is
@@ -481,10 +477,10 @@ jobs:
             workers.cloudflare.com:443
           disable-sudo-and-containers: true
           egress-policy: block
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
       - name: Pin npm
