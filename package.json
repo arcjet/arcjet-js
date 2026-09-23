@@ -40,8 +40,8 @@
     "workerd": false
   },
   "overrides": {
-    "@ai-sdk/anthropic": "4.0.36",
-    "@ai-sdk/openai": "4.0.36",
+    "@ai-sdk/anthropic": "4.0.54",
+    "@ai-sdk/openai": "4.0.67",
     "@huggingface/transformers": {
       "sharp": ">=0.35.4"
     },
