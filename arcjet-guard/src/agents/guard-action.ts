@@ -225,6 +225,11 @@ export async function guardAction<T>(
 export interface CaptureActionOptions {
   /** Capture action: `"resource.verb"`, past tense. */
   action: string;
+  /**
+   * Join key referencing the decision this action relates to, taken from
+   * `decision.id` of a `guard()` call the application made itself.
+   */
+  decisionId?: string;
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata;
 }
@@ -238,9 +243,14 @@ export interface CaptureActionOptions {
  * fact about what the application did. No `outcome` metadata is added (that's
  * only for guarded executions).
  *
+ * An application that called `guard()` itself — to read the decision rather
+ * than let a helper convert it to control flow — passes `decision.id` as
+ * `decisionId` so the record joins that decision instead of standing alone.
+ *
  * @param client - Guard client from `launchArcjet()`
  * @param ctx - Security context with correlation ID and metadata
- * @param opts - Capture options: `action` (required), `metadata` (optional)
+ * @param opts - Capture options: `action` (required), `decisionId` and
+ *   `metadata` (optional)
  *
  * @example
  * ```ts
@@ -258,6 +268,7 @@ export function captureAction(
   captureEvent(client, {
     action: opts.action,
     correlationId: ctx.correlationId,
+    ...(opts.decisionId !== undefined && { decisionId: opts.decisionId }),
     metadata: { ...ctx.metadata, ...opts.metadata },
   });
 }

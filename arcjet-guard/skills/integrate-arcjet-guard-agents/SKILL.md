@@ -126,7 +126,8 @@ const tools = {
 - Omit `rules` to submit none. The guard call still happens, so the decision is
   correlatable and the call site stays reachable by policy configured outside
   the code — but it costs a round trip. Use `captureAction()` instead when you
-  want a record and no decision.
+  want a record no helper produced; pass `decision.id` as its `decisionId` to
+  join that record to a `guard()` call the application made itself.
 - `rules` may be a callback over the tool's parsed input, computed from the
   data being acted on — here, keying the rate limit on the specific order
   being looked up.

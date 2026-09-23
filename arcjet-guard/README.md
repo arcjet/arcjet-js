@@ -2351,7 +2351,9 @@ denial as a successful action.
 skipping the call: Arcjet still returns a decision, so the event is correlatable
 by `decisionId` and the call site stays reachable by policy configured outside
 your code. It does cost a round trip — reach for `captureAction()` when you want
-a record and no decision.
+a record no helper produced. Pass `decision.id` as `decisionId` to join that
+record to a `guard()` call your application made itself, and omit it for a
+standalone fact like `notification.sent`.
 
 ### Threading context through boundaries
 
