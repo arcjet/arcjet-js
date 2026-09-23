@@ -70,10 +70,10 @@
     "arcjet": "1.13.0"
   },
   "devDependencies": {
-    "@types/node": "22.20.1",
-    "next": "16.3.4",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
+    "@types/node": "22.20.3",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },

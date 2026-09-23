@@ -22,8 +22,8 @@
     "turbo": "2.10.12"
   },
   "overrides": {
-    "@ai-sdk/anthropic": "4.0.36",
-    "@ai-sdk/openai": "4.0.36",
+    "@ai-sdk/anthropic": "4.0.54",
+    "@ai-sdk/openai": "4.0.67",
     "@huggingface/transformers": {
       "sharp": ">=0.35.4"
     },
@@ -32,6 +32,7 @@
         "cookie": ">=0.7.2"
       }
     },
+    "adm-zip": "0.6.1",
     "miniflare": {
       "sharp": ">=0.35.4",
       "undici": ">=7.29.0"
