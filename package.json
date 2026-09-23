@@ -21,22 +21,6 @@
     "oxlint-tsgolint": "7.0.2001",
     "turbo": "2.10.12"
   },
-  "overrides": {
-    "@ai-sdk/anthropic": "4.0.36",
-    "@ai-sdk/openai": "4.0.36",
-    "@huggingface/transformers": {
-      "sharp": ">=0.35.4"
-    },
-    "@nosecone/sveltekit": {
-      "@sveltejs/kit": {
-        "cookie": ">=0.7.2"
-      }
-    },
-    "miniflare": {
-      "sharp": ">=0.35.4",
-      "undici": ">=7.29.0"
-    }
-  },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0",
     "npm": "^12.0.0"

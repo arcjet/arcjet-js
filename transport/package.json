@@ -74,13 +74,13 @@
   "dependencies": {
     "@arcjet/env": "1.13.0",
     "@arcjet/logger": "1.13.0",
-    "@bufbuild/protobuf": "2.14.1",
+    "@bufbuild/protobuf": "2.15.0",
     "@connectrpc/connect": "2.2.0",
     "@connectrpc/connect-node": "2.2.0",
     "@connectrpc/connect-web": "2.2.0"
   },
   "devDependencies": {
-    "@types/node": "22.20.1",
+    "@types/node": "22.20.3",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
