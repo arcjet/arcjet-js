@@ -26,9 +26,9 @@ jobs:
         # harden-runner's DNS proxy drops those lookups (`no upstream DNS
         # servers available` for registry.npmjs.org, then `ConnectionRefused`
         # on each tarball). Re-add it once that proxy is reliable on Windows.
-        include:
-          - os: ubuntu-latest
-          - os: macos-latest
+        os:
+          - ubuntu-latest
+          - macos-latest
     permissions:
       contents: read
     runs-on: ${{ matrix.os }}
@@ -89,6 +89,8 @@ jobs:
             api.apple-cloudkit.com:443
             api.apple-cloudkit.fe2.apple-dns.net:443
             api.github.com:443
+            # macOS softwareupdated requests this distribution host.
+            ${{ runner.os == 'macOS' && 'swdist.apple.com:443' || '' }}
             decide.arcjet.com:443
             github.com:443
             h3.apis.apple.map.fastly.net:443
