@@ -38,5 +38,22 @@
     "protobufjs": false,
     "sharp": false,
     "workerd": false
+  },
+  "overrides": {
+    "@ai-sdk/anthropic": "4.0.36",
+    "@ai-sdk/openai": "4.0.36",
+    "@huggingface/transformers": {
+      "sharp": ">=0.35.4"
+    },
+    "@nosecone/sveltekit": {
+      "@sveltejs/kit": {
+        "cookie": ">=0.7.2"
+      }
+    },
+    "miniflare": {
+      "sharp": ">=0.35.4",
+      "undici": ">=7.29.0"
+    },
+    "adm-zip": "0.6.1"
   }
 }
