@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...v1.14.0) (2026-09-24)
+
+
+### 🚀 New Features
+
+* **guard:** accept decisionId on captureAction options ([#6298](https://github.com/arcjet/arcjet-js/issues/6298)) ([33bc5bb](https://github.com/arcjet/arcjet-js/commit/33bc5bb3f1d8ab419f80230f1044b525c9090a7a))
+* **guard:** add Cloudflare Think support as @arcjet/guard/cloudflare-think/v0 ([#6297](https://github.com/arcjet/arcjet-js/issues/6297)) ([42d2f98](https://github.com/arcjet/arcjet-js/commit/42d2f9816bad430b214d931ce41ea19fb140dfce))
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** split character windows that exceed the token budget ([#6301](https://github.com/arcjet/arcjet-js/issues/6301)) ([3b38938](https://github.com/arcjet/arcjet-js/commit/3b389383d1efc2ef9866775f375e749ede3e8cbe))
+
+
+### 📝 Documentation
+
+* **guard:** point the LangChain skill at the page that exists ([#6294](https://github.com/arcjet/arcjet-js/issues/6294)) ([3b5dcbc](https://github.com/arcjet/arcjet-js/commit/3b5dcbc76cd30ea52db777b5def280a199519f6c))
+
+
+### 🔨 Build System
+
+* **deps:** bump devalue from 5.8.2 to 5.9.2 ([#6296](https://github.com/arcjet/arcjet-js/issues/6296)) ([fcf0376](https://github.com/arcjet/arcjet-js/commit/fcf0376e92181d1cc73f64b207a8656ea85e4dd1))
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...v1.13.0) (2026-09-16)
 
 

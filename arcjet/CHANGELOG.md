@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...arcjet-v1.14.0) (2026-09-24)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.14.0
+    * @arcjet/cache bumped from 1.13.0 to 1.14.0
+    * @arcjet/duration bumped from 1.13.0 to 1.14.0
+    * @arcjet/headers bumped from 1.13.0 to 1.14.0
+    * @arcjet/protocol bumped from 1.13.0 to 1.14.0
+    * @arcjet/runtime bumped from 1.13.0 to 1.14.0
+    * @arcjet/skills bumped from 1.13.0 to 1.14.0
+    * @arcjet/stable-hash bumped from 1.13.0 to 1.14.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.13.0 to 1.14.0
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...arcjet-v1.13.0) (2026-09-16)
 
 
