@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/analyze-v1.14.0) (2026-09-24)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze-wasm bumped from 1.13.0 to 1.14.0
+    * @arcjet/protocol bumped from 1.13.0 to 1.14.0
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/analyze-v1.13.0) (2026-09-16)
 
 
