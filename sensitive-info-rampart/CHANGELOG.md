@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/sensitive-info-rampart-v1.14.0) (2026-09-24)
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** split character windows that exceed the token budget ([#6301](https://github.com/arcjet/arcjet-js/issues/6301)) ([3b38938](https://github.com/arcjet/arcjet-js/commit/3b389383d1efc2ef9866775f375e749ede3e8cbe))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.14.0
+    * arcjet bumped from 1.13.0 to 1.14.0
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.14.0
+    * arcjet bumped from 1.13.0 to 1.14.0
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/sensitive-info-rampart-v1.13.0) (2026-09-16)
 
 
