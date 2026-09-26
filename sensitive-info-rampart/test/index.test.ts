@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { rampart } from "../dist/index.js";
+import { createModelRunner } from "../dist/model.js";
 import type { DetectedSpan } from "../dist/recognizers.js";
 
 // A logger that records `debug` calls so we can assert on them.
@@ -120,6 +121,33 @@ test("recognizer spans win over overlapping model spans", async function () {
   assert.deepEqual(result.denied[0].identifiedType, {
     tag: "credit-card-number",
   });
+});
+
+test("touching model tokens cannot hide two validated credit cards", async function () {
+  const { context } = fakeContext();
+  const value = "credit card 4111111111111111-5500000000000004";
+  // These are the B-tagged WordPieces emitted by the bundled model. Its last
+  // digit of the first card and the second card are mislabeled TAX_ID.
+  const words = [
+    ...["411", ...Array(6).fill("##11")].map((word) => ({ entity: "B-GOVERNMENT_ID", word })),
+    ...["##1", "-", "550", ...Array(6).fill("##00"), "##4"].map((word) => ({
+      entity: "B-TAX_ID",
+      word,
+    })),
+  ];
+  const runModel = createModelRunner({
+    async classify() {
+      return words.map((token, index) => ({ ...token, index, score: 0.9 }));
+    },
+  });
+  const backend = rampart({ runModel });
+
+  const result = await backend.detect(context, value, denyEntities(["CREDIT_CARD_NUMBER"]));
+  assert.deepEqual(
+    result.denied.map((span) => value.slice(span.start, span.end)),
+    ["4111111111111111", "5500000000000004"],
+  );
+  assert.ok(result.denied.every((span) => span.identifiedType.tag === "credit-card-number"));
 });
 
 test("a short recognizer span does not delete a longer overlapping entity", async function () {

@@ -137,6 +137,49 @@ test("model detects a formatted phone without a phone recognizer", async functio
   );
 });
 
+test("model cannot hide two validated cards behind one longer span", async function (t) {
+  const value = "credit card 4111111111111111-5500000000000004";
+  const entities = {
+    tag: "deny" as const,
+    val: [{ tag: "credit-card-number" } as const],
+  };
+
+  let result;
+  try {
+    result = await rampart().detect(context, value, entities);
+  } catch (error) {
+    t.skip(`model unavailable: ${(error as Error).message}`);
+    return;
+  }
+
+  assert.deepEqual(
+    result.denied.map((entity) => value.slice(entity.start, entity.end)),
+    ["4111111111111111", "5500000000000004"],
+  );
+  assert.ok(result.denied.every((entity) => entity.identifiedType.tag === "credit-card-number"));
+});
+
+test("adjacent email addresses do not leave a punctuation-only model span", async function (t) {
+  const value = "alice@example.com$bob@example.com";
+  const entities = {
+    tag: "deny" as const,
+    val: [{ tag: "email" } as const],
+  };
+
+  let result;
+  try {
+    result = await rampart().detect(context, value, entities);
+  } catch (error) {
+    t.skip(`model unavailable: ${(error as Error).message}`);
+    return;
+  }
+
+  assert.deepEqual(
+    result.denied.map((entity) => value.slice(entity.start, entity.end)),
+    ["alice@example.com", "bob@example.com"],
+  );
+});
+
 test("handles input longer than the model's token window via chunking", async function (t) {
   // A body well past the 512-token limit, with a name only at the very end.
   // Before chunking this threw an onnxruntime broadcast error.

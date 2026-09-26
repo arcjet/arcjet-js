@@ -99,6 +99,67 @@ test("aggregateTokens merges same-type tokens across whitespace", function () {
   assert.equal(value.slice(spans[0].start, spans[0].end), "Main Street");
 });
 
+test("aggregateTokens merges repeated B tags within Luxembourg", function () {
+  const value = "Luxembourg";
+  const tokens: RawToken[] = ["lux", "##em", "##bourg"].map((word, index) => ({
+    entity: "B-CITY",
+    score: 0.9,
+    word,
+    index,
+  }));
+
+  assert.deepEqual(aggregateTokens(value, assignOffsets(value, tokens)), [
+    { start: 0, end: value.length, type: "CITY" },
+  ]);
+});
+
+test("aggregateTokens merges repeated B tags within an identifier", function () {
+  const value = "US64SVBKUS6S3300958879";
+  // These are the model's wordpieces; its label can be wrong independently of
+  // whether the pieces form one span.
+  const words = [
+    "us",
+    "##64",
+    "##s",
+    "##vb",
+    "##kus",
+    "##6",
+    "##s",
+    "##33",
+    "##00",
+    "##9",
+    "##58",
+    "##8",
+    "##7",
+    "##9",
+  ];
+  const tokens: RawToken[] = words.map((word, index) => ({
+    entity: "B-DRIVERS_LICENSE",
+    score: 0.9,
+    word,
+    index,
+  }));
+
+  assert.deepEqual(aggregateTokens(value, assignOffsets(value, tokens)), [
+    { start: 0, end: value.length, type: "DRIVERS_LICENSE" },
+  ]);
+});
+
+test("aggregateTokens merges a multi-word entity with B/I tags", function () {
+  const value = "Allée des Chênes";
+  const tokens: RawToken[] = [
+    { entity: "B-STREET_NAME", score: 0.9, word: "all", index: 0 },
+    { entity: "B-STREET_NAME", score: 0.9, word: "##ee", index: 1 },
+    { entity: "I-STREET_NAME", score: 0.9, word: "des", index: 2 },
+    { entity: "I-STREET_NAME", score: 0.9, word: "chen", index: 3 },
+    { entity: "I-STREET_NAME", score: 0.9, word: "##es", index: 4 },
+  ];
+
+  assert.deepEqual(aggregateTokens(value, assignOffsets(value, tokens)), [
+    { start: 0, end: value.length, type: "STREET_NAME" },
+  ]);
+});
+
 test("aggregateTokens does not merge same-type tokens across non-whitespace", function () {
   // A comma between two same-type tokens is not whitespace, so they stay
   // separate spans rather than merging.
@@ -118,7 +179,7 @@ test("aggregateTokens does not merge same-type tokens across non-whitespace", fu
   assert.equal(spans.length, 2);
 });
 
-test("aggregateTokens starts a new span on a B- tag of the same type", function () {
+test("aggregateTokens starts a new span on a B- tag after whitespace", function () {
   const value = "Ann Bob";
   const tokens: RawToken[] = [
     {
@@ -140,6 +201,23 @@ test("aggregateTokens starts a new span on a B- tag of the same type", function 
   ];
   const spans = aggregateTokens(value, tokens);
   assert.equal(spans.length, 2);
+});
+
+test("aggregateTokens does not join touching B tags or emit punctuation-only spans", function () {
+  const value = "alice@example.com$bob@example.com";
+  const words = ["alice", "@", "example", ".", "com", "$", "bob", "@", "example", ".", "com"];
+  const tokens: RawToken[] = words.map((word, index) => ({
+    entity: "B-EMAIL",
+    score: 0.9,
+    word,
+    index,
+  }));
+
+  const spans = aggregateTokens(value, assignOffsets(value, tokens));
+  assert.deepEqual(
+    spans.map((span) => value.slice(span.start, span.end)),
+    ["alice", "example", "com", "bob", "example", "com"],
+  );
 });
 
 test("aggregateTokens drops O, low-score, and offset-less tokens", function () {

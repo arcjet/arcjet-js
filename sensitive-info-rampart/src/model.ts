@@ -90,6 +90,7 @@ export interface ModelOptions {
 }
 
 const DEFAULT_THRESHOLD = 0.5;
+const hasLetterOrNumber = /[\p{L}\p{N}]/u;
 
 /**
  * Normalize text the way the model's BERT tokenizer does — Unicode NFD
@@ -182,10 +183,10 @@ export function assignOffsets(value: string, tokens: ReadonlyArray<RawToken>): R
 /**
  * Aggregate per-token model output into entity spans.
  *
- * Consecutive tokens of the same type are merged into a single span when the
- * text between them is only whitespace, so sub-word tokens (and adjacent words
- * of one entity) collapse into one span. Tokens below `threshold`, tokens
- * labelled outside (`O`), and tokens without offsets break the current span.
+ * A `B-` token starts a new span unless it is a touching WordPiece continuation
+ * (`##`), since the model can label each piece `B-`. An `I-` token can extend a
+ * span across whitespace. Tokens below `threshold`, tokens labelled outside
+ * (`O`), and tokens without offsets break the current span.
  *
  * This is pure so it can be unit-tested without loading the model.
  *
@@ -207,10 +208,12 @@ export function aggregateTokens(
   let current: DetectedSpan | undefined;
 
   function flush() {
-    if (current) {
+    // The model can label a standalone separator (such as the `$` between two
+    // emails) as an entity. No supported entity consists only of punctuation.
+    if (current && hasLetterOrNumber.test(value.slice(current.start, current.end))) {
       spans.push(current);
-      current = undefined;
     }
+    current = undefined;
   }
 
   for (const token of tokens) {
@@ -229,10 +232,11 @@ export function aggregateTokens(
     if (
       current !== undefined &&
       current.type === type &&
-      !isBegin &&
-      /^\s*$/.test(value.slice(current.end, token.start))
+      (isBegin
+        ? token.word.startsWith("##") && token.start <= current.end
+        : /^\s*$/.test(value.slice(current.end, token.start)))
     ) {
-      current.end = token.end;
+      current.end = Math.max(current.end, token.end);
       continue;
     }
 
