@@ -59,11 +59,9 @@ function overlaps(a: DetectedSpan, b: DetectedSpan): boolean {
 /**
  * Merge spans from several sources, resolving overlaps.
  *
- * The longer span wins, so a short recognizer match cannot delete a longer,
- * distinct entity it happens to overlap. When two overlapping spans are the same
- * length (such as a recognizer and the model labelling the exact same text), the
- * earlier group wins — the recognizer is deterministic and validated, so it is
- * authoritative for that text.
+ * Earlier groups win over later groups on overlapping text, regardless of
+ * length. This keeps validated recognizer matches from being relabelled by a
+ * longer model span. Within a group, the longer span wins.
  *
  * @param groups
  *   Span groups in precedence order (highest first).
@@ -76,9 +74,9 @@ function mergeSpans(groups: ReadonlyArray<ReadonlyArray<DetectedSpan>>): Detecte
   ranked.sort((a, b) => {
     const lengthA = a.span.end - a.span.start;
     const lengthB = b.span.end - b.span.start;
-    // Longest first, then higher-precedence group, then earliest start.
-    if (lengthA !== lengthB) return lengthB - lengthA;
+    // Higher-precedence group first, then longest, then earliest start.
     if (a.priority !== b.priority) return a.priority - b.priority;
+    if (lengthA !== lengthB) return lengthB - lengthA;
     return a.span.start - b.span.start;
   });
 

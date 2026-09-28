@@ -150,10 +150,63 @@ test("touching model tokens cannot hide two validated credit cards", async funct
   assert.ok(result.denied.every((span) => span.identifiedType.tag === "credit-card-number"));
 });
 
-test("a short recognizer span does not delete a longer overlapping entity", async function () {
+for (const { name, words, modelStart } of [
+  {
+    name: "I labels across both cards and their separator",
+    words: [
+      { entity: "B-TAX_ID", word: "411" },
+      { entity: "I-TAX_ID", word: "##1111111111111" },
+      { entity: "I-TAX_ID", word: "-" },
+      { entity: "I-TAX_ID", word: "550" },
+      { entity: "I-TAX_ID", word: "##0000000000004" },
+    ],
+    modelStart: 12,
+  },
+  {
+    name: "a B-labelled separator followed by an I-labelled card",
+    words: [
+      { entity: "B-TAX_ID", word: "-" },
+      { entity: "I-TAX_ID", word: "550" },
+      { entity: "I-TAX_ID", word: "##0000000000004" },
+    ],
+    modelStart: 28,
+  },
+]) {
+  test(`validated cards survive ${name}`, async function () {
+    const { context } = fakeContext();
+    const value = "credit card 4111111111111111-5500000000000004";
+    const runModel = createModelRunner({
+      async classify() {
+        return words.map((token, index) => ({ ...token, index, score: 0.9 }));
+      },
+    });
+    assert.deepEqual(await runModel(value), [
+      { start: modelStart, end: value.length, type: "TAX_ID" },
+    ]);
+
+    const result = await rampart({ runModel }).detect(
+      context,
+      value,
+      denyEntities(["CREDIT_CARD_NUMBER"]),
+    );
+    assert.deepEqual(
+      result.denied.map((span) => ({
+        start: span.start,
+        end: span.end,
+        type: span.identifiedType,
+      })),
+      [
+        { start: 12, end: 28, type: { tag: "credit-card-number" } },
+        { start: 29, end: 45, type: { tag: "credit-card-number" } },
+      ],
+    );
+  });
+}
+
+test("a validated recognizer wins over a longer overlapping model entity", async function () {
   const { context } = fakeContext();
-  // "1 Infinite Loop" — the model spans the whole street ([0,15)); a stray
-  // recognizer match on the leading digit ([0,1)) must not suppress it.
+  // A custom recognizer marks the leading digit as a phone. Even though the
+  // model covers a longer street span, the recognizer's chosen type is kept.
   const value = "1 Infinite Loop";
   const backend = rampart({
     recognizers: [() => [{ start: 0, end: 1, type: "PHONE_NUMBER" }]],
@@ -166,13 +219,12 @@ test("a short recognizer span does not delete a longer overlapping entity", asyn
     denyEntities(["STREET_NAME", "PHONE_NUMBER"]),
   );
 
-  // The longer STREET_NAME span wins the overlap.
+  // The recognizer's type is authoritative for its matching text.
   assert.equal(result.denied.length, 1);
   assert.deepEqual(result.denied[0].identifiedType, {
-    tag: "custom",
-    val: "STREET_NAME",
+    tag: "phone-number",
   });
-  assert.equal(value.slice(result.denied[0].start, result.denied[0].end), value);
+  assert.equal(value.slice(result.denied[0].start, result.denied[0].end), "1");
 });
 
 test("native types use their analyze tag, others are custom", async function () {
