@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@types/node": "22.20.4",
-    "next": "16.3.5",
+    "next": "16.3.6",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
