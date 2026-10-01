@@ -945,6 +945,133 @@ export declare type GuardSensitiveInfoEntity = Message<"proto.decide.v2.GuardSen
 export declare const GuardSensitiveInfoEntitySchema: GenMessage<GuardSensitiveInfoEntity>;
 
 /**
+ * ResultIpThreat is the assessment of the destinations a call would contact,
+ * from the same IP threat database Protect uses for the caller of an HTTP
+ * request.
+ *
+ * `detected` is the boolean a detector rule denies on: risk_level is high or
+ * critical. An expression rule reads the same fields under
+ * input.signals.ip_threat.<id> and can require a stricter combination, such as
+ * a malware activity. `host` is the destination that produced the worst
+ * assessment; it is empty when nothing scored above none.
+ *
+ * @generated from message proto.decide.v2.ResultIpThreat
+ */
+export declare type ResultIpThreat = Message<"proto.decide.v2.ResultIpThreat"> & {
+  /**
+   * The conclusion for this rule (ALLOW or DENY).
+   *
+   * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
+   */
+  conclusion: GuardConclusion;
+
+  /**
+   * Whether the worst destination scored high or critical.
+   *
+   * @generated from field: bool detected = 2;
+   */
+  detected: boolean;
+
+  /**
+   * Worst risk: "none", "low", "medium", "high" or "critical".
+   *
+   * @generated from field: string risk_level = 3;
+   */
+  riskLevel: string;
+
+  /**
+   * Reputation of the address that produced that risk.
+   *
+   * @generated from field: string reputation = 4;
+   */
+  reputation: string;
+
+  /**
+   * Activities observed for that address, such as "malware" or "botnet".
+   *
+   * @generated from field: repeated string activities = 5;
+   */
+  activities: string[];
+
+  /**
+   * The destination host that produced the worst assessment.
+   *
+   * @generated from field: string host = 6;
+   */
+  host: string;
+
+  /**
+   * The address that was looked up for that host.
+   *
+   * @generated from field: string ip = 7;
+   */
+  ip: string;
+};
+
+/**
+ * Describes the message proto.decide.v2.ResultIpThreat.
+ * Use `create(ResultIpThreatSchema)` to create a new message.
+ */
+export declare const ResultIpThreatSchema: GenMessage<ResultIpThreat>;
+
+/**
+ * ResultSensitiveInfo contains result details for a server-side sensitive
+ * information detection evaluation.
+ *
+ * Separate from ResultLocalSensitiveInfo rather than a flag on it, because the
+ * two differ in the one thing a reader of a decision needs to know without
+ * consulting anything else: whether Arcjet saw the value. This variant means
+ * it did. It also carries billing, which the local variant has no use for —
+ * the SDK does that work on the customer's own hardware.
+ *
+ * @generated from message proto.decide.v2.ResultSensitiveInfo
+ */
+export declare type ResultSensitiveInfo = Message<"proto.decide.v2.ResultSensitiveInfo"> & {
+  /**
+   * The conclusion for this rule (ALLOW or DENY).
+   *
+   * @generated from field: proto.decide.v2.GuardConclusion conclusion = 1;
+   */
+  conclusion: GuardConclusion;
+
+  /**
+   * Whether a denied, policy-violating sensitive entity was detected.
+   *
+   * @generated from field: bool detected = 2;
+   */
+  detected: boolean;
+
+  /**
+   * The entity types that triggered detection (e.g. "EMAIL", "SURNAME").
+   *
+   * @generated from field: repeated string detected_entity_types = 3;
+   */
+  detectedEntityTypes: string[];
+
+  /**
+   * Locations of detected entities. Offsets into the value the caller sent,
+   * carrying only type and offsets — never the matched text, which would put
+   * the detected secret back into the response that reports finding it.
+   *
+   * @generated from field: repeated proto.decide.v2.GuardSensitiveInfoEntity detected_entities = 4;
+   */
+  detectedEntities: GuardSensitiveInfoEntity[];
+
+  /**
+   * The billing charged for this evaluation (unit "text_units").
+   *
+   * @generated from field: proto.decide.v2.Billing billing = 5;
+   */
+  billing?: Billing;
+};
+
+/**
+ * Describes the message proto.decide.v2.ResultSensitiveInfo.
+ * Use `create(ResultSensitiveInfoSchema)` to create a new message.
+ */
+export declare const ResultSensitiveInfoSchema: GenMessage<ResultSensitiveInfo>;
+
+/**
  * ResultLocalCustom contains result details for a custom local rule evaluation.
  *
  * @generated from message proto.decide.v2.ResultLocalCustom
@@ -1368,6 +1495,18 @@ export declare type GuardPolicyRuleResult = Message<"proto.decide.v2.GuardPolicy
      */
     value: ResultNotRun;
     case: "notRun";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultSensitiveInfo sensitive_info = 40;
+     */
+    value: ResultSensitiveInfo;
+    case: "sensitiveInfo";
+  } | {
+    /**
+     * @generated from field: proto.decide.v2.ResultIpThreat ip_threat = 41;
+     */
+    value: ResultIpThreat;
+    case: "ipThreat";
   } | { case: undefined; value?: undefined };
 };
 
@@ -1673,8 +1812,10 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
 
   /**
    * A label identifying the protection boundary (e.g. "tools.weather").
-   * Required. Max 256 bytes. Only lowercase letters, digits, dash, and dot.
-   * Must start and end with a lowercase letter or digit.
+   * Required. Max 256 bytes. Only lowercase letters, digits, dash, dot, and
+   * underscore. Must start and end with a lowercase letter or digit. The
+   * cases every validator agrees on are in
+   * proto/decide/v2/guard-label-cases.json in the arcjet monorepo.
    *
    * @generated from field: string label = 10;
    */
@@ -2241,6 +2382,13 @@ export enum GuardReason {
    * @generated from enum value: GUARD_REASON_INPUT_CONSTRAINT = 14;
    */
   INPUT_CONSTRAINT = 14,
+
+  /**
+   * The conclusion was due to destination IP threat intelligence.
+   *
+   * @generated from enum value: GUARD_REASON_IP_THREAT = 15;
+   */
+  IP_THREAT = 15,
 }
 
 /**
@@ -2342,6 +2490,20 @@ export enum GuardRuleType {
    * @generated from enum value: GUARD_RULE_TYPE_LOCAL_CUSTOM = 29;
    */
   LOCAL_CUSTOM = 29,
+
+  /**
+   * Sensitive information detection (evaluated by Arcjet).
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_SENSITIVE_INFO = 40;
+   */
+  SENSITIVE_INFO = 40,
+
+  /**
+   * Destination IP threat intelligence (evaluated by Arcjet).
+   *
+   * @generated from enum value: GUARD_RULE_TYPE_IP_THREAT = 41;
+   */
+  IP_THREAT = 41,
 }
 
 /**
