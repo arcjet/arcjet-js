@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/skills-v1.14.0) (2026-10-01)
+
+
+### 🚀 New Features
+
+* **guard:** add Cloudflare Think support as @arcjet/guard/cloudflare-think/v0 ([#6297](https://github.com/arcjet/arcjet-js/issues/6297)) ([42d2f98](https://github.com/arcjet/arcjet-js/commit/42d2f9816bad430b214d931ce41ea19fb140dfce))
+
+
+### 📝 Documentation
+
+* **skills:** fix guard() object call shape and coding-agent routing ([#6302](https://github.com/arcjet/arcjet-js/issues/6302)) ([3da98d0](https://github.com/arcjet/arcjet-js/commit/3da98d0afac62dd33e447f67b6fe2afedc9f8550))
+
 ## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/skills-v1.13.0) (2026-09-16)
 
 
