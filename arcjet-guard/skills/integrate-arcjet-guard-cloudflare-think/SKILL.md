@@ -111,10 +111,13 @@ Install published `@arcjet/guard` and the `@cloudflare/think` peer —
 do not pin a git SHA. Always use the versioned path:
 `@arcjet/guard/cloudflare-think/v0` resolves;
 `@arcjet/guard/cloudflare-think` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
-The peer range is `>=0.3.0 <1`.
+The peer range is `>=0.3.0 <1`. Use one of:
 
 ```sh
 npm install @arcjet/guard @cloudflare/think
+```
+
+```sh
 pnpm add @arcjet/guard @cloudflare/think
 ```
 
