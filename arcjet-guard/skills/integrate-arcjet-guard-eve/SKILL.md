@@ -7,7 +7,7 @@ metadata:
   author: arcjet
   type: core
   library: "@arcjet/guard"
-  library_version: "1.13.0" # x-release-please-version
+  library_version: "1.14.0" # x-release-please-version
 sources:
   - README.md
 ---
