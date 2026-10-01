@@ -39,10 +39,13 @@ claude mcp add arcjet --transport http https://api.arcjet.com/mcp
 ```
 
 Bootstrap: `list-teams` → `list-sites` → `get-site-key` → write `ARCJET_KEY`.
+Agent identity (not human browser OAuth): follow https://arcjet.com/auth.md.
 Investigate: `analyze-traffic`, `list-requests`, `list-guards`,
 `investigate-ip`. Remote rules: `create-rule` (DRY_RUN) →
 `get-dry-run-impact` → `promote-rule`. Guard policies (MCP-only; no CLI
 commands): `list-guard-policies` → `describe-guard-policy` →
 `validate-guard-policy` → `put-guard-policy`. Application policies select by
-`label` / `action`. Coding-agent policies attach by **Execute on** (Tool call
-or Prompt).
+`label` / `action`. Coding-agent policies attach by **Execute on** (Tool call,
+Prompt, or Model switch). Install Claude Code / Copilot hooks from
+https://docs.arcjet.com/coding-agents — copy the templates. The hook URL
+must not name a policy and must omit `?surface=`.

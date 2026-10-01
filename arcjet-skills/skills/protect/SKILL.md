@@ -1,6 +1,6 @@
 ---
 name: protect
-description: Add Arcjet request protection to JavaScript and TypeScript HTTP handlers. Use when protecting Next.js, Express, Fastify, SvelteKit, Remix, Astro, Nuxt, Bun, Deno, NestJS, or Node.js routes with rate limiting, bot detection, Shield, email validation, or sensitive info detection.
+description: Add Arcjet request protection to JavaScript and TypeScript HTTP handlers. Use when protecting Next.js, Express, Fastify, SvelteKit, Remix, React Router, Hono, Astro, Nuxt, Bun, Deno, NestJS, or Node.js routes with rate limiting, bot detection, Shield, email validation, or sensitive info detection.
 license: Apache-2.0
 compatibility: JavaScript and TypeScript HTTP apps using an @arcjet/* framework adapter.
 metadata:
@@ -94,7 +94,7 @@ input as trusted.
 When no usable public address is available, adapters may fall back to
 forwarding headers and log one `unverified-header` warning per client.
 Configure `proxies` (or `cloudflare()`). Inspect with
-`clientIpDetails()` (`@arcjet/node`) or `findIpDetails()` /
+`aj.clientIpDetails(request)` (`@arcjet/node`) or `findIpDetails()` /
 `resolveClientIp()` (`@arcjet/ip`) before shipping.
 
 Nested `metadata` is for the Console — no secrets, no PII.
