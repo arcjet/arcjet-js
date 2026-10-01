@@ -272,6 +272,8 @@ export function reasonFromProto(r: GuardReason): Reason {
       return "SENSITIVE_INFO";
     case GuardReason.INPUT_CONSTRAINT:
       return "INPUT_CONSTRAINT";
+    case GuardReason.IP_THREAT:
+      return "IP_THREAT";
     case GuardReason.CUSTOM:
       return "CUSTOM";
     case GuardReason.ERROR:
@@ -438,6 +440,32 @@ function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult
         type: "SENSITIVE_INFO",
         warnings,
         detectedEntityTypes: pr.result.value.detectedEntityTypes,
+      };
+      break;
+    // Server-side detection: Arcjet saw the value. It shares the local
+    // detector's result shape; `execution` is what tells the two apart.
+    case "sensitiveInfo":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "SENSITIVE_INFO",
+        type: "SENSITIVE_INFO",
+        warnings,
+        detectedEntityTypes: pr.result.value.detectedEntityTypes,
+        billing: billingFromProto(pr.result.value.billing),
+      };
+      break;
+    case "ipThreat":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "IP_THREAT",
+        type: "IP_THREAT",
+        warnings,
+        detected: pr.result.value.detected,
+        riskLevel: pr.result.value.riskLevel,
+        reputation: pr.result.value.reputation,
+        activities: pr.result.value.activities,
+        host: pr.result.value.host,
+        ip: pr.result.value.ip,
       };
       break;
     case "allowedStringValues":

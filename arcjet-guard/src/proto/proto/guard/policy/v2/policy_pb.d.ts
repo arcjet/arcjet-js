@@ -112,6 +112,29 @@ export declare type GuardPolicy = Message<"proto.guard.policy.v2.GuardPolicy"> &
    * @generated from field: string artifact = 7;
    */
   artifact: string;
+
+  /**
+   * The moments in a coding agent's session that select this policy:
+   * "tool-call", "prompt" or "model-switch". Every policy attached to the
+   * moment runs, so publishing a policy is the only act that turns it on.
+   *
+   * A moment, not a hook event. Both are points where the agent asks before
+   * it acts and obeys the answer, and the events each covers fill the same
+   * inputs, so a policy written for one is decidable on all of them. Every
+   * other hook event is recorded and never adjudicated: the act is done, no
+   * vendor will undo it, and a policy there would deny nothing.
+   *
+   * Empty means this transport never selects the policy. That is the normal
+   * state for an application policy, which is selected by the label an
+   * explicit `guard()` call passes.
+   *
+   * Selection and identity are deliberately separate: the label still names
+   * the policy, the recorded decision and the quota unit, and a rename does
+   * not change which moments the policy is attached to.
+   *
+   * @generated from field: repeated string coding_agent_moments = 8;
+   */
+  codingAgentMoments: string[];
 };
 
 /**
@@ -175,7 +198,8 @@ export declare type GuardPolicyDetector = Message<"proto.guard.policy.v2.GuardPo
   /**
    * The declared input this detector reads. Its kind must be STRING, and its
    * exposure must match the detector: SERVER for prompt injection, LOCAL for
-   * sensitive information.
+   * sensitive information. IP threat also accepts a SERVER STRING_LIST of
+   * hosts or absolute URLs.
    *
    * @generated from field: string input_name = 3;
    */
@@ -382,6 +406,14 @@ export declare type GuardPolicyDefinitionEntry = Message<"proto.guard.policy.v2.
    * @generated from field: repeated proto.guard.policy.v2.GuardPolicyTest tests = 8;
    */
   tests: GuardPolicyTest[];
+
+  /**
+   * The moments this policy is attached to. Copied unchanged into the
+   * published GuardPolicy; see the field there.
+   *
+   * @generated from field: repeated string coding_agent_moments = 9;
+   */
+  codingAgentMoments: string[];
 };
 
 /**
@@ -849,6 +881,44 @@ export enum GuardPolicyDetectorKind {
    * @generated from enum value: GUARD_POLICY_DETECTOR_KIND_LOCAL_SENSITIVE_INFO = 2;
    */
   LOCAL_SENSITIVE_INFO = 2,
+
+  /**
+   * Server-side sensitive-information detection over a SERVER STRING input.
+   *
+   * The counterpart to LOCAL_SENSITIVE_INFO, and the difference is the whole
+   * point of having both: this one reads the raw value, so it reaches Arcjet
+   * and Arcjet runs the model. That buys the entity types a deterministic
+   * parser cannot reach — names, addresses, government and financial
+   * identifiers — at the cost of the property the LOCAL kind exists to keep.
+   * Neither is a better default; an author picks the exposure they can live
+   * with, which is why the exposure is what distinguishes them.
+   *
+   * Reads the same GuardPolicySensitiveInfoConfig entity filter as the LOCAL
+   * kind, so a policy can be moved between the two by changing the input's
+   * exposure and the detector's kind, with the rules unchanged.
+   *
+   * @generated from enum value: GUARD_POLICY_DETECTOR_KIND_SENSITIVE_INFO = 3;
+   */
+  SENSITIVE_INFO = 3,
+
+  /**
+   * Server-side IP threat assessment of destinations a call would contact.
+   *
+   * The same CrowdSec and IPAPI database Protect uses for the caller of an
+   * HTTP request, applied to the hosts a Guard call names. An IP literal is
+   * looked up directly. A hostname is resolved, then each address is looked
+   * up, and the verdict is the worst assessment. Rego reads it at
+   * input.signals.ip_threat.<id> (risk_level, reputation, activities, host).
+   * `detected` is true when risk_level is high or critical.
+   *
+   * The input is a SERVER string or string list of hosts or absolute URLs.
+   * An empty value is a real answer — nothing to contact — and is risk
+   * "none", not a missing verdict. A lookup that cannot be completed fails
+   * the detector closed.
+   *
+   * @generated from enum value: GUARD_POLICY_DETECTOR_KIND_IP_THREAT = 4;
+   */
+  IP_THREAT = 4,
 }
 
 /**
