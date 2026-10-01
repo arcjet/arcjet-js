@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-cloudflare-think
 description: Integrate Arcjet security into a Cloudflare Think app using @arcjet/guard — assign guardHooks().beforeToolCall on a Think subclass so the hook gates tools, and read a caller-owned id from helper options. Use when asked to add Arcjet to Cloudflare Think, @cloudflare/think, rate limit its tools, screen inbound messages, or block prompt injection / PII. This is Cloudflare Think, not the Vercel AI SDK.
 license: Apache-2.0
-compatibility: Requires the target app to use Cloudflare Think (@cloudflare/think >=0.3.0 <1) on Node.js >= 22. This is Think + class beforeToolCall. There is no /v1 until Think ships 1.x. Do not use @arcjet/guard/vercel-ai/v7.
+compatibility: Requires official @cloudflare/think >=0.3.0 <1 as a peer of published @arcjet/guard. Install with npm install or pnpm add. Local Node.js follows the @arcjet/guard runtime floor (>=22.21.0 <23 || >=24.5.0). This is Think + class beforeToolCall. There is no /v1 until Think ships 1.x. Path is /v0. Do not use @arcjet/guard/vercel-ai/v7.
 metadata:
   author: arcjet
   type: core
@@ -107,15 +107,18 @@ Ask only what you cannot infer from the code; suggest defaults.
 
 ## Step 1: Install and find the guard client
 
-Install `@arcjet/guard` (required), plus `@cloudflare/think` (optional
-peer, needed for `@arcjet/guard/cloudflare-think/v0`). Always use the
-versioned path: `@arcjet/guard/cloudflare-think/v0` resolves;
+Install published `@arcjet/guard` and the `@cloudflare/think` peer —
+do not pin a git SHA. Always use the versioned path:
+`@arcjet/guard/cloudflare-think/v0` resolves;
 `@arcjet/guard/cloudflare-think` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
-The peer range is `>=0.3.0 <1`. Node 22+ — do not bump Node for this
-adapter.
+The peer range is `>=0.3.0 <1`. Use one of:
 
 ```sh
 npm install @arcjet/guard @cloudflare/think
+```
+
+```sh
+pnpm add @arcjet/guard @cloudflare/think
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:

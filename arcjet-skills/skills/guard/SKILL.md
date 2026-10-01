@@ -23,6 +23,11 @@ For a specific vendor SDK, load the matching skill from `@arcjet/guard`
 `-strands-agents`, `-tanstack-ai`, `-cloudflare-think`,
 `-claude-agent-sdk`, `-claude-managed-agents`).
 
+Claude Code / Copilot HTTP hooks are not this package. Publish a
+coding-agent policy via `@arcjet/skills#mcp` (**Execute on**: Tool call,
+Prompt, or Model switch) and install hooks from
+https://docs.arcjet.com/coding-agents (omit `?surface=`).
+
 ## Client
 
 ```ts
@@ -38,11 +43,14 @@ Declare rules at module scope so `.deniedResult(decision)` works.
 
 Hardcode the `label`. Do not interpolate in a generic dispatcher.
 
-Hardcode labels as slugs. Prefer lowercase letters, digits, `-`, and `.`
-(`tools.get-weather`). Start and end with a letter or digit.
+Hardcode labels as slugs: lowercase letters, digits, `-`, `.`, and `_`
+(`tools.get-weather`). Start and end with a letter or digit; max 256 bytes.
+Prefer dash/dot in new labels. Check a label you build yourself with
+`validateGuardLabel`.
 
 ```ts
-const decision = await arcjet.guard("tools.get-weather", {
+const decision = await arcjet.guard({
+  label: "tools.get-weather",
   rules: [/* ... */],
   metadata: { user: { id: userId } },
 });
