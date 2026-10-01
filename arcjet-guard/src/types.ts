@@ -28,6 +28,7 @@ export type Reason =
   | "MODERATE_CONTENT"
   | "SENSITIVE_INFO"
   | "INPUT_CONSTRAINT"
+  | "IP_THREAT"
   | "CUSTOM"
   | "ERROR"
   | "NOT_RUN"
@@ -326,7 +327,14 @@ export type RuleResultModerateContent = {
   readonly billing?: Billing | undefined;
 };
 
-/** Result from a sensitive information detection evaluation. */
+/**
+ * Result from a sensitive information detection evaluation.
+ *
+ * Produced by {@link localDetectSensitiveInfo}, which runs in the SDK, and by a
+ * remote policy's server-side sensitive-information detector, which runs on
+ * Arcjet. For a remote-policy result, {@link PolicyRuleResult.execution} says
+ * which: `"SERVER"` means Arcjet saw the value.
+ */
 export type RuleResultSensitiveInfo = {
   /** Whether the request was allowed or denied by this rule. */
   readonly conclusion: "ALLOW" | "DENY";
@@ -347,6 +355,54 @@ export type RuleResultSensitiveInfo = {
    * ```
    */
   readonly detectedEntityTypes: readonly string[];
+  /**
+   * Usage charged for this evaluation, when reported by the service. Only a
+   * server-side detection is billed; local detection never sets it.
+   */
+  readonly billing?: Billing | undefined;
+};
+
+/**
+ * Result from a remote policy's IP threat detector, which assesses the
+ * destinations a call would contact against Arcjet's IP threat database.
+ *
+ * The fields describe the destination with the worst assessment. Appears in
+ * {@link PolicyRuleResult.result}.
+ *
+ * @example
+ * ```ts
+ * for (const { result } of decision.policyResults ?? []) {
+ *   if (result.type === "IP_THREAT" && result.detected) {
+ *     console.log("risky destination", result.host, result.riskLevel, result.activities);
+ *   }
+ * }
+ * ```
+ */
+export type RuleResultIpThreat = {
+  /** Whether the request was allowed or denied by this rule. */
+  readonly conclusion: "ALLOW" | "DENY";
+  /** The reason category — always `"IP_THREAT"` for this rule. */
+  readonly reason: "IP_THREAT";
+  /** Discriminant — always `"IP_THREAT"`. */
+  readonly type: "IP_THREAT";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
+  /** Whether the worst destination scored `"high"` or `"critical"`. */
+  readonly detected: boolean;
+  /**
+   * Worst risk level: `"none"`, `"low"`, `"medium"`, `"high"` or
+   * `"critical"`. Passed through as the service sent it, so a level added
+   * later reaches you unchanged.
+   */
+  readonly riskLevel: string;
+  /** Reputation of the address that produced that risk. */
+  readonly reputation: string;
+  /** Activities observed for that address, such as `"malware"` or `"botnet"`. */
+  readonly activities: readonly string[];
+  /** The destination host that produced the worst assessment. Empty when nothing scored above `"none"`. */
+  readonly host: string;
+  /** The address that was looked up for that host. */
+  readonly ip: string;
 };
 
 /** Result from a custom local rule evaluation. */
@@ -469,6 +525,7 @@ export type RuleResult =
   | RuleResultPromptInjection
   | RuleResultModerateContent
   | RuleResultSensitiveInfo
+  | RuleResultIpThreat
   | RuleResultCustom
   | RuleResultPolicyExpression
   | RuleResultNotRun

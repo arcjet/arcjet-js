@@ -107,6 +107,7 @@ export type {
   RuleResultError,
   RuleResultUnknown,
   RuleResultInputConstraint,
+  RuleResultIpThreat,
   StringMatchOperator,
   PolicyEvaluation,
   PolicyRuleResult,

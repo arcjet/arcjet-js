@@ -29,6 +29,10 @@ import {
   ResultNotRunSchema,
   GuardPolicyRuleResultSchema,
   ResultPolicyExpressionSchema,
+  ResultSensitiveInfoSchema,
+  ResultIpThreatSchema,
+  GuardSensitiveInfoEntitySchema,
+  type GuardPolicyRuleResult,
   GuardRuleExecution,
   GuardConclusion,
   GuardReason,
@@ -123,6 +127,10 @@ describe("reasonFromProto", () => {
 
   test("SENSITIVE_INFO maps to 'SENSITIVE_INFO'", () => {
     assert.equal(reasonFromProto(GuardReason.SENSITIVE_INFO), "SENSITIVE_INFO");
+  });
+
+  test("IP_THREAT maps to 'IP_THREAT'", () => {
+    assert.equal(reasonFromProto(GuardReason.IP_THREAT), "IP_THREAT");
   });
 
   test("CUSTOM maps to 'CUSTOM'", () => {
@@ -1731,5 +1739,247 @@ describe("policy expression results", () => {
     const result = decision.policyResults?.[0];
     assert.ok(result);
     assert.deepEqual(result.result.warnings, []);
+  });
+});
+
+// A remote policy can run two detectors on Arcjet rather than in the SDK:
+// sensitive information and IP threat. Both arrive only as policy results.
+function serverDetectorResponse(
+  type: GuardRuleType,
+  result: GuardPolicyRuleResult["result"],
+  conclusion: GuardConclusion,
+  reason: GuardReason = GuardReason.UNSPECIFIED,
+): GuardResponse {
+  return create(GuardResponseSchema, {
+    decision: create(GuardDecisionSchema, {
+      id: "gdec_detector",
+      conclusion,
+      reason,
+      policyRuleResults: [
+        create(GuardPolicyRuleResultSchema, {
+          resultId: "gres_detector",
+          policyId: "pol_1",
+          policyRevision: "rev-1",
+          ruleId: "detector",
+          type,
+          mode: GuardRuleMode.LIVE,
+          execution: GuardRuleExecution.SERVER,
+          result,
+        }),
+      ],
+    }),
+  });
+}
+
+describe("server-side sensitive info policy results", () => {
+  test("maps every field of a denial", () => {
+    const response = serverDetectorResponse(
+      GuardRuleType.SENSITIVE_INFO,
+      {
+        case: "sensitiveInfo",
+        value: create(ResultSensitiveInfoSchema, {
+          conclusion: GuardConclusion.DENY,
+          detected: true,
+          detectedEntityTypes: ["EMAIL", "SURNAME"],
+          detectedEntities: [
+            create(GuardSensitiveInfoEntitySchema, { type: "EMAIL", start: 3, end: 18 }),
+            create(GuardSensitiveInfoEntitySchema, { type: "SURNAME", start: 20, end: 25 }),
+          ],
+          billing: create(BillingSchema, { unit: "text_units", count: 2n }),
+        }),
+      },
+      GuardConclusion.DENY,
+      GuardReason.SENSITIVE_INFO,
+    );
+    const decision = decisionFromProto(response, []);
+    assert.equal(decision.conclusion, "DENY");
+    assert.equal(decision.conclusion === "DENY" && decision.reason, "SENSITIVE_INFO");
+    const policyResult = decision.policyResults?.[0];
+    assert.ok(policyResult);
+    assert.equal(policyResult.execution, "SERVER");
+    assert.equal(policyResult.source, "REMOTE");
+    assert.deepEqual(policyResult.result, {
+      conclusion: "DENY",
+      reason: "SENSITIVE_INFO",
+      type: "SENSITIVE_INFO",
+      warnings: [],
+      detectedEntityTypes: ["EMAIL", "SURNAME"],
+      billing: { unit: "text_units", count: 2n },
+    });
+  });
+
+  test("an empty result allows and does not read as UNKNOWN", () => {
+    const response = serverDetectorResponse(
+      GuardRuleType.SENSITIVE_INFO,
+      { case: "sensitiveInfo", value: create(ResultSensitiveInfoSchema, {}) },
+      GuardConclusion.ALLOW,
+    );
+    const policyResult = decisionFromProto(response, []).policyResults?.[0];
+    assert.ok(policyResult);
+    assert.deepEqual(policyResult.result, {
+      conclusion: "ALLOW",
+      reason: "SENSITIVE_INFO",
+      type: "SENSITIVE_INFO",
+      warnings: [],
+      detectedEntityTypes: [],
+      billing: undefined,
+    });
+  });
+
+  test("is reported as a server detection, not a local one", () => {
+    // The server and local variants share a result shape, so `execution` is
+    // the only thing that tells a reader Arcjet saw the value. Pin both
+    // sides: the server variant reads SERVER and carries billing; the local
+    // one reads SDK and does not.
+    const server = decisionFromProto(
+      serverDetectorResponse(
+        GuardRuleType.SENSITIVE_INFO,
+        {
+          case: "sensitiveInfo",
+          value: create(ResultSensitiveInfoSchema, {
+            conclusion: GuardConclusion.DENY,
+            detectedEntityTypes: ["EMAIL"],
+            billing: create(BillingSchema, { unit: "text_units", count: 1n }),
+          }),
+        },
+        GuardConclusion.DENY,
+      ),
+      [],
+    ).policyResults?.[0];
+    const localResponse = create(GuardResponseSchema, {
+      decision: create(GuardDecisionSchema, {
+        id: "gdec_local",
+        conclusion: GuardConclusion.DENY,
+        policyRuleResults: [
+          create(GuardPolicyRuleResultSchema, {
+            policyId: "pol_1",
+            ruleId: "detector",
+            type: GuardRuleType.LOCAL_SENSITIVE_INFO,
+            execution: GuardRuleExecution.SDK,
+            result: {
+              case: "localSensitiveInfo",
+              value: create(ResultLocalSensitiveInfoSchema, {
+                conclusion: GuardConclusion.DENY,
+                detectedEntityTypes: ["EMAIL"],
+              }),
+            },
+          }),
+        ],
+      }),
+    });
+    const local = decisionFromProto(localResponse, []).policyResults?.[0];
+    assert.ok(server);
+    assert.ok(local);
+    assert.equal(server.execution, "SERVER");
+    assert.equal(local.execution, "SDK");
+    assert.equal(server.result.type, "SENSITIVE_INFO");
+    assert.equal(local.result.type, "SENSITIVE_INFO");
+    assert.ok(server.result.type === "SENSITIVE_INFO");
+    assert.ok(local.result.type === "SENSITIVE_INFO");
+    assert.deepEqual(server.result.billing, { unit: "text_units", count: 1n });
+    assert.equal("billing" in local.result, false);
+  });
+
+  test("exposes entity types only, like the local result", () => {
+    const response = serverDetectorResponse(
+      GuardRuleType.SENSITIVE_INFO,
+      {
+        case: "sensitiveInfo",
+        value: create(ResultSensitiveInfoSchema, {
+          conclusion: GuardConclusion.DENY,
+          detectedEntityTypes: ["EMAIL"],
+          detectedEntities: [
+            create(GuardSensitiveInfoEntitySchema, { type: "EMAIL", start: 0, end: 5 }),
+          ],
+        }),
+      },
+      GuardConclusion.DENY,
+    );
+    const policyResult = decisionFromProto(response, []).policyResults?.[0];
+    assert.ok(policyResult);
+    assert.equal("detectedEntities" in policyResult.result, false);
+  });
+});
+
+describe("IP threat policy results", () => {
+  test("maps every field of a denial", () => {
+    const response = serverDetectorResponse(
+      GuardRuleType.IP_THREAT,
+      {
+        case: "ipThreat",
+        value: create(ResultIpThreatSchema, {
+          conclusion: GuardConclusion.DENY,
+          detected: true,
+          riskLevel: "critical",
+          reputation: "malicious",
+          activities: ["malware", "botnet"],
+          host: "evil.example.com",
+          ip: "203.0.113.7",
+        }),
+      },
+      GuardConclusion.DENY,
+      GuardReason.IP_THREAT,
+    );
+    const decision = decisionFromProto(response, []);
+    assert.equal(decision.conclusion, "DENY");
+    assert.equal(decision.conclusion === "DENY" && decision.reason, "IP_THREAT");
+    const policyResult = decision.policyResults?.[0];
+    assert.ok(policyResult);
+    assert.equal(policyResult.execution, "SERVER");
+    assert.deepEqual(policyResult.result, {
+      conclusion: "DENY",
+      reason: "IP_THREAT",
+      type: "IP_THREAT",
+      warnings: [],
+      detected: true,
+      riskLevel: "critical",
+      reputation: "malicious",
+      activities: ["malware", "botnet"],
+      host: "evil.example.com",
+      ip: "203.0.113.7",
+    });
+  });
+
+  test("an empty result allows with an empty host and no activities", () => {
+    // Nothing scored above none: the host is empty and the conclusion unset,
+    // which reads as ALLOW (fail open), not as UNKNOWN.
+    const response = serverDetectorResponse(
+      GuardRuleType.IP_THREAT,
+      { case: "ipThreat", value: create(ResultIpThreatSchema, {}) },
+      GuardConclusion.ALLOW,
+    );
+    const policyResult = decisionFromProto(response, []).policyResults?.[0];
+    assert.ok(policyResult);
+    assert.deepEqual(policyResult.result, {
+      conclusion: "ALLOW",
+      reason: "IP_THREAT",
+      type: "IP_THREAT",
+      warnings: [],
+      detected: false,
+      riskLevel: "",
+      reputation: "",
+      activities: [],
+      host: "",
+      ip: "",
+    });
+  });
+
+  test("passes an unrecognised risk level through", () => {
+    const response = serverDetectorResponse(
+      GuardRuleType.IP_THREAT,
+      {
+        case: "ipThreat",
+        value: create(ResultIpThreatSchema, {
+          conclusion: GuardConclusion.ALLOW,
+          riskLevel: "elevated",
+          host: "example.com",
+        }),
+      },
+      GuardConclusion.ALLOW,
+    );
+    const policyResult = decisionFromProto(response, []).policyResults?.[0];
+    assert.ok(policyResult);
+    assert.ok(policyResult.result.type === "IP_THREAT");
+    assert.equal(policyResult.result.riskLevel, "elevated");
   });
 });
