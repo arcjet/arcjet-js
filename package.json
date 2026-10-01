@@ -19,7 +19,7 @@
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0",
     "oxlint-tsgolint": "7.0.2001",
-    "turbo": "2.10.12"
+    "turbo": "2.11.3"
   },
   "overrides": {
     "@ai-sdk/anthropic": "4.0.54",

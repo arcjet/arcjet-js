@@ -74,7 +74,7 @@
     "@bufbuild/protobuf": "2.15.0",
     "@connectrpc/connect": "2.2.0",
     "@connectrpc/connect-node": "2.2.0",
-    "@types/node": "22.20.3",
+    "@types/node": "22.20.4",
     "miniflare": "4.20260730.0",
     "rolldown": "1.2.8",
     "tsdown": "0.23.0",
