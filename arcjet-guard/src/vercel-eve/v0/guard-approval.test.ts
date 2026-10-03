@@ -939,6 +939,98 @@ test("response guard call uses responder as actor and session as correlation", a
   assert.equal(metadata["eve.phase"], "approval-response");
 });
 
+// Eve 0.69 removed `ApprovalResponseContext.responder` and put the responder
+// on `response.principal`. These build each version's context explicitly
+// rather than through the factory, so neither carries the other's field.
+function responseContextWithout(field: "responder"): Record<string, unknown> {
+  const ctx: Record<string, unknown> = { ...createApprovalResponseContext() };
+  delete ctx[field];
+  return ctx;
+}
+
+test("response responder is read from response.principal (eve >= 0.69)", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  const ctx = {
+    ...responseContextWithout("responder"),
+    response: {
+      decision: "approve",
+      principal: {
+        attributes: {},
+        authenticator: "test",
+        principalId: "approver_principal",
+        principalType: "user",
+      },
+    },
+  } as unknown as ApprovalResponseContext;
+  assert.equal("responder" in ctx, false);
+
+  await requireResponse(approval)(ctx);
+
+  assert.equal(guardCalls.length, 1);
+  const metadata = recorded(recorded(guardCalls[0]).metadata);
+  assert.equal(metadata["user"], "approver_principal");
+});
+
+test("response responder falls back to ctx.responder (eve < 0.69)", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  const ctx = {
+    ...responseContextWithout("responder"),
+    response: { decision: "approve" },
+    responder: { principalId: "approver_legacy" },
+  } as unknown as ApprovalResponseContext;
+
+  await requireResponse(approval)(ctx);
+
+  assert.equal(guardCalls.length, 1);
+  const metadata = recorded(recorded(guardCalls[0]).metadata);
+  assert.equal(metadata["user"], "approver_legacy");
+});
+
+test("response responder prefers response.principal when both fields are present", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  const ctx = {
+    ...responseContextWithout("responder"),
+    response: { decision: "approve", principal: { principalId: "approver_principal" } },
+    responder: { principalId: "approver_legacy" },
+  } as unknown as ApprovalResponseContext;
+
+  await requireResponse(approval)(ctx);
+
+  const metadata = recorded(recorded(guardCalls[0]).metadata);
+  assert.equal(metadata["user"], "approver_principal");
+});
+
+test("response with neither responder field omits user", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  const ctx = responseContextWithout("responder") as unknown as ApprovalResponseContext;
+
+  await requireResponse(approval)(ctx);
+
+  assert.equal(guardCalls.length, 1);
+  const metadata = recorded(recorded(guardCalls[0]).metadata);
+  assert.equal("user" in metadata, false);
+});
+
 test("response rules function receives ApprovalResponseContext", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const approval = guardApproval(client, {
