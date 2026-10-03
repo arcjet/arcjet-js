@@ -1,4 +1,4 @@
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -141,13 +141,9 @@ export async function guardEvents<
   const action = policy.inbound.action ?? "message.received";
   const inboundArg = { text, events };
 
-  let rules: RuleWithInput[] | undefined;
+  const resolved = resolveCallPolicy({ rules: policy.inbound.rules }, inboundArg, action);
   let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
-    rules =
-      typeof policy.inbound.rules === "function"
-        ? policy.inbound.rules(inboundArg)
-        : policy.inbound.rules;
     remote = await resolveActorInputs(policy.inbound, inboundArg);
   } catch (error) {
     if (shouldWarn()) {
@@ -186,9 +182,10 @@ export async function guardEvents<
 
   const verdict = await runGate<Permit>(client, {
     action,
-    rules,
+    rules: resolved.rules,
     correlationId: policy.context?.correlationId,
     metadata,
+    degraded: resolved.degraded,
     ...remote,
     onAllow: (): Permit => ({ allowed: true }),
     onDeny: (decision: DecisionDeny): Permit => ({

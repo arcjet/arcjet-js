@@ -16,6 +16,7 @@ import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
 import { guardMiddleware } from "../../src/langchain/v1/guard-middleware.ts";
 import { asDenial } from "../_shared/source-scan.ts";
 import {
+  decisionAllow,
   decisionDenyPromptInjection,
   decisionFailOpenAllow,
   stubClient,
@@ -120,11 +121,12 @@ test("wrapToolCall DENY does not throw (throws would drop arcjetDenied)", async 
   assert.equal(denialFrom(requireToolMessage(result)).arcjetDenied, true);
 });
 
-// A policy factory that throws is a guard error, not an allow. It has to
-// reach the model as a completed ToolMessage for the same reason a DENY
-// does: this return value skips `baseHandler`.
+// A policy factory that throws leaves its value out of the guard call, which
+// still happens; with the default `onGuardError: "deny"` the refusal has to
+// reach the model as a completed ToolMessage for the same reason a DENY does:
+// this return value skips `baseHandler`.
 test("a throwing policy factory fail-closes as a completed ToolMessage", async () => {
-  const { client, guardCalls } = stubClient(decisionDenyPromptInjection());
+  const { client, guardCalls } = stubClient(decisionAllow());
   let handlerCalls = 0;
   const mw = guardMiddleware(client, {
     action: "tool.invoked",
@@ -138,14 +140,14 @@ test("a throwing policy factory fail-closes as a completed ToolMessage", async (
   });
 
   assert.equal(handlerCalls, 0);
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
   const message = requireToolMessage(result);
   assert.notEqual(message.status, "error");
   assert.equal(denialFrom(message).reason, "ERROR");
 });
 
 test("a throwing policy factory with onGuardError allow still runs the handler", async () => {
-  const { client } = stubClient(decisionDenyPromptInjection());
+  const { client } = stubClient(decisionAllow());
   let handlerCalls = 0;
   const mw = guardMiddleware(client, {
     action: "tool.invoked",

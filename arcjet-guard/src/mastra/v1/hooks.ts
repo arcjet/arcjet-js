@@ -5,7 +5,7 @@ import type {
   ToolHooks,
 } from "@mastra/core/tools";
 
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -66,10 +66,17 @@ function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
   if (typeof policy.action === "function") {
     return policy.action(call);
   }
-  if (typeof policy.action === "string" && policy.action.length > 0) {
-    return policy.action;
-  }
-  return "tool.invoked";
+  return fallbackAction(policy);
+}
+
+/**
+ * The label for a static or absent `action`, and the label used when an
+ * `action` callback fails.
+ */
+function fallbackAction(policy: GuardHooksPolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "tool.invoked";
 }
 
 /**
@@ -120,26 +127,24 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           toolName: typeof hookContext.toolName === "string" ? hookContext.toolName : "",
           input: hookContext.input,
         };
-        const action = resolveAction(policy, call);
+        const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
         const source = isContextSource(hookContext.context) ? hookContext.context : undefined;
         const agentCtx = mastraAgentContext(source);
 
-        const rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-        const policyMetadata =
-          typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
         const metadata: ArcjetMetadata = {
           ...agentCtx.metadata,
           "mastra.phase": "before",
           ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
-          ...policyMetadata,
+          ...resolved.metadata,
         };
         const remote = await resolveActorInputs(policy, call, hookContext.context);
 
         return await runGate<void | ToolBeforeHookResult>(client, {
-          action,
-          rules,
+          action: resolved.action,
+          rules: resolved.rules,
           correlationId: agentCtx.correlationId,
           metadata,
+          degraded: resolved.degraded,
           ...remote,
           onAllow: () => {
             /* allow the tool to proceed */
