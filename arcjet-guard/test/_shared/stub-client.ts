@@ -10,6 +10,7 @@
  */
 
 import type { ArcjetAgentClient } from "../../src/agents/capture.ts";
+import { symbolArcjetInternal } from "../../src/symbol.ts";
 import type { Decision, DecisionDeny, RuleWithInput } from "../../src/types.ts";
 
 /**
@@ -231,8 +232,12 @@ export function decisionDenyError(): DecisionDeny {
 
 /**
  * Stub fake rule for testing (when actual rule config is not needed).
+ *
+ * Carries the input binding a real rule gets from `rule(config)(input)`, which
+ * is what a helper checks before submitting a `rules` callback's result.
  */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of RuleWithInput
 export const fakeRule: RuleWithInput = {
   type: "TEST",
+  [symbolArcjetInternal]: { configId: "cfg_fake", inputId: "inp_fake" },
 } as unknown as RuleWithInput;

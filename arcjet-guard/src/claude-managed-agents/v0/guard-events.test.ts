@@ -185,7 +185,7 @@ test("never mints a correlation id and does not send Anthropic session ids", asy
 });
 
 test("policy factory throw fail-closes without sending", async () => {
-  const { client } = stubClient(decisionAllow());
+  const { client, guardCalls } = stubClient(decisionAllow());
   const { send, calls } = sendRecorder();
   const warnings: unknown[][] = [];
   const originalWarn = console.warn;
@@ -214,8 +214,10 @@ test("policy factory throw fail-closes without sending", async () => {
       assert.equal(verdict.outcome, "UNAVAILABLE");
     }
     assert.equal(calls.length, 0);
+    assert.equal(guardCalls.length, 1);
+    assert.deepEqual(recorded(guardCalls[0])["rules"], []);
     assert.ok(warnings.length > 0);
-    assert.match(String(warnings[0]?.[0]), /policy factory/);
+    assert.match(String(warnings[0]?.[0]), /evaluated without a failed callback; failing closed/);
   } finally {
     console.warn = originalWarn;
     if (previous === undefined) {

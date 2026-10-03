@@ -147,7 +147,7 @@ test("rules throw still returns proceed: false (fail closed)", async () => {
   };
 
   try {
-    const { client } = stubClient(decisionAllow());
+    const { client, guardCalls } = stubClient(decisionAllow());
     const hooks = guardHooks(client, {
       rules: () => {
         throw new Error("rules exploded");
@@ -158,8 +158,10 @@ test("rules throw still returns proceed: false (fail closed)", async () => {
     assert.equal(result.proceed, false);
     const output = asDenial<ArcjetDenialResult>(result.output);
     assert.equal(output.reason, "ERROR");
+    assert.equal(guardCalls.length, 1);
+    assert.deepEqual(recorded(guardCalls[0])["rules"], []);
     assert.ok(warnings.length > 0);
-    assert.match(String(warnings[0]?.[0]), /beforeToolCall threw/);
+    assert.match(String(warnings[0]?.[0]), /evaluated without a failed callback; failing closed/);
   } finally {
     console.warn = originalWarn;
     if (previous === undefined) {

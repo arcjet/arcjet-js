@@ -1,4 +1,4 @@
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -125,19 +125,6 @@ function isToolCall(input: unknown): input is { args: unknown; type: "tool_call"
  */
 function toolArgs(input: unknown): unknown {
   return isToolCall(input) ? input.args : input;
-}
-
-function resolveSessionId<TInput>(
-  policy: GuardToolPolicy<TInput>,
-  input: TInput,
-): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(input);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
-  }
-  return undefined;
 }
 
 /**
@@ -294,26 +281,24 @@ async function runGuardedTool<TTool extends LangChainTool<any>>(
 ): Promise<unknown> {
   const args = toolArgs(input);
 
-  let action: string;
-  let sessionId: string | undefined;
-  let rules: RuleWithInput[] | undefined;
-  let policyMetadata: ArcjetMetadata | undefined;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's structured input; policy factories are typed against it
+  const typedArgs = args as LangChainToolInput<TTool>;
+  // A failing `action` callback falls back to "tool.invoked", the default
+  // `guardToolNode` documents for the same policy shape.
+  const call = resolveCallPolicy(
+    policy,
+    typedArgs,
+    typeof policy.action === "string" ? policy.action : "tool.invoked",
+  );
+  const { action, sessionId, rules, metadata: policyMetadata } = call;
   let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's structured input; policy factories are typed against it
-    const typedArgs = args as LangChainToolInput<TTool>;
-    action = typeof policy.action === "function" ? policy.action(typedArgs) : policy.action;
-    sessionId = resolveSessionId(policy, typedArgs);
-    rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
-    policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
     remote = await resolveActorInputs(policy, typedArgs, config);
   } catch (error) {
-    const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
     if (shouldWarn()) {
       console.warn(
         '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        actionLabel,
+        action,
         error,
       );
     }
@@ -340,6 +325,7 @@ async function runGuardedTool<TTool extends LangChainTool<any>>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    degraded: call.degraded,
     ...remote,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {

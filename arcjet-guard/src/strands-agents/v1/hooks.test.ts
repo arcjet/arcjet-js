@@ -191,7 +191,7 @@ test("rules throw still sets cancel (fail closed) and does not throw", async () 
   };
 
   try {
-    const { client } = stubClient(decisionAllow());
+    const { client, guardCalls } = stubClient(decisionAllow());
     const handler = createBeforeToolCallHandler(client, {
       rules: () => {
         throw new Error("rules exploded");
@@ -201,8 +201,10 @@ test("rules throw still sets cancel (fail closed) and does not throw", async () 
     await handler(event);
     const output = denialFromCancel(event);
     assert.equal(output.reason, "ERROR");
+    assert.equal(guardCalls.length, 1);
+    assert.deepEqual(recorded(guardCalls[0])["rules"], []);
     assert.ok(warnings.length > 0);
-    assert.match(String(warnings[0]?.[0]), /policy factory|threw/);
+    assert.match(String(warnings[0]?.[0]), /evaluated without a failed callback; failing closed/);
   } finally {
     console.warn = originalWarn;
     if (previous === undefined) {

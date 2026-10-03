@@ -1,4 +1,4 @@
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -191,16 +191,15 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
         }),
     };
 
-    const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
-    const mergedMetadata = { ...metadata, ...policyMetadata };
+    const call = resolveCallPolicy(policy, input, policy.action);
+    const mergedMetadata = { ...metadata, ...call.metadata };
 
     const result = await runGuarded<MastraToolOutput<TTool>>(client, {
-      action: policy.action,
-      rules,
+      action: call.action,
+      rules: call.rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      degraded: call.degraded,
       resolvePolicy: () => resolveActorInputs(policy, input, context),
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may return a custom shape; the ALLOW path is TOutput
       onDeny: ((decision: DecisionDeny) => {
