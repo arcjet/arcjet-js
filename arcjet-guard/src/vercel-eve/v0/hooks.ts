@@ -10,13 +10,72 @@ import { eveAgentContext } from "./context.ts";
  */
 type RuntimeActionResult = HookEventMap["action.result"]["data"]["result"];
 
+/*
+ * The subagent payloads, typed structurally. Each eve version's `HookEventMap`
+ * declares only one generation of these events (`subagent.*` before 0.69,
+ * `task.*` and `agent.started` from 0.69), so naming them through it would tie
+ * this file to one eve version. Every field is optional and `unknown` because
+ * a listener must cope with whatever the installed eve sends; `captureSubagent`
+ * records only the string values.
+ */
+
+/** `subagent.called` (eve 0.34–0.68). */
+type SubagentCalledEvent = {
+  readonly data?: {
+    readonly callId?: unknown;
+    readonly childSessionId?: unknown;
+    readonly name?: unknown;
+  };
+};
+
+/** `subagent.completed` (eve 0.34–0.68). */
+type SubagentCompletedEvent = {
+  readonly data?: { readonly callId?: unknown; readonly subagentName?: unknown };
+};
+
+/** `task.started` (eve ≥0.69). `name` is the agent tool's name. */
+type TaskStartedEvent = {
+  readonly data?: {
+    readonly callId?: unknown;
+    readonly kind?: unknown;
+    readonly name?: unknown;
+    readonly taskId?: unknown;
+  };
+};
+
+/** `task.settled` (eve ≥0.69). `output` and `error.message` are never read. */
+type TaskSettledEvent = {
+  readonly data?: {
+    readonly callId?: unknown;
+    readonly cancel?: { readonly reason?: unknown };
+    readonly kind?: unknown;
+    readonly name?: unknown;
+    readonly status?: unknown;
+    readonly taskId?: unknown;
+  };
+};
+
+/** `agent.started` (eve ≥0.69). `sessionId` is the child session's id. */
+type AgentStartedEvent = {
+  readonly data?: {
+    readonly callId?: unknown;
+    readonly name?: unknown;
+    readonly sessionId?: unknown;
+    readonly taskId?: unknown;
+  };
+};
+
 /**
  * Which event families `arcjetHooks` captures.
  *
  * `"session"` → session lifecycle (started, failed).
  * `"turn"` → turn lifecycle (started, completed, failed).
  * `"tool"` → tool call lifecycle (action.result).
- * `"subagent"` → subagent delegation (called, completed).
+ * `"subagent"` → subagent delegation: `eve.subagent-called` and
+ * `eve.subagent-completed` for each agent tool call (from `subagent.called` and
+ * `subagent.completed` on eve 0.34–0.68, from `task.started` and `task.settled`
+ * with `kind: "agent"` on eve ≥0.69), plus `eve.agent-started` for each child
+ * session eve ≥0.69 opens (`agent.started`).
  */
 export type ArcjetHookFamily = "session" | "turn" | "tool" | "subagent";
 
@@ -271,67 +330,114 @@ export function arcjetHooks(
   }
 
   if (enabledFamilies.has("subagent")) {
-    events["subagent.called"] = ((
-      event: HookEventMap["subagent.called"],
-      ctx: HookContext,
-    ): void => {
-      try {
-        const agentCtx = eveAgentContext(ctx);
-        const metadata: Record<string, unknown> = { ...agentCtx.metadata };
+    // eve 0.34–0.68: a subagent call opened its child session. eve 0.69
+    // replaced `subagent.called` with `task.started` and `agent.started`.
+    events["subagent.called"] = neverThrow((event: SubagentCalledEvent, ctx: HookContext) => {
+      captureSubagent(client, ctx, "eve.subagent-called", {
+        "eve.child-session": event.data?.childSessionId,
+        "eve.subagent": event.data?.name,
+        "eve.call": event.data?.callId,
+      });
+    });
 
-        if (typeof event?.data?.childSessionId === "string") {
-          metadata["eve.child-session"] = event.data.childSessionId;
-        }
+    // eve 0.34–0.68: a subagent call finished. eve 0.69 replaced
+    // `subagent.completed` with `task.settled`.
+    events["subagent.completed"] = neverThrow((event: SubagentCompletedEvent, ctx: HookContext) => {
+      captureSubagent(client, ctx, "eve.subagent-completed", {
+        "eve.call": event.data?.callId,
+        "eve.subagent": event.data?.subagentName,
+      });
+    });
 
-        if (typeof event?.data?.name === "string") {
-          metadata["eve.subagent"] = event.data.name;
-        }
-
-        if (typeof event?.data?.callId === "string") {
-          metadata["eve.call"] = event.data.callId;
-        }
-
-        const metadataArg = Object.keys(metadata).length > 0 ? { metadata } : {};
-
-        captureEvent(client, {
-          action: "eve.subagent-called",
-          correlationId: agentCtx.correlationId,
-          ...metadataArg,
-        });
-      } catch {
-        // Never throw from a hook
+    // eve ≥0.69: a call started a task; replaces `subagent.called`. Only an
+    // agent tool's call (`kind: "agent"`) is a subagent call. The child
+    // session is not known yet: it arrives on `agent.started`.
+    events["task.started"] = neverThrow((event: TaskStartedEvent, ctx: HookContext) => {
+      if (event.data?.kind !== "agent") {
+        return;
       }
-    }) as StreamEventHook<any>;
+      captureSubagent(client, ctx, "eve.subagent-called", {
+        "eve.subagent": event.data.name,
+        "eve.call": event.data.callId,
+        "eve.task": event.data.taskId,
+      });
+    });
 
-    events["subagent.completed"] = ((
-      event: HookEventMap["subagent.completed"],
-      ctx: HookContext,
-    ): void => {
-      try {
-        const agentCtx = eveAgentContext(ctx);
-        const metadata: Record<string, unknown> = { ...agentCtx.metadata };
-
-        if (typeof event?.data?.callId === "string") {
-          metadata["eve.call"] = event.data.callId;
-        }
-
-        if (typeof event?.data?.subagentName === "string") {
-          metadata["eve.subagent"] = event.data.subagentName;
-        }
-
-        const metadataArg = Object.keys(metadata).length > 0 ? { metadata } : {};
-
-        captureEvent(client, {
-          action: "eve.subagent-completed",
-          correlationId: agentCtx.correlationId,
-          ...metadataArg,
-        });
-      } catch {
-        // Never throw from a hook
+    // eve ≥0.69: a call's task settled; replaces `subagent.completed`. Fires
+    // once per call, so a call that continues an agent task by its `taskId`
+    // records its own completion.
+    events["task.settled"] = neverThrow((event: TaskSettledEvent, ctx: HookContext) => {
+      if (event.data?.kind !== "agent") {
+        return;
       }
-    }) as StreamEventHook<any>;
+      captureSubagent(client, ctx, "eve.subagent-completed", {
+        "eve.call": event.data.callId,
+        "eve.subagent": event.data.name,
+        "eve.task": event.data.taskId,
+        "eve.task-status": event.data.status,
+        "eve.cancel-reason": event.data.cancel?.reason,
+      });
+    });
+
+    // eve ≥0.69: a run opened a child session with `ctx.agent`; together with
+    // `task.started` it replaces `subagent.called`, which carried the child
+    // session id. It fires once per child session rather than once per call,
+    // and carries no `kind`, so it is its own record; join it to the calls by
+    // `eve.task` or `eve.call`.
+    events["agent.started"] = neverThrow((event: AgentStartedEvent, ctx: HookContext) => {
+      captureSubagent(client, ctx, "eve.agent-started", {
+        "eve.child-session": event.data?.sessionId,
+        "eve.subagent": event.data?.name,
+        "eve.call": event.data?.callId,
+        "eve.task": event.data?.taskId,
+      });
+    });
   }
 
   // Return only { events } — ExactDefinition rejects any other key
   return { events };
+}
+
+/**
+ * Wrap a listener so that nothing it throws reaches eve's hook dispatch.
+ */
+function neverThrow<TEvent>(
+  listener: (event: TEvent, ctx: HookContext) => void,
+): (event: TEvent, ctx: HookContext) => void {
+  return (event, ctx) => {
+    try {
+      listener(event, ctx);
+    } catch {
+      // Never throw from a hook
+    }
+  };
+}
+
+/**
+ * Capture `action` for the session in `ctx`, with the session's metadata from
+ * `eveAgentContext` plus each entry of `fields` whose value is a string.
+ * Entries with any other value, including absent fields, are left out.
+ */
+function captureSubagent(
+  client: ArcjetAgentClient,
+  ctx: HookContext,
+  action: string,
+  fields: Readonly<Record<string, unknown>>,
+): void {
+  const agentCtx = eveAgentContext(ctx);
+  const metadata: Record<string, unknown> = { ...agentCtx.metadata };
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (typeof value === "string") {
+      metadata[key] = value;
+    }
+  }
+
+  const metadataArg = Object.keys(metadata).length > 0 ? { metadata } : {};
+
+  captureEvent(client, {
+    action,
+    correlationId: agentCtx.correlationId,
+    ...metadataArg,
+  });
 }
