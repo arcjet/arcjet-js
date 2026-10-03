@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/redact-v1.14.1) (2026-10-03)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/redact:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/redact-wasm bumped from 1.14.0 to 1.14.1
+
 ## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/redact-v1.14.0) (2026-10-01)
 
 
