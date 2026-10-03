@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/skills-v1.14.1) (2026-10-03)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/skills:** Synchronize arcjet-js versions
+
 ## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/skills-v1.14.0) (2026-10-01)
 
 
