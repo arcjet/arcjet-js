@@ -204,7 +204,7 @@ export default defineOpenAPIConnection({
     onAllow: "user-approval",
     response: {
       action: "orders-api.approved",
-      rules: (ctx) => [apiLimit({ key: ctx.responder.principalId, requested: 1 })],
+      rules: (ctx) => [apiLimit({ key: ctx.response.principal.principalId, requested: 1 })],
     },
   }),
   operations: {
@@ -220,7 +220,9 @@ export default defineOpenAPIConnection({
 - `onAllow: "user-approval"` parks the call for a human. HITL clients answer
   with `cancel` (not `deny`). A request-time denial is still
   `{ type: "denied" }`.
-- The optional `response` policy authorizes the responder. ALLOW returns
+- The optional `response` policy authorizes the responder, which Eve passes
+  as `ctx.response.principal`; Eve releases before 0.69 pass it as
+  `ctx.responder` instead. ALLOW returns
   `{ status: "allowed" }`. DENY returns `{ status: "rejected", reason }` and
   leaves the approval pending.
 - This gate is the only way to protect connection operations — there is no

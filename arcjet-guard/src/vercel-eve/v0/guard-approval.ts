@@ -128,7 +128,9 @@ export interface GuardApprovalResponsePolicy<TInput = Record<string, unknown>> {
  * // A connection's tools have no local `execute` to wrap, so the approval
  * // gate is the only enforcement point that reaches them. `onAllow` still
  * // requires a human after the policy passes. The optional `response` policy
- * // authorizes who may approve the parked request. Eve still allows one
+ * // authorizes who may approve the parked request; Eve passes that person as
+ * // `ctx.response.principal`, and Eve releases before 0.69 pass them as
+ * // `ctx.responder` instead. Eve still allows one
  * // `approval` field per connection; it can be this function or the
  * // `{ request, response }` object `guardApproval` returns when `response` is set.
  * const weather: OpenAPIConnectionDefinition = defineOpenAPIConnection({
@@ -140,7 +142,7 @@ export interface GuardApprovalResponsePolicy<TInput = Record<string, unknown>> {
  *     onAllow: "user-approval",
  *     response: {
  *       action: "weather.approved",
- *       rules: (ctx) => [callLimit({ key: ctx.responder.principalId, requested: 1 })],
+ *       rules: (ctx) => [callLimit({ key: ctx.response.principal.principalId, requested: 1 })],
  *     },
  *   }),
  * });
@@ -251,6 +253,28 @@ function responseSessionId<TInput>(ctx: ApprovalResponseContext<TInput>): string
   return id;
 }
 
+type ResponderAuth = SessionContext["session"]["auth"]["current"];
+
+/**
+ * Both places Eve has put the responder on `ApprovalResponseContext`:
+ * `response.principal` from 0.69, `responder` before that. Each Eve version
+ * declares only one of them, so both are optional here and the context is
+ * widened to this type by assignment rather than asserted. `decision` is on
+ * `response` in every Eve version; listing it lets a pre-0.69 `response`,
+ * which has no `principal`, satisfy TypeScript's check that an all-optional
+ * type shares at least one property with the value assigned to it.
+ */
+type ResponderSources = {
+  readonly response?: { readonly decision?: unknown; readonly principal?: ResponderAuth };
+  readonly responder?: ResponderAuth;
+};
+
+/** The person answering the parked request, or `null` when Eve sent neither field. */
+function responderAuth<TInput>(ctx: ApprovalResponseContext<TInput>): ResponderAuth {
+  const sources: ResponderSources | undefined = ctx;
+  return sources?.response?.principal ?? sources?.responder ?? null;
+}
+
 /**
  * Map Eve's response-time context onto the session shape `eveAgentContext`
  * already understands. The responder is `auth.current`, so the existing
@@ -270,7 +294,7 @@ function responseAgentContext<TInput>(
   const session: SessionContext["session"] = {
     id: sessionId ?? "",
     auth: {
-      current: ctx?.responder ?? null,
+      current: responderAuth(ctx),
       initiator: ctx?.session?.initiator ?? null,
     },
     turn: ctx?.session?.turn ?? { id: "", sequence: 0 },
