@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...v1.14.1) (2026-10-03)
+
+
+### 🪲 Bug Fixes
+
+* **guard:** read the Eve approval responder from response.principal ([#6305](https://github.com/arcjet/arcjet-js/issues/6305)) ([1b531e2](https://github.com/arcjet/arcjet-js/commit/1b531e294fb37f4384782d8cddca5e4524080791))
+
 ## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...v1.14.0) (2026-10-01)
 
 
