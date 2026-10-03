@@ -1,4 +1,4 @@
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -88,19 +88,6 @@ function isContextSource(value: unknown): value is ClaudeContextSource {
   return value !== null && typeof value === "object";
 }
 
-function resolveSessionId<TInput>(
-  policy: GuardToolPolicy<TInput>,
-  input: TInput,
-): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(input);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
-  }
-  return undefined;
-}
-
 /**
  * Wraps an authored Claude Agent SDK `tool()` definition with guard-gated
  * execution.
@@ -185,15 +172,10 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
   ): Promise<ClaudeCallToolResult> => {
     const source = isContextSource(extra) ? extra : undefined;
 
-    let sessionId: string | undefined;
-    let rules: RuleWithInput[] | undefined;
-    let policyMetadata: ArcjetMetadata | undefined;
+    const call = resolveCallPolicy(policy, input, policy.action);
+    const { sessionId, rules, metadata: policyMetadata } = call;
     let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
     try {
-      sessionId = resolveSessionId(policy, input);
-      rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-      policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
       remote = await resolveActorInputs(policy, input, extra);
     } catch (error) {
       if (shouldWarn()) {
@@ -230,6 +212,7 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      degraded: call.degraded,
       ...remote,
       onDeny: (decision: DecisionDeny) => {
         const fallback = denialCallToolResult(decision);

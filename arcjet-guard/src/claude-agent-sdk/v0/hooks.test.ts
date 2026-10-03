@@ -245,7 +245,7 @@ test("rules throw still denies PreToolUse (fail closed)", async () => {
   };
 
   try {
-    const { client } = stubClient(decisionAllow());
+    const { client, guardCalls } = stubClient(decisionAllow());
     const hooks = guardHooks(client, {
       rules: () => {
         throw new Error("rules exploded");
@@ -255,8 +255,10 @@ test("rules throw still denies PreToolUse (fail closed)", async () => {
       hookSpecificOutput?: { permissionDecision?: string };
     };
     assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
+    assert.equal(guardCalls.length, 1);
+    assert.deepEqual(recorded(guardCalls[0])["rules"], []);
     assert.ok(warnings.length > 0);
-    assert.match(String(warnings[0]?.[0]), /PreToolUse threw/);
+    assert.match(String(warnings[0]?.[0]), /evaluated without a failed callback; failing closed/);
   } finally {
     console.warn = originalWarn;
     if (previous === undefined) {

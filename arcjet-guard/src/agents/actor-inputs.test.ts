@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { setLogLevel } from "../../test/_shared/log-level.ts";
+import { fakeRule } from "../../test/_shared/stub-client.ts";
 import { policyInput } from "../policy-input.ts";
-import { resolveActorInputs } from "./actor-inputs.ts";
+import type { RuleWithInput } from "../types.ts";
+import { resolveActorInputs, resolveCallPolicy, warnDegraded } from "./actor-inputs.ts";
 
 test("omits actor and inputs when the policy does not set them", async () => {
   const resolved = await resolveActorInputs({}, { id: "one" });
@@ -75,4 +78,103 @@ test("propagates a resolver throw so the caller can fail closed", async () => {
       ),
     /mapping failed/,
   );
+});
+
+test("resolveCallPolicy passes values given directly through unchanged", () => {
+  const unbound = { type: "TEST" } as unknown as RuleWithInput;
+  const resolved = resolveCallPolicy(
+    { rules: [unbound], metadata: { k: "v" }, sessionId: "sess-1" },
+    { id: "one" },
+    "order.looked-up",
+  );
+  assert.deepEqual(resolved, {
+    action: "order.looked-up",
+    rules: [unbound],
+    metadata: { k: "v" },
+    sessionId: "sess-1",
+    degraded: undefined,
+  });
+});
+
+test("resolveCallPolicy keeps an empty static sessionId out of the call", () => {
+  const resolved = resolveCallPolicy({ sessionId: "" }, {}, "tool.invoked");
+  assert.equal(resolved.sessionId, undefined);
+  assert.equal(resolved.degraded, undefined);
+});
+
+test("resolveCallPolicy uses the fallback for an action callback returning a non-string", () => {
+  const resolved = resolveCallPolicy({ action: () => 42 as unknown as string }, {}, "tool.invoked");
+  assert.equal(resolved.action, "tool.invoked");
+  assert.match(String(resolved.degraded?.message), /action callback did not return a string/);
+});
+
+test("resolveCallPolicy drops a sessionId callback returning a non-string", () => {
+  const resolved = resolveCallPolicy(
+    { sessionId: () => 7 as unknown as string },
+    {},
+    "tool.invoked",
+  );
+  assert.equal(resolved.sessionId, undefined);
+  assert.match(String(resolved.degraded?.message), /sessionId callback/);
+});
+
+test("resolveCallPolicy reports the first failure and still resolves the other fields", () => {
+  const cause = new Error("rules exploded");
+  const resolved = resolveCallPolicy(
+    {
+      rules: () => {
+        throw cause;
+      },
+      metadata: () => {
+        throw new Error("metadata exploded");
+      },
+      sessionId: () => "sess-2",
+    },
+    {},
+    "tool.invoked",
+  );
+  assert.equal(resolved.rules, undefined);
+  assert.equal(resolved.metadata, undefined);
+  assert.equal(resolved.sessionId, "sess-2");
+  assert.match(String(resolved.degraded?.message), /rules callback for "tool\.invoked" threw/);
+  assert.equal(resolved.degraded?.cause, cause);
+});
+
+test("resolveCallPolicy accepts bound rules and an empty array from a callback", () => {
+  assert.deepEqual(
+    resolveCallPolicy({ rules: (): RuleWithInput[] => [fakeRule] }, {}, "a.b").rules,
+    [fakeRule],
+  );
+  const empty = resolveCallPolicy({ rules: (): RuleWithInput[] => [] }, {}, "a.b");
+  assert.deepEqual(empty.rules, []);
+  assert.equal(empty.degraded, undefined);
+});
+
+test("warnDegraded says whether it failed open or closed, and only when warnings are on", () => {
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]): void => {
+    warnings.push(args);
+  };
+  const restore = setLogLevel("warn");
+  try {
+    warnDegraded("a.b", false, new Error("x"));
+    warnDegraded("a.b", true, new Error("y"));
+    restore();
+    const quiet = setLogLevel(undefined);
+    warnDegraded("a.b", true, new Error("z"));
+    quiet();
+  } finally {
+    console.warn = originalWarn;
+    restore();
+  }
+  assert.equal(warnings.length, 2);
+  assert.match(String(warnings[0]?.[0]), /failing open/);
+  assert.match(String(warnings[1]?.[0]), /failing closed/);
+});
+
+test("resolveCallPolicy sends an action callback's string unchanged, valid label or not", () => {
+  const resolved = resolveCallPolicy({ action: (): string => "Bash.invoked" }, {}, "tool.invoked");
+  assert.equal(resolved.action, "Bash.invoked");
+  assert.equal(resolved.degraded, undefined);
 });

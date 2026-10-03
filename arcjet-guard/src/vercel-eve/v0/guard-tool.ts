@@ -1,6 +1,6 @@
 import type { ToolDefinition, ToolContext } from "eve/tools";
 
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult } from "../../agents/denial.ts";
@@ -180,17 +180,15 @@ export function guardTool<TInput, TOutput>(
         }),
     };
 
-    // Resolve rules and metadata from input if they are functions
-    const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
-    const mergedMetadata = { ...metadata, ...policyMetadata };
+    const call = resolveCallPolicy(policy, input, policy.action);
+    const mergedMetadata = { ...metadata, ...call.metadata };
 
     const result = await runGuarded<TOutput>(client, {
-      action: policy.action,
-      rules,
+      action: call.action,
+      rules: call.rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      degraded: call.degraded,
       resolvePolicy: () => resolveActorInputs(policy, input, ctx),
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may throw or return custom types; both paths are valid (throw never returns, custom type is returned)
       onDeny: ((decision) => {

@@ -1,6 +1,6 @@
 import type { SessionContext } from "eve/context";
 
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -357,6 +357,7 @@ type CallbackResolution<TResult> =
       status: "resolved";
       rules: RuleWithInput[] | undefined;
       metadata: ArcjetMetadata;
+      degraded: Error | undefined;
       actor?: string;
       inputs?: Awaited<ReturnType<typeof resolveActorInputs>>["inputs"];
     }
@@ -370,49 +371,18 @@ async function resolveApprovalCallbacks<TCtx, TResult>(
   agentCtx: ReturnType<typeof eveAgentContext>,
   metadata: ArcjetMetadata,
 ): Promise<CallbackResolution<TResult>> {
-  // Resolve callbacks independently so a throw in one cannot skip
-  // the other. Merge extra metadata only when the metadata callback resolves.
-  let ruleResolutionFailed = false;
-  let ruleResolutionError: unknown;
-  let rules: RuleWithInput[] | undefined;
-  try {
-    rules = typeof policy.rules === "function" ? policy.rules(ctx) : policy.rules;
-  } catch (error) {
-    ruleResolutionFailed = true;
-    ruleResolutionError = error;
-  }
-
-  let metadataResolutionFailed = false;
-  let metadataResolutionError: unknown;
-  let resolvedMetadata = metadata;
-  try {
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(ctx) : policy.metadata;
-    resolvedMetadata = { ...metadata, ...policyMetadata };
-  } catch (error) {
-    metadataResolutionFailed = true;
-    metadataResolutionError = error;
-  }
+  // A failed `rules` or `metadata` callback leaves its value out of the guard
+  // call and is reported as `degraded`, so Guard still evaluates the call.
+  const call = resolveCallPolicy(policy, ctx, policy.action);
+  const resolvedMetadata = { ...metadata, ...call.metadata };
 
   let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  let remoteResolutionFailed = false;
-  let remoteResolutionError: unknown;
   try {
     remote = await resolveActorInputs(policy, ctx);
   } catch (error) {
-    remoteResolutionFailed = true;
-    remoteResolutionError = error;
-  }
-
-  if (ruleResolutionFailed || metadataResolutionFailed || remoteResolutionFailed) {
     const failClosed = policy.onGuardError !== "allow";
     const correlation =
       agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
-    const error = ruleResolutionFailed
-      ? ruleResolutionError
-      : metadataResolutionFailed
-        ? metadataResolutionError
-        : remoteResolutionError;
     warnCallbackFailure(options.warnKind, policy.action, failClosed, error);
     captureEvent(client, {
       action: policy.action,
@@ -425,7 +395,13 @@ async function resolveApprovalCallbacks<TCtx, TResult>(
     };
   }
 
-  return { status: "resolved", rules, metadata: resolvedMetadata, ...remote };
+  return {
+    status: "resolved",
+    rules: call.rules,
+    metadata: resolvedMetadata,
+    degraded: call.degraded,
+    ...remote,
+  };
 }
 
 async function evaluateApprovalPolicy<TCtx, TResult>(
@@ -461,6 +437,7 @@ async function evaluateApprovalPolicy<TCtx, TResult>(
       rules: resolved.rules,
       correlationId: agentCtx.correlationId,
       metadata: resolved.metadata,
+      degraded: resolved.degraded,
       ...(resolved.actor !== undefined && { actor: resolved.actor }),
       ...(resolved.inputs !== undefined && { inputs: resolved.inputs }),
       onAllow: options.onAllow,
