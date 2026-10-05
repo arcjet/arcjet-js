@@ -491,7 +491,8 @@ test("an input resolver failure follows the fail-closed unavailable path", async
     hookSpecificOutput?: { permissionDecision?: string };
   };
   assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
 });
 
 test("inbound resolves actor and typed inputs onto the guard call", async () => {

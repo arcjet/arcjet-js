@@ -192,6 +192,7 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
     };
 
     const call = resolveCallPolicy(policy, input, policy.action);
+    const remote = await resolveActorInputs(policy, call.action, input, context);
     const mergedMetadata = { ...metadata, ...call.metadata };
 
     const result = await runGuarded<MastraToolOutput<TTool>>(client, {
@@ -199,8 +200,8 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
       rules: call.rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
-      degraded: call.degraded,
-      resolvePolicy: () => resolveActorInputs(policy, input, context),
+      degraded: call.degraded ?? remote.degraded,
+      ...remote.fields,
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may return a custom shape; the ALLOW path is TOutput
       onDeny: ((decision: DecisionDeny) => {
         if (policy.onDeny === undefined) {

@@ -181,6 +181,7 @@ export function guardTool<TInput, TOutput>(
     };
 
     const call = resolveCallPolicy(policy, input, policy.action);
+    const remote = await resolveActorInputs(policy, call.action, input, ctx);
     const mergedMetadata = { ...metadata, ...call.metadata };
 
     const result = await runGuarded<TOutput>(client, {
@@ -188,8 +189,8 @@ export function guardTool<TInput, TOutput>(
       rules: call.rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
-      degraded: call.degraded,
-      resolvePolicy: () => resolveActorInputs(policy, input, ctx),
+      degraded: call.degraded ?? remote.degraded,
+      ...remote.fields,
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may throw or return custom types; both paths are valid (throw never returns, custom type is returned)
       onDeny: ((decision) => {
         if (policy.onDeny === undefined) {

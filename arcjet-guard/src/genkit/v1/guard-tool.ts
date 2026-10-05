@@ -472,24 +472,8 @@ async function runGuardedTool<TInput>(
   const typedArgs = args as TInput;
   const call = resolveCallPolicy(policy, typedArgs, policy.action);
   const { sessionId, rules, metadata: policyMetadata } = call;
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  let callOptions: unknown;
-  try {
-    callOptions = await withActiveGenkitContext(options);
-    remote = await resolveActorInputs(policy, typedArgs, callOptions);
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        policy.action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      return execute();
-    }
-    return denialEnvelope(unavailableResult(), envelope);
-  }
+  const callOptions = await withActiveGenkitContext(options);
+  const remote = await resolveActorInputs(policy, policy.action, typedArgs, callOptions);
 
   const source = isContextSource(callOptions) ? callOptions : undefined;
   const agentCtx = genkitContext(source, sessionId === undefined ? undefined : { sessionId });
@@ -511,8 +495,8 @@ async function runGuardedTool<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
-    degraded: call.degraded,
-    ...remote,
+    degraded: call.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return asResult(denialResult(decision));

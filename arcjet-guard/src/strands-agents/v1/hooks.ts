@@ -254,23 +254,7 @@ export function createBeforeToolCallHandler(
 
       const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
       const { action, sessionId, rules, metadata: policyMetadata } = resolved;
-      let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-      try {
-        remote = await resolveActorInputs(policy, call, event);
-      } catch (error) {
-        if (shouldWarn()) {
-          console.warn(
-            '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-            action,
-            error,
-          );
-        }
-        if (policy.onGuardError === "allow") {
-          return;
-        }
-        event.cancel = cancelString(unavailableResult());
-        return;
-      }
+      const remote = await resolveActorInputs(policy, action, call, event);
 
       const source = isContextSource(event) ? event : undefined;
       const agentCtx = strandsAgentContext(
@@ -290,8 +274,8 @@ export function createBeforeToolCallHandler(
         rules,
         correlationId: agentCtx.correlationId,
         metadata: mergedMetadata,
-        degraded: resolved.degraded,
-        ...remote,
+        degraded: resolved.degraded ?? remote.degraded,
+        ...remote.fields,
         onAllow: () => {
           /* allow the tool to proceed — do not set event.cancel */
         },

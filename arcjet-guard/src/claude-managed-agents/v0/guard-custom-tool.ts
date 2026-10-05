@@ -235,23 +235,7 @@ async function runHostedCustomTool<TOutput>(
 
   const input = event.input;
   const resolved = resolveCallPolicy(policy, input, policy.action);
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  try {
-    remote = await resolveActorInputs(policy, input, event);
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        policy.action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      const output = await execute(input);
-      return { allowed: true, output };
-    }
-    return sendDenied(send, errorResult(event, unavailableReason()));
-  }
+  const remote = await resolveActorInputs(policy, policy.action, input, event);
 
   const metadata: ArcjetMetadata = {
     "claude.managed-agents.tool": event.name,
@@ -264,8 +248,8 @@ async function runHostedCustomTool<TOutput>(
     rules: resolved.rules,
     correlationId: policy.context?.correlationId,
     metadata,
-    degraded: resolved.degraded,
-    ...remote,
+    degraded: resolved.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny): GuardCustomToolResult<TOutput> => ({
       allowed: false,
       result: errorResult(event, deniedReason(decision)),
@@ -313,23 +297,7 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
     context?: unknown,
   ): Promise<ReturnType<TTool["run"]>> => {
     const call = resolveCallPolicy(policy, input, policy.action);
-    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-    try {
-      remote = await resolveActorInputs(policy, input, context);
-    } catch (error) {
-      if (shouldWarn()) {
-        console.warn(
-          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-          policy.action,
-          error,
-        );
-      }
-      if (policy.onGuardError === "allow") {
-        // oxlint-disable-next-line typescript/no-unsafe-return -- original run is TTool["run"]
-        return await originalRun(input, context);
-      }
-      throw new Error(unavailableReason(), { cause: error });
-    }
+    const remote = await resolveActorInputs(policy, policy.action, input, context);
 
     const toolName = typeof tool.name === "string" && tool.name.length > 0 ? tool.name : undefined;
     const metadata: ArcjetMetadata = {
@@ -343,8 +311,8 @@ function wrapRunnableTool<TTool extends ManagedAgentsRunnableTool<any, any>>(
       rules: call.rules,
       correlationId: policy.context?.correlationId,
       metadata,
-      degraded: call.degraded,
-      ...remote,
+      degraded: call.degraded ?? remote.degraded,
+      ...remote.fields,
       onDeny: (decision: DecisionDeny) => {
         throw new Error(deniedReason(decision));
       },

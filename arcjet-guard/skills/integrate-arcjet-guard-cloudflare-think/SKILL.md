@@ -173,8 +173,9 @@ export class SupportAgent extends Think<Env> {
 - Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
   Build each input with `policyInput`. Omit them and the remote policy
-  has nothing to read — its rules do not fire. A resolver throw
-  fail-closes.
+  has nothing to read — its rules do not fire. A resolver that throws
+  or returns a value Guard cannot use is left out of the guard call,
+  and `onGuardError` decides.
 - On DENY the original `execute` never runs. Default delivery is
   `{ action: "substitute", output: { arcjetDenied: true, reason, message, retryable } }`.
 - `onDeny: "block"` skips the tool with `{ action: "block", reason }`

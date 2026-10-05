@@ -416,5 +416,6 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   });
   const result = await runHook(plugin, beforeToolParams("lookup", { id: "one" }));
   assert.equal(asDenial<ArcjetDenialResult>(result).reason, "ERROR");
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
 });

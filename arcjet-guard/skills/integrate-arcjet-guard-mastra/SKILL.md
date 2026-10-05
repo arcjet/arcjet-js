@@ -143,7 +143,9 @@ export const lookupOrder = guardTool(
 - Omit `rules` to submit none. The guard call still happens.
 - Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
-  Build each input with `policyInput`.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the tool's `execute` never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }`.
 - Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,

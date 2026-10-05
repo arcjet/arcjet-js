@@ -165,13 +165,15 @@ export async function guardInbound(
       "eve.phase": "inbound",
       ...options.metadata,
     };
+    const remote = await resolveActorInputs(options, action, text);
 
     return await runGate(client, {
       action,
       rules: options.rules,
       correlationId: options.correlationId,
       metadata,
-      ...(await resolveActorInputs(options, text)),
+      degraded: remote.degraded,
+      ...remote.fields,
       onAllow: (): InboundVerdict => ({ allowed: true }),
       // oxlint-disable typescript/no-deprecated -- populating the alias until it is removed in the next major
       onDeny: (decision: DecisionDeny): InboundVerdict => ({

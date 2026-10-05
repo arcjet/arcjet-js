@@ -248,7 +248,6 @@ export function guardTool<T extends Tool>(
     ...tool,
     [arcjetProtectedTool]: true,
     contextSchema,
-    // oxlint-disable-next-line eslint/require-await -- declared async to match the tool interface contract, but runGuarded's promise is returned rather than awaited
     async execute(input: InferToolInput<T>, options: never) {
       // `options.context` was validated by contextSchema above.
       const opts = options as {
@@ -261,6 +260,7 @@ export function guardTool<T extends Tool>(
       }
       const correlationId = policy.correlationId ?? ctx?.correlationId;
       const call = resolveCallPolicy(policy, input, policy.action);
+      const remote = await resolveActorInputs(policy, call.action, input, ctx);
       const metadata = { ...ctx?.metadata, ...call.metadata };
 
       const result = runGuarded(client, {
@@ -268,8 +268,8 @@ export function guardTool<T extends Tool>(
         rules: call.rules,
         correlationId,
         metadata,
-        degraded: call.degraded,
-        resolvePolicy: () => resolveActorInputs(policy, input, ctx),
+        degraded: call.degraded ?? remote.degraded,
+        ...remote.fields,
         ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
         onDeny: (decision) =>
           policy.onDeny === undefined ? denialResult(decision) : policy.onDeny(decision),

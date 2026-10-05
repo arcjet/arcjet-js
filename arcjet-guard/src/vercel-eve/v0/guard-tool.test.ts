@@ -777,6 +777,7 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   await assert.rejects(async () => {
     await wrapped.execute!({ id: "one" }, { toolName: "test", callId: "c1" } as never);
   }, ArcjetGuardUnavailableError);
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
   assert.equal(calls, 0);
 });

@@ -1,3 +1,4 @@
+import { isPolicyInput } from "../policy-input.ts";
 import type { PolicyInputMap } from "../policy-input.ts";
 import { symbolArcjetInternal } from "../symbol.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../types.ts";
@@ -31,31 +32,85 @@ export interface ActorInputsPolicy<TArgs extends readonly unknown[]> {
   inputs?: InputsResolver<TArgs>;
 }
 
+/** The `actor` and `inputs` a guard call is made with, after their callbacks have run. */
+export interface ResolvedActorInputs {
+  /**
+   * The fields to spread into the guard call. A field the policy omits, or
+   * whose callback failed, is absent rather than `undefined`, so it is not
+   * sent under `exactOptionalPropertyTypes`.
+   */
+  fields: { actor?: string; inputs?: PolicyInputMap };
+  /**
+   * The first of the two callbacks that threw, rejected, or returned a value
+   * Guard cannot use, or `undefined` when both succeeded. Pass it on after
+   * `resolveCallPolicy`'s, as `call.degraded ?? remote.degraded`, so the
+   * first failure in the call is the one reported.
+   */
+  degraded: Error | undefined;
+}
+
 /**
- * Resolve optional `actor` / `inputs` from a vendor policy. Static values are
- * returned as-is; functions are awaited with the adapter's native arguments.
- * Omitted fields stay omitted so they are not sent as `undefined` under
- * `exactOptionalPropertyTypes`.
+ * Resolve a helper policy's `actor` and `inputs` without letting a failing
+ * callback skip the guard call.
+ *
+ * A value given directly is passed through unchanged. A function is awaited
+ * with the adapter's native arguments; if it throws, rejects, or returns
+ * something Guard cannot use, its field is left out of the call and the
+ * failure is returned as `degraded`, as `resolveCallPolicy` does for the
+ * other callbacks. Only type and shape are checked: `actor` must be a string,
+ * and `inputs` a plain object whose every value was built with `policyInput`.
+ * The service judges a call that lacks them: a policy that requires the actor
+ * or a missing input is INCOMPLETE there and denies.
+ *
+ * @param policy - The helper's policy; only `actor` and `inputs` are read.
+ * @param action - The label the call is sent under, named in a failure.
+ * @param args - The adapter's native arguments for the two callbacks.
  */
 export async function resolveActorInputs<TArgs extends readonly unknown[]>(
   policy: ActorInputsPolicy<TArgs>,
+  action: string,
   ...args: TArgs
-): Promise<{ actor?: string; inputs?: PolicyInputMap }> {
-  const actor =
-    policy.actor === undefined
-      ? undefined
-      : typeof policy.actor === "function"
-        ? await policy.actor(...args)
-        : policy.actor;
-  const inputs =
-    policy.inputs === undefined
-      ? undefined
-      : typeof policy.inputs === "function"
-        ? await policy.inputs(...args)
-        : policy.inputs;
+): Promise<ResolvedActorInputs> {
+  const failures: Error[] = [];
+
+  let actor: string | undefined;
+  if (typeof policy.actor === "function") {
+    const result = await awaitSafely(policy.actor, args, "actor", action, failures);
+    if (result.ok && isString(result.value)) {
+      actor = result.value;
+    } else if (result.ok) {
+      failures.push(
+        new Error(
+          `@arcjet/guard: the actor callback for "${action}" did not return a string; calling Guard without an actor`,
+        ),
+      );
+    }
+  } else {
+    actor = policy.actor;
+  }
+
+  let inputs: PolicyInputMap | undefined;
+  if (typeof policy.inputs === "function") {
+    const result = await awaitSafely(policy.inputs, args, "inputs", action, failures);
+    if (result.ok && isPolicyInputMap(result.value)) {
+      inputs = result.value;
+    } else if (result.ok) {
+      failures.push(
+        new Error(
+          `@arcjet/guard: the inputs callback for "${action}" did not return an object of values built with policyInput; calling Guard without inputs`,
+        ),
+      );
+    }
+  } else {
+    inputs = policy.inputs;
+  }
+
   return {
-    ...(actor !== undefined && { actor }),
-    ...(inputs !== undefined && { inputs }),
+    fields: {
+      ...(actor !== undefined && { actor }),
+      ...(inputs !== undefined && { inputs }),
+    },
+    degraded: failures[0],
   };
 }
 
@@ -84,8 +139,9 @@ export interface ResolvedCallPolicy {
   /**
    * The first callback that threw or returned a value Guard cannot use, or
    * `undefined` when every callback succeeded. Pass it to `runGuarded` or
-   * `runGate` as `degraded`: Guard is still called without the failed value,
-   * and `onGuardError` decides whether the action proceeds.
+   * `runGate` as `degraded`, ahead of `resolveActorInputs`'s: Guard is still
+   * called without the failed value, and `onGuardError` decides whether the
+   * action proceeds.
    */
   degraded: Error | undefined;
 }
@@ -98,8 +154,8 @@ export interface ResolvedCallPolicy {
  * by what the helper would send without it: no local rules, no policy
  * metadata, no session override, and `fallbackAction` for the label. The first
  * such failure is returned as `degraded`, so remote policy still evaluates the
- * call and `onGuardError` decides the outcome — the same as a degraded
- * `actor` or `inputs` resolution in the Python SDK.
+ * call and `onGuardError` decides the outcome. `resolveActorInputs` does the
+ * same for the `actor` and `inputs` callbacks.
  *
  * Only the return value of a callback is checked, and only for its type and
  * shape. An `action` callback's string is not run through the guard label
@@ -259,6 +315,23 @@ function isThenable(value: unknown): value is PromiseLike<unknown> {
   );
 }
 
+async function awaitSafely<TArgs extends readonly unknown[], T>(
+  fn: (...args: TArgs) => T | Promise<T>,
+  args: TArgs,
+  field: string,
+  action: string,
+  failures: Error[],
+): Promise<CallResult<T>> {
+  try {
+    return { ok: true, value: await fn(...args) };
+  } catch (error) {
+    failures.push(
+      new Error(`@arcjet/guard: the ${field} callback for "${action}" threw`, { cause: error }),
+    );
+    return { ok: false };
+  }
+}
+
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
@@ -269,6 +342,22 @@ function isOptionalString(value: unknown): value is string | undefined {
 
 function isMetadataObject(value: unknown): boolean {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Whether `value` is an object literal of `policyInput` values. The prototype
+ * check refuses a `Map` or class instance, whose entries the client would not
+ * read, so the call would go out with no inputs and no sign of why.
+ */
+function isPolicyInputMap(value: unknown): value is PolicyInputMap {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const proto: unknown = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) {
+    return false;
+  }
+  return Object.values(value).every((input) => isPolicyInput(input));
 }
 
 /**

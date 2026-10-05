@@ -137,15 +137,15 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
           ...resolved.metadata,
         };
-        const remote = await resolveActorInputs(policy, call, hookContext.context);
+        const remote = await resolveActorInputs(policy, resolved.action, call, hookContext.context);
 
         return await runGate<void | ToolBeforeHookResult>(client, {
           action: resolved.action,
           rules: resolved.rules,
           correlationId: agentCtx.correlationId,
           metadata,
-          degraded: resolved.degraded,
-          ...remote,
+          degraded: resolved.degraded ?? remote.degraded,
+          ...remote.fields,
           onAllow: () => {
             /* allow the tool to proceed */
           },

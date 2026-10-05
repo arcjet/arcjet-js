@@ -681,10 +681,11 @@ test("an input resolver failure follows the fail-closed unavailable path", async
     } as never);
   }, /tripwire/);
   assert.equal(calls.length, 1);
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
 });
 
-test("onGuardError allow lets processInput continue when an actor resolver rejects", async () => {
+test("onGuardError allow calls Guard without the value and lets processInput continue when an actor resolver rejects", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const processor = guardProcessor(client, {
     action: "message.received",
@@ -706,10 +707,11 @@ test("onGuardError allow lets processInput continue when an actor resolver rejec
 
   assert.strictEqual(result, messages);
   assert.equal(calls.length, 0);
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("actor" in recorded(guardCalls[0]), false);
 });
 
-test("onGuardError allow lets processInput continue when an input resolver rejects", async () => {
+test("onGuardError allow calls Guard without the value and lets processInput continue when an input resolver rejects", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const processor = guardProcessor(client, {
     action: "message.received",
@@ -731,5 +733,6 @@ test("onGuardError allow lets processInput continue when an input resolver rejec
 
   assert.strictEqual(result, messages);
   assert.equal(calls.length, 0);
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
 });

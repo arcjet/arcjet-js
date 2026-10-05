@@ -265,22 +265,7 @@ async function runGuardedTool<TInput>(
   const typedArgs = args as TInput;
   const call = resolveCallPolicy(policy, typedArgs, policy.action);
   const { sessionId, rules, metadata: policyMetadata } = call;
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  try {
-    remote = await resolveActorInputs(policy, typedArgs, runContext);
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        policy.action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      return execute();
-    }
-    return unavailableResult();
-  }
+  const remote = await resolveActorInputs(policy, policy.action, typedArgs, runContext);
 
   const source = isContextSource(runContext) ? runContext : undefined;
   const agentCtx = openaiAgentsContext(source, sessionId === undefined ? undefined : { sessionId });
@@ -299,8 +284,8 @@ async function runGuardedTool<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
-    degraded: call.degraded,
-    ...remote,
+    degraded: call.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return denialResult(decision);

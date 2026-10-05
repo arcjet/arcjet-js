@@ -260,11 +260,12 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   } catch {
     // Peer-absent CI cannot construct ToolMessage; the tool still must not run.
     assert.equal(calls, 0);
-    assert.equal(guardCalls.length, 0);
+    assert.equal(guardCalls.length, 1);
     return;
   }
   assert.equal(calls, 0);
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
   const content =
     result !== null && typeof result === "object" && "content" in result ? result.content : result;
   const payload = typeof content === "string" ? JSON.parse(content) : content;

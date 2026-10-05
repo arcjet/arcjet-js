@@ -9,7 +9,6 @@ import type {
 
 import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
-import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -275,30 +274,15 @@ export function guardProcessor(
       "mastra.phase": phase,
       ...resolved.metadata,
     };
-    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-    try {
-      remote = await resolveActorInputs(policy, input, requestCtx);
-    } catch (error) {
-      if (shouldWarn()) {
-        console.warn(
-          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-          policy.action,
-          error,
-        );
-      }
-      if (policy.onGuardError === "allow") {
-        return;
-      }
-      return denyTurn(abort, unavailableReason());
-    }
+    const remote = await resolveActorInputs(policy, resolved.action, input, requestCtx);
 
     await runGate(client, {
       action: resolved.action,
       rules: resolved.rules,
       correlationId: agentCtx.correlationId,
       metadata,
-      degraded: resolved.degraded,
-      ...remote,
+      degraded: resolved.degraded ?? remote.degraded,
+      ...remote.fields,
       onAllow: () => {
         /* allow the turn to continue */
       },
