@@ -214,6 +214,14 @@ export function warnDegraded(action: string, failClosed: boolean, error: Error):
 
 type CallResult<T> = { ok: true; value: T } | { ok: false };
 
+/**
+ * Call a synchronous policy callback, recording a throw in `failures`.
+ *
+ * A promise, or any other thenable, is a failure too: these callbacks are
+ * synchronous, and a promise passes the object check `metadata` gets, so it
+ * would otherwise be sent as empty metadata with nothing reported. Its
+ * rejection is handled here so it cannot become an unhandled rejection.
+ */
 function callSafely<TArg, T>(
   fn: (arg: TArg) => T,
   arg: TArg,
@@ -221,14 +229,34 @@ function callSafely<TArg, T>(
   action: string,
   failures: Error[],
 ): CallResult<T> {
+  let value: T;
   try {
-    return { ok: true, value: fn(arg) };
+    value = fn(arg);
   } catch (error) {
     failures.push(
       new Error(`@arcjet/guard: the ${field} callback for "${action}" threw`, { cause: error }),
     );
     return { ok: false };
   }
+  if (isThenable(value)) {
+    value.then(undefined, () => {});
+    failures.push(
+      new Error(
+        `@arcjet/guard: the ${field} callback for "${action}" returned a promise; it must return its value directly`,
+      ),
+    );
+    return { ok: false };
+  }
+  return { ok: true, value };
+}
+
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return (
+    (typeof value === "object" || typeof value === "function") &&
+    value !== null &&
+    "then" in value &&
+    typeof value.then === "function"
+  );
 }
 
 function isString(value: unknown): value is string {

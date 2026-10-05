@@ -110,6 +110,28 @@ test("resolveCallPolicy uses the fallback for an action callback returning a non
   assert.match(String(resolved.degraded?.message), /action callback did not return a string/);
 });
 
+test("resolveCallPolicy leaves out a metadata callback's promise and reports it", () => {
+  const resolved = resolveCallPolicy(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentional: test that runtime rejects a promise
+    { metadata: () => Promise.resolve({ key: "value" }) as unknown as Record<string, string> },
+    {},
+    "tool.invoked",
+  );
+  assert.equal(resolved.metadata, undefined);
+  assert.match(String(resolved.degraded?.message), /metadata callback .* returned a promise/);
+});
+
+test("resolveCallPolicy uses the fallback for an action callback returning a promise", () => {
+  const resolved = resolveCallPolicy(
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentional: test that runtime rejects a promise
+    { action: () => Promise.resolve("later.invoked") as unknown as string },
+    {},
+    "tool.invoked",
+  );
+  assert.equal(resolved.action, "tool.invoked");
+  assert.match(String(resolved.degraded?.message), /action callback .* returned a promise/);
+});
+
 test("resolveCallPolicy drops a sessionId callback returning a non-string", () => {
   const resolved = resolveCallPolicy(
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentional: test that runtime rejects non-strings

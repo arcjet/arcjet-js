@@ -69,6 +69,26 @@ function throwing(): never {
   throw new Error("callback exploded");
 }
 
+/**
+ * Run `fn`, then wait a macrotask so a rejection nobody handled has been
+ * reported, and fail if one was.
+ */
+async function withoutUnhandledRejection<T>(fn: () => Promise<T>): Promise<T> {
+  const unhandled: unknown[] = [];
+  const onUnhandled = (reason: unknown): void => {
+    unhandled.push(reason);
+  };
+  process.on("unhandledRejection", onUnhandled);
+  try {
+    const result = await fn();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(unhandled, [], "a callback's rejected promise must be handled");
+    return result;
+  } finally {
+    process.off("unhandledRejection", onUnhandled);
+  }
+}
+
 function guardField(guardCalls: unknown[], field: string): unknown {
   assert.equal(guardCalls.length, 1, "Guard must be called exactly once");
   return recorded(guardCalls[0])[field];
@@ -141,7 +161,35 @@ export function callbackFailureCases(driver: CallbackFailureDriver): void {
     assert.equal(ran, false);
   });
 
+  test(`${name}: a rules callback returning a promise calls Guard with no rules and refuses`, async () => {
+    const { client, guardCalls } = stubClient(decisionAllow());
+    const ran = await driver.run(client, { rules: (): unknown => Promise.resolve([]) });
+    assert.deepEqual(guardField(guardCalls, "rules"), []);
+    assert.equal(ran, false);
+  });
+
   if (driver.metadata) {
+    test(`${name}: a metadata callback returning a promise is left out and refuses by default`, async () => {
+      const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
+      const ran = await driver.run(client, {
+        metadata: (): unknown => Promise.resolve({ fromCallback: "yes" }),
+      });
+      assert.equal("fromCallback" in guardMetadata(guardCalls), false);
+      assert.equal(ran, false);
+      assert.equal(outcomeCapture(captureCalls).outcome, "unavailable");
+    });
+
+    test(`${name}: a metadata callback returning a rejected promise is handled and refuses`, async () => {
+      const { client, guardCalls } = stubClient(decisionAllow());
+      const ran = await withoutUnhandledRejection(() =>
+        driver.run(client, {
+          metadata: (): unknown => Promise.reject(new Error("metadata rejected")),
+        }),
+      );
+      guardMetadata(guardCalls);
+      assert.equal(ran, false);
+    });
+
     test(`${name}: a throwing metadata callback still calls Guard and refuses by default`, async () => {
       const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
       const ran = await driver.run(client, { metadata: throwing });
