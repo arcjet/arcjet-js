@@ -146,7 +146,11 @@ export const lookupOrder = guardTool(
   Build each input with `policyInput`.
 - On DENY the tool's `execute` never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }`.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules` or `metadata` callback throws or returns a value Guard
+  cannot use. A failed callback never skips the guard call: Guard is called
+  without its value, so remote policy still evaluates the call and a DENY
+  stands.
 
 ## Step 3: Screen inbound (and optional outbound) text
 
@@ -181,9 +185,11 @@ export const agent = new Agent({
   throws so the turn cannot fail open.
 - The same processor implements `processOutputResult` so it can sit on
   `outputProcessors` as well. Use a separate action name for outbound.
-- Default `onGuardError: "deny"` — if the guard cannot be evaluated, the
-  turn is aborted. Use `"allow"` when the human cost of rejecting a
-  legitimate message exceeds the security cost of an outage.
+- Default `onGuardError: "deny"` — if the guard cannot be evaluated, or a
+  `rules` or `metadata` callback throws or returns a value Guard cannot
+  use, the turn is aborted. Guard is still called without the failed
+  value, so a DENY stands. Use `"allow"` when the human cost of rejecting
+  a legitimate message exceeds the security cost of an outage.
 
 ## Step 4: Gate tools you did not wrap
 

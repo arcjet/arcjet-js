@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await, eslint/explicit-function-return-type -- cases pass deliberately ill-typed callbacks through the policy
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await -- cases pass deliberately ill-typed callbacks through the policy
 import { jsonSchema, tool } from "ai";
 
 import { callbackFailureCases } from "../../../test/_shared/callback-failures.ts";

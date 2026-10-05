@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await, eslint/explicit-function-return-type -- cases pass deliberately ill-typed callbacks through the policy
+// oxlint-disable eslint/no-unsafe-type-assertion -- cases pass deliberately ill-typed callbacks through the policy
 import { callbackFailureCases } from "../../../test/_shared/callback-failures.ts";
 import { guardMiddleware } from "./guard-middleware.ts";
 
@@ -12,7 +12,7 @@ callbackFailureCases({
   degradedOutcome: "degraded",
   async run(client, policy) {
     const mw = guardMiddleware(client, policy as never);
-    const result = await mw.onBeforeToolCall!(
+    const result = await mw.onBeforeToolCall(
       { requestId: "req", streamId: "stream", threadId: "thread", context: {} } as never,
       {
         toolCall: { id: "call-1", type: "function", function: { name: "lookup", arguments: "{}" } },

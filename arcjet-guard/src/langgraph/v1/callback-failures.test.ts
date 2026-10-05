@@ -21,7 +21,7 @@ callbackFailureCases({
       },
     };
     const wrapped = guardTool(client, tool, { action: "order.looked-up", ...policy } as never);
-    await wrapped.func!({ note: "hello" }, { configurable: { thread_id: "t" } });
+    await wrapped.func({ note: "hello" }, { configurable: { thread_id: "t" } });
     return ran;
   },
 });

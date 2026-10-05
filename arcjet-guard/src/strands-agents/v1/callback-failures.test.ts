@@ -49,7 +49,7 @@ callbackFailureCases({
         throw new Error("interrupt() must not be called");
       },
     };
-    await handler(event as never);
+    await handler(event);
     return event.cancel === false;
   },
 });

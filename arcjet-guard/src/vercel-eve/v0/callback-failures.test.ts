@@ -29,7 +29,7 @@ callbackFailureCases({
       ...policy,
     } as GuardToolPolicy<{ id: string }>);
     try {
-      await wrapped.execute!({ id: "one" }, { toolName: "my-tool", callId: "c1" } as never);
+      await wrapped.execute({ id: "one" }, { toolName: "my-tool", callId: "c1" } as never);
     } catch (error) {
       if (error instanceof ArcjetDeniedError || error instanceof ArcjetGuardUnavailableError) {
         return false;

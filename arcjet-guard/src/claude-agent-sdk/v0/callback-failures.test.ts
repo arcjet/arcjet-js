@@ -34,7 +34,7 @@ type Hook = (
 ) => Promise<unknown>;
 
 function hookFor(matchers: unknown): Hook {
-  return (matchers as { hooks: Hook[] }[])[0]!.hooks[0]!;
+  return (matchers as { hooks: Hook[] }[])[0].hooks[0];
 }
 
 callbackFailureCases({

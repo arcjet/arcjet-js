@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await, eslint/explicit-function-return-type -- cases pass deliberately ill-typed callbacks through the policy
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await -- cases pass deliberately ill-typed callbacks through the policy
 // The middleware builds its refusal as a `ToolMessage` from a dynamic import of
 // `@langchain/core/messages`, so these cases need the peer installed and live
 // here rather than under `src/`, which also runs with the peer removed.

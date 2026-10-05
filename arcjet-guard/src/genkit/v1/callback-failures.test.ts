@@ -45,12 +45,12 @@ callbackFailureCases({
     const mw = guardMiddleware(client, policy as never);
     const def = mw.instantiate();
     await def.tool(
-      { toolRequest: { name: "lookup", input: { note: "x" }, ref: "call-1" } } as never,
-      { context: { sessionId: "sess-1" } } as never,
-      (async () => {
+      { toolRequest: { name: "lookup", input: { note: "x" }, ref: "call-1" } },
+      { context: { sessionId: "sess-1" } },
+      async () => {
         ran = true;
         return { toolResponse: { name: "lookup", output: { ok: true } } };
-      }) as never,
+      },
     );
     return ran;
   },

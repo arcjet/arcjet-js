@@ -89,7 +89,7 @@ function outcomeCapture(captureCalls: unknown[]): { outcome: unknown; decisionId
       return typeof metadata === "object" && metadata !== null && "outcome" in metadata;
     });
   assert.equal(withOutcome.length, 1, "exactly one capture must record an outcome");
-  const capture = withOutcome[0]!;
+  const capture = withOutcome[0];
   return { outcome: recorded(capture["metadata"])["outcome"], decisionId: capture["decisionId"] };
 }
 

@@ -166,7 +166,11 @@ export const lookupOrder = guardTool(
   Build each input with `policyInput`.
 - On DENY the tool's handler never runs. The model receives
   `{ content, structuredContent: { arcjetDenied, reason, message, retryable }, isError: true }`.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules`, `metadata` or `sessionId` callback throws or returns a
+  value Guard cannot use. A failed callback never skips the guard call:
+  Guard is called without its value, so remote policy still evaluates the
+  call and a DENY stands.
 - Pass the same `sessionId` you give `query({ options.sessionId })` on the
   policy when the handler `extra` does not carry `session_id`.
 
@@ -200,9 +204,13 @@ for await (const message of query({
 
 - On DENY, `UserPromptSubmit` returns `{ decision: "block", reason }` and
   the prompt is erased. The model never sees it.
-- Default `onGuardError: "deny"` — if the guard cannot be evaluated, the
-  prompt is blocked. Use `"allow"` on `inbound` when the human cost of
-  rejecting a legitimate message exceeds the security cost of an outage.
+- Default `onGuardError: "deny"` — if the guard cannot be evaluated, or an
+  `inbound` `action`, `rules` or `metadata` callback throws or returns a
+  value Guard cannot use, the prompt is blocked. Guard is still called
+  without the failed value (a failed `action` falls back to
+  `"message.received"`), so a DENY stands. Use `"allow"` on `inbound` when
+  the human cost of rejecting a legitimate message exceeds the security
+  cost of an outage.
 
 ## Step 4: Gate tools you did not wrap
 

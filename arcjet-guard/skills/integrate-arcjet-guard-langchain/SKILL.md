@@ -209,7 +209,12 @@ export const lookupOrder = guardTool(
   receives `{ arcjetDenied: true, reason, message, retryable }`.
   Through `createAgent`, `baseHandler` wraps that object in a success
   `ToolMessage`.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if an `action`, `rules`, `metadata` or `sessionId` callback throws or
+  returns a value Guard cannot use. A failed callback never skips the guard
+  call: Guard is called without its value (a failed `action` falls back to
+  `"tool.invoked"`), so remote policy still evaluates the call and a DENY
+  stands.
 
 ## Step 3: Gate unwrapped / MCP / runtime-discovered tools
 

@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await, eslint/explicit-function-return-type -- cases pass deliberately ill-typed callbacks through the policy
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await -- cases pass deliberately ill-typed callbacks through the policy
 import type { ToolAction } from "@mastra/core/tools";
 
 import { callbackFailureCases } from "../../../test/_shared/callback-failures.ts";
@@ -47,7 +47,7 @@ callbackFailureCases({
       toolName: "mcp_search",
       input: { q: "1" },
       context: {},
-    } as never);
+    });
     return result === undefined;
   },
 });
@@ -65,7 +65,7 @@ callbackFailureCases({
       throw new Error(`tripwire:${reason ?? ""}`);
     }) as never;
     try {
-      await processor.processInput!({
+      await processor.processInput({
         messages: [{ role: "user", content: { parts: [{ type: "text", text: "hello" }] } }],
         abort,
         systemMessages: [],

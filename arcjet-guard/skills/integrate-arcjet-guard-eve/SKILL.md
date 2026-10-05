@@ -172,6 +172,11 @@ export default guardTool(
   API unreachable), the default is `onGuardError: "deny"` — the tool is blocked
   and Eve reports the error. For read-only operations like lookups, set
   `onGuardError: "allow"` if availability matters more than enforcement.
+- A `rules` or `metadata` callback that throws, or returns a value Guard
+  cannot use, never skips the guard call: Guard is called without that
+  value (no local rules, or no policy metadata), so remote policy still
+  evaluates the call and a DENY stands. Otherwise `onGuardError` decides
+  as for an outage. `guardApproval` handles its callbacks the same way.
 
 **Tool-only:** `guardTool` is called at tool invocation time and observes the
 outcome. If you only need to gate the tool without observing its result, use
