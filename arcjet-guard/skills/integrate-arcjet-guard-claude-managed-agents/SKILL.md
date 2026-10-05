@@ -62,8 +62,11 @@ Ask only what you cannot infer from the code; suggest defaults.
    Default: none. Session/event ids from Anthropic are not the correlation
    id.
 4. Is an Arcjet outage unacceptable? Every helper defaults to
-   `onGuardError: "deny"`. Ask explicitly about inbound `guardEvents`:
-   failing closed there means the turn is not sent.
+   `onGuardError: "deny"`, which also decides a call whose `rules` or
+   `metadata` callback threw or returned a value Guard cannot use: Guard
+   is still called without that value, and a DENY stands. Ask explicitly
+   about inbound `guardEvents`: failing closed there means the turn is
+   not sent.
 
 ## The things readers get wrong
 

@@ -7,7 +7,7 @@ import type {
   Processor,
 } from "@mastra/core/processors";
 
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -269,13 +269,11 @@ export function guardProcessor(
       ...(requestCtx === undefined ? {} : { requestContext: requestCtx }),
     };
 
-    const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+    const resolved = resolveCallPolicy(policy, input, policy.action);
     const metadata: ArcjetMetadata = {
       ...agentCtx.metadata,
       "mastra.phase": phase,
-      ...policyMetadata,
+      ...resolved.metadata,
     };
     let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
     try {
@@ -295,10 +293,11 @@ export function guardProcessor(
     }
 
     await runGate(client, {
-      action: policy.action,
-      rules,
+      action: resolved.action,
+      rules: resolved.rules,
       correlationId: agentCtx.correlationId,
       metadata,
+      degraded: resolved.degraded,
       ...remote,
       onAllow: () => {
         /* allow the turn to continue */

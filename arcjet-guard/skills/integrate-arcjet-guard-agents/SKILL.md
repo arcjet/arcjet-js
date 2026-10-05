@@ -143,6 +143,13 @@ const tools = {
   `retryAfterSeconds: 5` backoff hint. For read-only operations like lookups,
   set `onGuardError: "allow"` if availability matters more than enforcement: the
   tool executes normally and the model receives its ordinary output.
+- A `rules` or `metadata` callback that throws, or returns a value Guard
+  cannot use, never skips the guard call: Guard is called without that
+  value (no local rules, or no policy metadata), so remote policy still
+  evaluates the call and a DENY stands. Otherwise `onGuardError` decides
+  as above, and the capture records `outcome: "unavailable"` under
+  `"deny"` or `outcome: "degraded"` under `"allow"`. `rules` must return
+  an array of rules bound to their input.
 - Pilot limitation: `guardTool` throws if the tool already declares its
   own `contextSchema`.
 - **Alternative form:** calling `guardAction` directly inside the tool's

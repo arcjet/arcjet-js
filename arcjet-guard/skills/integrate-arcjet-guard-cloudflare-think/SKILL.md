@@ -182,7 +182,12 @@ export class SupportAgent extends Think<Env> {
   `ArcjetDenialResult`. Prefer default substitute when the model should
   see the payload. `onDeny: "block"` applies to real DENY only;
   unavailable stays substitute.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if an `action`, `rules`, `metadata` or `sessionId` callback throws or
+  returns a value Guard cannot use. A failed callback never skips the guard
+  call: Guard is called without its value (a failed `action` falls back to
+  `"tool.invoked"`), so remote policy still evaluates the call and a DENY
+  stands.
 - ALLOW captures `outcome: "success"` when the policy lets the tool
   run, not when `execute` finishes. `beforeToolCall` cannot wrap
   the tool; a later tool throw does not flip that capture.

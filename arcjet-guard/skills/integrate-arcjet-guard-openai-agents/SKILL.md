@@ -174,7 +174,11 @@ export const lookupOrder = guardTool(
 - On DENY the closed-over `execute` never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as the tool
   result (stringified by the runner).
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules`, `metadata` or `sessionId` callback throws or returns a
+  value Guard cannot use. A failed callback never skips the guard call:
+  Guard is called without its value, so remote policy still evaluates the
+  call and a DENY stands.
 - The runner treats the denial as the tool's output. If the tool sets
   `timeoutMs`, that race now covers the guard round trip too, so leave
   headroom for it; if it sets `outputGuardrails` or `customDataExtractor`,

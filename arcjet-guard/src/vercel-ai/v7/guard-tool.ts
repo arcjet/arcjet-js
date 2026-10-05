@@ -1,7 +1,7 @@
 import { jsonSchema } from "ai";
 import type { InferToolInput, InferToolOutput, Tool } from "ai";
 
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -260,17 +260,15 @@ export function guardTool<T extends Tool>(
         warnMissingToolsContext(policy.action);
       }
       const correlationId = policy.correlationId ?? ctx?.correlationId;
-      const metadata = {
-        ...ctx?.metadata,
-        ...(typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata),
-      };
-      const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
+      const call = resolveCallPolicy(policy, input, policy.action);
+      const metadata = { ...ctx?.metadata, ...call.metadata };
 
       const result = runGuarded(client, {
-        action: policy.action,
-        rules,
+        action: call.action,
+        rules: call.rules,
         correlationId,
         metadata,
+        degraded: call.degraded,
         resolvePolicy: () => resolveActorInputs(policy, input, ctx),
         ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
         onDeny: (decision) =>

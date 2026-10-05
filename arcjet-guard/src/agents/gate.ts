@@ -12,33 +12,44 @@ import type { ArcjetAgentClient } from "./capture.ts";
 import { labelRejectedByService } from "./label.ts";
 
 /**
- * The guard → deny → execute → capture sequence shared by `guardTool()` and
- * `guardAction()`. Callers resolve `rules`, `metadata`, and `correlationId`
- * (including any per-input functions and overrides) and pass the final values;
- * a helper with per-call callbacks resolves them with `resolveCallPolicy` and
- * passes its `degraded` here. This runs the common flow:
+ * The guard → capture sequence for a call site that decides whether something
+ * may run but does not run it: framework hooks, middleware that only permits,
+ * and Eve approval enforcement. Each helper re-exports it from its own
+ * `gate.ts`.
  *
- * 1. Call `guard()` — always, including when `rules` is omitted or empty, which
- *    is sent as `[]`. Both guard-unavailable signals (threw and failed-open)
- *    are governed by `onGuardError`: with `"deny"` (the default), both trigger
- *    `onUnavailable` without executing; with `"allow"`, both fail open and
- *    proceed to execute.
- * 2. On DENY, capture `outcome: "denied"` and return `onDeny(decision)`.
- *    Otherwise, when `degraded` is set — a policy callback failed, and
- *    `resolveCallPolicy` left its value out of the call — `onGuardError`
- *    decides as for the signals above: `"deny"` captures `outcome:
- *    "unavailable"` with the decision ID and returns `onUnavailable({ kind:
- *    "threw", error: degraded })`; `"allow"` proceeds unjudged.
- * 3. Otherwise run `execute()`, capturing `outcome: "success"` when policy
- *    judged the action, or `outcome: "degraded"` when `"allow"` let it run
- *    unjudged — or, if it throws, `outcome: "error"` before rethrowing.
+ * Unlike `runGuarded`, which also executes and captures execution outcomes:
+ * - There is no execute. The allow tail returns immediately. Nothing here can
+ *   produce `"success"` or `"error"` — a gate that passed has not done the thing.
+ * - The allow outcome is `"allowed"`, not `"success"` — a distinction that
+ *   keeps "the tool ran" and "the tool was permitted to run" separate on the
+ *   capture stream.
  *
- * `onDeny` returns the value the caller hands back on denial. Model-facing
- * helpers wrap the shared `ArcjetDenialResult` in a framework-idiomatic
- * envelope; `guardAction` throws `ArcjetDeniedError`. Those are different
- * handlers — they must not be the same function.
+ * Contract:
+ *
+ * 1. `onGuardError` defaults to `"deny"`.
+ * 2. Build `correlation` as `correlationId === undefined ? {} : { correlationId }` —
+ *    the field is optional under `exactOptionalPropertyTypes`, so assigning
+ *    `undefined` is a type error.
+ * 3. Call `client.guard()` inside a `try`. Always call it, including with no rules.
+ * 4. On throw: if failing closed, warn, capture with `outcome: "unavailable"`,
+ *    return `onUnavailable({ kind: "threw", error })`. If failing open, warn
+ *    and fall through to the allow tail.
+ * 5. Suppress `decision.id === ""` — a fail-open decision carries an empty id
+ *    and `""` is not a correlatable value.
+ * 6. If ALLOW with failed-open and failing closed: warn, capture `"unavailable"`,
+ *    `onUnavailable({ kind: "failed-open", decision })`. Keep the conjunction
+ *    inside the single `if`: TypeScript cannot narrow on a method return.
+ * 7. If ALLOW with failed-open and failing open: warn, fall through.
+ * 8. If DENY: capture `"denied"`, return `onDeny(decision)`.
+ * 9. If `degraded` is set (a policy callback failed and `resolveCallPolicy` left
+ *    its value out) and failing closed: warn, capture `"unavailable"` with the
+ *    decision ID, `onUnavailable({ kind: "threw", error: degraded })`. If
+ *    failing open: warn, fall through.
+ * 10. Allow tail: capture `"allowed"`, return `onAllow()`.
+ *
+ * Every capture goes through `captureEvent`, which swallows throws.
  */
-export async function runGuarded<T>(
+export async function runGate<T>(
   client: ArcjetAgentClient,
   params: {
     action: string;
@@ -47,15 +58,14 @@ export async function runGuarded<T>(
     metadata: ArcjetMetadata;
     actor?: string;
     inputs?: PolicyInputMap;
-    resolvePolicy?: () => Promise<{ actor?: string; inputs?: PolicyInputMap }>;
     degraded?: Error | undefined;
+    onAllow: () => T;
     onDeny: (decision: DecisionDeny) => T;
     onUnavailable: (
       unavailable:
         | { kind: "threw"; error: unknown }
         | { kind: "failed-open"; decision: DecisionAllow },
     ) => T;
-    execute: () => Promise<T>;
     onGuardError?: "allow" | "deny";
   },
 ): Promise<T> {
@@ -64,15 +74,15 @@ export async function runGuarded<T>(
     rules,
     correlationId,
     metadata,
-    actor,
-    inputs,
-    resolvePolicy,
     degraded,
+    onAllow,
     onDeny,
     onUnavailable,
-    execute,
     onGuardError = "deny",
+    actor,
+    inputs,
   } = params;
+
   // Spread onto every guard/capture payload so `correlationId` is included
   // when set and omitted otherwise (it is optional under
   // `exactOptionalPropertyTypes`, so assigning `undefined` is a type error).
@@ -80,15 +90,9 @@ export async function runGuarded<T>(
 
   const failClosed = onGuardError === "deny";
 
-  // Cleared wherever `onGuardError: "allow"` lets the action run without a
-  // complete judgement, so the capture at the tail reports what happened
-  // rather than claiming a success policy never made.
-  let judgedFully = true;
-
   let decisionId: string | undefined;
   let decision: Decision | undefined;
   try {
-    const resolved = resolvePolicy === undefined ? { actor, inputs } : await resolvePolicy();
     // Always called, even with no rules. An empty set is not the same as no
     // call: it still produces a decision, which is what makes this call site
     // reachable by policy configured outside the code, and gives a
@@ -98,8 +102,8 @@ export async function runGuarded<T>(
       rules: rules ?? [],
       ...correlation,
       metadata,
-      ...(resolved.actor !== undefined && { actor: resolved.actor }),
-      ...(resolved.inputs !== undefined && { inputs: resolved.inputs }),
+      ...(actor !== undefined && { actor }),
+      ...(inputs !== undefined && { inputs }),
     });
   } catch (error) {
     // Signal (a): the guard call itself threw. Rare — the client converts
@@ -114,9 +118,9 @@ export async function runGuarded<T>(
       return onUnavailable({ kind: "threw", error });
     }
     warnUnavailable(action, "threw", false, error);
-    decision = undefined; // fall through to execute
-    judgedFully = false;
+    // fall through to allow tail
   }
+
   if (decision !== undefined) {
     // Suppress an empty id. Every decision the client synthesizes on a
     // fail-open path carries `id: ""` (client.ts, convert.ts), and "" is not a
@@ -124,6 +128,7 @@ export async function runGuarded<T>(
     if (decision.id !== "") {
       decisionId = decision.id;
     }
+
     // Signal (b). The `conclusion === "ALLOW"` conjunct must stay INSIDE the
     // `if` for the narrowing to reach `onUnavailable`: TypeScript cannot narrow
     // on a method return, and hoisting the test into a `const failedOpen` makes
@@ -144,11 +149,12 @@ export async function runGuarded<T>(
       });
       return onUnavailable({ kind: "failed-open", decision });
     }
+
     if (decision.conclusion === "ALLOW" && decision.hasFailedOpen()) {
       warnUnavailable(action, "failed-open", false);
-      // fall through to execute, with nothing judged
-      judgedFully = false;
+      // fall through to allow tail
     }
+
     // The service replaced the label, so no published policy could have
     // matched and the guard did not run. Unevaluated policy, not an allow.
     if (decision.conclusion === "ALLOW" && labelRejectedByService(decision) && failClosed) {
@@ -162,10 +168,9 @@ export async function runGuarded<T>(
       return onUnavailable({ kind: "failed-open", decision });
     }
     if (decision.conclusion === "ALLOW" && labelRejectedByService(decision)) {
+      // Failing open here still means the guard did not run, so say so rather
+      // than letting this read as an evaluated allow.
       warnUnavailable(action, "failed-open", false);
-      // fall through to execute, with nothing judged: the guard did not run,
-      // so the captured event must not read as a success.
-      judgedFully = false;
     }
     if (decision.conclusion === "DENY") {
       captureEvent(client, {
@@ -178,7 +183,7 @@ export async function runGuarded<T>(
     }
     // A callback failed, so Guard judged the call without the value it would
     // have produced. The decision is real, so it is recorded; whether the
-    // action may run on it is what `onGuardError` governs.
+    // call may proceed on it is what `onGuardError` governs.
     if (degraded !== undefined && failClosed) {
       warnDegraded(action, true, degraded);
       captureEvent(client, {
@@ -192,29 +197,16 @@ export async function runGuarded<T>(
   }
   if (degraded !== undefined) {
     warnDegraded(action, false, degraded);
-    judgedFully = false;
   }
 
-  // Shared tail — UNCHANGED from today. Both `"allow"` paths must reach it.
-  let result: T;
-  try {
-    result = await execute();
-  } catch (error) {
-    captureEvent(client, {
-      action,
-      ...correlation,
-      ...(decisionId !== undefined && { decisionId }),
-      metadata: { ...metadata, outcome: "error" },
-    });
-    throw error;
-  }
+  // Shared allow tail — both `"allow"` paths must reach it.
   captureEvent(client, {
     action,
     ...correlation,
     ...(decisionId !== undefined && { decisionId }),
-    metadata: { ...metadata, outcome: judgedFully ? "success" : "degraded" },
+    metadata: { ...metadata, outcome: "allowed" },
   });
-  return result;
+  return onAllow();
 }
 
 function warnUnavailable(

@@ -192,7 +192,12 @@ const runner = new Runner({
 - On DENY the original `runAsync` never runs. Delivery is
   `{ arcjetDenied: true, reason, message, retryable }` — the dict
   ADK treats as skip.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if an `action`, `rules`, `metadata` or `sessionId` callback throws or
+  returns a value Guard cannot use. A failed callback never skips the guard
+  call: Guard is called without its value (a failed `action` falls back to
+  `"tool.invoked"`), so remote policy still evaluates the call and a DENY
+  stands.
   A Guard error ALWAYS returns a deny dict, never `undefined`.
 - ALLOW captures `outcome: "success"` when the policy lets the tool
   run, not when `runAsync` finishes. `beforeToolCallback` cannot wrap

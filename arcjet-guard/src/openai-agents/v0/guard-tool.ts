@@ -1,4 +1,4 @@
-import { resolveActorInputs } from "../../agents/actor-inputs.ts";
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -124,19 +124,6 @@ function toolArgs(input: unknown, action: string): unknown {
     );
   }
   return {};
-}
-
-function resolveSessionId<TInput>(
-  policy: GuardToolPolicy<TInput>,
-  input: TInput,
-): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(input);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
-  }
-  return undefined;
 }
 
 /**
@@ -274,17 +261,12 @@ async function runGuardedTool<TInput>(
 ): Promise<unknown> {
   const args = toolArgs(input, policy.action);
 
-  let sessionId: string | undefined;
-  let rules: RuleWithInput[] | undefined;
-  let policyMetadata: ArcjetMetadata | undefined;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
+  const typedArgs = args as TInput;
+  const call = resolveCallPolicy(policy, typedArgs, policy.action);
+  const { sessionId, rules, metadata: policyMetadata } = call;
   let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
-    const typedArgs = args as TInput;
-    sessionId = resolveSessionId(policy, typedArgs);
-    rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
-    policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
     remote = await resolveActorInputs(policy, typedArgs, runContext);
   } catch (error) {
     if (shouldWarn()) {
@@ -317,6 +299,7 @@ async function runGuardedTool<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    degraded: call.degraded,
     ...remote,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
