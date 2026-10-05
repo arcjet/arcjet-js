@@ -141,14 +141,15 @@ export interface ResolvedCallPolicy {
    * `undefined` when every callback succeeded. Pass it to `runGuarded` or
    * `runGate` as `degraded`, ahead of `resolveActorInputs`'s: Guard is still
    * called without the failed value, and `onGuardError` decides whether the
-   * action proceeds.
+   * action proceeds. A capture-only hook records the capture without the
+   * failed value and passes it to `warnCaptureDegraded`.
    */
   degraded: Error | undefined;
 }
 
 /**
  * Run a helper policy's per-call callbacks without letting one skip the guard
- * call.
+ * call or the capture.
  *
  * A callback that throws, or returns something Guard cannot use, is replaced
  * by what the helper would send without it: no local rules, no policy
@@ -218,7 +219,7 @@ export function resolveCallPolicy<TArg>(
     } else if (result.ok) {
       failures.push(
         new Error(
-          `@arcjet/guard: the metadata callback for "${action}" did not return an object; calling Guard without it`,
+          `@arcjet/guard: the metadata callback for "${action}" did not return an object; leaving it out`,
         ),
       );
     }
@@ -266,6 +267,22 @@ export function warnDegraded(action: string, failClosed: boolean, error: Error):
       error,
     );
   }
+}
+
+/**
+ * Warn that a capture-only hook recorded a call without a callback's value.
+ * Those hooks make no Guard call, so there is no fail-open or fail-closed
+ * choice to report.
+ */
+export function warnCaptureDegraded(action: string, error: Error): void {
+  if (!shouldWarn()) {
+    return;
+  }
+  console.warn(
+    '@arcjet/guard: capture for "%s" was recorded without a failed callback\'s value:',
+    action,
+    error,
+  );
 }
 
 type CallResult<T> = { ok: true; value: T } | { ok: false };

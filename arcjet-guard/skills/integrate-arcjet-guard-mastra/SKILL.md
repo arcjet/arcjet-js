@@ -216,7 +216,9 @@ export const hooks = guardHooks(arcjet, {
 
 Pass `hooks` to the `Agent` constructor (or to `generate` / `stream`).
 `beforeToolCall` returns `{ proceed: false, output }` on DENY so MCP /
-workspace / toolset calls never execute. `afterToolCall` is observe-only.
+workspace / toolset calls never execute. `afterToolCall` is observe-only. It
+records the call even when an `action` or `metadata` callback fails, under
+the default label and its own metadata.
 
 Use this for tools you did **not** pass through `guardTool`. Applying both
 to the same authored tool double-calls the guard.

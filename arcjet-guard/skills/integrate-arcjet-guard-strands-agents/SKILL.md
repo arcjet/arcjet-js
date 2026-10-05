@@ -62,7 +62,8 @@ The authored `callback` is the deny point for tools you own. MCP,
 vended tools, and anything not wrapped with `guardTool` skip that
 callback. `guardHooks` is the invoke-wide gate for those. Official:
 set `event.cancel` to a string; `tool.stream()` does not run;
-`AfterToolCallEvent` still fires.
+`AfterToolCallEvent` still fires. It records the call even when an `action`
+or `metadata` callback fails, under the default label and its own metadata.
 
 Do not use `BeforeToolsEvent.cancel`. A truthy value skips
 `_toolExecutor.execute()`, so per-tool hooks never run.

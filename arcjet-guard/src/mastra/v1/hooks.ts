@@ -5,7 +5,11 @@ import type {
   ToolHooks,
 } from "@mastra/core/tools";
 
-import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import {
+  resolveActorInputs,
+  resolveCallPolicy,
+  warnCaptureDegraded,
+} from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -60,13 +64,6 @@ export interface GuardHooksPolicy {
 
 function isContextSource(value: unknown): value is MastraContextSource {
   return value !== null && typeof value === "object";
-}
-
-function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  return fallbackAction(policy);
 }
 
 /**
@@ -174,25 +171,33 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           toolName: typeof hookContext.toolName === "string" ? hookContext.toolName : "",
           input: hookContext.input,
         };
-        const action = resolveAction(policy, call);
+        // A capture carries no rules, so only `action` and `metadata` are
+        // resolved. A failed callback leaves its value out of the capture, not
+        // the capture out of the record.
+        const resolved = resolveCallPolicy(
+          { action: policy.action, metadata: policy.metadata },
+          call,
+          fallbackAction(policy),
+        );
+        if (resolved.degraded !== undefined) {
+          warnCaptureDegraded(resolved.action, resolved.degraded);
+        }
         const source = isContextSource(hookContext.context) ? hookContext.context : undefined;
         const agentCtx = mastraAgentContext(source);
 
-        const policyMetadata =
-          typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
         const metadata: ArcjetMetadata = {
           ...agentCtx.metadata,
           "mastra.phase": "after",
           outcome: hookContext.error === undefined ? "success" : "error",
           ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
-          ...policyMetadata,
+          ...resolved.metadata,
         };
 
         const correlation =
           agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
 
         captureEvent(client, {
-          action,
+          action: resolved.action,
           ...correlation,
           metadata,
         });

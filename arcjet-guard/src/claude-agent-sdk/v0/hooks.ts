@@ -8,7 +8,11 @@ import type {
   UserPromptSubmitHookInput,
 } from "@anthropic-ai/claude-agent-sdk";
 
-import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import {
+  resolveActorInputs,
+  resolveCallPolicy,
+  warnCaptureDegraded,
+} from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -197,13 +201,6 @@ export function isExcludedTool(
 
 function isContextSource(value: unknown): value is ClaudeContextSource {
   return value !== null && typeof value === "object";
-}
-
-function resolveToolAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  return fallbackToolAction(policy);
 }
 
 /**
@@ -423,28 +420,36 @@ export function guardHooks(
         toolName: stringField(hookInput.tool_name),
         input: hookInput.tool_input,
       };
-      const action = resolveToolAction(policy, call);
+      // A capture carries no rules, so only `action` and `metadata` are
+      // resolved. A failed callback leaves its value out of the capture, not
+      // the capture out of the record.
+      const resolved = resolveCallPolicy(
+        { action: policy.action, metadata: policy.metadata },
+        call,
+        fallbackToolAction(policy),
+      );
+      if (resolved.degraded !== undefined) {
+        warnCaptureDegraded(resolved.action, resolved.degraded);
+      }
       const source = isContextSource(hookInput) ? hookInput : undefined;
       const agentCtx = claudeAgentContext(
         source,
         policy.sessionId === undefined ? undefined : { sessionId: policy.sessionId },
       );
 
-      const policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
       const metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
         "claude.phase": "after",
         outcome: "success",
         ...(call.toolName.length > 0 && { "claude.tool": call.toolName }),
-        ...policyMetadata,
+        ...resolved.metadata,
       };
 
       const correlation =
         agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
 
       captureEvent(client, {
-        action,
+        action: resolved.action,
         ...correlation,
         metadata,
       });
