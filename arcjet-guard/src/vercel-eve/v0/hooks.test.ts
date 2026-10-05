@@ -510,6 +510,14 @@ const subagentCtx = {
 // subagent record.
 const sessionMetadata = { "eve.session": "ses_123", "eve.turn": "turn_1" };
 
+// The task and agent events are newer than the eve version installed here, so
+// HookEventMap does not name them; read every listener by name instead.
+type Listener = (event: unknown, ctx: unknown) => void | Promise<void>;
+
+function listeners(client: ArcjetAgentClient): Record<string, Listener | undefined> {
+  return arcjetHooks(client).events as Record<string, Listener | undefined>;
+}
+
 test("subagent.called (eve 0.34–0.68) records eve.subagent-called with exact metadata", async () => {
   const client = createMockClient();
   const handler = arcjetHooks(client).events?.["subagent.called"];
@@ -571,7 +579,7 @@ test("subagent.completed (eve 0.34–0.68) records eve.subagent-completed with e
 
 test("task.started (eve ≥0.69) with kind 'agent' records eve.subagent-called", async () => {
   const client = createMockClient();
-  const handler = (arcjetHooks(client).events as Record<string, any>)["task.started"];
+  const handler = listeners(client)["task.started"];
   assert.ok(handler, "task.started handler must exist");
 
   await handler(
@@ -605,7 +613,7 @@ test("task.started (eve ≥0.69) with kind 'agent' records eve.subagent-called",
 for (const status of ["completed", "failed", "cancelled"] as const) {
   test(`task.settled (eve ≥0.69) with kind 'agent' and status '${status}' records eve.subagent-completed`, async () => {
     const client = createMockClient();
-    const handler = (arcjetHooks(client).events as Record<string, any>)["task.settled"];
+    const handler = listeners(client)["task.settled"];
     assert.ok(handler, "task.settled handler must exist");
 
     await handler(
@@ -645,11 +653,11 @@ for (const status of ["completed", "failed", "cancelled"] as const) {
 
 test("task.started and task.settled (eve ≥0.69) with kind 'tool' record nothing", async () => {
   const client = createMockClient();
-  const events = arcjetHooks(client).events as Record<string, any>;
+  const events = listeners(client);
   const data = { callId: "call_3", kind: "tool", name: "search", taskId: "task_3", turnId: "t" };
 
-  await events["task.started"]({ type: "task.started", data }, subagentCtx);
-  await events["task.settled"](
+  await events["task.started"]!({ type: "task.started", data }, subagentCtx);
+  await events["task.settled"]!(
     { type: "task.settled", data: { ...data, status: "completed", output: "x" } },
     subagentCtx,
   );
@@ -659,9 +667,9 @@ test("task.started and task.settled (eve ≥0.69) with kind 'tool' record nothin
 
 test("task.settled (eve ≥0.69) without kind records nothing", async () => {
   const client = createMockClient();
-  const events = arcjetHooks(client).events as Record<string, any>;
+  const events = listeners(client);
 
-  await events["task.settled"](
+  await events["task.settled"]!(
     {
       type: "task.settled",
       data: { callId: "call_4", status: "completed", taskId: "task_4", turnId: "t" },
@@ -674,7 +682,7 @@ test("task.settled (eve ≥0.69) without kind records nothing", async () => {
 
 test("agent.started (eve ≥0.69) records eve.agent-started with the child session", async () => {
   const client = createMockClient();
-  const handler = (arcjetHooks(client).events as Record<string, any>)["agent.started"];
+  const handler = listeners(client)["agent.started"];
   assert.ok(handler, "agent.started handler must exist");
 
   await handler(
@@ -709,9 +717,9 @@ test("agent.started (eve ≥0.69) records eve.agent-started with the child sessi
 
 test("subagent listeners skip a field whose value is not a string", async () => {
   const client = createMockClient();
-  const events = arcjetHooks(client).events as Record<string, any>;
+  const events = listeners(client);
 
-  await events["agent.started"](
+  await events["agent.started"]!(
     { type: "agent.started", data: { callId: 7, name: null, sessionId: "ses_child" } },
     subagentCtx,
   );
@@ -727,7 +735,7 @@ test("subagent listeners skip a field whose value is not a string", async () => 
 
 test("subagent listeners never throw when the event is null", () => {
   const client = createMockClient();
-  const events = arcjetHooks(client).events as Record<string, any>;
+  const events = listeners(client);
 
   for (const name of [
     "subagent.called",
@@ -736,7 +744,7 @@ test("subagent listeners never throw when the event is null", () => {
     "task.settled",
     "agent.started",
   ]) {
-    assert.doesNotThrow(() => events[name](null, subagentCtx), `${name} threw on a null event`);
+    assert.doesNotThrow(() => events[name]!(null, subagentCtx), `${name} threw on a null event`);
   }
   assert.deepEqual(client.captureCalls, []);
 });
