@@ -400,7 +400,10 @@ export function callbackFailureCases(driver: CallbackFailureDriver): void {
       assert.equal(guardField(guardCalls, "label"), "callback.label");
     }
     assert.equal(guardField(guardCalls, "actor"), "actor-from-callback");
-    assert.equal(guardField(guardCalls, "inputs"), inputs);
+    // A callback's inputs are copied before the call, so compare the values.
+    const sent = guardField(guardCalls, "inputs");
+    assert.deepEqual(sent, inputs);
+    assert.equal(recorded(sent)["id"], inputs.id);
     assert.equal(ran, true);
     assert.equal(outcomeCapture(captureCalls).outcome, driver.allowedOutcome);
   });

@@ -81,7 +81,7 @@ export async function resolveActorInputs<TArgs extends readonly unknown[]>(
     } else if (result.ok) {
       failures.push(
         new Error(
-          `@arcjet/guard: the actor callback for "${action}" did not return a string; calling Guard without an actor`,
+          `@arcjet/guard: the actor callback for "${action}" did not return a string (it returned ${typeName(result.value)}); calling Guard without an actor`,
         ),
       );
     }
@@ -92,12 +92,13 @@ export async function resolveActorInputs<TArgs extends readonly unknown[]>(
   let inputs: PolicyInputMap | undefined;
   if (typeof policy.inputs === "function") {
     const result = await awaitSafely(policy.inputs, args, "inputs", action, failures);
-    if (result.ok && isPolicyInputMap(result.value)) {
-      inputs = result.value;
+    const copy = result.ok ? copyPolicyInputMap(result.value) : undefined;
+    if (copy !== undefined) {
+      inputs = copy;
     } else if (result.ok) {
       failures.push(
         new Error(
-          `@arcjet/guard: the inputs callback for "${action}" did not return an object of values built with policyInput; calling Guard without inputs`,
+          `@arcjet/guard: the inputs callback for "${action}" did not return an object of values built with policyInput (it returned ${typeName(result.value)}); calling Guard without inputs`,
         ),
       );
     }
@@ -189,7 +190,7 @@ export function resolveCallPolicy<TArg>(
     } else if (result.ok) {
       failures.push(
         new Error(
-          `@arcjet/guard: the action callback did not return a string; using "${fallbackAction}"`,
+          `@arcjet/guard: the action callback did not return a string (it returned ${typeName(result.value)}); using "${fallbackAction}"`,
         ),
       );
     }
@@ -203,7 +204,7 @@ export function resolveCallPolicy<TArg>(
     } else if (result.ok) {
       failures.push(
         new Error(
-          `@arcjet/guard: the rules callback for "${action}" did not return an array of rules bound to their input; calling Guard with no local rules`,
+          `@arcjet/guard: the rules callback for "${action}" did not return an array of rules bound to their input (it returned ${typeName(result.value)}); calling Guard with no local rules`,
         ),
       );
     }
@@ -214,12 +215,13 @@ export function resolveCallPolicy<TArg>(
   let metadata: ArcjetMetadata | undefined;
   if (typeof policy.metadata === "function") {
     const result = callSafely(policy.metadata, arg, "metadata", action, failures);
-    if (result.ok && isMetadataObject(result.value)) {
-      metadata = result.value;
+    const copy = result.ok ? copyMetadataObject(result.value) : undefined;
+    if (copy !== undefined) {
+      metadata = copy;
     } else if (result.ok) {
       failures.push(
         new Error(
-          `@arcjet/guard: the metadata callback for "${action}" did not return an object; leaving it out`,
+          `@arcjet/guard: the metadata callback for "${action}" did not return an object (it returned ${typeName(result.value)}); leaving it out`,
         ),
       );
     }
@@ -235,7 +237,7 @@ export function resolveCallPolicy<TArg>(
     } else if (result.ok) {
       failures.push(
         new Error(
-          `@arcjet/guard: the sessionId callback for "${action}" did not return a string; calling Guard without it`,
+          `@arcjet/guard: the sessionId callback for "${action}" did not return a string (it returned ${typeName(result.value)}); calling Guard without it`,
         ),
       );
     }
@@ -312,7 +314,11 @@ function callSafely<TArg, T>(
     return { ok: false };
   }
   if (isThenable(value)) {
-    value.then(undefined, () => {});
+    try {
+      value.then(undefined, () => {});
+    } catch {
+      // A thenable whose `then` throws has no rejection left to handle.
+    }
     failures.push(
       new Error(
         `@arcjet/guard: the ${field} callback for "${action}" returned a promise; it must return its value directly`,
@@ -323,13 +329,23 @@ function callSafely<TArg, T>(
   return { ok: true, value };
 }
 
+/**
+ * The shape checks below read a value the application returned, which can be
+ * a Proxy whose traps throw or an object whose getters throw. Each check
+ * reports such a value as unusable rather than throwing, so a callback that
+ * returns one is a failed callback, and Guard is still called without it.
+ */
 function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    (typeof value === "object" || typeof value === "function") &&
-    value !== null &&
-    "then" in value &&
-    typeof value.then === "function"
-  );
+  try {
+    return (
+      (typeof value === "object" || typeof value === "function") &&
+      value !== null &&
+      "then" in value &&
+      typeof value.then === "function"
+    );
+  } catch {
+    return false;
+  }
 }
 
 async function awaitSafely<TArgs extends readonly unknown[], T>(
@@ -349,6 +365,36 @@ async function awaitSafely<TArgs extends readonly unknown[], T>(
   }
 }
 
+/**
+ * The kind of value a callback returned, for a failure message. Names the type
+ * and never the value: an actor or input value can be a user's identity or
+ * other data that does not belong in a log line.
+ */
+function typeName(value: unknown): string {
+  if (value === null) {
+    return "null";
+  }
+  if (typeof value !== "object") {
+    return typeof value;
+  }
+  try {
+    if (Array.isArray(value)) {
+      return "an array";
+    }
+    const proto: unknown = Object.getPrototypeOf(value);
+    if (proto === null || proto === Object.prototype) {
+      return "an object";
+    }
+    const name: unknown =
+      typeof proto === "object" && "constructor" in proto && typeof proto.constructor === "function"
+        ? proto.constructor.name
+        : undefined;
+    return typeof name === "string" && name !== "" ? `a ${name}` : "an object";
+  } catch {
+    return "an object";
+  }
+}
+
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
@@ -357,24 +403,46 @@ function isOptionalString(value: unknown): value is string | undefined {
   return value === undefined || typeof value === "string";
 }
 
-function isMetadataObject(value: unknown): boolean {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+/**
+ * A plain copy of a metadata object, or `undefined` when `value` is not one.
+ * The copy is what the call carries, so the application's object is read once,
+ * here, and a getter or Proxy trap that throws cannot throw later.
+ */
+function copyMetadataObject(value: unknown): ArcjetMetadata | undefined {
+  try {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      return undefined;
+    }
+    return Object.fromEntries(Object.entries(value));
+  } catch {
+    return undefined;
+  }
 }
 
 /**
- * Whether `value` is an object literal of `policyInput` values. The prototype
- * check refuses a `Map` or class instance, whose entries the client would not
- * read, so the call would go out with no inputs and no sign of why.
+ * A plain copy of an object literal of `policyInput` values, or `undefined`
+ * when `value` is not one. The prototype check refuses a `Map` or class
+ * instance, whose entries the client would not read, so the call would go out
+ * with no inputs and no sign of why. The copy is what the call carries, so the
+ * application's object is read once, here.
  */
-function isPolicyInputMap(value: unknown): value is PolicyInputMap {
+function copyPolicyInputMap(value: unknown): PolicyInputMap | undefined {
   if (typeof value !== "object" || value === null) {
-    return false;
+    return undefined;
   }
-  const proto: unknown = Object.getPrototypeOf(value);
-  if (proto !== Object.prototype && proto !== null) {
-    return false;
+  try {
+    const proto: unknown = Object.getPrototypeOf(value);
+    if (proto !== Object.prototype && proto !== null) {
+      return undefined;
+    }
+    const entries = Object.entries(value);
+    if (!entries.every(([, input]) => isPolicyInput(input))) {
+      return undefined;
+    }
+    return Object.fromEntries(entries);
+  } catch {
+    return undefined;
   }
-  return Object.values(value).every((input) => isPolicyInput(input));
 }
 
 /**
@@ -396,5 +464,9 @@ function isBoundRule(value: unknown): boolean {
 }
 
 function isBoundRuleList(value: unknown): value is RuleWithInput[] {
-  return Array.isArray(value) && value.every((rule) => isBoundRule(rule));
+  try {
+    return Array.isArray(value) && value.every((rule) => isBoundRule(rule));
+  } catch {
+    return false;
+  }
 }

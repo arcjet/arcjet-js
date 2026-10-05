@@ -142,6 +142,61 @@ test("leaves out an inputs callback's value that is not an object of policyInput
   }
 });
 
+/** Values whose inspection throws: a Proxy with throwing traps, and an object with a throwing getter. */
+function boom(): never {
+  throw new Error("inspected");
+}
+
+function hostileValues(): unknown[] {
+  const { proxy: revoked, revoke } = Proxy.revocable({}, {});
+  revoke();
+  return [
+    new Proxy({}, { getPrototypeOf: boom, ownKeys: boom, get: boom, has: boom }),
+    Object.defineProperty({}, "id", { enumerable: true, get: boom }),
+    revoked,
+  ];
+}
+
+test("leaves out an inputs callback's value whose inspection throws", async () => {
+  for (const [index, value] of hostileValues().entries()) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- simulate an untyped caller
+    const resolved = await resolveActorInputs({ inputs: () => value as PolicyInputMap }, "a.b");
+    assert.deepEqual(resolved.fields, {}, `case ${index}`);
+    assert.ok(resolved.degraded, `case ${index}`);
+  }
+});
+
+test("resolveCallPolicy leaves out a rules or metadata value whose inspection throws", () => {
+  for (const [index, value] of hostileValues().entries()) {
+    const resolved = resolveCallPolicy(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- simulate an untyped caller
+      { rules: () => value as RuleWithInput[], metadata: () => value as Record<string, string> },
+      {},
+      "tool.invoked",
+    );
+    assert.equal(resolved.rules, undefined, `case ${index}`);
+    assert.equal(resolved.metadata, undefined, `case ${index}`);
+    assert.ok(resolved.degraded, `case ${index}`);
+  }
+});
+
+test("names the type a failed callback returned, never the value", async () => {
+  const cases: Array<[unknown, string]> = [
+    [42, "it returned number"],
+    [null, "it returned null"],
+    [["user-1"], "it returned an array"],
+    [new Map(), "it returned a Map"],
+    [{ id: "user-1" }, "it returned an object"],
+  ];
+  for (const [value, expected] of cases) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- simulate an untyped caller
+    const resolved = await resolveActorInputs({ actor: () => value as string }, "a.b");
+    const message = String(resolved.degraded?.message);
+    assert.ok(message.includes(expected), message);
+    assert.equal(message.includes("user-1"), false, message);
+  }
+});
+
 test("accepts an empty or prototype-less inputs object from a callback", async () => {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.create is typed any
   const bare = Object.assign(Object.create(null) as Record<string, PolicyInput>, {
@@ -149,7 +204,7 @@ test("accepts an empty or prototype-less inputs object from a callback", async (
   });
   for (const value of [{}, bare]) {
     const resolved = await resolveActorInputs({ inputs: () => value }, "a.b");
-    assert.equal(resolved.fields.inputs, value);
+    assert.deepEqual(resolved.fields.inputs, { ...value });
     assert.equal(resolved.degraded, undefined);
   }
 });
