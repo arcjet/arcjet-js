@@ -6,7 +6,12 @@ import { fakeRule } from "../../test/_shared/stub-client.ts";
 import { policyInput } from "../policy-input.ts";
 import type { PolicyInput, PolicyInputMap } from "../policy-input.ts";
 import type { RuleWithInput } from "../types.ts";
-import { resolveActorInputs, resolveCallPolicy, warnDegraded } from "./actor-inputs.ts";
+import {
+  resolveActorInputs,
+  resolveCallPolicy,
+  warnCaptureDegraded,
+  warnDegraded,
+} from "./actor-inputs.ts";
 
 test("omits actor and inputs when the policy does not set them", async () => {
   const resolved = await resolveActorInputs({}, "a.b", { id: "one" });
@@ -281,6 +286,29 @@ test("warnDegraded says whether it failed open or closed, and only when warnings
   assert.equal(warnings.length, 2);
   assert.match(String(warnings[0]?.[0]), /failing open/);
   assert.match(String(warnings[1]?.[0]), /failing closed/);
+});
+
+test("warnCaptureDegraded names the capture, not a guard outcome, and only when warnings are on", () => {
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]): void => {
+    warnings.push(args);
+  };
+  const restore = setLogLevel("warn");
+  try {
+    warnCaptureDegraded("a.b", new Error("x"));
+    restore();
+    const quiet = setLogLevel(undefined);
+    warnCaptureDegraded("a.b", new Error("y"));
+    quiet();
+  } finally {
+    console.warn = originalWarn;
+    restore();
+  }
+  assert.equal(warnings.length, 1);
+  assert.match(String(warnings[0]?.[0]), /capture for "%s" was recorded without/);
+  assert.doesNotMatch(String(warnings[0]?.[0]), /failing (open|closed)/);
+  assert.equal(warnings[0]?.[1], "a.b");
 });
 
 test("resolveCallPolicy sends an action callback's string unchanged, valid label or not", () => {

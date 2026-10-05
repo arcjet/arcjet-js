@@ -1,6 +1,10 @@
 import type { Plugin } from "@strands-agents/sdk";
 
-import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import {
+  resolveActorInputs,
+  resolveCallPolicy,
+  warnCaptureDegraded,
+} from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
@@ -184,13 +188,6 @@ function stringField(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  return fallbackAction(policy);
-}
-
 /**
  * The label for a static or absent `action`, and the label used when an
  * `action` callback fails.
@@ -337,15 +334,23 @@ export function createAfterToolCallHandler(
         toolName: stringField(event.toolUse?.name),
         input: event.toolUse?.input ?? {},
       };
-      const action = resolveAction(policy, call);
+      // A capture carries no rules, so only `action` and `metadata` are
+      // resolved. A failed callback leaves its value out of the capture, not
+      // the capture out of the record.
+      const resolved = resolveCallPolicy(
+        { action: policy.action, metadata: policy.metadata },
+        call,
+        fallbackAction(policy),
+      );
+      if (resolved.degraded !== undefined) {
+        warnCaptureDegraded(resolved.action, resolved.degraded);
+      }
       const source = isContextSource(event) ? event : undefined;
       const agentCtx = strandsAgentContext(source);
 
-      const policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
       const metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
-        ...policyMetadata,
+        ...resolved.metadata,
         "strands.phase": "after",
         ...(call.toolName.length > 0 && { "strands.tool": call.toolName }),
         outcome: event.error === undefined ? "success" : "error",
@@ -355,7 +360,7 @@ export function createAfterToolCallHandler(
         agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
 
       captureEvent(client, {
-        action,
+        action: resolved.action,
         ...correlation,
         metadata,
       });

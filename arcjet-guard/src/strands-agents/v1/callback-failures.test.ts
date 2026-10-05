@@ -1,7 +1,10 @@
 // oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await, eslint/explicit-function-return-type -- cases pass deliberately ill-typed callbacks through the policy
-import { callbackFailureCases } from "../../../test/_shared/callback-failures.ts";
+import {
+  callbackFailureCases,
+  captureOnlyCallbackFailureCases,
+} from "../../../test/_shared/callback-failures.ts";
 import { guardTool } from "./guard-tool.ts";
-import { createBeforeToolCallHandler } from "./hooks.ts";
+import { createAfterToolCallHandler, createBeforeToolCallHandler } from "./hooks.ts";
 
 callbackFailureCases({
   name: "strands-agents guardTool",
@@ -53,3 +56,22 @@ callbackFailureCases({
     return event.cancel === false;
   },
 });
+
+for (const { outcome, error } of [
+  { outcome: "success", error: undefined },
+  { outcome: "error", error: new Error("tool failed") },
+]) {
+  captureOnlyCallbackFailureCases({
+    name: `strands-agents guardHooks AfterToolCallEvent (${outcome})`,
+    action: "tool.invoked",
+    outcome,
+    async run(client, policy) {
+      const handler = createAfterToolCallHandler(client, policy as never);
+      handler({
+        toolUse: { name: "mcp_search", toolUseId: "tu-1", input: { q: "1" } },
+        invocationState: { sessionId: "sess-hooks" },
+        ...(error !== undefined && { error }),
+      } as never);
+    },
+  });
+}

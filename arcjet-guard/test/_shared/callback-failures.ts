@@ -3,13 +3,15 @@
  * cannot use, run once per helper entry point.
  *
  * Every helper resolves `rules`, `metadata`, `action` and `sessionId` through
- * `resolveCallPolicy`, and `actor` and `inputs` through `resolveActorInputs`,
- * and hands the first failure to `runGuarded` or `runGate` as `degraded`. The
- * property this pins is the same everywhere: the failure never escapes and
- * never skips the guard call, remote policy still evaluates, and
- * `onGuardError` decides. Each helper's test file supplies a driver that
- * builds the helper and makes one call; the cases are named after the driver,
- * so a regression in one helper fails by that helper's name.
+ * `resolveCallPolicy`, and `actor` and `inputs` through `resolveActorInputs`.
+ * A helper that calls Guard hands the first failure to `runGuarded` or
+ * `runGate` as `degraded`, and `callbackFailureCases` pins that the failure
+ * never escapes and never skips the guard call, remote policy still evaluates,
+ * and `onGuardError` decides. A capture-only hook records the call without the
+ * failed value, which `captureOnlyCallbackFailureCases` pins. Each helper's
+ * test file supplies a driver that builds the helper and makes one call; the
+ * cases are named after the driver, so a regression in one helper fails by that
+ * helper's name.
  */
 
 import assert from "node:assert/strict";
@@ -421,5 +423,104 @@ export function callbackFailureCases(driver: CallbackFailureDriver): void {
     assert.deepEqual(guardField(guardCalls, "inputs"), inputs);
     assert.equal(ran, true);
     assert.equal(outcomeCapture(captureCalls).outcome, driver.allowedOutcome);
+  });
+}
+
+export interface CaptureOnlyCallbackFailureDriver {
+  /** Names the cases, e.g. `"mastra guardHooks afterToolCall"`. */
+  name: string;
+  /** Build the hook over `client` with `policy` and fire it for one tool call. */
+  run(client: ArcjetAgentClient, policy: CallbackCasePolicy): Promise<void>;
+  /** The label recorded when `policy` sets no `action`. */
+  action: string;
+  /** The `outcome` the hook records for the tool call `run` reports. */
+  outcome: string;
+}
+
+/**
+ * Register the cases for one capture-only hook: one that records what a tool
+ * call did after it ran and makes no Guard call.
+ *
+ * A failed `action` or `metadata` callback must not cost the record. The
+ * property pinned here is that the hook records exactly what it records for a
+ * policy without that callback — the default label, or only the metadata the
+ * hook derives itself — with the tool's own `outcome`, and still makes no Guard
+ * call.
+ */
+export function captureOnlyCallbackFailureCases(driver: CaptureOnlyCallbackFailureDriver): void {
+  const { name } = driver;
+
+  /** The one capture the hook records for `policy`, with Guard never called. */
+  async function captureFor(policy: CallbackCasePolicy): Promise<Record<string, unknown>> {
+    const { client, guardCalls, captureCalls } = stubClient(decisionAllow());
+    await driver.run(client, policy);
+    assert.equal(guardCalls.length, 0, "a capture-only hook must not call Guard");
+    assert.equal(captureCalls.length, 1, "the hook must record exactly one capture");
+    return recorded(captureCalls[0]);
+  }
+
+  async function assertRecordedWithout(policy: CallbackCasePolicy): Promise<void> {
+    const baseline = await captureFor({});
+    assert.equal(baseline["action"], driver.action);
+    assert.equal(recorded(baseline["metadata"])["outcome"], driver.outcome);
+    assert.deepEqual(await captureFor(policy), baseline);
+  }
+
+  test(`${name}: a throwing action callback still records the capture under the default label`, async () => {
+    await assertRecordedWithout({ action: throwing });
+  });
+
+  test(`${name}: an action callback returning a non-string records the capture under the default label`, async () => {
+    await assertRecordedWithout({ action: (): unknown => 42 });
+  });
+
+  test(`${name}: an action callback returning a promise records the capture under the default label`, async () => {
+    await assertRecordedWithout({ action: (): Promise<string> => Promise.resolve("async.label") });
+  });
+
+  test(`${name}: a throwing metadata callback still records the capture with the hook's own metadata`, async () => {
+    await assertRecordedWithout({ metadata: throwing });
+  });
+
+  test(`${name}: a metadata callback returning a non-object records the capture with the hook's own metadata`, async () => {
+    // Spreading the string would have added its indices as keys.
+    await assertRecordedWithout({ metadata: (): unknown => "nope" });
+  });
+
+  test(`${name}: a metadata callback returning an array records the capture with the hook's own metadata`, async () => {
+    await assertRecordedWithout({ metadata: (): unknown => ["a", "b"] });
+  });
+
+  test(`${name}: a failed callback is reported as a capture warning, not a guard outcome`, async () => {
+    const warnings: unknown[][] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]): void => {
+      warnings.push(args);
+    };
+    const restore = setLogLevel("warn");
+    try {
+      await captureFor({ action: throwing, metadata: throwing });
+    } finally {
+      console.warn = originalWarn;
+      restore();
+    }
+    assert.equal(warnings.length, 1);
+    const [format, action, error] = warnings.at(0) ?? [];
+    assert.match(String(format), /capture for "%s" was recorded without a failed callback/);
+    assert.doesNotMatch(String(format), /failing (open|closed)/);
+    assert.equal(action, driver.action);
+    assert.ok(error instanceof Error);
+    assert.match(error.message, /the action callback/);
+  });
+
+  test(`${name}: callbacks that succeed set the capture label and metadata`, async () => {
+    const capture = await captureFor({
+      action: (): string => "callback.label",
+      metadata: (): Record<string, string> => ({ "test.key": "from-callback" }),
+    });
+    assert.equal(capture["action"], "callback.label");
+    const metadata = recorded(capture["metadata"]);
+    assert.equal(metadata["test.key"], "from-callback");
+    assert.equal(metadata["outcome"], driver.outcome);
   });
 }
