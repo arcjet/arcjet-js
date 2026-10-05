@@ -16,7 +16,8 @@ import { labelRejectedByService } from "./label.ts";
  * `guardAction()`. Callers resolve `rules`, `metadata`, and `correlationId`
  * (including any per-input functions and overrides) and pass the final values;
  * a helper with per-call callbacks resolves them with `resolveCallPolicy` and
- * passes its `degraded` here. This runs the common flow:
+ * `resolveActorInputs` and passes the first failure here as `degraded`. This
+ * runs the common flow:
  *
  * 1. Call `guard()` — always, including when `rules` is omitted or empty, which
  *    is sent as `[]`. Both guard-unavailable signals (threw and failed-open)
@@ -24,11 +25,12 @@ import { labelRejectedByService } from "./label.ts";
  *    `onUnavailable` without executing; with `"allow"`, both fail open and
  *    proceed to execute.
  * 2. On DENY, capture `outcome: "denied"` and return `onDeny(decision)`.
- *    Otherwise, when `degraded` is set — a policy callback failed, and
- *    `resolveCallPolicy` left its value out of the call — `onGuardError`
- *    decides as for the signals above: `"deny"` captures `outcome:
- *    "unavailable"` with the decision ID and returns `onUnavailable({ kind:
- *    "threw", error: degraded })`; `"allow"` proceeds unjudged.
+ *    Otherwise, when `degraded` is set — a policy callback failed, and its
+ *    resolver left the value out of the call — `onGuardError` decides as for
+ *    the signals above: `"deny"` captures `outcome: "unavailable"` with the
+ *    decision ID and returns
+ *    `onUnavailable({ kind: "threw", error: degraded })`; `"allow"` proceeds
+ *    unjudged.
  * 3. Otherwise run `execute()`, capturing `outcome: "success"` when policy
  *    judged the action, or `outcome: "degraded"` when `"allow"` let it run
  *    unjudged — or, if it throws, `outcome: "error"` before rethrowing.
@@ -47,7 +49,6 @@ export async function runGuarded<T>(
     metadata: ArcjetMetadata;
     actor?: string;
     inputs?: PolicyInputMap;
-    resolvePolicy?: () => Promise<{ actor?: string; inputs?: PolicyInputMap }>;
     degraded?: Error | undefined;
     onDeny: (decision: DecisionDeny) => T;
     onUnavailable: (
@@ -66,7 +67,6 @@ export async function runGuarded<T>(
     metadata,
     actor,
     inputs,
-    resolvePolicy,
     degraded,
     onDeny,
     onUnavailable,
@@ -88,7 +88,6 @@ export async function runGuarded<T>(
   let decisionId: string | undefined;
   let decision: Decision | undefined;
   try {
-    const resolved = resolvePolicy === undefined ? { actor, inputs } : await resolvePolicy();
     // Always called, even with no rules. An empty set is not the same as no
     // call: it still produces a decision, which is what makes this call site
     // reachable by policy configured outside the code, and gives a
@@ -98,8 +97,8 @@ export async function runGuarded<T>(
       rules: rules ?? [],
       ...correlation,
       metadata,
-      ...(resolved.actor !== undefined && { actor: resolved.actor }),
-      ...(resolved.inputs !== undefined && { inputs: resolved.inputs }),
+      ...(actor !== undefined && { actor }),
+      ...(inputs !== undefined && { inputs }),
     });
   } catch (error) {
     // Signal (a): the guard call itself threw. Rare — the client converts

@@ -137,22 +137,7 @@ async function gateToolCall(
 
   const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
   const { action, sessionId, rules, metadata: policyMetadata } = resolved;
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  try {
-    remote = await resolveActorInputs(policy, call, ctx);
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      return undefined;
-    }
-    return denyDecision(policy, unavailableResult(), "unavailable");
-  }
+  const remote = await resolveActorInputs(policy, action, call, ctx);
 
   // Think's ToolCallContext is an envelope, not a caller-owned bag.
   // Correlation comes only from `policy.sessionId` via init.
@@ -173,8 +158,8 @@ async function gateToolCall(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
-    degraded: resolved.degraded,
-    ...remote,
+    degraded: resolved.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny) => denyDecision(policy, denialResult(decision), "deny"),
     onUnavailable: () => denyDecision(policy, unavailableResult(), "unavailable"),
     execute: () => Promise.resolve(),

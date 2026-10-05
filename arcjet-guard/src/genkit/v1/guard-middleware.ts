@@ -270,24 +270,8 @@ export function guardMiddleware(
 
           const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
           const { action, sessionId, rules, metadata: policyMetadata } = resolved;
-          let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-          let hookCtx: unknown;
-          try {
-            hookCtx = await withActiveGenkitContext(ctx);
-            remote = await resolveActorInputs(policy, call, hookCtx);
-          } catch (error) {
-            if (shouldWarn()) {
-              console.warn(
-                '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-                action,
-                error,
-              );
-            }
-            if (policy.onGuardError === "allow") {
-              return next(req, ctx);
-            }
-            return denialPart(req, unavailableResult());
-          }
+          const hookCtx = await withActiveGenkitContext(ctx);
+          const remote = await resolveActorInputs(policy, action, call, hookCtx);
 
           const source = isContextSource(hookCtx) ? hookCtx : undefined;
           const agentCtx = genkitContext(
@@ -306,8 +290,8 @@ export function guardMiddleware(
             rules,
             correlationId: agentCtx.correlationId,
             metadata: mergedMetadata,
-            degraded: resolved.degraded,
-            ...remote,
+            degraded: resolved.degraded ?? remote.degraded,
+            ...remote.fields,
             onDeny: (decision: DecisionDeny) => {
               if (policy.onDeny === undefined) {
                 return denialPart(req, denialResult(decision));

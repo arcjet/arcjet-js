@@ -292,22 +292,7 @@ async function runGuardedCallback<TInput>(
   const typedArgs = args as TInput;
   const call = resolveCallPolicy(policy, typedArgs, policy.action);
   const { sessionId, rules, metadata: policyMetadata } = call;
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  try {
-    remote = await resolveActorInputs(policy, typedArgs, context);
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        policy.action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      return execute();
-    }
-    return unavailableResult();
-  }
+  const remote = await resolveActorInputs(policy, policy.action, typedArgs, context);
 
   const source = contextSource(context);
   const agentCtx = strandsAgentContext(source, sessionId === undefined ? undefined : { sessionId });
@@ -324,8 +309,8 @@ async function runGuardedCallback<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
-    degraded: call.degraded,
-    ...remote,
+    degraded: call.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return denialResult(decision);

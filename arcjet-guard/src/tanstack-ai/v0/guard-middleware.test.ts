@@ -378,5 +378,6 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   const decision = result as { type: string; result: unknown };
   assert.equal(decision.type, "skip");
   assert.equal(asDenial<ArcjetDenialResult>(decision.result).reason, "ERROR");
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
 });

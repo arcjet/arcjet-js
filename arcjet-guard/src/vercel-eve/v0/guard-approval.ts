@@ -2,7 +2,7 @@ import type { SessionContext } from "eve/context";
 
 import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
-import { captureEvent, shouldWarn } from "../../agents/capture.ts";
+import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -352,58 +352,6 @@ type ApprovalPolicyConfig<TCtx> = {
   onGuardError?: OnGuardError;
 };
 
-type CallbackResolution<TResult> =
-  | {
-      status: "resolved";
-      rules: RuleWithInput[] | undefined;
-      metadata: ArcjetMetadata;
-      degraded: Error | undefined;
-      actor?: string;
-      inputs?: Awaited<ReturnType<typeof resolveActorInputs>>["inputs"];
-    }
-  | { status: "failed"; result: TResult };
-
-async function resolveApprovalCallbacks<TCtx, TResult>(
-  client: ArcjetAgentClient,
-  policy: ApprovalPolicyConfig<TCtx>,
-  ctx: TCtx,
-  options: ApprovalPolicyOptions<TResult>,
-  agentCtx: ReturnType<typeof eveAgentContext>,
-  metadata: ArcjetMetadata,
-): Promise<CallbackResolution<TResult>> {
-  // A failed `rules` or `metadata` callback leaves its value out of the guard
-  // call and is reported as `degraded`, so Guard still evaluates the call.
-  const call = resolveCallPolicy(policy, ctx, policy.action);
-  const resolvedMetadata = { ...metadata, ...call.metadata };
-
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  try {
-    remote = await resolveActorInputs(policy, ctx);
-  } catch (error) {
-    const failClosed = policy.onGuardError !== "allow";
-    const correlation =
-      agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
-    warnCallbackFailure(options.warnKind, policy.action, failClosed, error);
-    captureEvent(client, {
-      action: policy.action,
-      ...correlation,
-      metadata: { ...resolvedMetadata, outcome: "unavailable" },
-    });
-    return {
-      status: "failed",
-      result: failClosed ? options.onUnavailable() : options.onAllow(),
-    };
-  }
-
-  return {
-    status: "resolved",
-    rules: call.rules,
-    metadata: resolvedMetadata,
-    degraded: call.degraded,
-    ...remote,
-  };
-}
-
 async function evaluateApprovalPolicy<TCtx, TResult>(
   client: ArcjetAgentClient,
   policy: ApprovalPolicyConfig<TCtx>,
@@ -420,26 +368,18 @@ async function evaluateApprovalPolicy<TCtx, TResult>(
       ...options.extraMetadata(),
     };
 
-    const resolved = await resolveApprovalCallbacks(
-      client,
-      policy,
-      ctx,
-      options,
-      agentCtx,
-      metadata,
-    );
-    if (resolved.status === "failed") {
-      return resolved.result;
-    }
+    // A failed callback leaves its value out of the guard call and is reported
+    // as `degraded`, so Guard still evaluates the call.
+    const call = resolveCallPolicy(policy, ctx, policy.action);
+    const remote = await resolveActorInputs(policy, policy.action, ctx);
 
     return await runGate(client, {
       action: policy.action,
-      rules: resolved.rules,
+      rules: call.rules,
       correlationId: agentCtx.correlationId,
-      metadata: resolved.metadata,
-      degraded: resolved.degraded,
-      ...(resolved.actor !== undefined && { actor: resolved.actor }),
-      ...(resolved.inputs !== undefined && { inputs: resolved.inputs }),
+      metadata: { ...metadata, ...call.metadata },
+      degraded: call.degraded ?? remote.degraded,
+      ...remote.fields,
       onAllow: options.onAllow,
       onDeny: options.onDeny,
       onUnavailable: options.onUnavailable,

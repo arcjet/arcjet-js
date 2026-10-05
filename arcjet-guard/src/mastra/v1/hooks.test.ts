@@ -303,5 +303,6 @@ test("an input resolver failure follows the fail-closed unavailable path", async
     asDenial<ArcjetDenialResult>((result as { output: unknown }).output).reason,
     "ERROR",
   );
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
 });

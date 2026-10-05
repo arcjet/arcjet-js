@@ -362,5 +362,6 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   await onBefore(event);
   assert.equal(typeof event.cancel, "string");
   assert.equal(denialFromCancel(event).reason, "ERROR");
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
 });

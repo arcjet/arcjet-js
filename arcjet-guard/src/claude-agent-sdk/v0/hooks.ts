@@ -339,15 +339,15 @@ export function guardHooks(
         ...(call.toolName.length > 0 && { "claude.tool": call.toolName }),
         ...resolved.metadata,
       };
-      const remote = await resolveActorInputs(policy, call, hookInput);
+      const remote = await resolveActorInputs(policy, resolved.action, call, hookInput);
 
       return await runGate<HookJSONOutput>(client, {
         action: resolved.action,
         rules: resolved.rules,
         correlationId: agentCtx.correlationId,
         metadata,
-        degraded: resolved.degraded,
-        ...remote,
+        degraded: resolved.degraded ?? remote.degraded,
+        ...remote.fields,
         onAllow: () => ({}),
         onDeny: (decision) => preToolUseDeny(deniedReason(decision)),
         onUnavailable: () => preToolUseDeny(unavailableReason()),
@@ -387,15 +387,15 @@ export function guardHooks(
         "claude.phase": "inbound",
         ...resolved.metadata,
       };
-      const remote = await resolveActorInputs(inboundPolicy, inbound, hookInput);
+      const remote = await resolveActorInputs(inboundPolicy, resolved.action, inbound, hookInput);
 
       return await runGate<HookJSONOutput>(client, {
         action: resolved.action,
         rules: resolved.rules,
         correlationId: agentCtx.correlationId,
         metadata,
-        degraded: resolved.degraded,
-        ...remote,
+        degraded: resolved.degraded ?? remote.degraded,
+        ...remote.fields,
         onAllow: () => ({}),
         onDeny: (decision) => userPromptBlock(deniedReason(decision)),
         onUnavailable: () => userPromptBlock(unavailableReason()),

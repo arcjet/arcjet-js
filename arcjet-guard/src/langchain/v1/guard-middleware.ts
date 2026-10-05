@@ -299,22 +299,7 @@ export function guardMiddleware(
 
     const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
     const { action, sessionId, rules, metadata: policyMetadata } = resolved;
-    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-    try {
-      remote = await resolveActorInputs(policy, call, request.runtime);
-    } catch (error) {
-      if (shouldWarn()) {
-        console.warn(
-          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-          action,
-          error,
-        );
-      }
-      if (policy.onGuardError === "allow") {
-        return handler(request);
-      }
-      return denialToolMessage(request, unavailableResult());
-    }
+    const remote = await resolveActorInputs(policy, action, call, request.runtime);
 
     const source = isContextSource(request.runtime) ? request.runtime : undefined;
     const agentCtx = langchainContext(source, sessionId === undefined ? undefined : { sessionId });
@@ -330,8 +315,8 @@ export function guardMiddleware(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
-      degraded: resolved.degraded,
-      ...remote,
+      degraded: resolved.degraded ?? remote.degraded,
+      ...remote.fields,
       // Unlike guard-tool.ts, these handlers return a promise: building the
       // denial has to await the dynamic `@langchain/core/messages` import.
       // `runGuarded` is `async` and returns the handler's value directly, so

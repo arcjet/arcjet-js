@@ -41,10 +41,11 @@ import { labelRejectedByService } from "./label.ts";
  *    inside the single `if`: TypeScript cannot narrow on a method return.
  * 7. If ALLOW with failed-open and failing open: warn, fall through.
  * 8. If DENY: capture `"denied"`, return `onDeny(decision)`.
- * 9. If `degraded` is set (a policy callback failed and `resolveCallPolicy` left
- *    its value out) and failing closed: warn, capture `"unavailable"` with the
- *    decision ID, `onUnavailable({ kind: "threw", error: degraded })`. If
- *    failing open: warn, fall through.
+ * 9. If `degraded` is set (a policy callback failed and `resolveCallPolicy` or
+ *    `resolveActorInputs` left its value out) and failing closed: warn,
+ *    capture `"unavailable"` with the decision ID,
+ *    `onUnavailable({ kind: "threw", error: degraded })`. If failing open:
+ *    warn, fall through.
  * 10. Allow tail: capture `"allowed"`, return `onAllow()`.
  *
  * Every capture goes through `captureEvent`, which swallows throws.
