@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/skills-v1.14.1) (2026-10-06)
+
+
+### 🪲 Bug Fixes
+
+* **guard:** accept uppercase ASCII in a guard label ([#6312](https://github.com/arcjet/arcjet-js/issues/6312)) ([fc9ef92](https://github.com/arcjet/arcjet-js/commit/fc9ef92d1e8e645ecc7dca6f325dddc1bfc85fe9))
+
 ## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/skills-v1.14.0) (2026-10-01)
 
 

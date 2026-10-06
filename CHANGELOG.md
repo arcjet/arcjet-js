@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...v1.14.1) (2026-10-06)
+
+
+### 🪲 Bug Fixes
+
+* **guard:** accept uppercase ASCII in a guard label ([#6312](https://github.com/arcjet/arcjet-js/issues/6312)) ([fc9ef92](https://github.com/arcjet/arcjet-js/commit/fc9ef92d1e8e645ecc7dca6f325dddc1bfc85fe9))
+* **guard:** call Guard when a policy callback throws or returns a value it cannot use ([#6308](https://github.com/arcjet/arcjet-js/issues/6308)) ([a3d7f45](https://github.com/arcjet/arcjet-js/commit/a3d7f451d182c18658c84aa749b350c0494daf51))
+* **guard:** call Guard when an actor or inputs callback fails ([#6310](https://github.com/arcjet/arcjet-js/issues/6310)) ([084a6df](https://github.com/arcjet/arcjet-js/commit/084a6dfdaf040f863cf59aec71b2748c70771451))
+* **guard:** read the Eve approval responder from response.principal ([#6305](https://github.com/arcjet/arcjet-js/issues/6305)) ([1b531e2](https://github.com/arcjet/arcjet-js/commit/1b531e294fb37f4384782d8cddca5e4524080791))
+
+
+### 📚 Tests
+
+* **guard:** read Eve task and agent listeners through a typed accessor ([#6309](https://github.com/arcjet/arcjet-js/issues/6309)) ([50f687a](https://github.com/arcjet/arcjet-js/commit/50f687a6f9b77f4cf10cc08aeeb0ac585f575a25))
+
 ## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...v1.14.0) (2026-10-01)
 
 
