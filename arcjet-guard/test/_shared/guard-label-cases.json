@@ -1,8 +1,8 @@
 {
-  "revision": 1,
+  "revision": 2,
   "source": "proto/decide/v2/guard-label-cases.json in the arcjet monorepo",
   "why": "Every validator that decides whether a guard label is usable reads these cases, so a copy that drifts fails by name. A label is matched against a published policy by exact string comparison, so the rule cannot differ between them.",
-  "grammar": "1-256 bytes; lowercase ASCII letters, digits, '-', '.', '_'; must start and end with a lowercase letter or digit",
+  "grammar": "1-256 bytes; ASCII letters of either case, digits, '-', '.', '_'; must start and end with a letter or digit; matched case-sensitively",
   "note": "The 256-byte boundary is not a case here, because a 257-character string is unreadable in JSON. Each consumer generates it: 256 'a' characters valid, 257 invalid.",
   "cases": [
     { "label": "tool.invoked", "valid": true },
@@ -11,8 +11,10 @@
     { "label": "tools.foo-bar.42", "valid": true },
     { "label": "a", "valid": true },
     { "label": "9", "valid": true },
-    { "label": "getWeather.invoked", "valid": false, "reason": "uppercase" },
-    { "label": "Tools.Test", "valid": false, "reason": "uppercase" },
+    { "label": "getWeather.invoked", "valid": true },
+    { "label": "Tools.Test", "valid": true },
+    { "label": "Bash.invoked", "valid": true },
+    { "label": "Z", "valid": true },
     { "label": "café.invoked", "valid": false, "reason": "non-ascii" },
     { "label": "_leading.invoked", "valid": false, "reason": "boundary" },
     { "label": "trailing_", "valid": false, "reason": "boundary" },
@@ -21,7 +23,7 @@
     { "label": ".bad", "valid": false, "reason": "boundary" },
     { "label": "bad.", "valid": false, "reason": "boundary" },
     { "label": "bad!", "valid": false, "reason": "character" },
-    { "label": "Not A Label", "valid": false, "reason": "uppercase and space" },
+    { "label": "Not A Label", "valid": false, "reason": "space" },
     { "label": "", "valid": false, "reason": "empty" }
   ]
 }

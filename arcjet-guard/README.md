@@ -2324,7 +2324,7 @@ captureAction(arcjet, ctx, {
 });
 ```
 
-The `action` is the guard label: use `resource.verb` past tense (e.g. `order.looked-up`). Labels are validated server-side as slugs — lowercase letters, digits, dash, and dot only, starting and ending with a letter or digit. Underscores and uppercase are rejected.
+The `action` is the guard label: use `resource.verb` past tense (e.g. `order.looked-up`). Labels are validated server-side: ASCII letters of either case, digits, dash, dot, and underscore, starting and ending with a letter or digit, at most 256 bytes. A label is matched case-sensitively, so `Order.looked-up` and `order.looked-up` are different labels.
 
 ### Failure posture
 

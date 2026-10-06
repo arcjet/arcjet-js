@@ -43,8 +43,9 @@ Declare rules at module scope so `.deniedResult(decision)` works.
 
 Hardcode the `label`. Do not interpolate in a generic dispatcher.
 
-Hardcode labels as slugs: lowercase letters, digits, `-`, `.`, and `_`
-(`tools.get-weather`). Start and end with a letter or digit; max 256 bytes.
+Hardcode labels as slugs: ASCII letters of either case, digits, `-`, `.`, and
+`_` (`tools.get-weather`). Start and end with a letter or digit; max 256 bytes.
+Labels match case-sensitively.
 Prefer dash/dot in new labels. Check a label you build yourself with
 `validateGuardLabel`.
 

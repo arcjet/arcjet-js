@@ -164,17 +164,17 @@ describe("capture", () => {
     });
     const arcjet = launchArcjetWithTransport({ key: "ajkey_dummy", transport });
 
-    arcjet.capture({ action: "getWeather.invoked" });
+    arcjet.capture({ action: "get weather.invoked" });
     await arcjet.flush();
 
     const event = (await promise).events[0];
-    assert.equal(event.action, "getWeather.invoked", "sent as written");
+    assert.equal(event.action, "get weather.invoked", "sent as written");
     assert.deepEqual(
       event.localWarnings.map((warning) => warning.code),
       ["AJ1023"],
     );
     assert.match(event.localWarnings[0].message, /no policy will match it/);
-    assert.match(event.localWarnings[0].message, /uppercase letter "W"/);
+    assert.match(event.localWarnings[0].message, /invalid character " "/);
   });
 
   test("strips malformed optional fields and reports local warnings", async () => {

@@ -665,9 +665,9 @@ export interface TokenBucketConfig {
    * rate limit bucket identity**. The bucket is determined by the
    * rule config identity and the `key` passed at call time.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"api.chat.token-budget"`
    */
@@ -729,9 +729,9 @@ export interface TokenBucketConfig {
   maxTokens: number;
   /**
    * Bucket identifier for grouping rate limit counters in the dashboard.
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * Different configs sharing the same bucket name still get independent
    * counters — a config hash is appended server-side.
@@ -803,9 +803,9 @@ export interface FixedWindowConfig {
    * rate limit bucket identity**. The bucket is determined by the
    * rule config identity and the `key` passed at call time.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"api.search.rate-limit"`
    */
@@ -855,9 +855,9 @@ export interface FixedWindowConfig {
   windowSeconds: number;
   /**
    * Bucket identifier for grouping rate limit counters in the dashboard.
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * Different configs sharing the same bucket name still get independent
    * counters — a config hash is appended server-side.
@@ -929,9 +929,9 @@ export interface SlidingWindowConfig {
    * rate limit bucket identity**. The bucket is determined by the
    * rule config identity and the `key` passed at call time.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"api.list.rate-limit"`
    */
@@ -981,9 +981,9 @@ export interface SlidingWindowConfig {
   intervalSeconds: number;
   /**
    * Bucket identifier for grouping rate limit counters in the dashboard.
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * Different configs sharing the same bucket name still get independent
    * counters — a config hash is appended server-side.
@@ -1052,9 +1052,9 @@ export interface DetectPromptInjectionConfig {
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"chat.prompt-injection"`
    */
@@ -1233,9 +1233,9 @@ export interface LocalDetectSensitiveInfoConfigAllow<
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"user.profile.form"`
    */
@@ -1307,9 +1307,9 @@ export interface LocalDetectSensitiveInfoConfigDeny<
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"user.profile.form"`
    */
@@ -1469,9 +1469,9 @@ export interface LocalCustomConfig {
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"custom.abuse-check"`
    */
@@ -1984,9 +1984,9 @@ export interface GuardOptions {
   /**
    * A label identifying the protection boundary (e.g. `"tools.weather"`).
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    */
   label: string;
   /**
