@@ -243,6 +243,7 @@ jobs:
       - name: Verify dist-tags
         # Nothing was published on a dry run, so there is nothing to verify.
         if: ${{ !inputs.dry-run }}
+        timeout-minutes: 25
         env:
           DIST_TAG: ${{ inputs['dist-tag'] }}
           EXPECTED: ${{ github.ref_name }}
@@ -257,26 +258,36 @@ jobs:
           # `.[].name` yields the name value regardless of how npm keys the
           # object. As in preflight, `--json` is required for JSON output and
           # each workspace's value is an object of the requested fields.
-          names="$(npm pkg get name --workspaces --json | jq -r '.[].name')"
-          failed=""
-          for pkg in $names; do
-            # A just-written dist-tag can briefly lag the publish call, so
-            # revalidate against the registry a few times before giving up.
-            actual=""
-            for attempt in 1 2 3 4 5 6; do
-              actual="$(npm view --prefer-online "$pkg" "dist-tags.$DIST_TAG" 2>/dev/null || true)"
-              [ "$actual" = "$version" ] && break
-              [ "$attempt" -lt 6 ] && sleep 5
+          read -r -a pending <<< "$(npm pkg get name --workspaces --json | jq -r '.[].name' | tr '\n' ' ')"
+          # npm holds a new version while it processes it ("Your package is
+          # being processed and may take a few minutes to become available"),
+          # so a dist-tag can read the previous version for many minutes after
+          # a successful publish. Poll every unconfirmed package together
+          # against one deadline rather than giving each a few seconds.
+          deadline=$((SECONDS + 20 * 60))
+          declare -A actual
+          while :; do
+            remaining=()
+            for pkg in "${pending[@]}"; do
+              actual[$pkg]="$(npm view --prefer-online "$pkg" "dist-tags.$DIST_TAG" 2>/dev/null || true)"
+              if [ "${actual[$pkg]}" = "$version" ]; then
+                echo "ok: $pkg $DIST_TAG -> $version"
+              else
+                remaining+=("$pkg")
+              fi
             done
-            if [ "$actual" = "$version" ]; then
-              echo "ok: $pkg $DIST_TAG -> $version"
-            else
-              echo "::error::$pkg dist-tag '$DIST_TAG' is '${actual:-<none>}', expected '$version'."
-              failed="$failed $pkg"
+            pending=("${remaining[@]}")
+            if [ "${#pending[@]}" -eq 0 ] || [ "$SECONDS" -ge "$deadline" ]; then
+              break
             fi
+            echo "Waiting for npm to show $DIST_TAG -> $version for: ${pending[*]}"
+            sleep 30
           done
-          if [ -n "$failed" ]; then
-            echo "::error::dist-tag verification failed for:$failed"
+          if [ "${#pending[@]}" -gt 0 ]; then
+            for pkg in "${pending[@]}"; do
+              echo "::error::$pkg dist-tag '$DIST_TAG' is '${actual[$pkg]:-<none>}', expected '$version'."
+            done
+            echo "::error::The publish step completed, but after 20 minutes npm still does not show $DIST_TAG -> $version for: ${pending[*]}. Check the registry before re-running: these versions may already be published."
             exit 1
           fi
           echo "Verified $DIST_TAG -> $version for all published packages."
