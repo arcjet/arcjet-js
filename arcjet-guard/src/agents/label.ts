@@ -1,6 +1,10 @@
 /**
  * The guard label rule, as the service enforces it.
  *
+ * A label is 1 to 256 bytes of ASCII letters of either case, digits, `-`, `.`
+ * and `_`, and starts and ends with a letter or digit. The service matches it
+ * against a published policy's label by exact, case-sensitive comparison.
+ *
  * This is a convenience that fails fast, not the place the rule lives. The
  * service enforces, and this check can be bypassed by an older SDK, another
  * language, or a direct API call — so it must never be stricter than the
@@ -69,8 +73,8 @@ export class ArcjetInvalidLabelError extends Error {
   }
 }
 
-function isLowerAsciiLetterOrDigit(ch: string): boolean {
-  return (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9");
+function isAsciiLetterOrDigit(ch: string): boolean {
+  return (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z") || (ch >= "0" && ch <= "9");
 }
 
 /**
@@ -92,18 +96,17 @@ export function labelProblem(label: string): string | undefined {
   // whole, and every character a label may contain is ASCII anyway.
   // oxlint-disable-next-line typescript/no-misused-spread
   const runes = [...label];
-  if (!isLowerAsciiLetterOrDigit(runes[0]!)) {
-    return "must start with a lowercase letter or digit";
+  if (!isAsciiLetterOrDigit(runes[0]!)) {
+    return "must start with an ASCII letter or digit";
   }
-  if (!isLowerAsciiLetterOrDigit(runes.at(-1)!)) {
-    return "must end with a lowercase letter or digit";
+  if (!isAsciiLetterOrDigit(runes.at(-1)!)) {
+    return "must end with an ASCII letter or digit";
   }
 
   for (const ch of runes) {
-    if (isLowerAsciiLetterOrDigit(ch) || ch === "-" || ch === "." || ch === "_") {
+    if (isAsciiLetterOrDigit(ch) || ch === "-" || ch === "." || ch === "_") {
       continue;
     }
-    if (ch >= "A" && ch <= "Z") return `uppercase letter ${JSON.stringify(ch)}`;
     return `invalid character ${JSON.stringify(ch)}`;
   }
 
@@ -138,7 +141,8 @@ export function assertValidAction(action: string, where: string): void {
  * import { validateGuardLabel } from "@arcjet/guard";
  *
  * validateGuardLabel("send_email.invoked"); // returns
- * validateGuardLabel("getWeather.invoked"); // throws ArcjetInvalidLabelError
+ * validateGuardLabel("getWeather.invoked"); // returns
+ * validateGuardLabel("get weather.invoked"); // throws ArcjetInvalidLabelError
  * ```
  */
 export function validateGuardLabel(label: string): void {

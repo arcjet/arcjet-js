@@ -36,8 +36,9 @@ Declare rules at module scope so `.deniedResult(decision)` and
 Call `guard()` where you already know the operation. Hardcode the `label`.
 Do not interpolate names in a generic dispatcher.
 
-Hardcode labels as slugs: lowercase letters, digits, `-`, `.`, and `_`
-(`tools.get-weather`). Start and end with a letter or digit; max 256 bytes.
+Hardcode labels as slugs: ASCII letters of either case, digits, `-`, `.`, and
+`_` (`tools.get-weather`). Start and end with a letter or digit; max 256 bytes.
+Labels match case-sensitively.
 Prefer dash/dot in new labels. Do not interpolate user input. Check a label
 you build yourself with `validateGuardLabel` — a slug the service will not
 match reads as `ALLOW` with `hasFailedOpen()` false.

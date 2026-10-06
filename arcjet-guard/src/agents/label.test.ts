@@ -80,13 +80,13 @@ describe("guard label check", () => {
   test("assertValidAction throws a typed error naming the label and the caller", () => {
     assert.throws(
       () => {
-        assertValidAction("getWeather.invoked", "guardHooks");
+        assertValidAction("get weather.invoked", "guardHooks");
       },
       (error: unknown) => {
         assert.ok(error instanceof ArcjetInvalidLabelError);
-        assert.equal(error.label, "getWeather.invoked");
+        assert.equal(error.label, "get weather.invoked");
         assert.match(error.message, /guardHooks/);
-        assert.match(error.message, /uppercase/);
+        assert.match(error.message, /invalid character " "/);
         return true;
       },
     );
@@ -95,11 +95,12 @@ describe("guard label check", () => {
   test("assertValidAction accepts a label the service accepts", () => {
     assert.doesNotThrow(() => {
       assertValidAction("send_email.invoked", "guardHooks");
+      assertValidAction("getWeather.invoked", "guardHooks");
     });
   });
 
   test("the reported problem names the offending character", () => {
-    assert.match(labelProblem("getWeather.invoked") ?? "", /"W"/);
+    assert.match(labelProblem("café.invoked") ?? "", /"é"/);
     assert.match(labelProblem("tools.a b") ?? "", /" "/);
   });
 });
@@ -110,7 +111,7 @@ describe("capture warns rather than raising", () => {
     const ctx = createAgentContext({ correlationId: "c1" });
 
     assert.doesNotThrow(() => {
-      captureAction(client, ctx, { action: "getWeather.invoked" });
+      captureAction(client, ctx, { action: "get weather.invoked" });
     });
     assert.equal(captureCalls.length, 1, "the capture is still sent as written");
   });
