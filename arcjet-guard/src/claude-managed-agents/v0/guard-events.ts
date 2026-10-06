@@ -1,6 +1,5 @@
 import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
-import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
@@ -142,28 +141,7 @@ export async function guardEvents<
   const inboundArg = { text, events };
 
   const resolved = resolveCallPolicy({ rules: policy.inbound.rules }, inboundArg, action);
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  try {
-    remote = await resolveActorInputs(policy.inbound, inboundArg);
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        action,
-        error,
-      );
-    }
-    if (policy.inbound.onGuardError === "allow") {
-      const sent = await send({ events });
-      return { allowed: true, sent };
-    }
-    await sendRemainder(send, remainder);
-    return {
-      allowed: false,
-      outcome: "UNAVAILABLE",
-      message: unavailableReason(),
-    };
-  }
+  const remote = await resolveActorInputs(policy.inbound, action, inboundArg);
 
   const metadata: ArcjetMetadata = {
     "claude.managed-agents.phase": "inbound",
@@ -185,8 +163,8 @@ export async function guardEvents<
     rules: resolved.rules,
     correlationId: policy.context?.correlationId,
     metadata,
-    degraded: resolved.degraded,
-    ...remote,
+    degraded: resolved.degraded ?? remote.degraded,
+    ...remote.fields,
     onAllow: (): Permit => ({ allowed: true }),
     onDeny: (decision: DecisionDeny): Permit => ({
       allowed: false,

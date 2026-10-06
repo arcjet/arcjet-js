@@ -163,7 +163,9 @@ export const lookupOrder = guardTool(
 - Omit `rules` to submit none. The guard call still happens.
 - Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
-  Build each input with `policyInput`.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the tool's handler never runs. The model receives
   `{ content, structuredContent: { arcjetDenied, reason, message, retryable }, isError: true }`.
 - Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
@@ -243,7 +245,9 @@ export const hooks = guardHooks(arcjet, {
 
 Pass `hooks` to `query({ options.hooks })`. `PreToolUse` returns
 `permissionDecision: "deny"` so Bash / Write / unwrapped MCP never
-execute. `PostToolUse` is observe-only.
+execute. `PostToolUse` is observe-only. It records the call even when an
+`action` or `metadata` callback fails, under the default label and its own
+metadata.
 
 Use this for tools you did **not** pass through `guardTool`. `PreToolUse`
 fires for _every_ tool and the hook input carries only a name, never the

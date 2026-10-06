@@ -4,6 +4,7 @@ import type { ToolDefinition } from "eve/tools";
 import { callbackFailureCases } from "../../../test/_shared/callback-failures.ts";
 import { ArcjetDeniedError, ArcjetGuardUnavailableError } from "../../agents/guard-action.ts";
 import { guardApproval } from "./guard-approval.ts";
+import { guardInbound } from "./guard-inbound.ts";
 import { guardTool } from "./guard-tool.ts";
 import type { GuardToolPolicy } from "./guard-tool.ts";
 
@@ -89,5 +90,20 @@ callbackFailureCases({
       session: { id: "ses_123", initiator: null, turn: { id: "turn_789", sequence: 1 } },
     });
     return result.status === "allowed";
+  },
+});
+
+callbackFailureCases({
+  name: "vercel-eve guardInbound",
+  action: "message.received",
+  // The options take `rules` and `metadata` only as values.
+  rules: false,
+  metadata: false,
+  sessionId: false,
+  allowedOutcome: "allowed",
+  degradedOutcome: "allowed",
+  async run(client, policy) {
+    const verdict = await guardInbound(client, "hello", { rules: [], ...policy } as never);
+    return verdict.allowed;
   },
 });

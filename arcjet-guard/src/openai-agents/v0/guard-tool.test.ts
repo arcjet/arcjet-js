@@ -662,6 +662,7 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   });
   const result = asToolResult(await wrapped.invoke(runContext("t"), JSON.stringify({ id: "one" })));
   assert.equal(result.reason, "ERROR");
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
   assert.equal(calls, 0);
 });

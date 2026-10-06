@@ -1,7 +1,10 @@
 // oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await -- cases pass deliberately ill-typed callbacks through the policy
 import type { ToolAction } from "@mastra/core/tools";
 
-import { callbackFailureCases } from "../../../test/_shared/callback-failures.ts";
+import {
+  callbackFailureCases,
+  captureOnlyCallbackFailureCases,
+} from "../../../test/_shared/callback-failures.ts";
 import { guardProcessor } from "./guard-processor.ts";
 import { guardTool } from "./guard-tool.ts";
 import type { GuardToolPolicy } from "./guard-tool.ts";
@@ -82,3 +85,23 @@ callbackFailureCases({
     return true;
   },
 });
+
+for (const { outcome, error } of [
+  { outcome: "success", error: undefined },
+  { outcome: "error", error: new Error("tool failed") },
+]) {
+  captureOnlyCallbackFailureCases({
+    name: `mastra guardHooks afterToolCall (${outcome})`,
+    action: "tool.invoked",
+    outcome,
+    async run(client, policy) {
+      const hooks = guardHooks(client, policy as never);
+      await hooks.afterToolCall!({
+        toolName: "mcp_search",
+        input: { q: "1" },
+        context: {},
+        ...(error === undefined ? { output: { hits: 1 } } : { error }),
+      });
+    },
+  });
+}

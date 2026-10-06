@@ -143,22 +143,7 @@ async function gateToolCall(
 
   const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
   const { action, sessionId, rules, metadata: policyMetadata } = resolved;
-  let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-  try {
-    remote = await resolveActorInputs(policy, call, params.toolContext);
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      return undefined;
-    }
-    return denyDict(unavailableResult());
-  }
+  const remote = await resolveActorInputs(policy, action, call, params.toolContext);
 
   const source = isContextSource(params.toolContext) ? params.toolContext : undefined;
   const agentCtx = googleAdkContext(source, sessionId === undefined ? undefined : { sessionId });
@@ -174,8 +159,8 @@ async function gateToolCall(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
-    degraded: resolved.degraded,
-    ...remote,
+    degraded: resolved.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny) => denyDict(denialResult(decision)),
     onUnavailable: () => denyDict(unavailableResult()),
     // oxlint-disable-next-line unicorn/no-useless-undefined -- ALLOW is `undefined` so the tool runs

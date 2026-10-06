@@ -417,6 +417,7 @@ test("an input resolver failure follows the fail-closed unavailable path", async
     await wrapped.execute!({ id: "one" }, threadContext("t")),
   );
   assert.equal(result.reason, "ERROR");
-  assert.equal(guardCalls.length, 0);
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
   assert.equal(calls, 0);
 });

@@ -174,23 +174,7 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
 
     const call = resolveCallPolicy(policy, input, policy.action);
     const { sessionId, rules, metadata: policyMetadata } = call;
-    let remote: Awaited<ReturnType<typeof resolveActorInputs>> = {};
-    try {
-      remote = await resolveActorInputs(policy, input, extra);
-    } catch (error) {
-      if (shouldWarn()) {
-        console.warn(
-          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-          policy.action,
-          error,
-        );
-      }
-      if (policy.onGuardError === "allow") {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- original handler returns the SDK CallToolResult
-        return Promise.resolve(originalHandler(input, extra)) as Promise<ClaudeCallToolResult>;
-      }
-      return unavailableCallToolResult();
-    }
+    const remote = await resolveActorInputs(policy, policy.action, input, extra);
 
     const agentCtx = claudeAgentContext(
       source,
@@ -212,8 +196,8 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
-      degraded: call.degraded,
-      ...remote,
+      degraded: call.degraded ?? remote.degraded,
+      ...remote.fields,
       onDeny: (decision: DecisionDeny) => {
         const fallback = denialCallToolResult(decision);
         if (policy.onDeny === undefined) {
