@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.2](https://github.com/arcjet/arcjet-js/compare/v1.14.1...v1.14.2) (2026-10-07)
+
+
+### ✅ Continuous Integration
+
+* **publish:** wait for npm to show dist-tags against one deadline ([#6317](https://github.com/arcjet/arcjet-js/issues/6317)) ([d76c7e6](https://github.com/arcjet/arcjet-js/commit/d76c7e6e38fbc7b4b490995e8d57ff5533ed0e0a))
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...v1.14.1) (2026-10-06)
 
 
