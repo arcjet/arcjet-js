@@ -72,7 +72,7 @@
     "bun-types": "1.4.2",
     "tsdown": "0.23.0",
     "typescript": "7.0.2",
-    "undici-types": "7.29.1"
+    "undici-types": "7.30.0"
   },
   "engines": {}
 }

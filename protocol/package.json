@@ -82,11 +82,11 @@
   },
   "dependencies": {
     "@arcjet/cache": "1.14.1",
-    "@bufbuild/protobuf": "2.15.0",
+    "@bufbuild/protobuf": "2.16.0",
     "@connectrpc/connect": "2.2.0"
   },
   "devDependencies": {
-    "@types/node": "22.20.4",
+    "@types/node": "22.20.5",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
