@@ -40,6 +40,9 @@
     "ajv": {
       "fast-uri": "3.1.8"
     },
+    "eve@0.46.0": {
+      "undici": "8.11.2"
+    },
     "fast-json-stringify": {
       "fast-uri": "4.2.1"
     },
