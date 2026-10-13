@@ -29,7 +29,7 @@
       "fast-uri": "3.1.8"
     },
     "@huggingface/transformers": {
-      "sharp": ">=0.35.4"
+      "sharp": ">=0.35.5"
     },
     "@nosecone/sveltekit": {
       "@sveltejs/kit": {
@@ -44,7 +44,7 @@
       "fast-uri": "4.2.1"
     },
     "miniflare": {
-      "sharp": ">=0.35.4",
+      "sharp": ">=0.35.5",
       "undici": ">=7.29.1"
     }
   },
