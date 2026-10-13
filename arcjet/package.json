@@ -71,12 +71,12 @@
   },
   "devDependencies": {
     "@arcjet/transport": "1.14.1",
-    "@bufbuild/protobuf": "2.15.0",
+    "@bufbuild/protobuf": "2.16.0",
     "@connectrpc/connect": "2.2.0",
     "@connectrpc/connect-node": "2.2.0",
-    "@types/node": "22.20.4",
+    "@types/node": "22.20.5",
     "miniflare": "4.20260730.0",
-    "rolldown": "1.2.8",
+    "rolldown": "1.2.12",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },

@@ -19,7 +19,7 @@
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0",
     "oxlint-tsgolint": "7.0.2001",
-    "turbo": "2.11.3"
+    "turbo": "2.11.7"
   },
   "overrides": {
     "@ai-sdk/anthropic": "4.0.54",
@@ -29,7 +29,7 @@
       "fast-uri": "3.1.8"
     },
     "@huggingface/transformers": {
-      "sharp": ">=0.35.4"
+      "sharp": ">=0.35.5"
     },
     "@nosecone/sveltekit": {
       "@sveltejs/kit": {
@@ -40,11 +40,14 @@
     "ajv": {
       "fast-uri": "3.1.8"
     },
+    "eve@0.46.0": {
+      "undici": "8.11.2"
+    },
     "fast-json-stringify": {
       "fast-uri": "4.2.1"
     },
     "miniflare": {
-      "sharp": ">=0.35.4",
+      "sharp": ">=0.35.5",
       "undici": ">=7.29.1"
     }
   },

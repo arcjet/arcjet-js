@@ -153,7 +153,7 @@
     "@arcjet/analyze": "1.14.1",
     "@arcjet/logger": "1.14.1",
     "@arcjet/transport": "1.14.1",
-    "@bufbuild/protobuf": "2.15.0",
+    "@bufbuild/protobuf": "2.16.0",
     "@connectrpc/connect": "2.2.0",
     "@connectrpc/connect-node": "2.2.0",
     "@connectrpc/connect-web": "2.2.0"
@@ -172,7 +172,7 @@
     "@strands-agents/sdk": "1.14.0",
     "@tanstack/ai": "0.52.0",
     "@tanstack/intent": "0.4.0",
-    "@types/node": "22.20.4",
+    "@types/node": "22.20.5",
     "ai": "7.0.113",
     "eve": "0.46.0",
     "genkit": "1.42.0",

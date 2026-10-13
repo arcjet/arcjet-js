@@ -72,7 +72,7 @@
     "arcjet": "1.14.1"
   },
   "devDependencies": {
-    "astro": "7.3.2",
+    "astro": "7.3.6",
     "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
