@@ -42,8 +42,9 @@ Detection runs on-device with `@arcjet/sensitive-info-rampart`
 (`backend: rampart()`), which finds names, addresses, government and
 financial identifiers, card numbers, email addresses, phone numbers, and IP
 addresses. It needs a server runtime with filesystem access (Node.js, Bun, or
-Deno). Always pass the backend; a Rampart entity listed without it never
-matches.
+Deno), so its bundled loader can't run on Cloudflare Workers or edge
+runtimes. Always pass the backend; a Rampart entity listed without it never
+matches. The rule doesn't inherit the client's backend.
 
 **Rules:** `sensitiveInfo` (request-based) and `localDetectSensitiveInfo`
 (Guard).

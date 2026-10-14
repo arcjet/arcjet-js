@@ -75,7 +75,9 @@ DENY and `undefined` on ALLOW.
 
 Use `localDetectSensitiveInfo({ backend: rampart() })` from
 `@arcjet/sensitive-info-rampart` for PII (names, addresses, government IDs,
-card, email, phone, IP). Always pass the backend.
+card, email, phone, IP). Always pass the backend on the rule – it doesn't
+inherit the client's `sensitiveInfoBackend`, so share one instance. On
+Cloudflare Workers or edge runtimes, pass `rampart()` a `classify` function.
 `moderateContent()` is Guard-only.
 
 `capture()` is visibility, never a deny. `flush()` on shutdown.
