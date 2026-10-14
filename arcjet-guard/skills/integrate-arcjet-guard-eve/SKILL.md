@@ -307,6 +307,10 @@ export default defineChannel({
 
 - `guardInbound` is the only place in the agent's lifecycle where a turn can be
   declined _before_ it starts. Hooks are observe-only.
+- To screen PII in the message, add
+  `localDetectSensitiveInfo({ backend: rampart() })(message)` to `rules`.
+  `rampart` comes from `@arcjet/sensitive-info-rampart`, which detects PII
+  on-device.
 - A guarded tool can be invoked directly (no Eve execution context) for
   verification: `tool.execute(input, undefined)` runs the guard and skips
   `execute` on DENY.
