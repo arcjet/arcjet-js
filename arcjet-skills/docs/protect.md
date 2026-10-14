@@ -131,6 +131,11 @@ Rules that need extra input at `protect()` time: `tokenBucket` needs
 `sensitiveInfo` needs `{ sensitiveInfoValue }`, `detectPromptInjection`
 needs `{ detectPromptInjectionMessage }`.
 
+Configure `sensitiveInfo` with `backend: rampart()` from
+`@arcjet/sensitive-info-rampart`, which detects PII on-device. On Next.js, add
+it, `@huggingface/transformers`, and `onnxruntime-node` to
+`serverExternalPackages`.
+
 Pass `correlationId` when the decision must join another request, guard
 call, or agent trace. It does not affect fingerprinting.
 

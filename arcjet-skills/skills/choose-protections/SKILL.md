@@ -23,8 +23,7 @@ or `@arcjet/skills#guard` to implement them.
 | SQLi / XSS / common probes | `shield` (`mode: "LIVE"`) | Request only |
 | Cost / abuse quotas | `tokenBucket`, `fixedWindow`, `slidingWindow` | Request and Guard |
 | Jailbreaks, instruction overrides | `detectPromptInjection` (binary; no `threshold`) | Request and Guard |
-| Card / email / phone / IP in text | `sensitiveInfo` / `localDetectSensitiveInfo` | Request and Guard |
-| Names, addresses, gov IDs | same rules + `@arcjet/sensitive-info-rampart` | Server runtime |
+| PII in text (names, addresses, gov IDs, card, email, phone, IP) | `sensitiveInfo` / `localDetectSensitiveInfo` + `backend: rampart()` | Request and Guard (server runtime) |
 | Unsafe / abusive text | `moderateContent` | Guard only |
 | Signup spam, disposable email | `validateEmail` + `protectSignup` | Request only |
 | VPN / Tor / country / IP lists | `filter` | Request only |
@@ -35,8 +34,8 @@ Sliding window: no boundary burst. Request rate limits default to IP; set
 `characteristics: ["userId"]` for a user key. Guard rate limits always need
 `key` and `bucket`.
 
-Default sensitive-info backend matches four structured types. Rampart-only
-entities never match without `backend: rampart()`.
+Sensitive-info rules use `@arcjet/sensitive-info-rampart`. Always pass
+`backend: rampart()`; Rampart entities never match without it.
 
 `capture()` records that an action happened. It is not a protection rule.
 

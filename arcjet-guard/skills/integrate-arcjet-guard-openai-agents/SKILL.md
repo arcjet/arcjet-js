@@ -110,7 +110,7 @@ Zod is the OpenAI Agents peer, not ours — install `zod` only if the app
 already uses it for `tool({ parameters })`.
 
 ```sh
-npm install @arcjet/guard @openai/agents
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @openai/agents
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -128,6 +128,7 @@ import { tool } from "@openai/agents";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/openai-agents/v0";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -138,9 +139,9 @@ const lookupLimit = tokenBucket({
   maxTokens: 10,
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
-// Scan free-text args (a note, reason, body). An opaque `orderId` will
-// not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// Scan free-text args (a note, reason, body). An opaque `orderId` is not
+// free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,

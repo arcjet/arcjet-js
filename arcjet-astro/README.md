@@ -344,38 +344,57 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ## Sensitive information detection
 
-Detect and block PII in request content. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
-`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
-provide a custom `detect` callback for additional patterns.
+Detect and block PII in request content on-device with
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart),
+which runs the Rampart named-entity-recognition model locally, so no data
+leaves your environment. Pass the content to scan via `sensitiveInfoValue` on
+each `protect()` call. Rampart detects names, addresses, government and
+financial identifiers, email addresses, phone numbers, IP addresses, and card
+numbers. Add a recognizer to detect custom patterns.
 
-```js
-import arcjet, { sensitiveInfo } from "@arcjet/astro";
+The backend is a runtime object, so add the rule in your route with
+`withRule()` rather than in `astro.config.mjs`. Import the rule from the
+`arcjet` core package, which `@arcjet/astro` already depends on:
 
-// In astro.config.mjs:
-arcjet({
-  rules: [
-    sensitiveInfo({
-      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
-      deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
-    }),
-  ],
-});
+```sh
+npm install arcjet @arcjet/sensitive-info-rampart
 ```
 
 ```ts
-// In your API route:
-const decision = await aj.protect(request, {
-  sensitiveInfoValue: userMessage, // The text content to scan
-});
+// src/pages/api/chat.ts
+import { rampart } from "@arcjet/sensitive-info-rampart";
+import type { APIRoute } from "astro";
+import aj from "arcjet:client";
+import { sensitiveInfo } from "arcjet";
 
-if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
-  return Response.json(
-    { error: "Sensitive information detected" },
-    { status: 400 },
-  );
-}
+const routeAj = aj.withRule(
+  sensitiveInfo({
+    mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
+    deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+    backend: rampart(),
+  }),
+);
+
+export const POST: APIRoute = async ({ request }) => {
+  const { message } = await request.json();
+  const decision = await routeAj.protect(request, {
+    sensitiveInfoValue: message, // The text content to scan
+  });
+
+  if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
+    return Response.json(
+      { error: "Sensitive information detected" },
+      { status: 400 },
+    );
+  }
+
+  return Response.json({ ok: true });
+};
 ```
+
+Rampart runs on Node.js, Bun, and Deno, and loads its model from
+`node_modules` at runtime, so keep it out of your server bundle. See
+[Bundlers and frameworks](https://github.com/arcjet/arcjet-js/tree/main/sensitive-info-rampart#bundlers-and-frameworks).
 
 ## Shield WAF
 

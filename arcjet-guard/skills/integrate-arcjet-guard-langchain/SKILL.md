@@ -145,7 +145,7 @@ is what actually binds here). wrapToolCall only sees
 `runtime.configurable.thread_id` as of langchain 1.2.34. Node 22+.
 
 ```sh
-npm install @arcjet/guard langchain @langchain/core
+npm install @arcjet/guard @arcjet/sensitive-info-rampart langchain @langchain/core
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -163,6 +163,7 @@ import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/langchain/v1";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -173,8 +174,8 @@ const lookupLimit = tokenBucket({
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
 // Scan free-text args (a note, reason, body). An opaque `orderNumber`
-// will not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// is not free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,

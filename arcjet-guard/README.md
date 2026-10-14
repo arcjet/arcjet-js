@@ -299,17 +299,27 @@ console.log(result?.detected, result?.billing?.unit, result?.billing?.count);
 
 ## Sensitive information detection
 
-Detect and block PII in text content. Use `allow` / `deny` to filter which
-entity types trigger a denial. Built-in entity types are
-`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, and `IP_ADDRESS`.
+Detect and block PII in text content on-device with
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart),
+which runs the Rampart named-entity-recognition model locally. It detects
+names, addresses, government and financial identifiers, email addresses, phone
+numbers, IP addresses, and card numbers. Detection happens entirely locally;
+only a SHA-256 hash of the text is sent to Arcjet. Use `allow` / `deny` to
+filter which entity types trigger a denial.
+
+```sh
+npm install @arcjet/sensitive-info-rampart
+```
 
 ```ts
 import { launchArcjet, localDetectSensitiveInfo } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 const si = localDetectSensitiveInfo({
-  deny: ["CREDIT_CARD_NUMBER", "PHONE_NUMBER"],
+  deny: ["GIVEN_NAME", "SURNAME", "EMAIL", "SSN", "CREDIT_CARD_NUMBER"],
+  backend: rampart(),
 });
 
 const decision = await arcjet.guard({
@@ -322,31 +332,9 @@ if (decision.conclusion === "DENY" && decision.reason === "SENSITIVE_INFO") {
 }
 ```
 
-### On-device detection with additional entity types
-
-The default backend detects the four built-in types locally with pattern
-matching. To detect additional types — names, addresses, and government or
-financial identifiers — pass a `backend` such as
-[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart),
-which runs an on-device NER model. Detection still happens entirely locally;
-only a SHA-256 hash of the text is sent to Arcjet.
-
-```ts
-import { launchArcjet, localDetectSensitiveInfo } from "@arcjet/guard";
-import { rampart } from "@arcjet/sensitive-info-rampart";
-
-const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
-
-const si = localDetectSensitiveInfo({
-  deny: ["GIVEN_NAME", "SURNAME", "EMAIL", "SSN"],
-  backend: rampart(),
-});
-
-const decision = await arcjet.guard({
-  label: "tools.summary",
-  rules: [si(userMessage)],
-});
-```
+Rampart runs on Node.js, Bun, and Deno. See the
+[package README](https://github.com/arcjet/arcjet-js/tree/main/sensitive-info-rampart#bundlers-and-frameworks)
+for bundler configuration and for custom runtimes.
 
 ## Custom rules
 

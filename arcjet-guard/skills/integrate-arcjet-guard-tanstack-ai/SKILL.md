@@ -121,7 +121,7 @@ The peer range is `>=0.8.0 <1`. Node 22+ — do not bump Node for this
 adapter.
 
 ```sh
-npm install @arcjet/guard @tanstack/ai
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @tanstack/ai
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -139,6 +139,7 @@ import { chat } from "@tanstack/ai";
 import { toolCacheMiddleware } from "@tanstack/ai/middlewares";
 import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -147,7 +148,7 @@ const lookupLimit = tokenBucket({
   intervalSeconds: 60,
   maxTokens: 10,
 });
-const detectPii = localDetectSensitiveInfo();
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 const stream = chat({
   adapter,

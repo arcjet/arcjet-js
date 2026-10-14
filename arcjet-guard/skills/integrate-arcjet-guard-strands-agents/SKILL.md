@@ -121,7 +121,7 @@ versioned path: `@arcjet/guard/strands-agents/v1` resolves;
 install `zod` only if the app already uses it. Node 22+.
 
 ```sh
-npm install @arcjet/guard @strands-agents/sdk
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @strands-agents/sdk
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -139,6 +139,7 @@ import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/strands-agents/v1";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -149,8 +150,8 @@ const lookupLimit = tokenBucket({
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
 // Scan free-text args (a note, reason, body). An opaque `orderNumber`
-// will not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// is not free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,

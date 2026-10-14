@@ -80,7 +80,7 @@ needed for `@arcjet/guard/mastra/v1`). Always use the versioned path:
 `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ```sh
-npm install @arcjet/guard @mastra/core
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @mastra/core
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -98,6 +98,7 @@ import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/mastra/v1";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -108,9 +109,9 @@ const lookupLimit = tokenBucket({
   maxTokens: 10,
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
-// Scan free-text args (a note, reason, body). An opaque `orderId` will
-// not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// Scan free-text args (a note, reason, body). An opaque `orderId` is not
+// free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,

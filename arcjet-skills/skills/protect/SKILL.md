@@ -81,6 +81,11 @@ Branch only when the status differs: rate limit → 429; email / PII /
 prompt injection → 400; everything else → 403. `isErrored()` is fail-open —
 log and allow.
 
+Configure `sensitiveInfo` with `backend: rampart()` from
+`@arcjet/sensitive-info-rampart` (on-device PII detection). On Next.js, list
+it, `@huggingface/transformers`, and `onnxruntime-node` in
+`serverExternalPackages`.
+
 Pass a trusted `userId` on the rule that needs it. Pass `correlationId`
 when the decision must join another request or guard call.
 

@@ -131,7 +131,7 @@ The peer range is `>=2 <3`. Node 22+ — do not bump Node for this
 adapter.
 
 ```sh
-npm install @arcjet/guard @google/adk
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @google/adk
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -148,6 +148,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { Runner } from "@google/adk";
 import { guardPlugin } from "@arcjet/guard/google-adk/v2";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -156,7 +157,7 @@ const lookupLimit = tokenBucket({
   intervalSeconds: 60,
   maxTokens: 10,
 });
-const detectPii = localDetectSensitiveInfo();
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 const runner = new Runner({
   appName: "my_app",

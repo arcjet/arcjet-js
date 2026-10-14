@@ -86,10 +86,10 @@ never change the conclusion. Prefer `hasFailedOpen()` over deprecated
 Pass `correlationId` to join a guard decision with a request or agent
 trace. It is a dedicated field, not metadata.
 
-`localDetectSensitiveInfo()` defaults to WASM and matches four types:
-card, email, phone, IP. Names, addresses, and government / financial
-identifiers need `@arcjet/sensitive-info-rampart` (`backend: rampart()`).
-Listing a Rampart-only entity without that backend never matches.
+Use `localDetectSensitiveInfo({ backend: rampart() })` from
+`@arcjet/sensitive-info-rampart` for PII: it detects names, addresses,
+government / financial identifiers, card, email, phone, and IP on-device.
+Always pass the backend; a Rampart entity listed without it never matches.
 `moderateContent()` is Guard-only.
 
 ## Framework wrappers
