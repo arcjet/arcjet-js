@@ -90,6 +90,10 @@ Use `localDetectSensitiveInfo({ backend: rampart() })` from
 `@arcjet/sensitive-info-rampart` for PII: it detects names, addresses,
 government / financial identifiers, card, email, phone, and IP on-device.
 Always pass the backend; a Rampart entity listed without it never matches.
+The rule doesn't inherit `launchArcjet({ sensitiveInfoBackend })`, so share
+one Rampart instance between the client and the rule. Rampart's bundled loader
+needs a filesystem; on Cloudflare Workers or other edge runtimes, pass
+`rampart()` a `classify` function that runs the model on your runtime.
 `moderateContent()` is Guard-only.
 
 ## Framework wrappers

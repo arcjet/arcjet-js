@@ -35,7 +35,9 @@ Sliding window: no boundary burst. Request rate limits default to IP; set
 `key` and `bucket`.
 
 Sensitive-info rules use `@arcjet/sensitive-info-rampart`. Always pass
-`backend: rampart()`; Rampart entities never match without it.
+`backend: rampart()` on the rule; Rampart entities never match without it.
+Rampart needs Node.js, Bun, or Deno – not Cloudflare Workers or edge
+runtimes.
 
 `capture()` records that an action happened. It is not a protection rule.
 
