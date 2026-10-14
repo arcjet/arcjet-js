@@ -479,7 +479,7 @@ const aj = arcjet({
   rules: [
     sensitiveInfo({
       mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
-      deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+      deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER", "SSN"],
       backend: rampart(),
     }),
   ],

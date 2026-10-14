@@ -160,11 +160,12 @@ export class SupportAgent extends Think<Env> {
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
-- PII screening uses `localDetectSensitiveInfo({ backend: rampart() })` from
-  `@arcjet/sensitive-info-rampart`. Its bundled model loader needs a
-  filesystem, which Workers do not provide, so on Think pass `rampart()` a
-  `classify` function that runs the model on your runtime. See the package
-  README's Custom runtimes section.
+- The example screens no PII. To add PII screening on Think, use
+  `localDetectSensitiveInfo({ backend: rampart({ classify }) })` from
+  `@arcjet/sensitive-info-rampart`. Rampart's bundled model loader needs a
+  filesystem, which Workers do not provide, so you must supply a `classify`
+  function that runs the model on your own runtime. See the package README's
+  Custom runtimes section.
 - Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
   Build each input with `policyInput`. Omit them and the remote policy
