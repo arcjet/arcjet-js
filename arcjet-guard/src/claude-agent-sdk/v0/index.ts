@@ -105,7 +105,12 @@
 export { claudeAgentContext } from "./context.ts";
 export type { ClaudeAgentContext, ClaudeContextSource } from "./context.ts";
 export { guardTool } from "./guard-tool.ts";
-export type { GuardToolPolicy, ClaudeToolInput, ClaudeToolDefinition } from "./guard-tool.ts";
+export type {
+  GuardToolPolicy,
+  GuardToolResult,
+  ClaudeToolInput,
+  ClaudeToolDefinition,
+} from "./guard-tool.ts";
 export { guardHooks } from "./hooks.ts";
 export type {
   GuardHooksPolicy,
@@ -113,6 +118,9 @@ export type {
   GuardHooksExclusion,
   GuardHooksInbound,
   GuardHooksInboundPolicy,
+  GuardHooksToolResult,
+  GuardHooksToolResultsPolicy,
 } from "./hooks.ts";
+export { REPLACEABLE_BUILTIN_TOOLS, canReplaceResult } from "./tool-results.ts";
 export type { ClaudeCallToolResult } from "./denial.ts";
 export * from "../../agents/index.ts";

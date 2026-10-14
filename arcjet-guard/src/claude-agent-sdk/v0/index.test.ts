@@ -111,7 +111,7 @@ test("Claude namespace is a strict superset of the agents barrel with same ident
     );
   }
 
-  const expectedAdditions = 3;
+  const expectedAdditions = 5;
   assert.equal(
     claudeKeys.length,
     agentKeys.length + expectedAdditions,
@@ -119,7 +119,13 @@ test("Claude namespace is a strict superset of the agents barrel with same ident
   );
 
   const claudeOnlyKeys = claudeKeys.filter((key) => !agentKeys.includes(key));
-  const ownExportsArray = ["claudeAgentContext", "guardHooks", "guardTool"];
+  const ownExportsArray = [
+    "REPLACEABLE_BUILTIN_TOOLS",
+    "canReplaceResult",
+    "claudeAgentContext",
+    "guardHooks",
+    "guardTool",
+  ];
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison
   const expectedOwnExports: readonly string[] = ownExportsArray.sort();
   // oxlint-disable-next-line unicorn/no-array-sort -- sort is necessary for comparison

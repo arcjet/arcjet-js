@@ -11,6 +11,20 @@ import { claudeAgentContext } from "./context.ts";
 import type { ClaudeContextSource } from "./context.ts";
 import { asCallToolResult, denialCallToolResult, unavailableCallToolResult } from "./denial.ts";
 import type { ClaudeCallToolResult } from "./denial.ts";
+import { callToolResultText } from "./tool-results.ts";
+
+/**
+ * Input passed to `resultRules`: the call's input and what the handler
+ * returned.
+ */
+export interface GuardToolResult<TInput> {
+  /** The tool's input, as the handler received it. */
+  input: TInput;
+  /** The handler's return value, unchanged. */
+  result: unknown;
+  /** Every text block in `result`, joined in order. Never shortened. */
+  text: string;
+}
 
 /**
  * Structural `tool()` definition. Declared here so `guardTool` does not
@@ -82,6 +96,22 @@ export interface GuardToolPolicy<TInput> {
    * the `onUnavailable` path instead; this callback does not fire for outages.
    */
   onDeny?: (decision: DecisionDeny) => unknown;
+  /**
+   * Rules for the handler's result. When set, a second guard call screens
+   * what the handler returned before the model reads it, and a DENY (or an
+   * unevaluated policy under `onGuardError: "deny"`) returns the same denial
+   * in place of the result. A function, because a rule has to be bound to
+   * text the handler has not returned yet. The call carries the actor and
+   * metadata resolved from the input, `claude.phase: "result"`, and no
+   * remote-policy inputs.
+   */
+  resultRules?: (result: GuardToolResult<TInput>) => RuleWithInput[];
+  /**
+   * Guard label for the result check. Defaults to `action` followed by
+   * `.result`, so remote policy and rate limits on `action` see each call
+   * once.
+   */
+  resultAction?: string;
 }
 
 function isContextSource(value: unknown): value is ClaudeContextSource {
@@ -146,6 +176,20 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
   policy: GuardToolPolicy<ClaudeToolInput<TTool>>,
 ): TTool {
   assertValidAction(policy.action, "guardTool");
+  if (policy.resultRules !== undefined && typeof policy.resultRules !== "function") {
+    throw new TypeError(
+      "@arcjet/guard: guardTool() resultRules must be a function of the handler's result, since a rule has to be bound to text the handler has not returned yet",
+    );
+  }
+  if (policy.resultAction !== undefined && policy.resultRules === undefined) {
+    throw new Error(
+      "@arcjet/guard: guardTool() resultAction labels the result check, which only runs with resultRules; without it the label is never used",
+    );
+  }
+  const resultAction = policy.resultAction ?? `${policy.action}.result`;
+  if (policy.resultRules !== undefined) {
+    assertValidAction(resultAction, "guardTool");
+  }
   if (typeof tool.handler !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with a handler function");
@@ -191,6 +235,28 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
 
     const mergedMetadata = { ...metadata, ...policyMetadata };
 
+    const onDeny = (decision: DecisionDeny): ClaudeCallToolResult => {
+      const fallback = denialCallToolResult(decision);
+      if (policy.onDeny === undefined) {
+        return fallback;
+      }
+      try {
+        return asCallToolResult(policy.onDeny(decision), fallback);
+      } catch (error) {
+        if (shouldWarn()) {
+          console.warn(
+            '@arcjet/guard: onDeny for "%s" threw; returning the default denial:',
+            policy.action,
+            error,
+          );
+        }
+        return fallback;
+      }
+    };
+
+    // Set only when the handler ran, so a denied or unavailable call is never
+    // screened as if it had returned.
+    let handled: { result: ClaudeCallToolResult } | undefined;
     const result = await runGuarded<ClaudeCallToolResult>(client, {
       action: policy.action,
       rules,
@@ -198,33 +264,38 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
       metadata: mergedMetadata,
       degraded: call.degraded ?? remote.degraded,
       ...remote.fields,
-      onDeny: (decision: DecisionDeny) => {
-        const fallback = denialCallToolResult(decision);
-        if (policy.onDeny === undefined) {
-          return fallback;
-        }
-        try {
-          return asCallToolResult(policy.onDeny(decision), fallback);
-        } catch (error) {
-          if (shouldWarn()) {
-            console.warn(
-              '@arcjet/guard: onDeny for "%s" threw; returning the default denial:',
-              policy.action,
-              error,
-            );
-          }
-          return fallback;
-        }
-      },
+      onDeny,
       onUnavailable: () => unavailableCallToolResult(),
-      execute: () => {
+      execute: async () => {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- original handler returns the SDK CallToolResult; ALLOW path is that result
-        return Promise.resolve(originalHandler(input, extra)) as Promise<ClaudeCallToolResult>;
+        const returned = (await originalHandler(input, extra)) as ClaudeCallToolResult;
+        handled = { result: returned };
+        return returned;
       },
       onGuardError: policy.onGuardError ?? "deny",
     });
 
-    return result;
+    if (handled === undefined || policy.resultRules === undefined) {
+      return result;
+    }
+    const returned = handled.result;
+    const screened = resolveCallPolicy(
+      { rules: policy.resultRules },
+      { input, result: returned, text: callToolResultText(returned) },
+      resultAction,
+    );
+    return await runGuarded<ClaudeCallToolResult>(client, {
+      action: resultAction,
+      rules: screened.rules,
+      correlationId: agentCtx.correlationId,
+      metadata: { ...mergedMetadata, "claude.phase": "result" },
+      degraded: screened.degraded ?? call.degraded ?? remote.degraded,
+      ...(remote.fields.actor !== undefined && { actor: remote.fields.actor }),
+      onDeny,
+      onUnavailable: () => unavailableCallToolResult(),
+      execute: () => Promise.resolve(returned),
+      onGuardError: policy.onGuardError ?? "deny",
+    });
   };
 
   Object.defineProperty(wrapped, "handler", {
