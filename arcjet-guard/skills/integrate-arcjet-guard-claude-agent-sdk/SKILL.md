@@ -107,7 +107,7 @@ use the versioned path: `@arcjet/guard/claude-agent-sdk/v0` resolves;
 `@arcjet/guard/claude-agent-sdk` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ```sh
-npm install @arcjet/guard @anthropic-ai/claude-agent-sdk
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @anthropic-ai/claude-agent-sdk
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -125,6 +125,7 @@ import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/claude-agent-sdk/v0";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -134,7 +135,7 @@ const lookupLimit = tokenBucket({
   intervalSeconds: 60,
   maxTokens: 10,
 });
-const detectPii = localDetectSensitiveInfo();
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,

@@ -318,13 +318,21 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ## Sensitive information detection
 
-Detect and block PII in request content. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
-`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
-provide a custom `detect` callback for additional patterns.
+Detect and block PII in request content on-device with
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart),
+which runs the Rampart named-entity-recognition model locally, so no data
+leaves your environment. Pass the content to scan via `sensitiveInfoValue` on
+each `protect()` call. Rampart detects names, addresses, government and
+financial identifiers, email addresses, phone numbers, IP addresses, and card
+numbers. Add a recognizer to detect custom patterns.
+
+```sh
+npm install @arcjet/sensitive-info-rampart
+```
 
 ```tsx
 import arcjet, { sensitiveInfo } from "@arcjet/remix";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -332,6 +340,7 @@ const aj = arcjet({
     sensitiveInfo({
       mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
       deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+      backend: rampart(),
     }),
   ],
 });
@@ -347,6 +356,10 @@ if (decision.isDenied() && decision.reason.isSensitiveInfo()) {
   );
 }
 ```
+
+Rampart runs on Node.js, Bun, and Deno, and loads its model from
+`node_modules` at runtime, so keep it out of your server bundle. See
+[Bundlers and frameworks](https://github.com/arcjet/arcjet-js/tree/main/sensitive-info-rampart#bundlers-and-frameworks).
 
 ## Shield WAF
 

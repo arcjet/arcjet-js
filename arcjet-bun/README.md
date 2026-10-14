@@ -326,13 +326,21 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ## Sensitive information detection
 
-Detect and block PII in request content. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
-`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
-provide a custom `detect` callback for additional patterns.
+Detect and block PII in request content on-device with
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart),
+which runs the Rampart named-entity-recognition model locally, so no data
+leaves your environment. Pass the content to scan via `sensitiveInfoValue` on
+each `protect()` call. Rampart detects names, addresses, government and
+financial identifiers, email addresses, phone numbers, IP addresses, and card
+numbers. Add a recognizer to detect custom patterns.
+
+```sh
+bun add @arcjet/sensitive-info-rampart
+```
 
 ```ts
 import arcjet, { sensitiveInfo } from "@arcjet/bun";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import { env } from "bun";
 
 const aj = arcjet({
@@ -341,6 +349,7 @@ const aj = arcjet({
     sensitiveInfo({
       mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
       deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+      backend: rampart(),
     }),
   ],
 });

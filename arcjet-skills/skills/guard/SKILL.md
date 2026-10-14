@@ -73,8 +73,11 @@ the conclusion. Rate-limit rules need `key` and `bucket`. Nested `metadata`
 is Console-only; no secrets or PII. `decision.reason` is a flat string on
 DENY and `undefined` on ALLOW.
 
-`localDetectSensitiveInfo()` default backend matches card / email / phone /
-IP only. Names and government IDs need `backend: rampart()`.
+Use `localDetectSensitiveInfo({ backend: rampart() })` from
+`@arcjet/sensitive-info-rampart` for PII (names, addresses, government IDs,
+card, email, phone, IP). Always pass the backend on the rule – it doesn't
+inherit the client's `sensitiveInfoBackend`, so share one instance. On
+Cloudflare Workers or edge runtimes, pass `rampart()` a `classify` function.
 `moderateContent()` is Guard-only.
 
 `capture()` is visibility, never a deny. `flush()` on shutdown.

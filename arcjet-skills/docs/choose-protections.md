@@ -38,12 +38,13 @@ result is `{ detected, billing? }` (`text_units` when present). Check
 
 ## Data loss prevention
 
-Detection runs locally. The default WebAssembly backend finds exactly four
-structured types: card numbers, email addresses, phone numbers, and IP
-addresses. Names, addresses, and government or financial identifiers need
-`@arcjet/sensitive-info-rampart` (`rampart()`), which needs a server runtime
-with filesystem access. Listing a Rampart-only entity without that backend
-never matches.
+Detection runs on-device with `@arcjet/sensitive-info-rampart`
+(`backend: rampart()`), which finds names, addresses, government and
+financial identifiers, card numbers, email addresses, phone numbers, and IP
+addresses. It needs a server runtime with filesystem access (Node.js, Bun, or
+Deno), so its bundled loader can't run on Cloudflare Workers or edge
+runtimes. Always pass the backend; a Rampart entity listed without it never
+matches. The rule doesn't inherit the client's backend.
 
 **Rules:** `sensitiveInfo` (request-based) and `localDetectSensitiveInfo`
 (Guard).

@@ -133,6 +133,10 @@ const tools = {
 - `rules` may be a callback over the tool's parsed input, computed from the
   data being acted on — here, keying the rate limit on the specific order
   being looked up.
+- To screen PII in a free-text argument, add
+  `localDetectSensitiveInfo({ backend: rampart() })(input.note)` to `rules`.
+  `rampart` comes from `@arcjet/sensitive-info-rampart`, which detects PII
+  on-device and needs a server runtime (Node.js, Bun, or Deno).
 - On DENY the tool's `execute` never runs; the model receives a structured
   denial result carrying the deciding rule's own `reason` — for the
   `tokenBucket` above that is `reason: "RATE_LIMIT"`, `retryable: true`, and a

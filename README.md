@@ -222,6 +222,7 @@ import arcjet, {
   shield,
   tokenBucket,
 } from "@arcjet/next";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import type { UIMessage } from "ai";
 import { convertToModelMessages, isTextUIPart, streamText } from "ai";
 
@@ -250,6 +251,8 @@ const aj = arcjet({
       // Block PII types that should never appear in AI prompts.
       // Remove types your app legitimately handles (e.g. EMAIL for a support bot).
       deny: ["CREDIT_CARD_NUMBER", "EMAIL"],
+      // Detect PII on-device with the Rampart model
+      backend: rampart(),
     }),
     // Detect prompt injection attacks before they reach your AI model
     detectPromptInjection({
@@ -311,6 +314,12 @@ export async function POST(req: Request) {
   return result.toUIMessageStreamResponse();
 }
 ```
+
+Sensitive information detection runs on-device with
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart)
+(`npm install @arcjet/sensitive-info-rampart`). On Next.js, add it,
+`@huggingface/transformers`, and `onnxruntime-node` to `serverExternalPackages`
+— see [Bundlers and frameworks](https://github.com/arcjet/arcjet-js/tree/main/sensitive-info-rampart#bundlers-and-frameworks).
 
 ### Prompt injection detection
 
@@ -449,20 +458,29 @@ if (decision.isDenied() && decision.reason.isRateLimit()) {
 
 ### Sensitive information detection
 
-Detect and block PII in request content. Pass the content to scan via
-`sensitiveInfoValue` on each `protect()` call. Built-in entity types:
-`CREDIT_CARD_NUMBER`, `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`. You can also
-provide a custom `detect` callback for additional patterns.
+Detect and block PII in request content on-device with
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart),
+which runs the Rampart named-entity-recognition model locally, so no data
+leaves your environment. Pass the content to scan via `sensitiveInfoValue` on
+each `protect()` call. Rampart detects names, addresses, government and
+financial identifiers, email addresses, phone numbers, IP addresses, and card
+numbers. Add a recognizer to detect custom patterns.
+
+```sh
+npm install @arcjet/sensitive-info-rampart
+```
 
 ```ts
 import arcjet, { sensitiveInfo } from "@arcjet/next";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     sensitiveInfo({
       mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
-      deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+      deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER", "SSN"],
+      backend: rampart(),
     }),
   ],
 });
@@ -785,16 +803,21 @@ if (decision.conclusion === "DENY" && decision.reason === "PROMPT_INJECTION") {
 
 ### Sensitive information detection (Guard)
 
-Detects PII locally — the raw text never leaves the SDK. Built-in entity
-types: `EMAIL`, `PHONE_NUMBER`, `IP_ADDRESS`, `CREDIT_CARD_NUMBER`.
+Detects PII on-device with
+[`@arcjet/sensitive-info-rampart`](https://www.npmjs.com/package/@arcjet/sensitive-info-rampart) —
+the raw text never leaves the SDK. Rampart detects names, addresses,
+government and financial identifiers, email addresses, phone numbers, IP
+addresses, and card numbers.
 
 ```ts
 import { launchArcjet, localDetectSensitiveInfo } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 const si = localDetectSensitiveInfo({
-  deny: ["CREDIT_CARD_NUMBER", "PHONE_NUMBER"],
+  deny: ["CREDIT_CARD_NUMBER", "PHONE_NUMBER", "SSN"],
+  backend: rampart(),
 });
 
 const decision = await arcjet.guard({

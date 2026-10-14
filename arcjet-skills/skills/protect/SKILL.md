@@ -55,7 +55,8 @@ Omitted `mode` is `DRY_RUN`. `detectBot` requires exactly one of `allow` or
 One client. `withRule()` clones share the decision cache. A second
 `arcjet()` constructor does not.
 
-Astro is an integration (`arcjet:client`), not a shared file. Nuxt is a
+Astro is an integration (`arcjet:client`), not a shared file; add a
+per-route rule with `aj.withRule()` on `arcjet:client`. Nuxt is a
 module (`#arcjet`). NestJS is `ArcjetModule` + `@InjectArcjet()`. Bun and
 Deno wrap fetch with `aj.handler()` for IP detection, then still call
 `protect()`. Hono on Node passes `c.env.incoming`.
@@ -80,6 +81,14 @@ middleware. Not Next.js middleware.
 Branch only when the status differs: rate limit → 429; email / PII /
 prompt injection → 400; everything else → 403. `isErrored()` is fail-open —
 log and allow.
+
+Configure `sensitiveInfo` with `backend: rampart()` from
+`@arcjet/sensitive-info-rampart` (on-device PII detection). It runs on
+Node.js, Bun, and Deno – not Cloudflare Workers or edge runtimes. On Next.js,
+list it, `@huggingface/transformers`, and `onnxruntime-node` in
+`serverExternalPackages` and keep the route on the Node.js runtime. On Astro,
+add the rule in the route with `aj.withRule()` (import `sensitiveInfo` from
+`arcjet`), not in `astro.config.mjs`.
 
 Pass a trusted `userId` on the rule that needs it. Pass `correlationId`
 when the decision must join another request or guard call.

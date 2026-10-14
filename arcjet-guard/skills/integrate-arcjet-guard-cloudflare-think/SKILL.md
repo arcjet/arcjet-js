@@ -134,7 +134,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ```ts
 import { Think } from "@cloudflare/think";
 import { guardHooks } from "@arcjet/guard/cloudflare-think/v0";
-import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { tokenBucket, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "./arcjet.js";
 
@@ -143,7 +143,6 @@ const lookupLimit = tokenBucket({
   intervalSeconds: 60,
   maxTokens: 10,
 });
-const detectPii = localDetectSensitiveInfo();
 
 const hooks = guardHooks(arcjet, {
   action: ({ toolName }) => `${toolName}.invoked`,
@@ -151,16 +150,7 @@ const hooks = guardHooks(arcjet, {
   inputs: ({ toolName }) => ({
     tool: policyInput.server.string(toolName),
   }),
-  rules: ({ toolName, input }) => {
-    const note =
-      typeof input === "object" && input !== null && "note" in input
-        ? String((input as { note?: unknown }).note ?? "")
-        : "";
-    return [
-      lookupLimit({ key: toolName, requested: 1 }),
-      ...(note.length > 0 ? [detectPii(note)] : []),
-    ];
-  },
+  rules: ({ toolName }) => [lookupLimit({ key: toolName, requested: 1 })],
   sessionId: conversationId,
 });
 
@@ -170,6 +160,12 @@ export class SupportAgent extends Think<Env> {
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- The example screens no PII. To add PII screening on Think, use
+  `localDetectSensitiveInfo({ backend: rampart({ classify }) })` from
+  `@arcjet/sensitive-info-rampart`. Rampart's bundled model loader needs a
+  filesystem, which Workers do not provide, so you must supply a `classify`
+  function that runs the model on your own runtime. See the package README's
+  Custom runtimes section.
 - Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
   Build each input with `policyInput`. Omit them and the remote policy

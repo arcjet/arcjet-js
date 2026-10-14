@@ -145,6 +145,11 @@ if (!verdict.allowed) {
 The same helper gates `sessions.create({ initial_events })` — pass those
 events and send them only on ALLOW.
 
+To screen PII in the same text, add
+`localDetectSensitiveInfo({ backend: rampart() })(text)` to `inbound.rules`.
+`rampart` comes from `@arcjet/sensitive-info-rampart`, which detects PII
+on-device in your app process before anything is sent to Anthropic.
+
 ## Step 3: Gate custom tools you execute
 
 ```ts

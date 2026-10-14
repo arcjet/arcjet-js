@@ -132,7 +132,7 @@ install `zod` only if the app already uses it outside `genkit`. Public
 API is `import { genkit, z } from "genkit"`. Node 22+.
 
 ```sh
-npm install @arcjet/guard genkit
+npm install @arcjet/guard @arcjet/sensitive-info-rampart genkit
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -149,6 +149,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { genkit, z } from "genkit";
 import { guardTool } from "@arcjet/guard/genkit/v1";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -161,8 +162,8 @@ const lookupLimit = tokenBucket({
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
 // Scan free-text args (a note, reason, body). An opaque `orderNumber`
-// will not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// is not free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,

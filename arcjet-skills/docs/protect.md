@@ -66,8 +66,8 @@ Install the adapter with the project's package manager. Do not hand-edit
 ### Frameworks that are not a shared client file
 
 - **Astro** — register the integration in `astro.config.mjs` and import
-  `arcjet:client`. There is no `lib/arcjet.ts` and no `withRule()`.
-  `@arcjet/astro` validates with Zod `.strict()`, so leftover
+  `arcjet:client`. There is no `lib/arcjet.ts`; call `aj.withRule()` on
+  `arcjet:client` to add a rule to one route. `@arcjet/astro` validates with Zod `.strict()`, so leftover
   `detectPromptInjection({ threshold })` throws at startup.
 - **Nuxt** — register the `@arcjet/nuxt` module. The key lives in
   `nuxt.config.ts`. Import from `#arcjet`. Each `arcjet()` call is its own
@@ -130,6 +130,29 @@ Rules that need extra input at `protect()` time: `tokenBucket` needs
 `{ requested }`, `validateEmail` / `protectSignup` need `{ email }`,
 `sensitiveInfo` needs `{ sensitiveInfoValue }`, `detectPromptInjection`
 needs `{ detectPromptInjectionMessage }`.
+
+Configure `sensitiveInfo` with `backend: rampart()` from
+`@arcjet/sensitive-info-rampart`, which detects PII on-device. Rampart runs on
+Node.js, Bun, and Deno; it can't run on Cloudflare Workers or edge runtimes.
+On Next.js, add it, `@huggingface/transformers`, and `onnxruntime-node` to
+`serverExternalPackages` and keep the route on the Node.js runtime (the
+default). On Astro, add the rule in the route with `aj.withRule()`, not in
+`astro.config.mjs`, and import `sensitiveInfo` from the `arcjet` core package:
+
+```ts
+// src/pages/api/chat.ts
+import { rampart } from "@arcjet/sensitive-info-rampart";
+import { sensitiveInfo } from "arcjet";
+import aj from "arcjet:client";
+
+const routeAj = aj.withRule(
+  sensitiveInfo({
+    mode: "LIVE",
+    deny: ["CREDIT_CARD_NUMBER", "EMAIL", "PHONE_NUMBER"],
+    backend: rampart(),
+  }),
+);
+```
 
 Pass `correlationId` when the decision must join another request, guard
 call, or agent trace. It does not affect fingerprinting.
