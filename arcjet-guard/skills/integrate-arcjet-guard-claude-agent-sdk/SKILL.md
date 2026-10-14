@@ -25,7 +25,10 @@ decision rule:
   (Claude Code v2.1.208+).
 - **Built-ins / unwrapped MCP** → `guardHooks()` `PreToolUse` with
   `permissionDecision: "deny"`. Timeout already fail-closes (the tool does
-  not run). `PostToolUse` is capture only.
+  not run). `PostToolUse` captures the call.
+- **What a tool returned** → `guardTool({ resultRules })` for an authored
+  tool, `guardHooks({ toolResults })` for every tool. A DENY keeps the result
+  from the model — see "Screen tool results".
 - **Correlation** → `claudeAgentContext()` reads `session_id` from hook
   input or `options.sessionId`. Subagents have `agent_id` (metadata only).
   It never mints a new id. **`options.sessionId` must be a UUID and can only
@@ -51,7 +54,50 @@ human yes, Guard still runs.
 Built-ins (Bash, Write, …) and MCP tools you did not pass through
 `guardTool` are gated here. Annotations (`readOnlyHint`, …) and sandbox
 settings are not enforcement. `PostToolUse` cannot undo a tool that already
-ran.
+ran; it can only keep the result from the model.
+
+## Screen tool results
+
+Untrusted text mostly arrives in tool results: a fetched page, a file, an
+MCP response. Two options screen it before the model reads it:
+
+- `guardTool(..., { resultRules })` — a second guard call over the
+  handler's result, labelled `resultAction` (default `${action}.result`).
+  `resultRules` receives `{ input, result, text }`, where `text` is every
+  text block in the result, never shortened. A DENY returns the same
+  `isError` envelope in place of the result.
+- `guardHooks({ toolResults })` — a `PostToolUse` screen over every tool.
+  `toolResults.rules` receives `{ toolName, input, response, text }`. The
+  label defaults to `"tool.result"`.
+
+```ts
+guardHooks(arcjet, {
+  sessionId,
+  toolResults: {
+    rules: ({ text }) => [detectPromptInjection()(text)],
+  },
+});
+```
+
+On DENY, or an unevaluated policy under the default `onGuardError: "deny"`:
+
+| Tool                                         | On DENY                                      |
+| -------------------------------------------- | -------------------------------------------- |
+| Any MCP tool (`mcp__…`)                      | Result replaced with the denial              |
+| `Bash`, `Read` (`REPLACEABLE_BUILTIN_TOOLS`) | Result replaced, in that tool's output shape |
+| Any other tool                               | The run stops (`continue: false`)            |
+
+Claude Code validates a built-in tool's replacement against an unpublished
+schema and sends the original result when it does not match, so only tools a
+test drives through the bundled CLI are replaced; every other tool stops the
+run. A stopped session still holds the original result: do not resume it.
+Its capture records `claude.denial: "run_stopped"`. Where stopping is not
+acceptable, keep the tools `canReplaceResult()` rejects out of
+`allowedTools`. Subagent (`Agent`) output arrives later and is not screened.
+`PostToolUse` hooks run in parallel and the last rewrite wins, so another
+hook that rewrites results can replace the denial. A detector that cannot
+return a verdict in time on a long result leaves the policy unevaluated,
+which denies under the default `onGuardError`.
 
 ## Questions to ask the human first
 
@@ -245,9 +291,9 @@ export const hooks = guardHooks(arcjet, {
 
 Pass `hooks` to `query({ options.hooks })`. `PreToolUse` returns
 `permissionDecision: "deny"` so Bash / Write / unwrapped MCP never
-execute. `PostToolUse` is observe-only. It records the call even when an
-`action` or `metadata` callback fails, under the default label and its own
-metadata.
+execute. `PostToolUse` records the call even when an `action` or
+`metadata` callback fails, under the default label and its own metadata,
+and blocks nothing unless `toolResults` is set.
 
 Use this for tools you did **not** pass through `guardTool`. `PreToolUse`
 fires for _every_ tool and the hook input carries only a name, never the
