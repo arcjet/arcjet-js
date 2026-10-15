@@ -12,7 +12,7 @@ test("explicit ipSrc bypasses the Fastify socket address and is stripped", async
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

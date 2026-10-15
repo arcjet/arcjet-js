@@ -98,7 +98,7 @@ test("`default`", async function (t) {
   await t.test("construction", async function (t) {
     await t.test("should create an integration", async function () {
       const integration = arcjet({
-        key: "",
+        key: "test-key",
         rules: [],
       });
 
@@ -116,7 +116,7 @@ test("`default`", async function (t) {
       process.env.NODE_ENV = "";
 
       arcjet({
-        key: "",
+        key: "test-key",
         log: {
           ...createArcjetLogger(),
           warn(...rest) {
@@ -147,7 +147,7 @@ test("`default`", async function (t) {
         process.env.NODE_ENV = "";
 
         arcjet({
-          key: "",
+          key: "test-key",
           log: {
             ...createArcjetLogger(),
             warn(...rest) {
@@ -168,7 +168,7 @@ test("`default`", async function (t) {
     await t.test("should warn when proxy configuration trusts every peer", () => {
       let parameters: unknown;
       arcjet({
-        key: "",
+        key: "test-key",
         log: {
           ...createArcjetLogger(),
           warn(...rest) {
@@ -197,7 +197,7 @@ test("`default`", async function (t) {
 
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: {
           debug() {},
           error() {},
@@ -238,7 +238,7 @@ test("`default`", async function (t) {
 
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: {
           debug() {},
           error() {},
@@ -291,7 +291,7 @@ test("`default`", async function (t) {
 
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: { ...createArcjetLogger(), debug() {}, info() {} },
         proxies: ["100.100.100.0/24"],
         rules: [[rule]],
@@ -349,7 +349,7 @@ test("`default`", async function (t) {
 
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: { ...createArcjetLogger(), debug() {}, info() {} },
         rules: [[rule]],
       });
@@ -402,7 +402,7 @@ test("`default`", async function (t) {
 
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: { ...createArcjetLogger(), debug() {}, info() {} },
         rules: [[rule]],
       });
@@ -449,7 +449,7 @@ test("`default`", async function (t) {
 
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: { ...createArcjetLogger(), debug() {}, info() {} },
         rules: [[rule]],
       });
@@ -477,7 +477,7 @@ test("`default`", async function (t) {
     await t.test("should attempt to connect", async function () {
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: {
           debug() {},
           error() {},
@@ -500,7 +500,7 @@ test("`default`", async function (t) {
     await t.test("should work", async function () {
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: {
           debug() {},
           error() {},
@@ -540,7 +540,7 @@ test("`default`", async function (t) {
     await t.test("should read from body", async function () {
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: {
           debug() {},
           error() {},
@@ -570,7 +570,7 @@ test("`default`", async function (t) {
       let parameters: unknown;
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: {
           debug() {},
           error(...rest) {
@@ -608,7 +608,7 @@ test("`default`", async function (t) {
     await t.test("should work", async function () {
       const integration = arcjet({
         client: createRemoteClient({ baseUrl: "https://localhost:63837" }),
-        key: "",
+        key: "test-key",
         log: {
           debug() {},
           error() {},
@@ -646,7 +646,7 @@ function createArcjetContext(): ArcjetContext {
     async getBody() {
       throw new Error("Not implemented");
     },
-    key: "",
+    key: "test-key",
     log: createArcjetLogger(),
     runtime: "",
   };

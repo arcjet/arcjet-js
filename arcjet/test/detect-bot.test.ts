@@ -148,7 +148,7 @@ describe("Primitive > detectBot", () => {
       async getBody() {
         throw new Error("Not implemented");
       },
-      key: "",
+      key: "test-key",
       log: createMockLogger(),
       runtime: "",
     };

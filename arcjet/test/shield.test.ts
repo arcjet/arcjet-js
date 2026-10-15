@@ -47,7 +47,7 @@ describe("Primitive > shield", () => {
       async getBody() {
         throw new Error("Not implemented");
       },
-      key: "",
+      key: "test-key",
       log: createMockLogger(),
       runtime: "",
     };

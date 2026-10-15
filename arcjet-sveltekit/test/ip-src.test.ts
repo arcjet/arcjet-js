@@ -21,7 +21,7 @@ test("explicit ipSrc bypasses getClientAddress and is stripped", async function 
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

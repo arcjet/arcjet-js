@@ -12,7 +12,7 @@ test("explicit ipSrc overrides the H3 request address and is stripped", async fu
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

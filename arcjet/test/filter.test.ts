@@ -243,7 +243,7 @@ test("filter: `protect`", async function (t) {
         },
         report() {},
       },
-      key: "",
+      key: "test-key",
       log: { ...context.log, debug() {} },
       rules: [
         filter({
@@ -1050,7 +1050,7 @@ test("matrix", async function (t) {
   });
 
   await t.test("should not pass `filterLocal` to `decide`", async function () {
-    const key = "";
+    const key = "test-key";
     const log = { ...console, debug() {} };
     let extra: unknown;
 
@@ -1084,7 +1084,7 @@ test("matrix", async function (t) {
   });
 
   await t.test("should not pass `filterLocal` to `report`", async function () {
-    const key = "";
+    const key = "test-key";
     const log = { ...console, debug() {} };
     let extra: unknown;
 

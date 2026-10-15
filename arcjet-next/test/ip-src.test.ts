@@ -12,7 +12,7 @@ test("explicit ipSrc overrides Next request address sources and is stripped", as
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

@@ -18,7 +18,7 @@ test("explicit ipSrc overrides the Nest request address and is stripped", async 
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

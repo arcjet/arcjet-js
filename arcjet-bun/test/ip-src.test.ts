@@ -12,7 +12,7 @@ test("explicit ipSrc takes precedence over the cached Bun address and is strippe
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

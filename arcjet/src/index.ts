@@ -3671,6 +3671,18 @@ export default function arcjet<
       request = {} as typeof request;
     }
 
+    // Construction stays permissive so module-scope clients can load during
+    // builds without `ARCJET_KEY`. `protect()` never throws — surface a clear
+    // ERROR decision instead of sending `Authorization: Bearer ` / undefined.
+    if (typeof key !== "string" || key.length === 0) {
+      log.error("Arcjet API key must be a non-empty string");
+      return new ArcjetErrorDecision({
+        ttl: 0,
+        reason: new ArcjetErrorReason("Arcjet API key must be a non-empty string"),
+        results: [],
+      });
+    }
+
     const details: ArcjetRequestDetails = Object.freeze({
       ip: request.ip,
       method: request.method,

@@ -17,7 +17,7 @@ test("explicit ipSrc permits protect without Astro middleware address", async fu
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

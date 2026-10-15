@@ -207,7 +207,7 @@ describe("Primitive > sensitiveInfo", () => {
       async getBody() {
         throw new Error("Not implemented");
       },
-      key: "",
+      key: "test-key",
       log: createMockLogger(),
       runtime: "",
     };
@@ -859,7 +859,7 @@ describe("Primitive > sensitiveInfo", () => {
         getBodyCalled = true;
         return "";
       },
-      key: "",
+      key: "test-key",
       log: console,
       runtime: "",
     };
@@ -891,7 +891,7 @@ describe("Primitive > sensitiveInfo", () => {
   });
 
   test("should not pass `sensitiveInfoValue` to `decide`", async function () {
-    const key = "";
+    const key = "test-key";
     const log = { ...console, debug() {} };
     let extra: unknown;
 
@@ -943,7 +943,7 @@ describe("Primitive > sensitiveInfo", () => {
   });
 
   test("should not pass `sensitiveInfoValue` to `report`", async function () {
-    const key = "";
+    const key = "test-key";
     const log = { ...console, debug() {} };
     let extra: unknown;
 
