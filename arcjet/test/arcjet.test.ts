@@ -139,6 +139,23 @@ test("`arcjet`", async function (t) {
       );
     });
 
+    await t.test("should yield an error decision w/ whitespace-only `key`", async function () {
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: " \t",
+        log: { ...console, debug() {}, error() {} },
+        rules: [],
+      });
+      const decision = await instance.protect({}, { ip: "1.1.1.1" });
+
+      assert.equal(decision.isErrored(), true);
+      assert.equal(
+        // @ts-expect-error: TODO(#4452): `message` should be accessible.
+        decision.reason.message,
+        "Arcjet API key must be a non-empty string",
+      );
+    });
+
     await t.test("should yield an error decision w/ non-string `key`", async function () {
       const instance = arcjet({
         client: createLocalClient(),
