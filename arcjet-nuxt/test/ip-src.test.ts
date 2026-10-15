@@ -5,6 +5,10 @@ import arcjet, { ArcjetAllowDecision, ArcjetReason, ArcjetRuleResult } from "../
 
 test("explicit ipSrc overrides the H3 request address and is stripped", async function () {
   let details: any;
+  // The Nuxt adapter reads `__ARCJET_KEY` from `process.env.RUNTIME_CONFIG`
+  // (constructor options omit `key`). Node stores env values as strings.
+  process.env.RUNTIME_CONFIG = JSON.stringify({ __ARCJET_KEY: "test-key" });
+
   const client = arcjet({
     client: {
       async decide() {
@@ -12,7 +16,6 @@ test("explicit ipSrc overrides the H3 request address and is stripped", async fu
       },
       report() {},
     },
-    key: "",
     rules: [
       [
         {
@@ -47,8 +50,12 @@ test("explicit ipSrc overrides the H3 request address and is stripped", async fu
     },
   };
 
-  await client.protect(event, { ipSrc: "203.0.113.10" });
+  try {
+    await client.protect(event, { ipSrc: "203.0.113.10" });
 
-  assert.equal(details.ip, "203.0.113.10");
-  assert.deepEqual(details.extra, {});
+    assert.equal(details.ip, "203.0.113.10");
+    assert.deepEqual(details.extra, {});
+  } finally {
+    delete process.env.RUNTIME_CONFIG;
+  }
 });

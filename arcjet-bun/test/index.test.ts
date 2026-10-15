@@ -95,7 +95,7 @@ test("`arcjetBun`: should warn about IP addresses missing in development", async
   const restore = capture();
 
   arcjetBun({
-    key: "",
+    key: "test-key",
     log: {
       ...console,
       warn(...rest) {
@@ -118,7 +118,7 @@ test("`arcjetBun`: should not warn about IP addresses missing when not in develo
   process.env.ARCJET_ENV = "";
 
   arcjetBun({
-    key: "",
+    key: "test-key",
     log: {
       ...console,
       warn() {

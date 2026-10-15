@@ -12,7 +12,7 @@ test("explicit ipSrc overrides React Router context.ip and is stripped", async f
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

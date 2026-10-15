@@ -12,7 +12,7 @@ test("explicit ipSrc overrides Remix context.ip and is stripped", async function
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {

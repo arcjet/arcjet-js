@@ -130,7 +130,7 @@ test("`arcjetDeno`", async function (t) {
     const restore = capture();
 
     arcjetDeno({
-      key: "",
+      key: "test-key",
       log: {
         ...console,
         warn(...rest) {
@@ -155,7 +155,7 @@ test("`arcjetDeno`", async function (t) {
       process.env.ARCJET_ENV = "";
 
       arcjetDeno({
-        key: "",
+        key: "test-key",
         log: {
           ...console,
           warn() {
@@ -1374,7 +1374,7 @@ function createArcjetContext(): ArcjetContext {
     async getBody() {
       throw new Error("Not implemented");
     },
-    key: "",
+    key: "test-key",
     log: console,
     runtime: "",
   };

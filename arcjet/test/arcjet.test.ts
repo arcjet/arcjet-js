@@ -70,8 +70,9 @@ test("`arcjet`", async function (t) {
     }, /Rules are required/);
   });
 
-  // The `key` passed to `protect` is used.
-  await t.test("should work w/o `key`", async function () {
+  // Construction stays permissive without a key so builds can import the
+  // client before `ARCJET_KEY` is available. `protect()` validates instead.
+  await t.test("should construct w/o `key`", async function () {
     // @ts-expect-error: test runtime behavior.
     const instance = arcjet({
       client: createLocalClient(),
@@ -116,6 +117,85 @@ test("`arcjet`", async function (t) {
   });
 
   await t.test("`.protect()`", async function (t) {
+    await t.test("should yield an error decision w/o `key`", async function () {
+      let errorParameters: unknown;
+      // @ts-expect-error: test runtime behavior.
+      const instance = arcjet({
+        client: createLocalClient(),
+        log: {
+          ...console,
+          debug() {},
+          error(...parameters) {
+            errorParameters = parameters;
+          },
+        },
+        rules: [],
+      });
+      const decision = await instance.protect({}, { ip: "1.1.1.1" });
+
+      assert.equal(decision.isErrored(), true);
+      assert.equal(decision.reason.isError(), true);
+      assert.equal(
+        // @ts-expect-error: TODO(#4452): `message` should be accessible.
+        decision.reason.message,
+        "Arcjet API key must be a non-empty string",
+      );
+      assert.equal(decision.isAllowed(), true);
+      assert.deepEqual(errorParameters, ["Arcjet API key must be a non-empty string"]);
+    });
+
+    await t.test("should yield an error decision w/ empty `key`", async function () {
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: "",
+        log: { ...console, debug() {}, error() {} },
+        rules: [],
+      });
+      const decision = await instance.protect({}, { ip: "1.1.1.1" });
+
+      assert.equal(decision.isErrored(), true);
+      assert.equal(
+        // @ts-expect-error: TODO(#4452): `message` should be accessible.
+        decision.reason.message,
+        "Arcjet API key must be a non-empty string",
+      );
+    });
+
+    await t.test("should yield an error decision w/ whitespace-only `key`", async function () {
+      const instance = arcjet({
+        client: createLocalClient(),
+        key: " \t",
+        log: { ...console, debug() {}, error() {} },
+        rules: [],
+      });
+      const decision = await instance.protect({}, { ip: "1.1.1.1" });
+
+      assert.equal(decision.isErrored(), true);
+      assert.equal(
+        // @ts-expect-error: TODO(#4452): `message` should be accessible.
+        decision.reason.message,
+        "Arcjet API key must be a non-empty string",
+      );
+    });
+
+    await t.test("should yield an error decision w/ non-string `key`", async function () {
+      const instance = arcjet({
+        client: createLocalClient(),
+        // @ts-expect-error: test runtime behavior.
+        key: 123,
+        log: { ...console, debug() {}, error() {} },
+        rules: [],
+      });
+      const decision = await instance.protect({}, { ip: "1.1.1.1" });
+
+      assert.equal(decision.isErrored(), true);
+      assert.equal(
+        // @ts-expect-error: TODO(#4452): `message` should be accessible.
+        decision.reason.message,
+        "Arcjet API key must be a non-empty string",
+      );
+    });
+
     await t.test(
       "should yield an error decision when `characteristics` is a string",
       async function () {

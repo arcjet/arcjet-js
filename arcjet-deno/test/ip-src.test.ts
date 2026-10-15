@@ -12,7 +12,7 @@ test("explicit ipSrc takes precedence over the cached Deno address and is stripp
       },
       report() {},
     },
-    key: "",
+    key: "test-key",
     rules: [
       [
         {
