@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use LangGraph (@langchain/langgraph >=1 <2) on Node.js >= 22. This is Graph API (StateGraph + ToolNode), not LangChain createAgent.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a LangGraph agent
@@ -38,7 +43,8 @@ the application before `graph.invoke`, or in the graph's first node.
 ## `interrupt()` is not a policy gate
 
 `interrupt()` / `interrupt_before=["tools"]` is human-in-the-loop, not
-policy. Same trap as Mastra `requireApproval` and Claude `canUseTool`.
+policy. Same trap as Mastra `requireApproval`, Claude `canUseTool`,
+Google ADK `requireConfirmation`, and Cloudflare Think `needsApproval`.
 There is no `guardInterrupt` and no `guardApproval`. Do not wrap them as
 Guard.
 
@@ -84,8 +90,9 @@ Ask only what you cannot infer from the code; suggest defaults.
    inside a LangGraph callback — that generates a second id and splits the
    Sequence. `langgraphAgentContext` reads `thread_id` / `checkpoint_ns` /
    run id and omits `correlationId` when none of those is a valid id.
-5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.** LangGraph
-   tools are LangChain `tool()`, but this namespace brands them. `guardTool`
+5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
+   `@arcjet/guard/claude-managed-agents/v0`.** LangGraph tools are
+   LangChain `tool()`, but this namespace brands them. `guardTool`
    throws if the tool already carries the Arcjet protection brand.
    `guardToolNode` skips already-branded tools so Guard is not double-called.
 6. **A denial from `guardTool` is a structured object, not a throw.**
@@ -106,7 +113,7 @@ Install `@arcjet/guard` (required), plus `@langchain/langgraph` and
 `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ```sh
-npm install @arcjet/guard @langchain/langgraph @langchain/core
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @langchain/langgraph @langchain/core
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -123,7 +130,8 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/langgraph/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -134,9 +142,9 @@ const lookupLimit = tokenBucket({
   maxTokens: 10,
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
-// Scan free-text args (a note, reason, body). An opaque `orderId` will
-// not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// Scan free-text args (a note, reason, body). An opaque `orderId` is not
+// free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,
@@ -150,18 +158,32 @@ export const lookupOrder = guardTool(
   }),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 }), detectPii(input.note)],
   },
 );
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the tool's `func` / `invoke` never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as the tool result
   content. If you invoke a guarded tool outside `ToolNode`, read that
   object and build your own `ToolMessage` rather than pushing it into
   `messages`.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if an `action`, `rules` or `metadata` callback throws or returns a
+  value Guard cannot use. A failed callback never skips the guard call:
+  Guard is called without its value (a failed `action` falls back to
+  `"tool.invoked"`), so remote policy still evaluates the call and a DENY
+  stands.
 
 ## Step 3: Screen inbound before invoke
 

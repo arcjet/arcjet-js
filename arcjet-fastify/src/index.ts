@@ -2,7 +2,15 @@ import process from "node:process";
 
 import { baseUrl as baseUrlFromEnvironment, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
-import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
+import {
+  type Cidr,
+  type ClientIpDetails,
+  createClientIpDiagnostics,
+  hasTrustAllProxy,
+  parseProxies,
+  resolveClientIp,
+  type ProxyService,
+} from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
@@ -24,7 +32,7 @@ import type {
 import arcjetCore from "arcjet";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.10.0"; // x-release-please-version
+const VERSION = "1.14.1"; // x-release-please-version
 
 // TODO(@wooorm-arcjet): using `export all` will leak things in the public API,
 // resulting in unneeded breaking changes,
@@ -78,7 +86,7 @@ export type RemoteClientOptions = {
  *   Client.
  */
 export function createRemoteClient(
-  options?: RemoteClientOptions | null | undefined,
+  options?: RemoteClientOptions | null,
 ): ReturnType<typeof createClient> {
   const settings = options ?? {};
   const baseUrl = settings.baseUrl ?? baseUrlFromEnvironment(process.env);
@@ -245,6 +253,13 @@ export default function arcjet<
   const client = options.client ?? createRemoteClient();
   const log = options.log ? options.log : new Logger({ level: logLevel(process.env) });
   const proxies = options.proxies ? parseProxies(options.proxies) : undefined;
+  const reportClientIp = createClientIpDiagnostics(log);
+  if (proxies && hasTrustAllProxy(proxies)) {
+    log.warn(
+      { trustAll: true },
+      "Arcjet proxy configuration trusts an entire IP address family; use the narrowest proxy CIDRs possible.",
+    );
+  }
 
   if (isDevelopment(process.env)) {
     log.warn("Arcjet will use 127.0.0.1 when missing public IP address in development mode");
@@ -263,6 +278,7 @@ export default function arcjet<
           fastifyRequest,
           log,
           proxies,
+          reportClientIp,
           // Cast of `{}` because here we switch from `undefined` to `Properties`.
           ruleProps as Properties,
           ipSrc,
@@ -313,6 +329,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   request: ArcjetFastifyRequest,
   log: ArcjetLogger,
   proxies: ReadonlyArray<Cidr | string | ProxyService> | undefined,
+  reportClientIp: (details: ClientIpDetails) => void,
   properties: Properties,
   ipSrc?: string,
 ): ArcjetRequest<Properties> {
@@ -325,11 +342,12 @@ function toArcjetRequest<Properties extends PlainObject>(
   const cookies = typeof requestHeaders.cookie === "string" ? requestHeaders.cookie : "";
   const headers = new ArcjetHeaders(requestHeaders);
 
-  const xArcjetIp = isDevelopment(process.env) ? headers.get("x-arcjet-ip") : undefined;
-  let ip =
-    ipSrc ||
-    xArcjetIp ||
-    findIp({ headers, socket: request.socket }, { platform: platform(process.env), proxies });
+  const ipDetails = resolveClientIp(
+    { headers, socket: request.socket },
+    { development: isDevelopment(process.env), ipSrc, platform: platform(process.env), proxies },
+  );
+  reportClientIp(ipDetails);
+  let ip = ipDetails.ip;
 
   if (ip === "") {
     if (isDevelopment(process.env)) {

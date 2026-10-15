@@ -90,9 +90,30 @@
       "allowedVersions": "<2"
     },
     {
-      "description": "Never automerge @openai/agents. It is pre-1.0, so a minor release may break. `@arcjet/guard/openai-agents/v0` types against FunctionTool, tool({ execute }), RunContext, and run() / Runner. A green typecheck is necessary but not sufficient. Keep the range below 1.0; openai-agents/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
+      "description": "Never automerge @openai/agents. It is pre-1.0, so a minor release may break. `@arcjet/guard/openai-agents/v0` types against FunctionTool, tool({ execute }), RunContext, and run() / Runner. A green typecheck is necessary but not sufficient. Keep the range below 1.0; openai-agents/v1 is added deliberately, not by a bump.",
       "matchManagers": ["npm"],
       "matchPackageNames": ["@openai/agents"],
+      "automerge": false,
+      "allowedVersions": "<1"
+    },
+    {
+      "description": "Never automerge @google/adk majors. `@arcjet/guard/google-adk/v2` types against BasePlugin.beforeToolCallback, Runner({ plugins }), PluginManager first-win short-circuit, and the deny-dict skip shape (a returned Record skips runAsync; undefined executes; a throw is a plugin error). A green typecheck is necessary but not sufficient: the namespace also depends on PluginManager calling methods by name (missing callbacks throw) and on returning a value short-circuiting remaining plugins — runtime contracts a typecheck cannot see. Keep the range on 2.x; google-adk/v3 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@google/adk"],
+      "automerge": false,
+      "allowedVersions": "<3"
+    },
+    {
+      "description": "Never automerge @tanstack/ai. It is pre-1.0, so a minor release may break. `@arcjet/guard/tanstack-ai/v0` types against ChatMiddleware, onBeforeToolCall, BeforeToolCallDecision, and chat({ context }). A green typecheck is necessary but not sufficient: the namespace also depends on onBeforeToolCall first-win composition (a preceding toolCacheMiddleware skip means Guard never runs) and on execute throws being swallowed into { error } — runtime contracts a typecheck cannot see. Keep the range below 1.0; tanstack-ai/v1 is added deliberately, not by a bump.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@tanstack/ai"],
+      "automerge": false,
+      "allowedVersions": "<1"
+    },
+    {
+      "description": "Never automerge @anthropic-ai/sdk majors. `@arcjet/guard/claude-managed-agents/v0` types against client.beta.agents / sessions / environments, EventSendParams, agent.custom_tool_use, and user.custom_tool_result (including is_error). The floor is 0.86.0 — the first release with those namespaces. A green typecheck is necessary but not sufficient: default always_allow cloud tools cannot be gated, and EnvironmentWorker tools factory / betaTool({ run }) is a runtime contract. Keep the range below 1.0; claude-managed-agents/v1 is added deliberately, not by a bump. This rule is last in packageRules so it wins over the devDependencies and patch automerge rules above.",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@anthropic-ai/sdk"],
       "automerge": false,
       "allowedVersions": "<1"
     }

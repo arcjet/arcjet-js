@@ -28,6 +28,7 @@ export type Reason =
   | "MODERATE_CONTENT"
   | "SENSITIVE_INFO"
   | "INPUT_CONSTRAINT"
+  | "IP_THREAT"
   | "CUSTOM"
   | "ERROR"
   | "NOT_RUN"
@@ -326,7 +327,14 @@ export type RuleResultModerateContent = {
   readonly billing?: Billing | undefined;
 };
 
-/** Result from a sensitive information detection evaluation. */
+/**
+ * Result from a sensitive information detection evaluation.
+ *
+ * Produced by {@link localDetectSensitiveInfo}, which runs in the SDK, and by a
+ * remote policy's server-side sensitive-information detector, which runs on
+ * Arcjet. For a remote-policy result, {@link PolicyRuleResult.execution} says
+ * which: `"SERVER"` means Arcjet saw the value.
+ */
 export type RuleResultSensitiveInfo = {
   /** Whether the request was allowed or denied by this rule. */
   readonly conclusion: "ALLOW" | "DENY";
@@ -347,6 +355,54 @@ export type RuleResultSensitiveInfo = {
    * ```
    */
   readonly detectedEntityTypes: readonly string[];
+  /**
+   * Usage charged for this evaluation, when reported by the service. Only a
+   * server-side detection is billed; local detection never sets it.
+   */
+  readonly billing?: Billing | undefined;
+};
+
+/**
+ * Result from a remote policy's IP threat detector, which assesses the
+ * destinations a call would contact against Arcjet's IP threat database.
+ *
+ * The fields describe the destination with the worst assessment. Appears in
+ * {@link PolicyRuleResult.result}.
+ *
+ * @example
+ * ```ts
+ * for (const { result } of decision.policyResults ?? []) {
+ *   if (result.type === "IP_THREAT" && result.detected) {
+ *     console.log("risky destination", result.host, result.riskLevel, result.activities);
+ *   }
+ * }
+ * ```
+ */
+export type RuleResultIpThreat = {
+  /** Whether the request was allowed or denied by this rule. */
+  readonly conclusion: "ALLOW" | "DENY";
+  /** The reason category — always `"IP_THREAT"` for this rule. */
+  readonly reason: "IP_THREAT";
+  /** Discriminant — always `"IP_THREAT"`. */
+  readonly type: "IP_THREAT";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
+  /** Whether the worst destination scored `"high"` or `"critical"`. */
+  readonly detected: boolean;
+  /**
+   * Worst risk level: `"none"`, `"low"`, `"medium"`, `"high"` or
+   * `"critical"`. Passed through as the service sent it, so a level added
+   * later reaches you unchanged.
+   */
+  readonly riskLevel: string;
+  /** Reputation of the address that produced that risk. */
+  readonly reputation: string;
+  /** Activities observed for that address, such as `"malware"` or `"botnet"`. */
+  readonly activities: readonly string[];
+  /** The destination host that produced the worst assessment. Empty when nothing scored above `"none"`. */
+  readonly host: string;
+  /** The address that was looked up for that host. */
+  readonly ip: string;
 };
 
 /** Result from a custom local rule evaluation. */
@@ -361,6 +417,25 @@ export type RuleResultCustom<TData extends Record<string, string> = Record<strin
   readonly warnings: readonly Warning[];
   /** Key-value data returned by the custom rule's `evaluate` function. */
   readonly data: Readonly<TData>;
+};
+
+/**
+ * Result for a remote-policy rule decided by the policy's expression language.
+ *
+ * A v2 policy states its rules as an expression over the inputs it declares,
+ * rather than as a typed rule variant, so this carries the conclusion and
+ * nothing more. Which conditions fired is a property of the compiled artifact
+ * named by `policyRevision`, not something the result restates.
+ */
+export type RuleResultPolicyExpression = {
+  /** Whether the request was allowed or denied by this rule. */
+  readonly conclusion: "ALLOW" | "DENY";
+  /** The reason category — always `"POLICY_EXPRESSION"`. */
+  readonly reason: "POLICY_EXPRESSION";
+  /** Discriminant — always `"POLICY_EXPRESSION"`. */
+  readonly type: "POLICY_EXPRESSION";
+  /** Per-rule warnings. Informational; never changes the conclusion. */
+  readonly warnings: readonly Warning[];
 };
 
 /** Result for a rule that was not evaluated. */
@@ -450,7 +525,9 @@ export type RuleResult =
   | RuleResultPromptInjection
   | RuleResultModerateContent
   | RuleResultSensitiveInfo
+  | RuleResultIpThreat
   | RuleResultCustom
+  | RuleResultPolicyExpression
   | RuleResultNotRun
   | RuleResultError
   | RuleResultInputConstraint
@@ -588,9 +665,9 @@ export interface TokenBucketConfig {
    * rate limit bucket identity**. The bucket is determined by the
    * rule config identity and the `key` passed at call time.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"api.chat.token-budget"`
    */
@@ -652,9 +729,9 @@ export interface TokenBucketConfig {
   maxTokens: number;
   /**
    * Bucket identifier for grouping rate limit counters in the dashboard.
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * Different configs sharing the same bucket name still get independent
    * counters — a config hash is appended server-side.
@@ -726,9 +803,9 @@ export interface FixedWindowConfig {
    * rate limit bucket identity**. The bucket is determined by the
    * rule config identity and the `key` passed at call time.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"api.search.rate-limit"`
    */
@@ -778,9 +855,9 @@ export interface FixedWindowConfig {
   windowSeconds: number;
   /**
    * Bucket identifier for grouping rate limit counters in the dashboard.
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * Different configs sharing the same bucket name still get independent
    * counters — a config hash is appended server-side.
@@ -852,9 +929,9 @@ export interface SlidingWindowConfig {
    * rate limit bucket identity**. The bucket is determined by the
    * rule config identity and the `key` passed at call time.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"api.list.rate-limit"`
    */
@@ -904,9 +981,9 @@ export interface SlidingWindowConfig {
   intervalSeconds: number;
   /**
    * Bucket identifier for grouping rate limit counters in the dashboard.
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * Different configs sharing the same bucket name still get independent
    * counters — a config hash is appended server-side.
@@ -975,9 +1052,9 @@ export interface DetectPromptInjectionConfig {
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"chat.prompt-injection"`
    */
@@ -1156,9 +1233,9 @@ export interface LocalDetectSensitiveInfoConfigAllow<
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"user.profile.form"`
    */
@@ -1230,9 +1307,9 @@ export interface LocalDetectSensitiveInfoConfigDeny<
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"user.profile.form"`
    */
@@ -1392,9 +1469,9 @@ export interface LocalCustomConfig {
   /**
    * Optional human-readable label for this rule instance.
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    *
    * @example `"custom.abuse-check"`
    */
@@ -1907,9 +1984,9 @@ export interface GuardOptions {
   /**
    * A label identifying the protection boundary (e.g. `"tools.weather"`).
    *
-   * Validated server-side as a slug: lowercase letters, digits, dash
-   * (`-`), and dot (`.`) only. Must start and end with a lowercase
-   * letter or digit. Max 256 bytes.
+   * Validated server-side: ASCII letters of either case, digits, dash
+   * (`-`), dot (`.`), and underscore (`_`) only. Must start and end with
+   * a letter or digit. Max 256 bytes. Matched case-sensitively.
    */
   label: string;
   /**

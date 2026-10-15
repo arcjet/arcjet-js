@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/runtime",
-  "version": "1.10.0",
+  "version": "1.14.1",
   "description": "Arcjet runtime detection",
   "keywords": [
     "arcjet",
@@ -56,7 +56,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "tsdown": "0.22.14",
+    "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
   "engines": {

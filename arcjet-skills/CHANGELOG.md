@@ -1,0 +1,43 @@
+# Changelog
+
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/skills-v1.14.1) (2026-10-06)
+
+
+### 🪲 Bug Fixes
+
+* **guard:** accept uppercase ASCII in a guard label ([#6312](https://github.com/arcjet/arcjet-js/issues/6312)) ([fc9ef92](https://github.com/arcjet/arcjet-js/commit/fc9ef92d1e8e645ecc7dca6f325dddc1bfc85fe9))
+
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/skills-v1.14.0) (2026-10-01)
+
+
+### 🚀 New Features
+
+* **guard:** add Cloudflare Think support as @arcjet/guard/cloudflare-think/v0 ([#6297](https://github.com/arcjet/arcjet-js/issues/6297)) ([42d2f98](https://github.com/arcjet/arcjet-js/commit/42d2f9816bad430b214d931ce41ea19fb140dfce))
+
+
+### 📝 Documentation
+
+* **skills:** fix guard() object call shape and coding-agent routing ([#6302](https://github.com/arcjet/arcjet-js/issues/6302)) ([3da98d0](https://github.com/arcjet/arcjet-js/commit/3da98d0afac62dd33e447f67b6fe2afedc9f8550))
+
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/skills-v1.13.0) (2026-09-16)
+
+
+### 🚀 New Features
+
+* **guard:** add actor and inputs to every adapter policy ([#6277](https://github.com/arcjet/arcjet-js/issues/6277)) ([cd0355d](https://github.com/arcjet/arcjet-js/commit/cd0355d8aacbd973151d68f6dadf2c125eb29a3b))
+
+
+### 📝 Documentation
+
+* **skills:** sync Guard policy MCP flow and portable labels ([#6293](https://github.com/arcjet/arcjet-js/issues/6293)) ([0943ee3](https://github.com/arcjet/arcjet-js/commit/0943ee3e2d9f46534935c3cf03b93c5091595731))
+
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/skills-v1.12.0) (2026-09-08)
+
+
+### 🚀 New Features
+
+* **guard:** add Claude Managed Agents as `@arcjet/guard/claude-managed-agents/v0` ([#6265](https://github.com/arcjet/arcjet-js/issues/6265)) ([b137824](https://github.com/arcjet/arcjet-js/commit/b137824779c2e21886a8f8385ff008337f10d083))
+* **guard:** add Google ADK support as @arcjet/guard/google-adk/v2 ([#6264](https://github.com/arcjet/arcjet-js/issues/6264)) ([ed4edfb](https://github.com/arcjet/arcjet-js/commit/ed4edfb20a470c23817b51a52923359fb1b255f7))
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+## Changelog

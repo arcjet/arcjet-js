@@ -9,9 +9,9 @@
  * carry many more.
  */
 
-import type { Decision, DecisionDeny, RuleWithInput } from "../../src/types.ts";
-
 import type { ArcjetAgentClient } from "../../src/agents/capture.ts";
+import { symbolArcjetInternal } from "../../src/symbol.ts";
+import type { Decision, DecisionDeny, RuleWithInput } from "../../src/types.ts";
 
 /**
  * Factory for stub guard clients with in-memory decision and capture tracking.
@@ -103,11 +103,61 @@ export function decisionDenyRateLimitNoReset(): DecisionDeny {
 }
 
 /**
+ * Stub DENY decision (RATE_LIMIT) carrying several rate-limit results.
+ *
+ * Each entry becomes one TOKEN_BUCKET result, in submission order, so a test
+ * can place an allowing rule before a denying one — the shape no test covered
+ * before and the one that hid the retry-after defect.
+ */
+export function decisionDenyRateLimitMulti(
+  results: readonly { conclusion: "ALLOW" | "DENY"; resetAtUnixSeconds: number }[],
+): DecisionDeny {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of DecisionDeny
+  return {
+    conclusion: "DENY",
+    reason: "RATE_LIMIT",
+    id: "gdec_deny_rl_multi",
+    results: results.map((result) => ({
+      conclusion: result.conclusion,
+      reason: "RATE_LIMIT",
+      type: "TOKEN_BUCKET",
+      resetAtUnixSeconds: result.resetAtUnixSeconds,
+    })),
+    warnings: [],
+    hasFailedOpen: () => false,
+  } as unknown as DecisionDeny;
+}
+
+/**
  * Stub fail-open ALLOW decision.
  *
  * `id` is empty because that is what the client synthesizes on a fail-open
  * path; a correlatable id cannot occur here.
  */
+/**
+ * Stub ALLOW decision whose label the service rejected.
+ *
+ * `AJ1023` means the label was replaced with `invalid-label`, so no published
+ * policy could have matched. The conclusion still reads ALLOW and
+ * `hasFailedOpen()` is false — which is precisely why this looked like a
+ * successful guard before the code was routed through `onGuardError`.
+ */
+export function decisionAllowLabelRejected(): Decision {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of Decision
+  return {
+    conclusion: "ALLOW",
+    id: "gdec_invalid_label",
+    results: [],
+    warnings: [
+      {
+        code: "AJ1023",
+        message: 'label is invalid and was replaced with "invalid-label"',
+      },
+    ],
+    hasFailedOpen: () => false,
+  } as unknown as Decision;
+}
+
 export function decisionFailOpenAllow(): Decision {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of Decision
   return {
@@ -182,8 +232,12 @@ export function decisionDenyError(): DecisionDeny {
 
 /**
  * Stub fake rule for testing (when actual rule config is not needed).
+ *
+ * Carries the input binding a real rule gets from `rule(config)(input)`, which
+ * is what a helper checks before submitting a `rules` callback's result.
  */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- partial stub of RuleWithInput
 export const fakeRule: RuleWithInput = {
   type: "TEST",
+  [symbolArcjetInternal]: { configId: "cfg_fake", inputId: "inp_fake" },
 } as unknown as RuleWithInput;

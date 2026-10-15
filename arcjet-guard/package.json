@@ -1,7 +1,14 @@
 {
   "name": "@arcjet/guard",
-  "version": "1.10.0",
+  "version": "1.14.1",
   "description": "Arcjet Guards SDK — AI guardrails for rate limiting, prompt injection detection, and sensitive info detection",
+  "keywords": [
+    "ai",
+    "arcjet",
+    "guard",
+    "security",
+    "tanstack-intent"
+  ],
   "homepage": "https://arcjet.com",
   "bugs": {
     "url": "https://github.com/arcjet/arcjet-js/issues",
@@ -20,7 +27,7 @@
   },
   "files": [
     "dist/",
-    "skills/"
+    "skills"
   ],
   "type": "module",
   "main": "./dist/index.js",
@@ -84,6 +91,14 @@
       "types": "./dist/claude-agent-sdk/v0/index.d.ts",
       "import": "./dist/claude-agent-sdk/v0/index.js"
     },
+    "./claude-managed-agents/v0": {
+      "types": "./dist/claude-managed-agents/v0/index.d.ts",
+      "import": "./dist/claude-managed-agents/v0/index.js"
+    },
+    "./cloudflare-think/v0": {
+      "types": "./dist/cloudflare-think/v0/index.d.ts",
+      "import": "./dist/cloudflare-think/v0/index.js"
+    },
     "./langchain/v1": {
       "types": "./dist/langchain/v1/index.d.ts",
       "import": "./dist/langchain/v1/index.js"
@@ -100,9 +115,17 @@
       "types": "./dist/genkit/v1/index.d.ts",
       "import": "./dist/genkit/v1/index.js"
     },
+    "./google-adk/v2": {
+      "types": "./dist/google-adk/v2/index.d.ts",
+      "import": "./dist/google-adk/v2/index.js"
+    },
     "./strands-agents/v1": {
       "types": "./dist/strands-agents/v1/index.d.ts",
       "import": "./dist/strands-agents/v1/index.js"
+    },
+    "./tanstack-ai/v0": {
+      "types": "./dist/tanstack-ai/v0/index.d.ts",
+      "import": "./dist/tanstack-ai/v0/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -116,7 +139,9 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "test": "npm run build && npm run lint && npm run test-unit",
-    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/langchain/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts' 'test/strands-agents/**/*.test.ts'",
+    "test-unit": "node --test --experimental-test-coverage '--test-coverage-include=src/**' '--test-coverage-exclude=src/**/*.test.ts' 'src/**/*.test.ts' 'test/cloudflare-think/**/*.test.ts' 'test/genkit/**/*.test.ts' 'test/google-adk/**/*.test.ts' 'test/langchain/**/*.test.ts' 'test/langgraph/**/*.test.ts' 'test/mastra/**/*.test.ts' 'test/openai-agents/**/*.test.ts' 'test/strands-agents/**/*.test.ts' 'test/tanstack-ai/**/*.test.ts'",
+    "validate-skills": "node ../.github/scripts/intent-cli.mjs validate",
+    "stale-skills": "node ../.github/scripts/intent-cli.mjs stale --json",
     "test-peers-absent": "node scripts/test-peers-absent.mjs",
     "test-runtime-node": "npm run build && node --test test/runtime/node.test.ts",
     "test-runtime-fetch": "npm run build && node --test test/runtime/fetch.test.ts",
@@ -125,39 +150,50 @@
     "test-runtime-cloudflare": "npm run build && node --test test/runtime/cloudflare/cloudflare.test.ts"
   },
   "dependencies": {
-    "@arcjet/analyze": "1.10.0",
-    "@arcjet/logger": "1.10.0",
-    "@bufbuild/protobuf": "2.14.0",
-    "@connectrpc/connect": "2.1.2",
-    "@connectrpc/connect-node": "2.1.2",
-    "@connectrpc/connect-web": "2.1.2"
+    "@arcjet/analyze": "1.14.1",
+    "@arcjet/logger": "1.14.1",
+    "@arcjet/transport": "1.14.1",
+    "@bufbuild/protobuf": "2.16.0",
+    "@connectrpc/connect": "2.2.0",
+    "@connectrpc/connect-node": "2.2.0",
+    "@connectrpc/connect-web": "2.2.0"
   },
   "devDependencies": {
-    "@ai-sdk/provider-utils": "5.0.25",
-    "@anthropic-ai/claude-agent-sdk": "0.3.233",
-    "@langchain/core": "1.2.9",
-    "@langchain/langgraph": "1.4.10",
-    "@mastra/core": "1.59.0",
-    "@openai/agents": "0.17.0",
+    "@ai-sdk/provider-utils": "5.0.47",
+    "@anthropic-ai/claude-agent-sdk": "0.3.273",
+    "@anthropic-ai/sdk": "0.123.0",
+    "@cloudflare/think": "0.19.0",
+    "@google/adk": "2.0.0",
+    "@langchain/core": "1.2.12",
+    "@langchain/langgraph": "1.4.17",
+    "@mastra/core": "1.67.0",
+    "@modelcontextprotocol/sdk": "1.30.1",
+    "@openai/agents": "0.18.0",
     "@strands-agents/sdk": "1.14.0",
-    "@types/node": "22.20.1",
-    "ai": "7.0.58",
-    "eve": "0.39.0",
-    "genkit": "1.41.0",
-    "langchain": "1.5.10",
+    "@tanstack/ai": "0.52.0",
+    "@tanstack/intent": "0.4.0",
+    "@types/node": "22.20.5",
+    "ai": "7.0.113",
+    "eve": "0.46.0",
+    "genkit": "1.42.0",
+    "langchain": "1.5.12",
     "miniflare": "4.20260730.0",
-    "oxlint-tsgolint": "0.24.0",
-    "tsdown": "0.22.14",
+    "oxlint-tsgolint": "7.0.2001",
+    "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
     "@ai-sdk/provider-utils": ">=5 <6",
     "@anthropic-ai/claude-agent-sdk": ">=0.1.0 <1",
+    "@anthropic-ai/sdk": ">=0.86.0 <1",
+    "@cloudflare/think": ">=0.3.0 <1",
+    "@google/adk": ">=2 <3",
     "@langchain/core": ">=1 <2",
     "@langchain/langgraph": ">=1 <2",
     "@mastra/core": ">=1 <2",
     "@openai/agents": ">=0.17.0 <1",
     "@strands-agents/sdk": ">=1.1.0 <2",
+    "@tanstack/ai": ">=0.8.0 <1",
     "ai": ">=7 <8",
     "eve": ">=0.34.0 <1",
     "genkit": ">=1.0.0 <2",
@@ -179,6 +215,15 @@
     "@anthropic-ai/claude-agent-sdk": {
       "optional": true
     },
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@cloudflare/think": {
+      "optional": true
+    },
+    "@google/adk": {
+      "optional": true
+    },
     "@langchain/core": {
       "optional": true
     },
@@ -195,6 +240,9 @@
       "optional": true
     },
     "@strands-agents/sdk": {
+      "optional": true
+    },
+    "@tanstack/ai": {
       "optional": true
     }
   },

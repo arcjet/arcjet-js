@@ -39,11 +39,11 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
   const eveVersion = peerDependencies["eve"];
   assert.equal(eveVersion, ">=0.34.0 <1", 'peerDependencies.eve must be exactly ">=0.34.0 <1"');
 
-  // The assignability tests compile against this pin; keep it on a 0.34+ release
-  // that exports Approval as ApprovalPolicy | ApprovalConfiguration.
+  // The assignability tests compile against this pin. Eve 0.45 moved the
+  // Approval* types off the `eve/tools` barrel onto `eve/tools/approval`.
   const devDependencies = objectField(packageJson, "devDependencies");
   assert.ok(devDependencies, "package.json must have devDependencies");
-  assert.equal(devDependencies["eve"], "0.39.0", 'devDependencies.eve must be pinned to "0.39.0"');
+  assert.equal(devDependencies["eve"], "0.46.0", 'devDependencies.eve must be pinned to "0.46.0"');
 
   // Static assertion 2: peerDependenciesMeta.eve.optional is true
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
@@ -60,5 +60,36 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
   assert.ok(
     !(dependencies && "eve" in dependencies),
     "eve must not be in dependencies (it is a peer only)",
+  );
+});
+
+test("production Approval imports stay on names eve/tools/approval has exported since 0.34", () => {
+  const source = readFileSync(resolve(import.meta.dirname, "./approval-types.ts"), "utf-8");
+  const specifier = 'from "eve/tools/approval"';
+  const fromIndex = source.indexOf(specifier);
+  assert.ok(fromIndex !== -1, "approval-types.ts must import types from eve/tools/approval");
+  const before = source.slice(0, fromIndex);
+  const open = before.lastIndexOf("{");
+  const close = before.lastIndexOf("}");
+  assert.ok(
+    open !== -1 && close > open,
+    "import from eve/tools/approval must be a named type import",
+  );
+  const names = before
+    .slice(open + 1, close)
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint's type-aware checker has no signature for Array#toSorted, which unicorn/no-array-sort requires
+  const sortedNames = names.toSorted();
+  assert.deepEqual(
+    sortedNames,
+    ["Approval", "ApprovalContext", "ApprovalStatus"],
+    "only import Approval names that eve/tools/approval exported in 0.34; derive the rest",
+  );
+  assert.equal(
+    /from ["']eve\/tools["']/.test(source),
+    false,
+    "approval-types.ts must not import Approval types from the eve/tools barrel",
   );
 });

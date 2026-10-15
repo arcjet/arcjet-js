@@ -26,11 +26,15 @@ const NAMESPACES = [
   { dir: "vercel-eve", packages: ["eve"] },
   { dir: "mastra", packages: ["@mastra/core"] },
   { dir: "claude-agent-sdk", packages: ["@anthropic-ai/claude-agent-sdk"] },
+  { dir: "claude-managed-agents", packages: ["@anthropic-ai/sdk"] },
+  { dir: "cloudflare-think", packages: ["@cloudflare/think"] },
   { dir: "langchain", packages: ["langchain", "@langchain/core"] },
   { dir: "langgraph", packages: ["@langchain/langgraph", "@langchain/core"] },
   { dir: "openai-agents", packages: ["@openai/agents"] },
   { dir: "genkit", packages: ["genkit", "@genkit-ai"] },
+  { dir: "google-adk", packages: ["@google/adk"] },
   { dir: "strands-agents", packages: ["@strands-agents/sdk"] },
+  { dir: "tanstack-ai", packages: ["@tanstack/ai"] },
 ] as const;
 
 /**
@@ -111,6 +115,9 @@ test("the scanner detects a cross-vendor import when one is introduced", () => {
     { from: "vercel-ai", content: 'const m = await import("@openai/agents");\nvoid m;' },
     { from: "genkit", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "strands-agents", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "tanstack-ai", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "google-adk", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
+    { from: "cloudflare-think", content: 'import { tool } from "@openai/agents";\nvoid tool;' },
     { from: "genkit", content: 'import type { Plugin } from "@strands-agents/sdk";\nvoid 0;' },
     {
       from: "mastra",

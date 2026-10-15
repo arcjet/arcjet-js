@@ -1,5 +1,116 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/sveltekit-v1.14.1) (2026-10-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sveltekit:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.14.0 to 1.14.1
+    * @arcjet/env bumped from 1.14.0 to 1.14.1
+    * @arcjet/headers bumped from 1.14.0 to 1.14.1
+    * @arcjet/ip bumped from 1.14.0 to 1.14.1
+    * @arcjet/logger bumped from 1.14.0 to 1.14.1
+    * @arcjet/protocol bumped from 1.14.0 to 1.14.1
+    * @arcjet/transport bumped from 1.14.0 to 1.14.1
+    * arcjet bumped from 1.14.0 to 1.14.1
+
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/sveltekit-v1.14.0) (2026-10-01)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sveltekit:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.13.0 to 1.14.0
+    * @arcjet/env bumped from 1.13.0 to 1.14.0
+    * @arcjet/headers bumped from 1.13.0 to 1.14.0
+    * @arcjet/ip bumped from 1.13.0 to 1.14.0
+    * @arcjet/logger bumped from 1.13.0 to 1.14.0
+    * @arcjet/protocol bumped from 1.13.0 to 1.14.0
+    * @arcjet/transport bumped from 1.13.0 to 1.14.0
+    * arcjet bumped from 1.13.0 to 1.14.0
+
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/sveltekit-v1.13.0) (2026-09-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sveltekit:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.12.0 to 1.13.0
+    * @arcjet/env bumped from 1.12.0 to 1.13.0
+    * @arcjet/headers bumped from 1.12.0 to 1.13.0
+    * @arcjet/ip bumped from 1.12.0 to 1.13.0
+    * @arcjet/logger bumped from 1.12.0 to 1.13.0
+    * @arcjet/protocol bumped from 1.12.0 to 1.13.0
+    * @arcjet/transport bumped from 1.12.0 to 1.13.0
+    * arcjet bumped from 1.12.0 to 1.13.0
+
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/sveltekit-v1.12.0) (2026-09-08)
+
+
+### 🚀 New Features
+
+* expose client IP provenance and diagnostics ([#6259](https://github.com/arcjet/arcjet-js/issues/6259)) ([b89a486](https://github.com/arcjet/arcjet-js/commit/b89a48695a8fcb575070055a0b2959556eefe3f9))
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.11.0 to 1.12.0
+    * @arcjet/env bumped from 1.11.0 to 1.12.0
+    * @arcjet/headers bumped from 1.11.0 to 1.12.0
+    * @arcjet/ip bumped from 1.11.0 to 1.12.0
+    * @arcjet/logger bumped from 1.11.0 to 1.12.0
+    * @arcjet/protocol bumped from 1.11.0 to 1.12.0
+    * @arcjet/transport bumped from 1.11.0 to 1.12.0
+    * arcjet bumped from 1.11.0 to 1.12.0
+
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/sveltekit-v1.11.0) (2026-08-25)
+
+
+### 🪲 Bug Fixes
+
+* default Decide API timeout to 2s for cold starts ([#6236](https://github.com/arcjet/arcjet-js/issues/6236)) ([e856b30](https://github.com/arcjet/arcjet-js/commit/e856b30a5b8b5dba5d4c88cc736462639fbe973a))
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.10.0 to 1.11.0
+    * @arcjet/env bumped from 1.10.0 to 1.11.0
+    * @arcjet/headers bumped from 1.10.0 to 1.11.0
+    * @arcjet/ip bumped from 1.10.0 to 1.11.0
+    * @arcjet/logger bumped from 1.10.0 to 1.11.0
+    * @arcjet/protocol bumped from 1.10.0 to 1.11.0
+    * @arcjet/transport bumped from 1.10.0 to 1.11.0
+    * arcjet bumped from 1.10.0 to 1.11.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/sveltekit-v1.10.0) (2026-08-11)
 
 

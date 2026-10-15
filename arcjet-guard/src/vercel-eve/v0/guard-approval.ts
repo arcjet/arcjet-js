@@ -1,4 +1,13 @@
 import type { SessionContext } from "eve/context";
+
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
+import { shouldWarn } from "../../agents/capture.ts";
+import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
+import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
+import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import type {
   Approval,
   ApprovalConfiguration,
@@ -8,14 +17,8 @@ import type {
   ApprovalResponseDecision,
   ApprovalResponsePolicy,
   ApprovalStatus,
-} from "eve/tools";
-
-import { captureEvent, shouldWarn } from "../../agents/capture.ts";
-import type { ArcjetAgentClient } from "../../agents/capture.ts";
-import type { OnGuardError } from "../../agents/guard-action.ts";
-import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+} from "./approval-types.ts";
 import { eveAgentContext } from "./context.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -32,6 +35,17 @@ export interface GuardApprovalPolicy<TInput = Record<string, unknown>> {
   action: string;
   /** Rules to evaluate, static or computed from the approval context. */
   rules?: RuleWithInput[] | ((ctx: ApprovalContext<TInput>) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(ctx) => …` matching Eve's
+   * `ApprovalPolicy`. Derive it from `ctx.session`; never trust
+   * model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[ApprovalContext<TInput>]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(ctx) => …` over the approval
+   * context. Build each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[ApprovalContext<TInput>]>;
   /** Metadata merged over the session-derived context's. */
   metadata?: ArcjetMetadata | ((ctx: ApprovalContext<TInput>) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -58,6 +72,17 @@ export interface GuardApprovalResponsePolicy<TInput = Record<string, unknown>> {
   action: string;
   /** Rules to evaluate, static or computed from the response context. */
   rules?: RuleWithInput[] | ((ctx: ApprovalResponseContext<TInput>) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(ctx) => …` matching Eve's
+   * response-time approval callback. Derive it from the responder session;
+   * never trust model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[ApprovalResponseContext<TInput>]>;
+  /**
+   * Typed remote-policy inputs, or a resolver over the response context. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[ApprovalResponseContext<TInput>]>;
   /** Metadata merged over the session-derived context's. */
   metadata?: ArcjetMetadata | ((ctx: ApprovalResponseContext<TInput>) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -103,7 +128,9 @@ export interface GuardApprovalResponsePolicy<TInput = Record<string, unknown>> {
  * // A connection's tools have no local `execute` to wrap, so the approval
  * // gate is the only enforcement point that reaches them. `onAllow` still
  * // requires a human after the policy passes. The optional `response` policy
- * // authorizes who may approve the parked request. Eve still allows one
+ * // authorizes who may approve the parked request; Eve passes that person as
+ * // `ctx.response.principal`, and Eve releases before 0.69 pass them as
+ * // `ctx.responder` instead. Eve still allows one
  * // `approval` field per connection; it can be this function or the
  * // `{ request, response }` object `guardApproval` returns when `response` is set.
  * const weather: OpenAPIConnectionDefinition = defineOpenAPIConnection({
@@ -115,7 +142,7 @@ export interface GuardApprovalResponsePolicy<TInput = Record<string, unknown>> {
  *     onAllow: "user-approval",
  *     response: {
  *       action: "weather.approved",
- *       rules: (ctx) => [callLimit({ key: ctx.responder.principalId, requested: 1 })],
+ *       rules: (ctx) => [callLimit({ key: ctx.response.principal.principalId, requested: 1 })],
  *     },
  *   }),
  * });
@@ -135,6 +162,10 @@ export function guardApproval<TInput = Record<string, unknown>>(
   client: ArcjetAgentClient,
   policy: GuardApprovalPolicy<TInput>,
 ): Approval<TInput> {
+  assertValidAction(policy.action, "guardApproval");
+  if (policy.response !== undefined) {
+    assertValidAction(policy.response.action, "guardApproval response");
+  }
   const request = createRequestApproval(client, policy);
   if (policy.response === undefined) {
     return request;
@@ -222,6 +253,28 @@ function responseSessionId<TInput>(ctx: ApprovalResponseContext<TInput>): string
   return id;
 }
 
+type ResponderAuth = SessionContext["session"]["auth"]["current"];
+
+/**
+ * Both places Eve has put the responder on `ApprovalResponseContext`:
+ * `response.principal` from 0.69, `responder` before that. Each Eve version
+ * declares only one of them, so both are optional here and the context is
+ * widened to this type by assignment rather than asserted. `decision` is on
+ * `response` in every Eve version; listing it lets a pre-0.69 `response`,
+ * which has no `principal`, satisfy TypeScript's check that an all-optional
+ * type shares at least one property with the value assigned to it.
+ */
+type ResponderSources = {
+  readonly response?: { readonly decision?: unknown; readonly principal?: ResponderAuth };
+  readonly responder?: ResponderAuth;
+};
+
+/** The person answering the parked request, or `null` when Eve sent neither field. */
+function responderAuth<TInput>(ctx: ApprovalResponseContext<TInput>): ResponderAuth {
+  const sources: ResponderSources | undefined = ctx;
+  return sources?.response?.principal ?? sources?.responder ?? null;
+}
+
 /**
  * Map Eve's response-time context onto the session shape `eveAgentContext`
  * already understands. The responder is `auth.current`, so the existing
@@ -241,7 +294,7 @@ function responseAgentContext<TInput>(
   const session: SessionContext["session"] = {
     id: sessionId ?? "",
     auth: {
-      current: ctx?.responder ?? null,
+      current: responderAuth(ctx),
       initiator: ctx?.session?.initiator ?? null,
     },
     turn: ctx?.session?.turn ?? { id: "", sequence: 0 },
@@ -293,65 +346,11 @@ type ApprovalPolicyOptions<TResult> = {
 type ApprovalPolicyConfig<TCtx> = {
   action: string;
   rules?: RuleWithInput[] | ((ctx: TCtx) => RuleWithInput[]);
+  actor?: ActorResolver<[TCtx]>;
+  inputs?: InputsResolver<[TCtx]>;
   metadata?: ArcjetMetadata | ((ctx: TCtx) => ArcjetMetadata);
   onGuardError?: OnGuardError;
 };
-
-type CallbackResolution<TResult> =
-  | { status: "resolved"; rules: RuleWithInput[] | undefined; metadata: ArcjetMetadata }
-  | { status: "failed"; result: TResult };
-
-function resolveApprovalCallbacks<TCtx, TResult>(
-  client: ArcjetAgentClient,
-  policy: ApprovalPolicyConfig<TCtx>,
-  ctx: TCtx,
-  options: ApprovalPolicyOptions<TResult>,
-  agentCtx: ReturnType<typeof eveAgentContext>,
-  metadata: ArcjetMetadata,
-): CallbackResolution<TResult> {
-  // Resolve both callbacks independently so a throw in one cannot skip
-  // the other. Merge extra metadata only when the metadata callback resolves.
-  let ruleResolutionFailed = false;
-  let ruleResolutionError: unknown;
-  let rules: RuleWithInput[] | undefined;
-  try {
-    rules = typeof policy.rules === "function" ? policy.rules(ctx) : policy.rules;
-  } catch (error) {
-    ruleResolutionFailed = true;
-    ruleResolutionError = error;
-  }
-
-  let metadataResolutionFailed = false;
-  let metadataResolutionError: unknown;
-  let resolvedMetadata = metadata;
-  try {
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(ctx) : policy.metadata;
-    resolvedMetadata = { ...metadata, ...policyMetadata };
-  } catch (error) {
-    metadataResolutionFailed = true;
-    metadataResolutionError = error;
-  }
-
-  if (ruleResolutionFailed || metadataResolutionFailed) {
-    const failClosed = policy.onGuardError !== "allow";
-    const correlation =
-      agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
-    const error = ruleResolutionFailed ? ruleResolutionError : metadataResolutionError;
-    warnCallbackFailure(options.warnKind, policy.action, failClosed, error);
-    captureEvent(client, {
-      action: policy.action,
-      ...correlation,
-      metadata: { ...resolvedMetadata, outcome: "unavailable" },
-    });
-    return {
-      status: "failed",
-      result: failClosed ? options.onUnavailable() : options.onAllow(),
-    };
-  }
-
-  return { status: "resolved", rules, metadata: resolvedMetadata };
-}
 
 async function evaluateApprovalPolicy<TCtx, TResult>(
   client: ArcjetAgentClient,
@@ -369,16 +368,18 @@ async function evaluateApprovalPolicy<TCtx, TResult>(
       ...options.extraMetadata(),
     };
 
-    const resolved = resolveApprovalCallbacks(client, policy, ctx, options, agentCtx, metadata);
-    if (resolved.status === "failed") {
-      return resolved.result;
-    }
+    // A failed callback leaves its value out of the guard call and is reported
+    // as `degraded`, so Guard still evaluates the call.
+    const call = resolveCallPolicy(policy, ctx, policy.action);
+    const remote = await resolveActorInputs(policy, policy.action, ctx);
 
     return await runGate(client, {
       action: policy.action,
-      rules: resolved.rules,
+      rules: call.rules,
       correlationId: agentCtx.correlationId,
-      metadata: resolved.metadata,
+      metadata: { ...metadata, ...call.metadata },
+      degraded: call.degraded ?? remote.degraded,
+      ...remote.fields,
       onAllow: options.onAllow,
       onDeny: options.onDeny,
       onUnavailable: options.onUnavailable,

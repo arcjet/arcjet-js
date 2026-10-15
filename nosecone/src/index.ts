@@ -622,7 +622,7 @@ export class NoseconeValidationError extends Error {
  *   `Content-Security-Policy` header.
  */
 export function createContentSecurityPolicy(
-  options?: ContentSecurityPolicyConfig | undefined,
+  options?: ContentSecurityPolicyConfig,
 ): readonly [string, string] {
   const directives = options?.directives ?? defaults.contentSecurityPolicy.directives;
   const cspEntries = [];
@@ -679,7 +679,7 @@ export function createContentSecurityPolicy(
  *   `Cross-Origin-Embedder-Policy` header.
  */
 export function createCrossOriginEmbedderPolicy(
-  options?: CrossOriginEmbedderPolicyConfig | undefined,
+  options?: CrossOriginEmbedderPolicyConfig,
 ): readonly [string, string] {
   const policy = options?.policy ?? defaults.crossOriginEmbedderPolicy.policy;
 
@@ -699,7 +699,7 @@ export function createCrossOriginEmbedderPolicy(
  *   `Cross-Origin-Opener-Policy` header.
  */
 export function createCrossOriginOpenerPolicy(
-  options?: CrossOriginOpenerPolicyConfig | undefined,
+  options?: CrossOriginOpenerPolicyConfig,
 ): readonly [string, string] {
   const policy = options?.policy ?? defaults.crossOriginOpenerPolicy.policy;
 
@@ -719,7 +719,7 @@ export function createCrossOriginOpenerPolicy(
  *   `Cross-Origin-Resource-Policy` header.
  */
 export function createCrossOriginResourcePolicy(
-  options?: CrossOriginResourcePolicyConfig | undefined,
+  options?: CrossOriginResourcePolicyConfig,
 ): readonly [string, string] {
   const policy = options?.policy ?? defaults.crossOriginResourcePolicy.policy;
 
@@ -748,9 +748,7 @@ export function createOriginAgentCluster() {
  * @returns
  *   `Referrer-Policy` header.
  */
-export function createReferrerPolicy(
-  options?: ReferrerPolicyConfig | undefined,
-): readonly [string, string] {
+export function createReferrerPolicy(options?: ReferrerPolicyConfig): readonly [string, string] {
   const policy = options?.policy ?? defaults.referrerPolicy.policy;
 
   if (Array.isArray(policy)) {
@@ -782,7 +780,7 @@ export function createReferrerPolicy(
  *   `Strict-Transport-Security` header.
  */
 export function createStrictTransportSecurity(
-  options?: StrictTransportSecurityConfig | undefined,
+  options?: StrictTransportSecurityConfig,
 ): readonly [string, string] {
   let maxAge = options?.maxAge ?? defaults.strictTransportSecurity.maxAge;
   const includeSubDomains =
@@ -828,7 +826,7 @@ export function createContentTypeOptions() {
  *   `X-DNS-Prefetch-Control` header.
  */
 export function createDnsPrefetchControl(
-  options?: DnsPrefetchControlConfig | undefined,
+  options?: DnsPrefetchControlConfig,
 ): readonly [string, string] {
   const allow = options?.allow ?? defaults.xDnsPrefetchControl.allow;
   const headerValue = allow ? "on" : "off";
@@ -847,9 +845,7 @@ export function createDownloadOptions() {
  * @returns
  *   `X-Frame-Options` header.
  */
-export function createFrameOptions(
-  options?: FrameOptionsConfig | undefined,
-): readonly [string, string] {
+export function createFrameOptions(options?: FrameOptionsConfig): readonly [string, string] {
   const action = options?.action ?? defaults.xFrameOptions.action;
 
   if (typeof action === "string") {
@@ -871,7 +867,7 @@ export function createFrameOptions(
  *   `X-Permitted-Cross-Domain-Policies` header.
  */
 export function createPermittedCrossDomainPolicies(
-  options?: PermittedCrossDomainPoliciesConfig | undefined,
+  options?: PermittedCrossDomainPoliciesConfig,
 ): readonly [string, string] {
   const permittedPolicies =
     options?.permittedPolicies ?? defaults.xPermittedCrossDomainPolicies.permittedPolicies;
@@ -901,7 +897,7 @@ export function createXssProtection() {
  * @returns
  *   `Headers` with the configured security headers.
  */
-export function nosecone(options?: Options | undefined): Headers {
+export function nosecone(options?: Options): Headers {
   let contentSecurityPolicy = options?.contentSecurityPolicy ?? defaults.contentSecurityPolicy;
   let crossOriginEmbedderPolicy =
     options?.crossOriginEmbedderPolicy ?? defaults.crossOriginEmbedderPolicy;

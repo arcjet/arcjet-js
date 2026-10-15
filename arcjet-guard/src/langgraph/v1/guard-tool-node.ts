@@ -1,6 +1,8 @@
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { guardTool } from "./guard-tool.ts";
 import type { GuardToolPolicy, LangGraphTool } from "./guard-tool.ts";
@@ -35,6 +37,17 @@ export interface GuardToolNodePolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardToolNodeCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, config) => …` matching
+   * ToolNode `invoke(input, config)`. Derive it from `configurable`; never
+   * trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[GuardToolNodeCall, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, config) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardToolNodeCall, unknown?]>;
   /** Metadata merged over the derived LangGraph context. */
   metadata?: ArcjetMetadata | ((call: GuardToolNodeCall) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -81,6 +94,8 @@ function resolveAction(policy: GuardToolNodePolicy, call: GuardToolNodeCall): st
 }
 
 function policyForTool(tool: LangGraphTool, policy: GuardToolNodePolicy): GuardToolPolicy<unknown> {
+  const actor = policy.actor;
+  const inputs = policy.inputs;
   return {
     action: (input) => resolveAction(policy, { toolName: tool.name, input }),
     rules: (input) => {
@@ -93,6 +108,18 @@ function policyForTool(tool: LangGraphTool, policy: GuardToolNodePolicy): GuardT
         ? policy.metadata(call)
         : (policy.metadata ?? {});
     },
+    ...(actor !== undefined && {
+      actor: (input: unknown, config?: unknown): string | Promise<string> => {
+        const call = { toolName: tool.name, input };
+        return typeof actor === "function" ? actor(call, config) : actor;
+      },
+    }),
+    ...(inputs !== undefined && {
+      inputs: (input: unknown, config?: unknown) => {
+        const call = { toolName: tool.name, input };
+        return typeof inputs === "function" ? inputs(call, config) : inputs;
+      },
+    }),
     ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
     ...(policy.onDeny !== undefined && { onDeny: policy.onDeny }),
   };
@@ -196,13 +223,16 @@ export function guardToolNode(
   toolsOrNode: LangGraphToolNodeLike | readonly LangGraphTool[],
   policy: GuardToolNodePolicy = {},
 ): LangGraphToolNodeLike | LangGraphTool[] {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardToolNode");
+  }
   if (Array.isArray(toolsOrNode)) {
     const tools: readonly LangGraphTool[] = toolsOrNode;
     return tools.map((tool) => wrapUnbrandedTool(client, tool, policy));
   }
 
   if (!isToolNodeLike(toolsOrNode)) {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardToolNode() requires a ToolNode or an array of tools");
   }
 

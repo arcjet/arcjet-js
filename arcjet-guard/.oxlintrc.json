@@ -1,8 +1,5 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "options": {
-    "typeAware": true
-  },
   "plugins": ["typescript", "unicorn", "oxc", "import", "node", "promise"],
   "categories": {
     "correctness": "error",
@@ -10,6 +7,7 @@
     "suspicious": "error"
   },
   "rules": {
+    "eslint/max-classes-per-file": "off", // Arbitrary threshold
     "eslint/max-lines-per-function": "off",
     "eslint/max-lines": "off",
     "eslint/no-inline-comments": "off",
@@ -62,5 +60,5 @@
       }
     }
   ],
-  "ignorePatterns": ["examples/**", "scripts/**"]
+  "ignorePatterns": ["examples/**", "scripts/**", "src/proto/**"]
 }

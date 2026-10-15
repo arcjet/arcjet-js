@@ -1,6 +1,6 @@
 {
   "name": "@arcjet/transport",
-  "version": "1.10.0",
+  "version": "1.14.1",
   "description": "Transport mechanisms for the Arcjet protocol",
   "keywords": [
     "arcjet",
@@ -53,6 +53,10 @@
         "default": "./dist/index.js"
       }
     },
+    "./http2": {
+      "types": "./dist/http2.d.ts",
+      "default": "./dist/http2.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -68,16 +72,16 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@arcjet/env": "1.10.0",
-    "@arcjet/logger": "1.10.0",
-    "@bufbuild/protobuf": "2.14.0",
-    "@connectrpc/connect": "2.1.2",
-    "@connectrpc/connect-node": "2.1.2",
-    "@connectrpc/connect-web": "2.1.2"
+    "@arcjet/env": "1.14.1",
+    "@arcjet/logger": "1.14.1",
+    "@bufbuild/protobuf": "2.16.0",
+    "@connectrpc/connect": "2.2.0",
+    "@connectrpc/connect-node": "2.2.0",
+    "@connectrpc/connect-web": "2.2.0"
   },
   "devDependencies": {
-    "@types/node": "22.20.1",
-    "tsdown": "0.22.14",
+    "@types/node": "22.20.5",
+    "tsdown": "0.23.0",
     "typescript": "7.0.2"
   },
   "engines": {

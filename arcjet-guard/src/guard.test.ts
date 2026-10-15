@@ -733,7 +733,6 @@ describe("Three-layer decision inspection", () => {
     assert.equal(decision.results.length, 3);
   });
 
-  // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
   test("Layer 2: decision.hasError() is false when no errors", () => {
     const { response, rl1, rl2, pi } = multiRuleResponse();
     const decision = decisionFromProto(response, [rl1, rl2, pi]);
@@ -742,7 +741,6 @@ describe("Three-layer decision inspection", () => {
     assert.equal(decision.hasError(), false);
   });
 
-  // oxlint-disable-next-line typescript/no-deprecated -- back-compat coverage of the deprecated hasError()
   test("Layer 2: decision.hasError() is true when a rule errored", () => {
     const rule = tokenBucket({
       bucket: "test",

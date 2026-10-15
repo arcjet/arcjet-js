@@ -7,12 +7,15 @@ import type {
   Processor,
 } from "@mastra/core/processors";
 
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraRequestContextLike } from "./context.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -45,6 +48,17 @@ export interface GuardProcessorPolicy {
    * this still performs the guard call.
    */
   rules?: RuleWithInput[] | ((input: GuardProcessorInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, requestContext) => …`
+   * matching Mastra processor args. Derive it from `requestContext`; never
+   * trust model-produced text as the actor identity.
+   */
+  actor?: ActorResolver<[GuardProcessorInput, MastraRequestContextLike?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, requestContext) => …`.
+   * Build each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardProcessorInput, MastraRequestContextLike?]>;
   /** Metadata merged over the derived Mastra context. */
   metadata?: ArcjetMetadata | ((input: GuardProcessorInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -56,7 +70,6 @@ function isRequestContextLike(value: unknown): value is MastraRequestContextLike
     value !== null &&
     typeof value === "object" &&
     "get" in value &&
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural `get` check without importing Mastra
     typeof (value as { get?: unknown }).get === "function"
   );
 }
@@ -68,7 +81,6 @@ function textFromPart(part: unknown): string {
   if (typeof part !== "object" || part === null) {
     return "";
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- message parts are untyped Mastra content
   const typed = part as { type?: unknown; text?: unknown };
   if (typed.type === "text" && typeof typed.text === "string") {
     return typed.text;
@@ -91,7 +103,6 @@ function messageText(message: unknown): string {
   if (typeof message !== "object" || message === null) {
     return "";
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Mastra messages are structurally typed
   const rec = message as { content?: unknown; parts?: unknown };
   if (typeof rec.content === "string") {
     return rec.content;
@@ -106,7 +117,6 @@ function messageText(message: unknown): string {
   if (typeof rec.content !== "object" || rec.content === null) {
     return "";
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nested Mastra content envelope
   const nested = rec.content as { parts?: unknown; content?: unknown };
   const fromNested = textFromParts(nested.parts);
   if (fromNested.length > 0) {
@@ -146,7 +156,6 @@ function idsFromMessages(messages: unknown[]): {
     if (typeof message !== "object" || message === null) {
       continue;
     }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- MastraDBMessage carries optional thread/resource
     const rec = message as { threadId?: unknown; resourceId?: unknown };
     const threadId = typeof rec.threadId === "string" ? rec.threadId : undefined;
     const resourceId = typeof rec.resourceId === "string" ? rec.resourceId : undefined;
@@ -223,6 +232,7 @@ export function guardProcessor(
   client: ArcjetAgentClient,
   policy: GuardProcessorPolicy,
 ): GuardProcessor {
+  assertValidAction(policy.action, "guardProcessor");
   const processorId = policy.id ?? "arcjet-guard";
   const processorName = policy.name ?? "Arcjet Guard";
 
@@ -258,20 +268,21 @@ export function guardProcessor(
       ...(requestCtx === undefined ? {} : { requestContext: requestCtx }),
     };
 
-    const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
+    const resolved = resolveCallPolicy(policy, input, policy.action);
     const metadata: ArcjetMetadata = {
       ...agentCtx.metadata,
       "mastra.phase": phase,
-      ...policyMetadata,
+      ...resolved.metadata,
     };
+    const remote = await resolveActorInputs(policy, resolved.action, input, requestCtx);
 
     await runGate(client, {
-      action: policy.action,
-      rules,
+      action: resolved.action,
+      rules: resolved.rules,
       correlationId: agentCtx.correlationId,
       metadata,
+      degraded: resolved.degraded ?? remote.degraded,
+      ...remote.fields,
       onAllow: () => {
         /* allow the turn to continue */
       },
@@ -288,7 +299,6 @@ export function guardProcessor(
     async processInput(args: ProcessInputArgs): Promise<ProcessInputResult> {
       await screen(args.messages, args.abort, args.requestContext, "input");
       if (args.state !== undefined && args.state !== null) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- module-scoped Symbol marker on Mastra's shared state bag
         (args.state as Record<PropertyKey, unknown>)[inputScreened] = true;
       }
       return args.messages;
@@ -305,8 +315,7 @@ export function guardProcessor(
       const state =
         args.state === undefined || args.state === null
           ? undefined
-          : // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- read the module-scoped Symbol marker
-            (args.state as Record<PropertyKey, unknown>);
+          : (args.state as Record<PropertyKey, unknown>);
       if (args.stepNumber === 0 && state?.[inputScreened] === true) {
         return args.messages;
       }

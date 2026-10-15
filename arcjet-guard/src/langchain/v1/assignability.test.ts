@@ -10,8 +10,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { AgentMiddleware } from "langchain";
 import type { DynamicStructuredTool, StructuredToolInterface } from "@langchain/core/tools";
+import type { AgentMiddleware } from "langchain";
 
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { guardMiddleware } from "./guard-middleware.ts";

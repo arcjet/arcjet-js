@@ -1,15 +1,17 @@
 import { jsonSchema } from "ai";
 import type { InferToolInput, InferToolOutput, Tool } from "ai";
 
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import type { ArcjetAgentContext } from "../../agents/context.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { PolicyInputMap } from "../../policy-input.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { DecisionDeny, RuleWithInput, ArcjetMetadata } from "../../types.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
 // Re-exported because this is the module the type was declared in before it
 // became shared, and `guardTool`'s callers already import from here.
@@ -51,15 +53,10 @@ export interface GuardToolPolicy<T extends Tool> {
    * actor: (input, ctx) => ctx?.userId ?? "anonymous",
    * ```
    */
-  actor?:
-    | string
-    | ((
-        input: InferToolInput<T>,
-        context: ArcjetAgentContext | undefined,
-      ) => string | Promise<string>);
+  actor?: ActorResolver<[InferToolInput<T>, ArcjetAgentContext | undefined]>;
   /**
-   * Typed remote-policy inputs, or a resolver over the parsed tool input. Build
-   * each value with {@link policyInput}.
+   * Typed remote-policy inputs, or a resolver over the parsed tool input and
+   * trusted context. Build each value with {@link policyInput}.
    *
    * @example
    * ```ts
@@ -69,12 +66,7 @@ export interface GuardToolPolicy<T extends Tool> {
    * }),
    * ```
    */
-  inputs?:
-    | PolicyInputMap
-    | ((
-        input: InferToolInput<T>,
-        context: ArcjetAgentContext | undefined,
-      ) => PolicyInputMap | Promise<PolicyInputMap>);
+  inputs?: InputsResolver<[InferToolInput<T>, ArcjetAgentContext | undefined]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: InferToolInput<T>) => ArcjetMetadata);
   /** Explicit correlation ID; overrides the context's when set. */
@@ -239,6 +231,7 @@ export function guardTool<T extends Tool>(
   tool: T,
   policy: GuardToolPolicy<T>,
 ): Tool<InferToolInput<T>, InferToolOutput<T>, ArcjetAgentContext | undefined> {
+  assertValidAction(policy.action, "guardTool");
   if (typeof tool.execute !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility; changing to TypeError is an observable API change
     throw new Error("@arcjet/guard: guardTool() requires a tool with an execute function");
@@ -255,7 +248,6 @@ export function guardTool<T extends Tool>(
     ...tool,
     [arcjetProtectedTool]: true,
     contextSchema,
-    // oxlint-disable-next-line eslint/require-await -- declared async to match the tool interface contract, but runGuarded's promise is returned rather than awaited
     async execute(input: InferToolInput<T>, options: never) {
       // `options.context` was validated by contextSchema above.
       const opts = options as {
@@ -267,27 +259,17 @@ export function guardTool<T extends Tool>(
         warnMissingToolsContext(policy.action);
       }
       const correlationId = policy.correlationId ?? ctx?.correlationId;
-      const metadata = {
-        ...ctx?.metadata,
-        ...(typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata),
-      };
-      const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
+      const call = resolveCallPolicy(policy, input, policy.action);
+      const remote = await resolveActorInputs(policy, call.action, input, ctx);
+      const metadata = { ...ctx?.metadata, ...call.metadata };
 
       const result = runGuarded(client, {
-        action: policy.action,
-        rules,
+        action: call.action,
+        rules: call.rules,
         correlationId,
         metadata,
-        resolvePolicy: async () => ({
-          ...(policy.actor !== undefined && {
-            actor:
-              typeof policy.actor === "function" ? await policy.actor(input, ctx) : policy.actor,
-          }),
-          ...(policy.inputs !== undefined && {
-            inputs:
-              typeof policy.inputs === "function" ? await policy.inputs(input, ctx) : policy.inputs,
-          }),
-        }),
+        degraded: call.degraded ?? remote.degraded,
+        ...remote.fields,
         ...(policy.onGuardError !== undefined && { onGuardError: policy.onGuardError }),
         onDeny: (decision) =>
           policy.onDeny === undefined ? denialResult(decision) : policy.onDeny(decision),

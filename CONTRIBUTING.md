@@ -125,6 +125,102 @@ change them:
   `@arcjet/guard/langgraph/v1`. There is no unversioned
   `@arcjet/guard/strands-agents` alias. Docs slug is
   `/guards/strands-agents/`.
+  `tanstack-ai/v0` is `chat({ middleware })` +
+  `ChatMiddleware.onBeforeToolCall`: there is no `guardTool` (a throw
+  from `execute` is swallowed into `{ error }` and is not a usable deny
+  envelope), tool calls go through `guardMiddleware`'s
+  `onBeforeToolCall` (default DENY is `{ type: "skip", result:
+  ArcjetDenialResult }`; optional `onDeny: "abort"` only; do not
+  throw), inbound is screened with `guard()` before `chat()`
+  (`guard()` fails open — check `hasFailedOpen()`), and
+  `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL
+  not policy. After a human yes, Guard still runs. Put Arcjet first
+  in the middleware array — `onBeforeToolCall` is first-win; if
+  `toolCacheMiddleware` skips first, Guard never runs. Brand-skip
+  tools already wrapped by a sibling `guardTool` so
+  `guardMiddleware` does not double-call. Inbound `guard()` before
+  `chat()` is a separate call and does not brand tools. Correlation
+  is a caller-owned id from helper options or
+  `chat({ context })`. Never mint. Never `ctx.threadId`. Never
+  `traceId` / `requestId` / `streamId`. There is no unversioned
+  `@arcjet/guard/tanstack-ai` alias and no `/v1` until TanStack AI
+  ships 1.x. Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.
+  Do not name anything `contentGuardMiddleware`. Docs slug is
+  `/guards/tanstack-ai/`.
+- **`google-adk/v2`** is JS `@google/adk` `Runner` +
+  `BasePlugin.beforeToolCallback`: there is no `guardTool` (skip is
+  the plugin return, not throw-from-execute), tool calls go through
+  `guardPlugin`'s `beforeToolCallback` (DENY is a dictionary —
+  `ArcjetDenialResult` — so ADK skips `runAsync`; `undefined`
+  executes; do not throw — PluginManager treats a throw as a plugin
+  error, not skip), inbound is screened with `guard()` before
+  `Runner.runAsync` (`guard()` fails open — check `hasFailedOpen()`),
+  and `requireConfirmation` / `requestConfirmation` /
+  `SecurityPlugin` CONFIRM is HITL not policy. After a human yes,
+  Guard still runs. Put Arcjet first in `new Runner({ plugins })` —
+  PluginManager is first-win; returning a value short-circuits
+  remaining plugins. Do not use ADK `SecurityPlugin` as the Arcjet
+  policy gate. Brand-skip tools already wrapped by a sibling
+  `guardTool`. The plugin does not implement an inbound /
+  before-model prompt gate so a preceding `guard()` does not
+  double-call. Correlation is a caller-owned id from helper options
+  (`guardPlugin({ sessionId })`), which wins over durable session
+  `state`. ADK `Context` has no nested `context` field. Never mint.
+  Never `invocationId`. Never `traceId`. Never session auto-ids
+  (`toolContext.sessionId` / `session.id`).
+  There is no unversioned `@arcjet/guard/google-adk` alias. Path is
+  `/v2` to match ADK 2.x. Do not double-wrap with
+  `@arcjet/guard/vercel-ai/v7`. This is Google ADK JS, not
+  `@google/genai`, not Python google-adk. Docs slug is
+  `/guards/google-adk/`.
+- **`cloudflare-think/v0`** is `@cloudflare/think` `Think` + class
+  `beforeToolCall`: there is no `guardTool` (the gate is the hook
+  return, not throw-from-execute), tool calls go through
+  `guardHooks`' `beforeToolCall` (default DENY is
+  `{ action: "substitute", output: ArcjetDenialResult }`; optional
+  `onDeny: "block"` only; fail-closed stays substitute; do not
+  throw), inbound is screened with `guard()` before the turn
+  (`guard()` fails open — check `hasFailedOpen()`), and
+  `needsApproval` is HITL not policy. After a human yes, Guard
+  still runs. Correlation is a caller-owned id from helper options
+  (`guardHooks({ sessionId })`). Never mint. Never `toolCallId`.
+  Never `requestId` / `traceId` / Durable Object `name` / `id`.
+  There is no unversioned `@arcjet/guard/cloudflare-think` alias
+  and no `/v1` until Think ships 1.x. The peer floor is `>=0.3.0
+  <1` because 0.3.0 is the first release whose `beforeToolCall`
+  returns a functional `ToolCallDecision`. Do not double-wrap with
+  `@arcjet/guard/vercel-ai/v7`. Think is not the Vercel AI SDK.
+  Docs slug is `/guards/cloudflare-think/`.
+- **`claude-managed-agents/v0`** is hosted Claude Managed Agents
+  (REST+SSE, beta `managed-agents-2026-04-01`): Anthropic runs the
+  tool loop and there is no PreToolUse. This is **not**
+  `claude-agent-sdk/v0` — do not reuse that adapter, its hooks, or
+  `guardTool`. Inbound is `guardEvents` before
+  `sessions.events.send` / `initial_events` (there is no
+  `guardInbound`). Custom tools you execute are `guardCustomTool`
+  on `agent.custom_tool_use` (DENY does not run the tool; send
+  `user.custom_tool_result` with the real events API, including
+  `is_error` which exists on that schema). Self-hosted
+  `EnvironmentWorker` / `betaTool({ run })` uses the same custom-tool
+  gate; the CLI worker cannot register custom tools. Default
+  `always_allow` cannot be gated — Anthropic-cloud bash/read/write
+  and `web_search` / `web_fetch` run on Anthropic. MCP: Anthropic
+  is the client; Guard custom tools and MCP servers you host.
+  `user.tool_confirmation` / `always_ask` is HITL, not policy —
+  prefer omitting a confirmation helper. Correlation is
+  `claudeManagedAgentsContext` (caller-owned only). Never mint.
+  Never treat Anthropic session/event ids as if we created them.
+  Never `traceId`. Peer is type-only `@anthropic-ai/sdk` `>=0.86.0
+  <1` (first release with `client.beta.agents` / `sessions` /
+  `environments`), not `@anthropic-ai/claude-agent-sdk`. Node stays
+  Guard's existing floor. Path is `/v0` because this is a public
+  beta — no unversioned alias, no `/v1`. Docs slug is
+  `/guards/claude-managed-agents/` (shared JS+Python page). Do not
+  touch `/guards/claude-agent-sdk/` or `/guards/claude-agent-sdk-py/`.
+  Do not add a `claude-managed-agents` example in this repo. The
+  workspace pins `@anthropic-ai/sdk` to `0.123.0` via a root
+  override so it does not collide with `@strands-agents/sdk`'s
+  optional `^0.109.1` peer.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.
 - **Explicitly versioned, with no unversioned alias.** `@arcjet/guard/vercel-ai`
   does not resolve, and neither does a wildcard `./vercel-ai/*`. An alias would
@@ -295,3 +391,24 @@ released, or a release run will fail:
    hand (`npm publish --workspace @arcjet/<name>`), then configure
    [trusted publishing](#npm-trusted-publishing) for it.
 4. After that, it publishes automatically alongside everything else.
+
+## Agent Skills
+
+Versioned [Agent Skills](https://agentskills.io) ship inside npm packages via
+[TanStack Intent](https://tanstack.com/intent). Do not add new skills to
+[`arcjet/skills`](https://github.com/arcjet/skills) for JS/TS guidance — that
+repo is the older marketplace install. JS skills live next to the docs they
+were derived from:
+
+- General request / CLI / MCP / Guard routing: [`arcjet-skills/`](./arcjet-skills)
+- Guard vendor integrations: [`arcjet-guard/skills/`](./arcjet-guard/skills)
+
+Each `SKILL.md` must declare `sources` pointing at those docs. CI runs
+`intent validate` and a conservative stale check: if a source file changes
+and the skill does not, the pull request fails so a human can decide whether
+the guidance still holds.
+
+New skill-shipping packages need the `tanstack-intent` keyword and a
+`skills/` entry in `files` so the tarball includes them. Consumers allowlist
+packages in `package.json#intent.skills` and load one skill per task. Editor
+hooks are convenience, not a security boundary.

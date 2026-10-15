@@ -50,8 +50,8 @@ test("explicit ipSrc bypasses the Fastify socket address and is stripped", async
       },
       url: "/",
     },
-    { ipSrc: " application-owned:not-an-ip " },
+    { ipSrc: "8.8.8.8" },
   );
-  assert.equal(details.ip, " application-owned:not-an-ip ");
+  assert.equal(details.ip, "8.8.8.8");
   assert.deepEqual(details.extra, {});
 });

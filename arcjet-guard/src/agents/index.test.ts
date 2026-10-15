@@ -57,10 +57,12 @@ test("exports the correct runtime values (AC5.1)", () => {
   const expectedRuntimeNames = [
     "ArcjetDeniedError",
     "ArcjetGuardUnavailableError",
+    "ArcjetInvalidLabelError",
     "captureAction",
     "createAgentContext",
     "guardAction",
     "securityMetadata",
+    "validateGuardLabel",
   ];
 
   assert.deepEqual(
@@ -108,6 +110,8 @@ function walkForForbiddenImports(filePath: string, visited: Set<string>, errors:
       spec.startsWith("@mastra/core/") ||
       spec === "@anthropic-ai/claude-agent-sdk" ||
       spec.startsWith("@anthropic-ai/claude-agent-sdk/") ||
+      spec === "@anthropic-ai/sdk" ||
+      spec.startsWith("@anthropic-ai/sdk/") ||
       spec === "langchain" ||
       spec.startsWith("langchain/") ||
       spec === "@langchain/langgraph" ||
@@ -123,7 +127,11 @@ function walkForForbiddenImports(filePath: string, visited: Set<string>, errors:
       spec === "@genkit-ai/ai" ||
       spec.startsWith("@genkit-ai/ai/") ||
       spec === "@strands-agents/sdk" ||
-      spec.startsWith("@strands-agents/sdk/")
+      spec.startsWith("@strands-agents/sdk/") ||
+      spec === "@tanstack/ai" ||
+      spec.startsWith("@tanstack/ai/") ||
+      spec === "@google/adk" ||
+      spec.startsWith("@google/adk/")
     ) {
       errors.push(`File ${absolutePath} imports forbidden package: "${spec}"`);
     }

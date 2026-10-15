@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-assignment, typescript/no-unnecessary-type-assertion, typescript/no-unsafe-type-assertion -- test fixtures built from the real SDK types
+// oxlint-disable typescript/explicit-function-return-type, typescript/no-unnecessary-type-assertion, typescript/no-unsafe-type-assertion -- test fixtures built from the real SDK types
 /**
  * Behaviour against the real `@strands-agents/sdk` Plugin / addHook
  * surface, rather than hand-written fakes.
@@ -14,19 +14,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import {
-  AfterToolCallEvent,
-  BeforeToolCallEvent,
-  HookOrder,
-} from "@strands-agents/sdk";
-
-import { guardHooks } from "../../src/strands-agents/v1/hooks.ts";
-import { guardTool } from "../../src/strands-agents/v1/guard-tool.ts";
-import { asDenial } from "../_shared/source-scan.ts";
-import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
-import { decisionDenyPromptInjection, stubClient } from "../_shared/stub-client.ts";
+import { AfterToolCallEvent, BeforeToolCallEvent, HookOrder } from "@strands-agents/sdk";
 import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
+
+import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
+import { guardTool } from "../../src/strands-agents/v1/guard-tool.ts";
+import { guardHooks } from "../../src/strands-agents/v1/hooks.ts";
+import { asDenial } from "../_shared/source-scan.ts";
+import { decisionDenyPromptInjection, stubClient } from "../_shared/stub-client.ts";
 
 test("initAgent registers BeforeToolCallEvent at HookOrder.SDK_FIRST - 1", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());

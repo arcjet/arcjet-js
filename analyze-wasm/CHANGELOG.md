@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/analyze-wasm-v1.14.1) (2026-10-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze-wasm:** Synchronize arcjet-js versions
+
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/analyze-wasm-v1.14.0) (2026-10-01)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze-wasm:** Synchronize arcjet-js versions
+
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/analyze-wasm-v1.13.0) (2026-09-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze-wasm:** Synchronize arcjet-js versions
+
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/analyze-wasm-v1.12.0) (2026-09-08)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/analyze-wasm:** Synchronize arcjet-js versions
+
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/analyze-wasm-v1.11.0) (2026-08-25)
+
+
+### 🚀 New Features
+
+* sync well-known bots and regenerate analyze WebAssembly module ([#6234](https://github.com/arcjet/arcjet-js/issues/6234)) ([919e874](https://github.com/arcjet/arcjet-js/commit/919e874dd640c4eaeaf7a2ee94be770faf833b03))
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/analyze-wasm-v1.10.0) (2026-08-11)
 
 

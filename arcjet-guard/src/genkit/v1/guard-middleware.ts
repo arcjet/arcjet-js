@@ -1,10 +1,14 @@
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+import { withActiveGenkitContext } from "./active-context.ts";
 import { genkitContext } from "./context.ts";
 import type { GenkitContextSource } from "./context.ts";
 
@@ -37,6 +41,19 @@ export interface GuardMiddlewarePolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardMiddlewareCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, ctx) => …` matching the
+   * Genkit middleware `tool(req, ctx, next)` context. Derive it from
+   * authenticated generate context — including the active
+   * `generate({ context })` ALS context when the hook `ctx` omits it.
+   * Never trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[GuardMiddlewareCall, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, ctx) => …`. Build each
+   * value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardMiddlewareCall, unknown?]>;
   /** Metadata merged over the derived Genkit context. */
   metadata?: ArcjetMetadata | ((call: GuardMiddlewareCall) => ArcjetMetadata);
   /**
@@ -91,24 +108,14 @@ function isToolRequestPart(
   return typeof value["toolRequest"]["name"] === "string";
 }
 
-function resolveAction(policy: GuardMiddlewarePolicy, call: GuardMiddlewareCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  if (typeof policy.action === "string" && policy.action.length > 0) {
-    return policy.action;
-  }
-  return "tool.invoked";
-}
-
-function resolveSessionId(policy: GuardMiddlewarePolicy, call: GuardMiddlewareCall): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(call);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
-  }
-  return undefined;
+/**
+ * The label for a static or absent `action`, and the label used when an
+ * `action` callback fails.
+ */
+function fallbackAction(policy: GuardMiddlewarePolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "tool.invoked";
 }
 
 /**
@@ -230,6 +237,10 @@ export function guardMiddleware(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy = {},
 ): GenkitGuardMiddleware {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardMiddleware");
+  }
   return {
     name: middlewareName(),
     instantiate: (options?: unknown) => {
@@ -239,7 +250,11 @@ export function guardMiddleware(
           : undefined;
 
       return {
-        tool: async (req: unknown, ctx: unknown, next: (req: unknown, ctx: unknown) => Promise<unknown>) => {
+        tool: async (
+          req: unknown,
+          ctx: unknown,
+          next: (req: unknown, ctx: unknown) => Promise<unknown>,
+        ) => {
           if (!isToolRequestPart(req)) {
             return next(req, ctx);
           }
@@ -253,33 +268,16 @@ export function guardMiddleware(
             return next(req, ctx);
           }
 
-          let action: string;
-          let sessionId: string | undefined;
-          let rules: RuleWithInput[] | undefined;
-          let policyMetadata: ArcjetMetadata | undefined;
-          try {
-            action = resolveAction(policy, call);
-            sessionId = resolveSessionId(policy, call);
-            rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-            policyMetadata =
-              typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-          } catch (error) {
-            const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
-            if (shouldWarn()) {
-              console.warn(
-                '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-                actionLabel,
-                error,
-              );
-            }
-            if (policy.onGuardError === "allow") {
-              return next(req, ctx);
-            }
-            return denialPart(req, unavailableResult());
-          }
+          const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
+          const { action, sessionId, rules, metadata: policyMetadata } = resolved;
+          const hookCtx = await withActiveGenkitContext(ctx);
+          const remote = await resolveActorInputs(policy, action, call, hookCtx);
 
-          const source = isContextSource(ctx) ? ctx : undefined;
-          const agentCtx = genkitContext(source, sessionId === undefined ? undefined : { sessionId });
+          const source = isContextSource(hookCtx) ? hookCtx : undefined;
+          const agentCtx = genkitContext(
+            source,
+            sessionId === undefined ? undefined : { sessionId },
+          );
 
           const metadata: ArcjetMetadata = {
             ...agentCtx.metadata,
@@ -292,6 +290,8 @@ export function guardMiddleware(
             rules,
             correlationId: agentCtx.correlationId,
             metadata: mergedMetadata,
+            degraded: resolved.degraded ?? remote.degraded,
+            ...remote.fields,
             onDeny: (decision: DecisionDeny) => {
               if (policy.onDeny === undefined) {
                 return denialPart(req, denialResult(decision));

@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/no-unsafe-call, eslint/strict-boolean-expressions, eslint/explicit-function-return-type, eslint/no-unnecessary-type-assertion -- test infrastructure
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-argument, eslint/no-unnecessary-type-assertion -- test infrastructure
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -25,11 +25,9 @@ function createMockClient(): ArcjetAgentClient & {
   return {
     captureCalls,
     guard(_opts) {
-      // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-return -- test mock
       return Promise.resolve({ allowed: true } as any);
     },
     capture(opts: CaptureOptions) {
-      // oxlint-disable-next-line typescript/no-unsafe-assignment -- test mock
       captureCalls.push({
         action: opts.action,
         correlationId: opts.correlationId,
@@ -43,7 +41,6 @@ function createMockClient(): ArcjetAgentClient & {
 function createThrowingClient(): ArcjetAgentClient {
   return {
     guard(_opts) {
-      // oxlint-disable-next-line typescript/no-unsafe-argument, typescript/no-unsafe-return -- test mock
       return Promise.resolve({ allowed: true } as any);
     },
     capture() {
@@ -78,6 +75,9 @@ test("AC6.1: events map contains only valid HookEventMap keys", () => {
     "action.result",
     "subagent.called",
     "subagent.completed",
+    "task.started",
+    "task.settled",
+    "agent.started",
   ]);
 
   const eventKeys = Object.keys(definition.events);
@@ -93,7 +93,6 @@ test("AC6.2: action.result with status 'completed' captures outcome 'success' an
 
   assert.ok(definition.events?.["action.result"], "action.result handler must exist");
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -136,7 +135,6 @@ test("AC6.2: action.result with status 'failed' captures outcome 'error'", async
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -167,7 +165,6 @@ test("AC6.2: action.result with status 'rejected' captures outcome 'denied'", as
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -196,7 +193,6 @@ test("AC6.2: action.result with unrecognised status does not capture outcome key
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion above
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -228,7 +224,6 @@ test("AC6.3: session.started captures continuation-token and channel when presen
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["session.started"];
   assert.ok(handler, "session.started handler must exist");
 
@@ -253,7 +248,6 @@ test("AC6.3: session.started captures session id even when channel is empty", as
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["session.started"];
   assert.ok(handler, "session.started handler must exist");
   const mockCtx = {
@@ -263,7 +257,6 @@ test("AC6.3: session.started captures session id even when channel is empty", as
   };
   const mockEvent = { data: {} };
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- asserted above
   await handler!(mockEvent as any, mockCtx as any);
 
   assert.equal(client.captureCalls.length, 1);
@@ -282,7 +275,6 @@ test("AC3.2: action.result with delegated session correlates to root session id"
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["action.result"]!;
   const mockCtx = {
     session: {
@@ -318,7 +310,6 @@ test("AC6.3: session.started captures the session-derived correlationId", async 
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["session.started"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -339,7 +330,6 @@ test("AC6.2: session.failed handler captures action, outcome, and error.code", a
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["session.failed"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -367,7 +357,6 @@ test("AC6.2: turn.started handler captures action, correlationId, and eve.turn",
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["turn.started"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -395,7 +384,6 @@ test("AC6.2: turn.completed handler captures action, outcome, and eve.turn", asy
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["turn.completed"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -424,7 +412,6 @@ test("AC6.2: turn.failed handler captures action, outcome, error.code, and eve.t
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assertion below
   const handler = definition.events!["turn.failed"]!;
   const mockCtx = {
     session: { id: "ses_123" },
@@ -455,7 +442,6 @@ test("AC6.4: subagent.called captures eve.child-session, eve.subagent, and eve.c
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["subagent.called"];
   assert.ok(handler, "subagent.called handler must exist");
 
@@ -486,7 +472,6 @@ test("AC6.4: subagent.completed does not have eve.child-session", async () => {
   const client = createMockClient();
   const definition = arcjetHooks(client);
 
-  // oxlint-disable-next-line typescript/no-non-null-assertion -- assert below
   const handler = definition.events?.["subagent.completed"];
   assert.ok(handler, "subagent.completed handler must exist");
 
@@ -513,6 +498,255 @@ test("AC6.4: subagent.completed does not have eve.child-session", async () => {
     !("eve.child-session" in (capture.metadata ?? {})),
     "eve.child-session must not be present",
   );
+});
+
+const subagentCtx = {
+  session: { id: "ses_123", turn: { id: "turn_1", sequence: 1 } },
+  agent: { name: "test-agent" },
+  channel: {},
+};
+
+// The metadata eveAgentContext derives from subagentCtx, present on every
+// subagent record.
+const sessionMetadata = { "eve.session": "ses_123", "eve.turn": "turn_1" };
+
+// The task and agent events are newer than the eve version installed here, so
+// HookEventMap does not name them; read every listener by name instead.
+type Listener = (event: unknown, ctx: unknown) => void | Promise<void>;
+
+function listeners(client: ArcjetAgentClient): Record<string, Listener | undefined> {
+  return arcjetHooks(client).events as Record<string, Listener | undefined>;
+}
+
+test("subagent.called (eve 0.34–0.68) records eve.subagent-called with exact metadata", async () => {
+  const client = createMockClient();
+  const handler = arcjetHooks(client).events?.["subagent.called"];
+  assert.ok(handler, "subagent.called handler must exist");
+
+  await handler(
+    {
+      type: "subagent.called",
+      data: {
+        callId: "call_1",
+        childSessionId: "ses_child_1",
+        childStreamPath: "/stream/ses_child_1",
+        sessionId: "ses_123",
+        sequence: 3,
+        name: "researcher",
+        toolName: "researcher",
+        turnId: "turn_1",
+        workflowId: "wf_1",
+      },
+    } as any,
+    subagentCtx as any,
+  );
+
+  assert.deepEqual(client.captureCalls, [
+    {
+      action: "eve.subagent-called",
+      correlationId: "ses_123",
+      metadata: {
+        ...sessionMetadata,
+        "eve.child-session": "ses_child_1",
+        "eve.subagent": "researcher",
+        "eve.call": "call_1",
+      },
+    },
+  ]);
+});
+
+test("subagent.completed (eve 0.34–0.68) records eve.subagent-completed with exact metadata", async () => {
+  const client = createMockClient();
+  const handler = arcjetHooks(client).events?.["subagent.completed"];
+  assert.ok(handler, "subagent.completed handler must exist");
+
+  await handler(
+    {
+      type: "subagent.completed",
+      data: { callId: "call_1", output: "SECRET_OUTPUT", subagentName: "researcher" },
+    } as any,
+    subagentCtx as any,
+  );
+
+  assert.deepEqual(client.captureCalls, [
+    {
+      action: "eve.subagent-completed",
+      correlationId: "ses_123",
+      metadata: { ...sessionMetadata, "eve.call": "call_1", "eve.subagent": "researcher" },
+    },
+  ]);
+});
+
+test("task.started (eve ≥0.69) with kind 'agent' records eve.subagent-called", async () => {
+  const client = createMockClient();
+  const handler = listeners(client)["task.started"];
+  assert.ok(handler, "task.started handler must exist");
+
+  await handler(
+    {
+      type: "task.started",
+      data: {
+        callId: "call_2",
+        kind: "agent",
+        name: "researcher",
+        taskId: "task_2",
+        turnId: "turn_1",
+      },
+    },
+    subagentCtx,
+  );
+
+  assert.deepEqual(client.captureCalls, [
+    {
+      action: "eve.subagent-called",
+      correlationId: "ses_123",
+      metadata: {
+        ...sessionMetadata,
+        "eve.subagent": "researcher",
+        "eve.call": "call_2",
+        "eve.task": "task_2",
+      },
+    },
+  ]);
+});
+
+for (const status of ["completed", "failed", "cancelled"] as const) {
+  test(`task.settled (eve ≥0.69) with kind 'agent' and status '${status}' records eve.subagent-completed`, async () => {
+    const client = createMockClient();
+    const handler = listeners(client)["task.settled"];
+    assert.ok(handler, "task.settled handler must exist");
+
+    await handler(
+      {
+        type: "task.settled",
+        data: {
+          callId: "call_2",
+          kind: "agent",
+          name: "researcher",
+          status,
+          taskId: "task_2",
+          turnId: "turn_1",
+          ...(status === "completed" ? { output: "SECRET_OUTPUT" } : {}),
+          ...(status === "failed" ? { error: { message: "SECRET_ERROR" } } : {}),
+          ...(status === "cancelled" ? { cancel: { reason: "task_cancel" } } : {}),
+        },
+      },
+      subagentCtx,
+    );
+
+    assert.deepEqual(client.captureCalls, [
+      {
+        action: "eve.subagent-completed",
+        correlationId: "ses_123",
+        metadata: {
+          ...sessionMetadata,
+          "eve.call": "call_2",
+          "eve.subagent": "researcher",
+          "eve.task": "task_2",
+          "eve.task-status": status,
+          ...(status === "cancelled" ? { "eve.cancel-reason": "task_cancel" } : {}),
+        },
+      },
+    ]);
+  });
+}
+
+test("task.started and task.settled (eve ≥0.69) with kind 'tool' record nothing", async () => {
+  const client = createMockClient();
+  const events = listeners(client);
+  const data = { callId: "call_3", kind: "tool", name: "search", taskId: "task_3", turnId: "t" };
+
+  await events["task.started"]!({ type: "task.started", data }, subagentCtx);
+  await events["task.settled"]!(
+    { type: "task.settled", data: { ...data, status: "completed", output: "x" } },
+    subagentCtx,
+  );
+
+  assert.deepEqual(client.captureCalls, []);
+});
+
+test("task.settled (eve ≥0.69) without kind records nothing", async () => {
+  const client = createMockClient();
+  const events = listeners(client);
+
+  await events["task.settled"]!(
+    {
+      type: "task.settled",
+      data: { callId: "call_4", status: "completed", taskId: "task_4", turnId: "t" },
+    },
+    subagentCtx,
+  );
+
+  assert.deepEqual(client.captureCalls, []);
+});
+
+test("agent.started (eve ≥0.69) records eve.agent-started with the child session", async () => {
+  const client = createMockClient();
+  const handler = listeners(client)["agent.started"];
+  assert.ok(handler, "agent.started handler must exist");
+
+  await handler(
+    {
+      type: "agent.started",
+      data: {
+        callId: "call_2",
+        turnId: "turn_1",
+        taskId: "task_2",
+        name: "researcher",
+        sessionId: "ses_child_2",
+        streamPath: "/stream/ses_child_2",
+      },
+    },
+    subagentCtx,
+  );
+
+  assert.deepEqual(client.captureCalls, [
+    {
+      action: "eve.agent-started",
+      correlationId: "ses_123",
+      metadata: {
+        ...sessionMetadata,
+        "eve.child-session": "ses_child_2",
+        "eve.subagent": "researcher",
+        "eve.call": "call_2",
+        "eve.task": "task_2",
+      },
+    },
+  ]);
+});
+
+test("subagent listeners skip a field whose value is not a string", async () => {
+  const client = createMockClient();
+  const events = listeners(client);
+
+  await events["agent.started"]!(
+    { type: "agent.started", data: { callId: 7, name: null, sessionId: "ses_child" } },
+    subagentCtx,
+  );
+
+  assert.deepEqual(client.captureCalls, [
+    {
+      action: "eve.agent-started",
+      correlationId: "ses_123",
+      metadata: { ...sessionMetadata, "eve.child-session": "ses_child" },
+    },
+  ]);
+});
+
+test("subagent listeners never throw when the event is null", () => {
+  const client = createMockClient();
+  const events = listeners(client);
+
+  for (const name of [
+    "subagent.called",
+    "subagent.completed",
+    "task.started",
+    "task.settled",
+    "agent.started",
+  ]) {
+    assert.doesNotThrow(() => events[name]!(null, subagentCtx), `${name} threw on a null event`);
+  }
+  assert.deepEqual(client.captureCalls, []);
 });
 
 // AC6.5: never throws when handler called with empty event/ctx
@@ -559,6 +793,10 @@ test("AC6.5: handlers don't throw when capture() throws", async () => {
         callId: "call_123",
         childSessionId: "ses_child",
         subagentName: "agent",
+        kind: "agent",
+        name: "agent",
+        taskId: "task_123",
+        sessionId: "ses_child",
       },
     };
 

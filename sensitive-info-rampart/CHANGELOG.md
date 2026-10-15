@@ -1,5 +1,100 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/sensitive-info-rampart-v1.14.1) (2026-10-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sensitive-info-rampart:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.14.0 to 1.14.1
+    * arcjet bumped from 1.14.0 to 1.14.1
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.14.0 to 1.14.1
+    * arcjet bumped from 1.14.0 to 1.14.1
+
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/sensitive-info-rampart-v1.14.0) (2026-10-01)
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** split character windows that exceed the token budget ([#6301](https://github.com/arcjet/arcjet-js/issues/6301)) ([3b38938](https://github.com/arcjet/arcjet-js/commit/3b389383d1efc2ef9866775f375e749ede3e8cbe))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.14.0
+    * arcjet bumped from 1.13.0 to 1.14.0
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.14.0
+    * arcjet bumped from 1.13.0 to 1.14.0
+
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/sensitive-info-rampart-v1.13.0) (2026-09-16)
+
+
+### 🚀 New Features
+
+* **sensitive-info-rampart:** add `classify` option for custom runtimes ([#6284](https://github.com/arcjet/arcjet-js/issues/6284)) ([fdaeebb](https://github.com/arcjet/arcjet-js/commit/fdaeebb2473f489f736f34f19a23fc9df91f8ce7))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.12.0 to 1.13.0
+    * arcjet bumped from 1.12.0 to 1.13.0
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.12.0 to 1.13.0
+    * arcjet bumped from 1.12.0 to 1.13.0
+
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/sensitive-info-rampart-v1.12.0) (2026-09-08)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sensitive-info-rampart:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.11.0 to 1.12.0
+    * arcjet bumped from 1.11.0 to 1.12.0
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.11.0 to 1.12.0
+    * arcjet bumped from 1.11.0 to 1.12.0
+
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/sensitive-info-rampart-v1.11.0) (2026-08-25)
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.10.0 to 1.11.0
+    * arcjet bumped from 1.10.0 to 1.11.0
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.10.0 to 1.11.0
+    * arcjet bumped from 1.10.0 to 1.11.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...@arcjet/sensitive-info-rampart-v1.10.0) (2026-08-11)
 
 

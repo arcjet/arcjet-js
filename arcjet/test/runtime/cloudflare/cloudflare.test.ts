@@ -99,7 +99,6 @@ describe("Runtime: core arcjet protect() on Cloudflare Workers (miniflare)", () 
   test("protect() returns ALLOW through real server from Workers", async () => {
     const response = await mf.dispatchFetch("http://localhost/");
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response.json() returns unknown
     const json = (await response.json()) as {
       conclusion?: string;
       isErrored?: boolean;

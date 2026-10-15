@@ -7,9 +7,12 @@
  * @internal This barrel has no export map entry. Every symbol below reaches
  * users re-exported from a vendor namespace — `@arcjet/guard/vercel-ai/v7`,
  * `@arcjet/guard/vercel-eve/v0`, `@arcjet/guard/mastra/v1`,
- * `@arcjet/guard/claude-agent-sdk/v0`, `@arcjet/guard/langchain/v1`,
+ * `@arcjet/guard/claude-agent-sdk/v0`, `@arcjet/guard/claude-managed-agents/v0`,
+ * `@arcjet/guard/langchain/v1`,
  * `@arcjet/guard/langgraph/v1`, `@arcjet/guard/openai-agents/v0`,
- * `@arcjet/guard/genkit/v1`, and `@arcjet/guard/strands-agents/v1`. The
+ * `@arcjet/guard/genkit/v1`, `@arcjet/guard/google-adk/v2`,
+ * `@arcjet/guard/strands-agents/v1`, and
+ * `@arcjet/guard/tanstack-ai/v0`. The
  * layer stays agnostic so multiple
  * vendor namespaces can share the same code. A public `@arcjet/guard/agents`
  * path is still a follow-up with its own ADR.
@@ -26,6 +29,7 @@ export {
   guardAction,
 } from "./guard-action.ts";
 export type { CaptureActionOptions, GuardActionPolicy, OnGuardError } from "./guard-action.ts";
+export { ArcjetInvalidLabelError, validateGuardLabel } from "./label.ts";
 export type { ArcjetDenialResult } from "./denial.ts";
 export type { ArcjetAgentClient } from "./capture.ts";
 // Re-exported from the root so a caller building a `captureAction()` payload

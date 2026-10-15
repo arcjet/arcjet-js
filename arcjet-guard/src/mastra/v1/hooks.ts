@@ -5,13 +5,20 @@ import type {
   ToolHooks,
 } from "@mastra/core/tools";
 
+import {
+  resolveActorInputs,
+  resolveCallPolicy,
+  warnCaptureDegraded,
+} from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -37,6 +44,18 @@ export interface GuardHooksPolicy {
    * guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, context) => …` matching
+   * Mastra `beforeToolCall`'s `hookContext.context`. Derive it from
+   * `requestContext`; never trust a model-produced tool input as the actor
+   * identity.
+   */
+  actor?: ActorResolver<[GuardHooksCall, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, context) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardHooksCall, unknown?]>;
   /** Metadata merged over the derived Mastra context. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -47,14 +66,14 @@ function isContextSource(value: unknown): value is MastraContextSource {
   return value !== null && typeof value === "object";
 }
 
-function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  if (typeof policy.action === "string" && policy.action.length > 0) {
-    return policy.action;
-  }
-  return "tool.invoked";
+/**
+ * The label for a static or absent `action`, and the label used when an
+ * `action` callback fails.
+ */
+function fallbackAction(policy: GuardHooksPolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "tool.invoked";
 }
 
 /**
@@ -94,6 +113,10 @@ function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
  * ```
  */
 export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy = {}): ToolHooks {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
   const hooks: ToolHooks = {
     async beforeToolCall(hookContext: ToolHookContext): Promise<void | ToolBeforeHookResult> {
       try {
@@ -101,25 +124,25 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           toolName: typeof hookContext.toolName === "string" ? hookContext.toolName : "",
           input: hookContext.input,
         };
-        const action = resolveAction(policy, call);
+        const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
         const source = isContextSource(hookContext.context) ? hookContext.context : undefined;
         const agentCtx = mastraAgentContext(source);
 
-        const rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-        const policyMetadata =
-          typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
         const metadata: ArcjetMetadata = {
           ...agentCtx.metadata,
           "mastra.phase": "before",
           ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
-          ...policyMetadata,
+          ...resolved.metadata,
         };
+        const remote = await resolveActorInputs(policy, resolved.action, call, hookContext.context);
 
         return await runGate<void | ToolBeforeHookResult>(client, {
-          action,
-          rules,
+          action: resolved.action,
+          rules: resolved.rules,
           correlationId: agentCtx.correlationId,
           metadata,
+          degraded: resolved.degraded ?? remote.degraded,
+          ...remote.fields,
           onAllow: () => {
             /* allow the tool to proceed */
           },
@@ -148,25 +171,33 @@ export function guardHooks(client: ArcjetAgentClient, policy: GuardHooksPolicy =
           toolName: typeof hookContext.toolName === "string" ? hookContext.toolName : "",
           input: hookContext.input,
         };
-        const action = resolveAction(policy, call);
+        // A capture carries no rules, so only `action` and `metadata` are
+        // resolved. A failed callback leaves its value out of the capture, not
+        // the capture out of the record.
+        const resolved = resolveCallPolicy(
+          { action: policy.action, metadata: policy.metadata },
+          call,
+          fallbackAction(policy),
+        );
+        if (resolved.degraded !== undefined) {
+          warnCaptureDegraded(resolved.action, resolved.degraded);
+        }
         const source = isContextSource(hookContext.context) ? hookContext.context : undefined;
         const agentCtx = mastraAgentContext(source);
 
-        const policyMetadata =
-          typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
         const metadata: ArcjetMetadata = {
           ...agentCtx.metadata,
           "mastra.phase": "after",
           outcome: hookContext.error === undefined ? "success" : "error",
           ...(call.toolName.length > 0 && { "mastra.tool": call.toolName }),
-          ...policyMetadata,
+          ...resolved.metadata,
         };
 
         const correlation =
           agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
 
         captureEvent(client, {
-          action,
+          action: resolved.action,
           ...correlation,
           metadata,
         });

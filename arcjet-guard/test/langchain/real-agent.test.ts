@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-assignment, typescript/no-unnecessary-type-assertion, typescript/unbound-method, typescript/require-await, eslint/require-await -- test fixtures built from the real SDK types
+// oxlint-disable typescript/explicit-function-return-type, typescript/no-unnecessary-type-assertion, typescript/require-await, eslint/require-await -- test fixtures built from the real SDK types
 /**
  * End-to-end behaviour through the real `createAgent` loop, driven by
  * `FakeToolCallingModel` so no network is involved.

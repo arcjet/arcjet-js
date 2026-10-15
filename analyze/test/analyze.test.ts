@@ -116,6 +116,26 @@ test("detectSensitiveInfo", async function (t) {
     });
   });
 
+  await t.test("should report offsets as string indices", async function () {
+    // Wasm reports UTF-8 byte offsets. `ArcjetIdentifiedEntity.start`/`end` are
+    // documented as indices into the value and the Rampart backend fills them
+    // from `RegExp` match indices, so these have to be code units — otherwise
+    // `value.slice(start, end)` returns the wrong substring for any value with
+    // a multi-byte character in it. Reserved domain (RFC 2606).
+    for (const prefix of ["", "hello ", "Здравствуйте, ", "您好 ", "🙂🙂🙂🙂 ", "ééé "]) {
+      const value = `${prefix}mail b@c.d end`;
+      const result = await detectSensitiveInfo(exampleContext, value, { tag: "allow", val: [] }, 1);
+
+      assert.equal(result.denied.length, 1, `one entity for ${JSON.stringify(prefix)}`);
+      const entity = result.denied[0];
+      assert.equal(
+        value.slice(entity.start, entity.end),
+        "b@c.d",
+        `offsets index the string for ${JSON.stringify(prefix)}`,
+      );
+    }
+  });
+
   await t.test("should not detect non-sensitive info", async function () {
     const result = await detectSensitiveInfo(
       exampleContext,

@@ -1,10 +1,17 @@
 import type { Plugin } from "@strands-agents/sdk";
 
+import {
+  resolveActorInputs,
+  resolveCallPolicy,
+  warnCaptureDegraded,
+} from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { strandsAgentContext } from "./context.ts";
 import type { StrandsContextSource } from "./context.ts";
@@ -55,6 +62,17 @@ export interface GuardHooksPolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, event) => …` matching
+   * Strands `BeforeToolCallEvent`. Derive it from `invocationState`; never
+   * trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[GuardHooksCall, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, event) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardHooksCall, unknown?]>;
   /** Metadata merged over the derived Strands context. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /**
@@ -129,7 +147,6 @@ async function loadStrandsHooks(): Promise<StrandsHookSdk> {
     const code =
       error !== null && typeof error === "object" && "code" in error ? error.code : undefined;
     if (code === "ERR_MODULE_NOT_FOUND") {
-      // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
       throw new Error(
         "@arcjet/guard: install @strands-agents/sdk (>=1.1.0 <2) to use guardHooks() from @arcjet/guard/strands-agents/v1",
         { cause: error },
@@ -146,8 +163,11 @@ async function loadStrandsHooks(): Promise<StrandsHookSdk> {
       "@arcjet/guard: guardHooks() could not load BeforeToolCallEvent / AfterToolCallEvent from @strands-agents/sdk; the Plugin cannot register.",
     );
   }
-  if (hookOrder === null || typeof hookOrder !== "object" || typeof hookOrder.SDK_FIRST !== "number") {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
+  if (
+    hookOrder === null ||
+    typeof hookOrder !== "object" ||
+    typeof hookOrder.SDK_FIRST !== "number"
+  ) {
     throw new Error(
       "@arcjet/guard: guardHooks() could not load HookOrder from @strands-agents/sdk; the Plugin cannot register.",
     );
@@ -168,24 +188,14 @@ function stringField(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function resolveAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  if (typeof policy.action === "string" && policy.action.length > 0) {
-    return policy.action;
-  }
-  return "tool.invoked";
-}
-
-function resolveSessionId(policy: GuardHooksPolicy, call: GuardHooksCall): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(call);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
-  }
-  return undefined;
+/**
+ * The label for a static or absent `action`, and the label used when an
+ * `action` callback fails.
+ */
+function fallbackAction(policy: GuardHooksPolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "tool.invoked";
 }
 
 function cancelString(payload: unknown): string {
@@ -224,6 +234,10 @@ export function createBeforeToolCallHandler(
   client: ArcjetAgentClient,
   policy: GuardHooksPolicy = {},
 ): (event: StrandsBeforeToolCallEvent) => Promise<void> {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
   return async (event: StrandsBeforeToolCallEvent): Promise<void> => {
     try {
       if (event.tool !== undefined && arcjetProtectedTool in event.tool) {
@@ -235,31 +249,9 @@ export function createBeforeToolCallHandler(
         input: event.toolUse?.input ?? {},
       };
 
-      let action: string;
-      let sessionId: string | undefined;
-      let rules: RuleWithInput[] | undefined;
-      let policyMetadata: ArcjetMetadata | undefined;
-      try {
-        action = resolveAction(policy, call);
-        sessionId = resolveSessionId(policy, call);
-        rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-        policyMetadata =
-          typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-      } catch (error) {
-        const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
-        if (shouldWarn()) {
-          console.warn(
-            '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-            actionLabel,
-            error,
-          );
-        }
-        if (policy.onGuardError === "allow") {
-          return;
-        }
-        event.cancel = cancelString(unavailableResult());
-        return;
-      }
+      const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
+      const { action, sessionId, rules, metadata: policyMetadata } = resolved;
+      const remote = await resolveActorInputs(policy, action, call, event);
 
       const source = isContextSource(event) ? event : undefined;
       const agentCtx = strandsAgentContext(
@@ -279,6 +271,8 @@ export function createBeforeToolCallHandler(
         rules,
         correlationId: agentCtx.correlationId,
         metadata: mergedMetadata,
+        degraded: resolved.degraded ?? remote.degraded,
+        ...remote.fields,
         onAllow: () => {
           /* allow the tool to proceed — do not set event.cancel */
         },
@@ -309,7 +303,10 @@ export function createBeforeToolCallHandler(
       // A non-InterruptError throw from a hook aborts the invocation
       // and drops the envelope. Fail closed by setting cancel instead.
       if (shouldWarn()) {
-        console.warn("@arcjet/guard: guardHooks BeforeToolCallEvent threw; denying the tool:", error);
+        console.warn(
+          "@arcjet/guard: guardHooks BeforeToolCallEvent threw; denying the tool:",
+          error,
+        );
       }
       if (policy.onGuardError === "allow") {
         return;
@@ -327,21 +324,33 @@ export function createAfterToolCallHandler(
   client: ArcjetAgentClient,
   policy: GuardHooksPolicy = {},
 ): (event: StrandsAfterToolCallEvent) => void {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
   return (event: StrandsAfterToolCallEvent): void => {
     try {
       const call: GuardHooksCall = {
         toolName: stringField(event.toolUse?.name),
         input: event.toolUse?.input ?? {},
       };
-      const action = resolveAction(policy, call);
+      // A capture carries no rules, so only `action` and `metadata` are
+      // resolved. A failed callback leaves its value out of the capture, not
+      // the capture out of the record.
+      const resolved = resolveCallPolicy(
+        { action: policy.action, metadata: policy.metadata },
+        call,
+        fallbackAction(policy),
+      );
+      if (resolved.degraded !== undefined) {
+        warnCaptureDegraded(resolved.action, resolved.degraded);
+      }
       const source = isContextSource(event) ? event : undefined;
       const agentCtx = strandsAgentContext(source);
 
-      const policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
       const metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
-        ...policyMetadata,
+        ...resolved.metadata,
         "strands.phase": "after",
         ...(call.toolName.length > 0 && { "strands.tool": call.toolName }),
         outcome: event.error === undefined ? "success" : "error",
@@ -351,7 +360,7 @@ export function createAfterToolCallHandler(
         agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
 
       captureEvent(client, {
-        action,
+        action: resolved.action,
         ...correlation,
         metadata,
       });

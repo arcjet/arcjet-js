@@ -5,12 +5,12 @@ import { sprintf } from "../dist/index.js";
 
 function makeDigitSuite(sequence: string) {
   test(`replaces ${sequence} with an integer`, () => {
-    assert.equal(sprintf(`${sequence}`, 1), "1");
+    assert.equal(sprintf(sequence, 1), "1");
     assert.equal(sprintf(`int: ${sequence}`, 2), "int: 2");
   });
 
   test(`replaces ${sequence} with a float`, () => {
-    assert.equal(sprintf(`${sequence}`, 1.1), "1.1");
+    assert.equal(sprintf(sequence, 1.1), "1.1");
     assert.equal(sprintf(`int: ${sequence}`, 2.2), "int: 2.2");
   });
 
@@ -19,31 +19,31 @@ function makeDigitSuite(sequence: string) {
   });
 
   test(`does not replace ${sequence} with non-number`, () => {
-    assert.equal(sprintf(`${sequence}`, "not a number"), `${sequence}`);
-    assert.equal(sprintf(`${sequence}`, {}), `${sequence}`);
-    assert.equal(sprintf(`${sequence}`, null), `${sequence}`);
-    assert.equal(sprintf(`${sequence}`, Symbol("abc")), `${sequence}`);
+    assert.equal(sprintf(sequence, "not a number"), sequence);
+    assert.equal(sprintf(sequence, {}), sequence);
+    assert.equal(sprintf(sequence, null), sequence);
+    assert.equal(sprintf(sequence, Symbol("abc")), sequence);
   });
 }
 
 function makeObjectSuite(sequence: string) {
   test(`replaces ${sequence} with the result of JSON.stringify`, () => {
-    assert.equal(sprintf(`${sequence}`, { abc: 123 }), `{"abc":123}`);
+    assert.equal(sprintf(sequence, { abc: 123 }), `{"abc":123}`);
   });
 
   test(`replaces ${sequence} with quoted string`, () => {
-    assert.equal(sprintf(`${sequence}`, "hello"), `'hello'`);
+    assert.equal(sprintf(sequence, "hello"), `'hello'`);
   });
 
   test(`replaces ${sequence} with function name`, () => {
     // oxlint-disable-next-line unicorn/consistent-function-scoping
     function foobar() {}
-    assert.equal(sprintf(`${sequence}`, foobar), `foobar`);
+    assert.equal(sprintf(sequence, foobar), `foobar`);
   });
 
   test(`replaces ${sequence} with <anonymous> function`, () => {
     assert.equal(
-      sprintf(`${sequence}`, () => {}),
+      sprintf(sequence, () => {}),
       `<anonymous>`,
     );
   });
@@ -52,12 +52,12 @@ function makeObjectSuite(sequence: string) {
     const o = {};
     // @ts-expect-error
     o.o = o;
-    assert.equal(sprintf(`${sequence}`, o), `"[Circular]"`);
+    assert.equal(sprintf(sequence, o), `"[Circular]"`);
   });
 
   test(`replaces ${sequence} with [BigInt] on JSON.stringify on BigInt data`, () => {
-    assert.equal(sprintf(`${sequence}`, 0n), `"[BigInt]"`);
-    assert.equal(sprintf(`${sequence}`, { abc: 0n }), `{"abc":"[BigInt]"}`);
+    assert.equal(sprintf(sequence, 0n), `"[BigInt]"`);
+    assert.equal(sprintf(sequence, { abc: 0n }), `{"abc":"[BigInt]"}`);
   });
 
   test(`does not replace ${sequence} if replacement is missing`, () => {

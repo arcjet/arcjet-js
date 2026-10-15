@@ -1,5 +1,133 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...arcjet-v1.14.1) (2026-10-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.14.0 to 1.14.1
+    * @arcjet/cache bumped from 1.14.0 to 1.14.1
+    * @arcjet/duration bumped from 1.14.0 to 1.14.1
+    * @arcjet/headers bumped from 1.14.0 to 1.14.1
+    * @arcjet/protocol bumped from 1.14.0 to 1.14.1
+    * @arcjet/runtime bumped from 1.14.0 to 1.14.1
+    * @arcjet/skills bumped from 1.14.0 to 1.14.1
+    * @arcjet/stable-hash bumped from 1.14.0 to 1.14.1
+  * devDependencies
+    * @arcjet/transport bumped from 1.14.0 to 1.14.1
+
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...arcjet-v1.14.0) (2026-10-01)
+
+
+### 🧹 Miscellaneous Chores
+
+* **arcjet:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.14.0
+    * @arcjet/cache bumped from 1.13.0 to 1.14.0
+    * @arcjet/duration bumped from 1.13.0 to 1.14.0
+    * @arcjet/headers bumped from 1.13.0 to 1.14.0
+    * @arcjet/protocol bumped from 1.13.0 to 1.14.0
+    * @arcjet/runtime bumped from 1.13.0 to 1.14.0
+    * @arcjet/skills bumped from 1.13.0 to 1.14.0
+    * @arcjet/stable-hash bumped from 1.13.0 to 1.14.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.13.0 to 1.14.0
+
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...arcjet-v1.13.0) (2026-09-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### 📚 Tests
+
+* track connections so HTTP/2 tests terminate in node 24.20.0 ([#6285](https://github.com/arcjet/arcjet-js/issues/6285)) ([567dc00](https://github.com/arcjet/arcjet-js/commit/567dc009ac09d38e8110d054b6174e4f0bd8bbc3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.12.0 to 1.13.0
+    * @arcjet/cache bumped from 1.12.0 to 1.13.0
+    * @arcjet/duration bumped from 1.12.0 to 1.13.0
+    * @arcjet/headers bumped from 1.12.0 to 1.13.0
+    * @arcjet/protocol bumped from 1.12.0 to 1.13.0
+    * @arcjet/runtime bumped from 1.12.0 to 1.13.0
+    * @arcjet/skills bumped from 1.12.0 to 1.13.0
+    * @arcjet/stable-hash bumped from 1.12.0 to 1.13.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.12.0 to 1.13.0
+
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...arcjet-v1.12.0) (2026-09-08)
+
+
+### 🚀 New Features
+
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.11.0 to 1.12.0
+    * @arcjet/cache bumped from 1.11.0 to 1.12.0
+    * @arcjet/duration bumped from 1.11.0 to 1.12.0
+    * @arcjet/headers bumped from 1.11.0 to 1.12.0
+    * @arcjet/protocol bumped from 1.11.0 to 1.12.0
+    * @arcjet/runtime bumped from 1.11.0 to 1.12.0
+    * @arcjet/skills bumped from 1.11.0 to 1.12.0
+    * @arcjet/stable-hash bumped from 1.11.0 to 1.12.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.11.0 to 1.12.0
+
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...arcjet-v1.11.0) (2026-08-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238))
+
+### 🚀 New Features
+
+* remove deprecated detectPromptInjection threshold and score ([#6238](https://github.com/arcjet/arcjet-js/issues/6238)) ([7278e83](https://github.com/arcjet/arcjet-js/commit/7278e838aab396ecb7fc755316738802aa093073))
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.10.0 to 1.11.0
+    * @arcjet/cache bumped from 1.10.0 to 1.11.0
+    * @arcjet/duration bumped from 1.10.0 to 1.11.0
+    * @arcjet/headers bumped from 1.10.0 to 1.11.0
+    * @arcjet/protocol bumped from 1.10.0 to 1.11.0
+    * @arcjet/runtime bumped from 1.10.0 to 1.11.0
+    * @arcjet/stable-hash bumped from 1.10.0 to 1.11.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.10.0 to 1.11.0
+
 ## [1.10.0](https://github.com/arcjet/arcjet-js/compare/v1.9.1...arcjet-v1.10.0) (2026-08-11)
 
 

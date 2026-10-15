@@ -8,13 +8,20 @@ import type {
   UserPromptSubmitHookInput,
 } from "@anthropic-ai/claude-agent-sdk";
 
+import {
+  resolveActorInputs,
+  resolveCallPolicy,
+  warnCaptureDegraded,
+} from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { claudeAgentContext } from "./context.ts";
 import type { ClaudeContextSource } from "./context.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
 import { runGate } from "./gate.ts";
 
 /**
@@ -47,6 +54,17 @@ export interface GuardHooksInboundPolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((input: GuardHooksInbound) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(inbound, hookInput) => …` matching
+   * Claude `UserPromptSubmit`. Derive it from `session_id` / hook input; never
+   * trust the prompt as the actor identity.
+   */
+  actor?: ActorResolver<[GuardHooksInbound, UserPromptSubmitHookInput]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(inbound, hookInput) => …`.
+   * Build each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardHooksInbound, UserPromptSubmitHookInput]>;
   /** Metadata merged over the derived Claude context. */
   metadata?: ArcjetMetadata | ((input: GuardHooksInbound) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -104,6 +122,17 @@ export interface GuardHooksPolicy {
    * this still performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardHooksCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, hookInput) => …` matching
+   * Claude `PreToolUse`. Derive it from `session_id` / hook input; never
+   * trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[GuardHooksCall, PreToolUseHookInput]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, hookInput) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardHooksCall, PreToolUseHookInput]>;
   /** Metadata merged over the derived Claude context for tool hooks. */
   metadata?: ArcjetMetadata | ((call: GuardHooksCall) => ArcjetMetadata);
   /** How to respond when a tool-gate evaluation is unavailable. Default `"deny"`. */
@@ -174,24 +203,24 @@ function isContextSource(value: unknown): value is ClaudeContextSource {
   return value !== null && typeof value === "object";
 }
 
-function resolveToolAction(policy: GuardHooksPolicy, call: GuardHooksCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  if (typeof policy.action === "string" && policy.action.length > 0) {
-    return policy.action;
-  }
-  return "tool.invoked";
+/**
+ * The tool label for a static or absent `action`, and the label used when an
+ * `action` callback fails.
+ */
+function fallbackToolAction(policy: GuardHooksPolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "tool.invoked";
 }
 
-function resolveInboundAction(policy: GuardHooksInboundPolicy, input: GuardHooksInbound): string {
-  if (typeof policy.action === "function") {
-    return policy.action(input);
-  }
-  if (typeof policy.action === "string" && policy.action.length > 0) {
-    return policy.action;
-  }
-  return "message.received";
+/**
+ * The inbound label for a static or absent `action`, and the label used when
+ * an `action` callback fails.
+ */
+function fallbackInboundAction(policy: GuardHooksInboundPolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "message.received";
 }
 
 function stringField(value: unknown): string {
@@ -266,6 +295,13 @@ export function guardHooks(
   client: ArcjetAgentClient,
   policy: GuardHooksPolicy = {},
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardHooks");
+  }
+  if (typeof policy.inbound?.action === "string" && policy.inbound.action !== "") {
+    assertValidAction(policy.inbound.action, "guardHooks inbound");
+  }
   const inboundPolicy: GuardHooksInboundPolicy = policy.inbound ?? {};
 
   const preToolUse: HookCallback = async (input): Promise<HookJSONOutput> => {
@@ -281,28 +317,34 @@ export function guardHooks(
       if (isExcludedTool(call.toolName, policy.exclude)) {
         return {};
       }
-      const action = resolveToolAction(policy, call);
+      // `sessionId` is static on this policy and resolved below as before, so
+      // only the action, rules and metadata come from the resolution.
+      const resolved = resolveCallPolicy(
+        { action: policy.action, rules: policy.rules, metadata: policy.metadata },
+        call,
+        fallbackToolAction(policy),
+      );
       const source = isContextSource(hookInput) ? hookInput : undefined;
       const agentCtx = claudeAgentContext(
         source,
         policy.sessionId === undefined ? undefined : { sessionId: policy.sessionId },
       );
 
-      const rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-      const policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
       const metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
         "claude.phase": "before",
         ...(call.toolName.length > 0 && { "claude.tool": call.toolName }),
-        ...policyMetadata,
+        ...resolved.metadata,
       };
+      const remote = await resolveActorInputs(policy, resolved.action, call, hookInput);
 
       return await runGate<HookJSONOutput>(client, {
-        action,
-        rules,
+        action: resolved.action,
+        rules: resolved.rules,
         correlationId: agentCtx.correlationId,
         metadata,
+        degraded: resolved.degraded ?? remote.degraded,
+        ...remote.fields,
         onAllow: () => ({}),
         onDeny: (decision) => preToolUseDeny(deniedReason(decision)),
         onUnavailable: () => preToolUseDeny(unavailableReason()),
@@ -326,32 +368,31 @@ export function guardHooks(
       const inbound: GuardHooksInbound = {
         prompt: stringField(hookInput.prompt),
       };
-      const action = resolveInboundAction(inboundPolicy, inbound);
+      const resolved = resolveCallPolicy(
+        inboundPolicy,
+        inbound,
+        fallbackInboundAction(inboundPolicy),
+      );
       const source = isContextSource(hookInput) ? hookInput : undefined;
       const agentCtx = claudeAgentContext(
         source,
         policy.sessionId === undefined ? undefined : { sessionId: policy.sessionId },
       );
 
-      const rules =
-        typeof inboundPolicy.rules === "function"
-          ? inboundPolicy.rules(inbound)
-          : inboundPolicy.rules;
-      const policyMetadata =
-        typeof inboundPolicy.metadata === "function"
-          ? inboundPolicy.metadata(inbound)
-          : inboundPolicy.metadata;
       const metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
         "claude.phase": "inbound",
-        ...policyMetadata,
+        ...resolved.metadata,
       };
+      const remote = await resolveActorInputs(inboundPolicy, resolved.action, inbound, hookInput);
 
       return await runGate<HookJSONOutput>(client, {
-        action,
-        rules,
+        action: resolved.action,
+        rules: resolved.rules,
         correlationId: agentCtx.correlationId,
         metadata,
+        degraded: resolved.degraded ?? remote.degraded,
+        ...remote.fields,
         onAllow: () => ({}),
         onDeny: (decision) => userPromptBlock(deniedReason(decision)),
         onUnavailable: () => userPromptBlock(unavailableReason()),
@@ -379,28 +420,36 @@ export function guardHooks(
         toolName: stringField(hookInput.tool_name),
         input: hookInput.tool_input,
       };
-      const action = resolveToolAction(policy, call);
+      // A capture carries no rules, so only `action` and `metadata` are
+      // resolved. A failed callback leaves its value out of the capture, not
+      // the capture out of the record.
+      const resolved = resolveCallPolicy(
+        { action: policy.action, metadata: policy.metadata },
+        call,
+        fallbackToolAction(policy),
+      );
+      if (resolved.degraded !== undefined) {
+        warnCaptureDegraded(resolved.action, resolved.degraded);
+      }
       const source = isContextSource(hookInput) ? hookInput : undefined;
       const agentCtx = claudeAgentContext(
         source,
         policy.sessionId === undefined ? undefined : { sessionId: policy.sessionId },
       );
 
-      const policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
       const metadata: ArcjetMetadata = {
         ...agentCtx.metadata,
         "claude.phase": "after",
         outcome: "success",
         ...(call.toolName.length > 0 && { "claude.tool": call.toolName }),
-        ...policyMetadata,
+        ...resolved.metadata,
       };
 
       const correlation =
         agentCtx.correlationId === undefined ? {} : { correlationId: agentCtx.correlationId };
 
       captureEvent(client, {
-        action,
+        action: resolved.action,
         ...correlation,
         metadata,
       });

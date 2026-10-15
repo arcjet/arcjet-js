@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Mastra (@mastra/core >=1 <2) on Node.js >= 22.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Mastra agent
@@ -24,9 +29,11 @@ decision rule:
 - **Correlation** → `mastraAgentContext()` reads `MASTRA_THREAD_ID_KEY`, then
   resource, then run. It never mints a new id.
 
-Mastra `requireApproval` is human HITL, not policy. There is no
+Mastra `requireApproval` is human HITL, not policy — same trap as
+Google ADK `requireConfirmation`, and Cloudflare Think `needsApproval`.
+There is no
 `guardApproval`. Do not also wrap these tools with
-`@arcjet/guard/vercel-ai/v7`.
+`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
 
 ## Questions to ask the human first
 
@@ -73,7 +80,7 @@ needed for `@arcjet/guard/mastra/v1`). Always use the versioned path:
 `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ```sh
-npm install @arcjet/guard @mastra/core
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @mastra/core
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -90,7 +97,8 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/mastra/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -101,9 +109,9 @@ const lookupLimit = tokenBucket({
   maxTokens: 10,
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
-// Scan free-text args (a note, reason, body). An opaque `orderId` will
-// not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// Scan free-text args (a note, reason, body). An opaque `orderId` is not
+// free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,
@@ -120,6 +128,10 @@ export const lookupOrder = guardTool(
   }),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input) => [
       lookupLimit({ key: input.orderId, requested: 1 }),
       // Right: factory already bound above; pass free text, not orderId.
@@ -130,9 +142,18 @@ export const lookupOrder = guardTool(
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the tool's `execute` never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }`.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules` or `metadata` callback throws or returns a value Guard
+  cannot use. A failed callback never skips the guard call: Guard is called
+  without its value, so remote policy still evaluates the call and a DENY
+  stands.
 
 ## Step 3: Screen inbound (and optional outbound) text
 
@@ -167,9 +188,11 @@ export const agent = new Agent({
   throws so the turn cannot fail open.
 - The same processor implements `processOutputResult` so it can sit on
   `outputProcessors` as well. Use a separate action name for outbound.
-- Default `onGuardError: "deny"` — if the guard cannot be evaluated, the
-  turn is aborted. Use `"allow"` when the human cost of rejecting a
-  legitimate message exceeds the security cost of an outage.
+- Default `onGuardError: "deny"` — if the guard cannot be evaluated, or a
+  `rules` or `metadata` callback throws or returns a value Guard cannot
+  use, the turn is aborted. Guard is still called without the failed
+  value, so a DENY stands. Use `"allow"` when the human cost of rejecting
+  a legitimate message exceeds the security cost of an outage.
 
 ## Step 4: Gate tools you did not wrap
 
@@ -194,7 +217,9 @@ export const hooks = guardHooks(arcjet, {
 
 Pass `hooks` to the `Agent` constructor (or to `generate` / `stream`).
 `beforeToolCall` returns `{ proceed: false, output }` on DENY so MCP /
-workspace / toolset calls never execute. `afterToolCall` is observe-only.
+workspace / toolset calls never execute. `afterToolCall` is observe-only. It
+records the call even when an `action` or `metadata` callback fails, under
+the default label and its own metadata.
 
 Use this for tools you did **not** pass through `guardTool`. Applying both
 to the same authored tool double-calls the guard.

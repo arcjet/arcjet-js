@@ -137,9 +137,19 @@ export const policyInput: PolicyInputFactory = Object.freeze({
   }),
 });
 
+/**
+ * Whether `value` was built with {@link policyInput}: the check
+ * {@link policyInputValue} makes before the client encodes an input.
+ *
+ * @internal
+ */
+export function isPolicyInput(value: unknown): value is PolicyInput {
+  return typeof value === "object" && value !== null && policyInputBrand in value;
+}
+
 /** @internal */
 export function policyInputValue(input: PolicyInput): ServerPolicyInputValue {
-  if (typeof input !== "object" || input === null || !(policyInputBrand in input)) {
+  if (!isPolicyInput(input)) {
     throw new TypeError("Guard policy inputs must be created with policyInput");
   }
   return input[policyInputBrand];

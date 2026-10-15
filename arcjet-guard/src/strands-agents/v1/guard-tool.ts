@@ -1,9 +1,12 @@
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { strandsAgentContext } from "./context.ts";
 import type { StrandsContextSource } from "./context.ts";
@@ -58,6 +61,17 @@ export interface GuardToolPolicy<TInput> {
    * the guard call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, context) => …` matching
+   * the Strands tool `_callback`. Derive it from `invocationState`; never
+   * trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[TInput, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, context) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -106,19 +120,6 @@ function toolName(tool: StrandsTool): string | undefined {
   }
   if (typeof tool.toolSpec?.name === "string" && tool.toolSpec.name.length > 0) {
     return tool.toolSpec.name;
-  }
-  return undefined;
-}
-
-function resolveSessionId<TInput>(
-  policy: GuardToolPolicy<TInput>,
-  input: TInput,
-): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(input);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
   }
   return undefined;
 }
@@ -205,8 +206,8 @@ export function guardTool<TInput = unknown, TTool extends StrandsTool = StrandsT
   tool: TTool,
   policy: GuardToolPolicy<TInput>,
 ): TTool {
+  assertValidAction(policy.action, "guardTool");
   if (!isCallbackHolder(tool) || typeof tool._callback !== "function") {
-    // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(
       "@arcjet/guard: guardTool() requires a tool() result with a callback. Pass the result of tool({ callback }), not the config object.",
     );
@@ -217,7 +218,7 @@ export function guardTool<TInput = unknown, TTool extends StrandsTool = StrandsT
     );
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
   const wrapped = Object.defineProperties(
@@ -233,7 +234,7 @@ export function guardTool<TInput = unknown, TTool extends StrandsTool = StrandsT
     // closes over the authored callback at construction. Copy it so
     // the original tool's stream() path stays unguarded for the
     // caller who still holds that reference, then gate the copy.
-    // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
     const innerProto = Object.getPrototypeOf(inner) as object | null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
     const innerCopy = Object.defineProperties(
@@ -277,7 +278,7 @@ function installGuardedCallback<TInput>(
   });
 }
 
-function runGuardedCallback<TInput>(
+async function runGuardedCallback<TInput>(
   client: ArcjetAgentClient,
   tool: StrandsTool,
   policy: GuardToolPolicy<TInput>,
@@ -287,29 +288,11 @@ function runGuardedCallback<TInput>(
 ): Promise<unknown> {
   const args = input === undefined ? {} : input;
 
-  let sessionId: string | undefined;
-  let rules: RuleWithInput[] | undefined;
-  let policyMetadata: ArcjetMetadata | undefined;
-  try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
-    const typedArgs = args as TInput;
-    sessionId = resolveSessionId(policy, typedArgs);
-    rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
-    policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        policy.action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      return execute();
-    }
-    return Promise.resolve(unavailableResult());
-  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
+  const typedArgs = args as TInput;
+  const call = resolveCallPolicy(policy, typedArgs, policy.action);
+  const { sessionId, rules, metadata: policyMetadata } = call;
+  const remote = await resolveActorInputs(policy, policy.action, typedArgs, context);
 
   const source = contextSource(context);
   const agentCtx = strandsAgentContext(source, sessionId === undefined ? undefined : { sessionId });
@@ -326,6 +309,8 @@ function runGuardedCallback<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    degraded: call.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return denialResult(decision);

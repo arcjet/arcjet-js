@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Vercel Eve (eve >= 0.34.0 < 1) on Node.js >= 24.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Vercel Eve agent
@@ -29,7 +34,8 @@ The three in-session helpers correlate by session id, so their decisions land
 on one Sequence. `guardInbound` runs before the session exists and correlates
 by whatever identity the channel has, so its decision lands on a _second_
 Sequence. `arcjetHooks` emits an `eve.session-started` record carrying both, which
-is what lets you pivot from one to the other.
+is what lets you pivot from one to the other. This is not hosted Claude
+Managed Agents (`@arcjet/guard/claude-managed-agents/v0`).
 
 ## Questions to ask the human first
 
@@ -70,13 +76,14 @@ State plainly why each applies to Eve, not other frameworks:
 
 4. **`approval` is one field per tool or connection.** It can be a function
    (request-time only) or `{ request, response }`. You still cannot assign
-   `always()`/`once()`/`never()` from `eve/tools/approval` *alongside*
+   `always()`/`once()`/`never()` from `eve/tools/approval` _alongside_
    `guardApproval` — the slot holds one value. `onAllow: "user-approval"` is
    how you require a human after the request-time gate. The optional `response`
    policy is how you authorize who may approve the parked request. A rejected
    response leaves the approval pending; it does not deny the tool. HITL
    clients answer with `cancel`, not `deny`. Request-time denials are still
-   `{ type: "denied" }`.
+   `{ type: "denied" }`. Same trap as Google ADK `requireConfirmation`
+   and Cloudflare Think `needsApproval`: HITL is not a policy gate.
 
 5. **`defineDynamic` tools are not covered.** Eve's compiler hoists a dynamic
    tool's inline `execute` to a module-scope step function, so a wrapper is not
@@ -120,7 +127,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/vercel-eve/v0";
-import { tokenBucket } from "@arcjet/guard";
+import { tokenBucket, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "../arcjet.js";
 
@@ -142,6 +149,10 @@ export default guardTool(
   }),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 })],
   },
 );
@@ -150,6 +161,11 @@ export default guardTool(
 - Omit `rules` to submit none. The guard call still happens, so the decision is
   correlatable and the tool can be managed via policy configured outside the
   code.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - `rules` may be a callback over the tool's parsed input, computed from the
   data being acted on.
 - On DENY the tool's `execute` never runs; Eve projects it as a failed
@@ -158,6 +174,11 @@ export default guardTool(
   API unreachable), the default is `onGuardError: "deny"` — the tool is blocked
   and Eve reports the error. For read-only operations like lookups, set
   `onGuardError: "allow"` if availability matters more than enforcement.
+- A `rules` or `metadata` callback that throws, or returns a value Guard
+  cannot use, never skips the guard call: Guard is called without that
+  value (no local rules, or no policy metadata), so remote policy still
+  evaluates the call and a DENY stands. Otherwise `onGuardError` decides
+  as for an outage. `guardApproval` handles its callbacks the same way.
 
 **Tool-only:** `guardTool` is called at tool invocation time and observes the
 outcome. If you only need to gate the tool without observing its result, use
@@ -190,7 +211,7 @@ export default defineOpenAPIConnection({
     onAllow: "user-approval",
     response: {
       action: "orders-api.approved",
-      rules: (ctx) => [apiLimit({ key: ctx.responder.principalId, requested: 1 })],
+      rules: (ctx) => [apiLimit({ key: ctx.response.principal.principalId, requested: 1 })],
     },
   }),
   operations: {
@@ -206,7 +227,9 @@ export default defineOpenAPIConnection({
 - `onAllow: "user-approval"` parks the call for a human. HITL clients answer
   with `cancel` (not `deny`). A request-time denial is still
   `{ type: "denied" }`.
-- The optional `response` policy authorizes the responder. ALLOW returns
+- The optional `response` policy authorizes the responder, which Eve passes
+  as `ctx.response.principal`; Eve releases before 0.69 pass it as
+  `ctx.responder` instead. ALLOW returns
   `{ status: "allowed" }`. DENY returns `{ status: "rejected", reason }` and
   leaves the approval pending.
 - This gate is the only way to protect connection operations — there is no
@@ -284,6 +307,10 @@ export default defineChannel({
 
 - `guardInbound` is the only place in the agent's lifecycle where a turn can be
   declined _before_ it starts. Hooks are observe-only.
+- To screen PII in the message, add
+  `localDetectSensitiveInfo({ backend: rampart() })(message)` to `rules`.
+  `rampart` comes from `@arcjet/sensitive-info-rampart`, which detects PII
+  on-device.
 - A guarded tool can be invoked directly (no Eve execution context) for
   verification: `tool.execute(input, undefined)` runs the guard and skips
   `execute` on DENY.

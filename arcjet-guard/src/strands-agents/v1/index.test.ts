@@ -134,7 +134,10 @@ test("export map has no unversioned ./strands-agents and no wildcard subpaths", 
 
   const exportKeys = Object.keys(exportsMap);
 
-  assert.ok(!exportKeys.includes("./strands-agents"), 'export map must not have "./strands-agents"');
+  assert.ok(
+    !exportKeys.includes("./strands-agents"),
+    'export map must not have "./strands-agents"',
+  );
   assert.ok(
     exportKeys.includes("./strands-agents/v1"),
     'export map must have "./strands-agents/v1"',
@@ -160,6 +163,9 @@ test("does not export Eve / Mastra / Claude / LangGraph / OpenAI / Genkit-only A
     "langchainContext",
     "openaiAgentsContext",
     "genkitContext",
+    "tanstackAiContext",
+    "googleAdkContext",
+    "cloudflareThinkContext",
     "guardInbound",
     "guardApproval",
     "guardInterrupt",

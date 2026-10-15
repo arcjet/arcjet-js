@@ -4,10 +4,6 @@ import { test } from "node:test";
 import { generateText, stepCountIs, tool, jsonSchema } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 
-import { guardTool } from "./guard-tool.ts";
-import type { ArcjetDenialResult } from "./guard-tool.ts";
-import { aiToolsContext } from "./tools-context.ts";
-import { createAgentContext } from "../../agents/context.ts";
 import { setLogLevel } from "../../../test/_shared/log-level.ts";
 import { recorded, asDenial } from "../../../test/_shared/source-scan.ts";
 import {
@@ -16,6 +12,10 @@ import {
   decisionDenyRateLimit,
   fakeRule,
 } from "../../../test/_shared/stub-client.ts";
+import { createAgentContext } from "../../agents/context.ts";
+import { guardTool } from "./guard-tool.ts";
+import type { ArcjetDenialResult } from "./guard-tool.ts";
+import { aiToolsContext } from "./tools-context.ts";
 
 test("AC1.5: Context with correlationId flows through to guard call in generateText loop", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
@@ -59,7 +59,12 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
           ],
           finishReason: { unified: "tool-calls", raw: undefined },
           usage: {
-            inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+            inputTokens: {
+              total: 10,
+              noCache: undefined,
+              cacheRead: undefined,
+              cacheWrite: undefined,
+            },
             outputTokens: { total: 10, text: undefined, reasoning: undefined },
           },
           warnings: [],
@@ -68,7 +73,12 @@ test("AC1.5: Context with correlationId flows through to guard call in generateT
           content: [{ type: "text", text: "done" }],
           finishReason: { unified: "stop", raw: undefined },
           usage: {
-            inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+            inputTokens: {
+              total: 10,
+              noCache: undefined,
+              cacheRead: undefined,
+              cacheWrite: undefined,
+            },
             outputTokens: { total: 10, text: undefined, reasoning: undefined },
           },
           warnings: [],
@@ -141,7 +151,12 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
             ],
             finishReason: { unified: "tool-calls", raw: undefined },
             usage: {
-              inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+              inputTokens: {
+                total: 10,
+                noCache: undefined,
+                cacheRead: undefined,
+                cacheWrite: undefined,
+              },
               outputTokens: { total: 10, text: undefined, reasoning: undefined },
             },
             warnings: [],
@@ -150,7 +165,12 @@ test("AC1.6: Without toolsContext, tool execute runs uncorrelated with warning",
             content: [{ type: "text", text: "done" }],
             finishReason: { unified: "stop", raw: undefined },
             usage: {
-              inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+              inputTokens: {
+                total: 10,
+                noCache: undefined,
+                cacheRead: undefined,
+                cacheWrite: undefined,
+              },
               outputTokens: { total: 10, text: undefined, reasoning: undefined },
             },
             warnings: [],
@@ -220,7 +240,12 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
         ],
         finishReason: { unified: "tool-calls", raw: undefined },
         usage: {
-          inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+          inputTokens: {
+            total: 10,
+            noCache: undefined,
+            cacheRead: undefined,
+            cacheWrite: undefined,
+          },
           outputTokens: { total: 10, text: undefined, reasoning: undefined },
         },
         warnings: [],
@@ -229,7 +254,12 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
         content: [{ type: "text", text: "unable to send" }],
         finishReason: { unified: "stop", raw: undefined },
         usage: {
-          inputTokens: { total: 10, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+          inputTokens: {
+            total: 10,
+            noCache: undefined,
+            cacheRead: undefined,
+            cacheWrite: undefined,
+          },
           outputTokens: { total: 10, text: undefined, reasoning: undefined },
         },
         warnings: [],
@@ -258,9 +288,7 @@ test("AC2.9: DENY decision → generateText completes, loop continues with denia
   // Find the tool-result part in the first step
   const toolResultPart = (firstStep.content as unknown[]).find(
     (part: unknown) =>
-      typeof part === "object" &&
-      part !== null &&
-      recorded(part).type === "tool-result",
+      typeof part === "object" && part !== null && recorded(part).type === "tool-result",
   );
   assert.ok(toolResultPart !== undefined, "first step should have a tool-result part");
 

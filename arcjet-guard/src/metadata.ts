@@ -49,7 +49,7 @@ export type ArcjetMetadata = Record<string, unknown>;
  */
 export interface LocalWarning {
   /** Machine-readable code. */
-  code: "AJ1001" | "AJ1017";
+  code: "AJ1001" | "AJ1017" | "AJ1023";
   /**
    * Human-readable description. Names only the offending keys, never the
    * values, and only after escaping and length-bounding them — warnings are
@@ -334,7 +334,6 @@ export function enforceMetadataBudget(maps: ReadonlyArray<Record<string, string>
       total += size;
     }
     for (const key of over) {
-      // oxlint-disable-next-line typescript/no-dynamic-delete -- trimming a caller-keyed map
       delete map[key];
       dropped.push(sanitizeKey(key));
     }

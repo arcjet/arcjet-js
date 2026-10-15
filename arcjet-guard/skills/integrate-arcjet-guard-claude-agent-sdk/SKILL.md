@@ -2,9 +2,14 @@
 name: integrate-arcjet-guard-claude-agent-sdk
 description: Integrate Arcjet security into a Claude Agent SDK agent using @arcjet/guard — wrap tool() handlers, screen inbound prompts with UserPromptSubmit, and deny unwrapped built-in/MCP tools with PreToolUse. Use when asked to add Arcjet to a Claude Agent SDK or Claude Code agent, rate limit its tools, screen inbound messages, or block prompt injection / PII.
 license: Apache-2.0
-compatibility: Requires the target app to use the Claude Agent SDK (@anthropic-ai/claude-agent-sdk >=0.1.0 <1) on Node.js >= 22.
+compatibility: Requires the target app to use the Claude Agent SDK (@anthropic-ai/claude-agent-sdk >=0.1.0 <1) on Node.js >=22.21.0 <23 || >=24.5.0.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Claude Agent SDK agent
@@ -37,7 +42,9 @@ and Claude Code erases the prompt.
 
 Claude's docs say `canUseTool` is skipped by `allowedTools`, allow rules,
 and `bypassPermissions` / `acceptEdits`. There is no `guardCanUseTool`.
-Do not put Arcjet policy on `canUseTool`.
+Do not put Arcjet policy on `canUseTool`. Same trap as Google ADK
+`requireConfirmation` and Cloudflare Think `needsApproval`: after a
+human yes, Guard still runs.
 
 ## PreToolUse is the only deny for unwrapped tools
 
@@ -82,10 +89,12 @@ Ask only what you cannot infer from the code; suggest defaults.
    and omits `correlationId` when neither is a valid id. Subagent
    `agent_id` is metadata, not the correlation id.
 6. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
-   `@arcjet/guard/agents`.** Claude tools are `tool()`, not AI SDK
-   `tool()`. `guardTool` throws if the tool already carries the Arcjet
-   protection brand. Applying `guardTool` and `guardHooks` PreToolUse to
-   the same authored tool double-calls the guard.
+   `@arcjet/guard/claude-managed-agents/v0`.** There is no public
+   `@arcjet/guard/agents` export. Claude tools are `tool()`, not AI SDK
+   `tool()`, and this is not hosted Claude Managed Agents. `guardTool`
+   throws if the tool already carries the Arcjet protection brand. Applying
+   `guardTool` and `guardHooks` PreToolUse to the same authored tool
+   double-calls the guard.
 7. **A denial from `guardTool` is a `CallToolResult` with `isError: true`**,
    not a throw. If `onDeny` throws, the handler still does not run and the
    model still receives the default denial result.
@@ -98,7 +107,7 @@ use the versioned path: `@arcjet/guard/claude-agent-sdk/v0` resolves;
 `@arcjet/guard/claude-agent-sdk` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
 
 ```sh
-npm install @arcjet/guard @anthropic-ai/claude-agent-sdk
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @anthropic-ai/claude-agent-sdk
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -115,7 +124,8 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/claude-agent-sdk/v0";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -125,7 +135,7 @@ const lookupLimit = tokenBucket({
   intervalSeconds: 60,
   maxTokens: 10,
 });
-const detectPii = localDetectSensitiveInfo();
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,
@@ -142,15 +152,28 @@ export const lookupOrder = guardTool(
   ),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input) => [lookupLimit({ key: input.orderId, requested: 1 }), detectPii(input.note)],
   },
 );
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the tool's handler never runs. The model receives
   `{ content, structuredContent: { arcjetDenied, reason, message, retryable }, isError: true }`.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules`, `metadata` or `sessionId` callback throws or returns a
+  value Guard cannot use. A failed callback never skips the guard call:
+  Guard is called without its value, so remote policy still evaluates the
+  call and a DENY stands.
 - Pass the same `sessionId` you give `query({ options.sessionId })` on the
   policy when the handler `extra` does not carry `session_id`.
 
@@ -184,9 +207,13 @@ for await (const message of query({
 
 - On DENY, `UserPromptSubmit` returns `{ decision: "block", reason }` and
   the prompt is erased. The model never sees it.
-- Default `onGuardError: "deny"` — if the guard cannot be evaluated, the
-  prompt is blocked. Use `"allow"` on `inbound` when the human cost of
-  rejecting a legitimate message exceeds the security cost of an outage.
+- Default `onGuardError: "deny"` — if the guard cannot be evaluated, or an
+  `inbound` `action`, `rules` or `metadata` callback throws or returns a
+  value Guard cannot use, the prompt is blocked. Guard is still called
+  without the failed value (a failed `action` falls back to
+  `"message.received"`), so a DENY stands. Use `"allow"` on `inbound` when
+  the human cost of rejecting a legitimate message exceeds the security
+  cost of an outage.
 
 ## Step 4: Gate tools you did not wrap
 
@@ -219,7 +246,9 @@ export const hooks = guardHooks(arcjet, {
 
 Pass `hooks` to `query({ options.hooks })`. `PreToolUse` returns
 `permissionDecision: "deny"` so Bash / Write / unwrapped MCP never
-execute. `PostToolUse` is observe-only.
+execute. `PostToolUse` is observe-only. It records the call even when an
+`action` or `metadata` callback fails, under the default label and its own
+metadata.
 
 Use this for tools you did **not** pass through `guardTool`. `PreToolUse`
 fires for _every_ tool and the hook input carries only a name, never the

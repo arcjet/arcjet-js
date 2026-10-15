@@ -40,7 +40,7 @@ export interface ReadableStreamLike {
  */
 export async function readBodyWeb(
   stream: ReadableStream,
-  options?: ReadBodyOpts | null | undefined,
+  options?: ReadBodyOpts | null,
 ): Promise<string> {
   const limit = options?.limit ?? 1048576; // 1mb.
   const length = options?.expectedLength ?? undefined;
@@ -152,7 +152,7 @@ export async function readBodyWeb(
  */
 export async function readBody(
   stream: ReadableStreamLike,
-  options?: ReadBodyOpts | null | undefined,
+  options?: ReadBodyOpts | null,
 ): Promise<string> {
   const limit = options?.limit ?? 1048576; // 1mb.
   const length = options?.expectedLength ?? undefined;
@@ -211,7 +211,7 @@ export async function readBody(
       stream.on("error", onEnd);
     }
 
-    function done(err?: Error | null | undefined, buffer?: string | null | undefined) {
+    function done(err?: Error | null, buffer?: string | null) {
       // Ensure we avoid double resolve/reject if called more than once
       if (complete) return;
 

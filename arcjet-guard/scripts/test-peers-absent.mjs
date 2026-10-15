@@ -48,6 +48,20 @@ const CHECKS = [
     resolve: ["@anthropic-ai/claude-agent-sdk"],
   },
   {
+    name: "claude-managed-agents",
+    dir: "claude-managed-agents",
+    version: "v0",
+    remove: ["@anthropic-ai/sdk"],
+    resolve: ["@anthropic-ai/sdk"],
+  },
+  {
+    name: "cloudflare-think",
+    dir: "cloudflare-think",
+    version: "v0",
+    remove: ["@cloudflare/think"],
+    resolve: ["@cloudflare/think"],
+  },
+  {
     name: "langgraph",
     dir: "langgraph",
     version: "v1",
@@ -88,6 +102,20 @@ const CHECKS = [
     version: "v1",
     remove: ["@strands-agents/sdk"],
     resolve: ["@strands-agents/sdk"],
+  },
+  {
+    name: "tanstack-ai",
+    dir: "tanstack-ai",
+    version: "v0",
+    remove: ["@tanstack/ai"],
+    resolve: ["@tanstack/ai"],
+  },
+  {
+    name: "google-adk",
+    dir: "google-adk",
+    version: "v2",
+    remove: ["@google/adk"],
+    resolve: ["@google/adk"],
   },
   // Last: deletes a shared devDependency.
   {
@@ -220,7 +248,12 @@ function runCheck(check) {
 
     // Node expands the glob itself; `spawnSync` without a shell passes it through
     // literally, which is what the quoting did in the YAML this replaced.
+    // Stay under `src/<dir>` — `test/<dir>` value-imports the peer
+    // (e.g. test/google-adk/real-plugin.test.ts) and runs in test-unit.
     const glob = `src/${check.dir}/**/*.test.ts`;
+    if (!glob.startsWith(`src/${check.dir}/`)) {
+      throw new Error(`peer-absent glob must stay under src/${check.dir}/; got ${glob}`);
+    }
     const result = spawnSync(process.execPath, ["--test", glob], {
       cwd: PACKAGE_ROOT,
       stdio: "inherit",

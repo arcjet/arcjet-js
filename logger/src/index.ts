@@ -122,7 +122,7 @@ export class Logger {
         this.#logLevel = 3;
         break;
       default: {
-        throw new Error(`Unknown log level: ${options.level}`);
+        throw new Error(`Unknown log level: ${String(options.level)}`);
       }
     }
   }

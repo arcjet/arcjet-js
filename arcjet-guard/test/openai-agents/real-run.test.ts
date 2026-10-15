@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion, typescript/require-await, eslint/require-await -- test fixtures built from the real SDK types
+// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion -- test fixtures built from the real SDK types
 /**
  * End-to-end behaviour through the real `Runner` / `Agent` / `run()` loop,
  * driven by the SDK's own `ScriptedModel` so no network is involved.

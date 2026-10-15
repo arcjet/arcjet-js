@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Strands Agents JS (@strands-agents/sdk >=1.1.0 <2) on Node.js >= 22. This is JS Agent + tool({ callback }) + Plugin / addHook, not the Python SDK. The floor is 1.1.0 because HookOrder + interrupt() shipped then.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Strands Agents app
@@ -31,8 +36,9 @@ one decision rule:
 
 This namespace is JS **`@strands-agents/sdk` `Agent` + `tool({
 callback })` + Plugin / `addHook`**. Not the Python SDK. Do not also
-wrap the same tool with `@arcjet/guard/vercel-ai/v7` or
-`@arcjet/guard/langgraph/v1`. Zod is their peer, not ours.
+wrap the same tool with `@arcjet/guard/vercel-ai/v7`,
+`@arcjet/guard/langgraph/v1`, or `@arcjet/guard/claude-managed-agents/v0`.
+Zod is their peer, not ours.
 
 ## Screen inbound before `invoke()` / `stream()` — there is no inbound hook.
 
@@ -45,8 +51,9 @@ this policy gate.
 
 `event.interrupt()` is human-in-the-loop. Same trap as Mastra
 `requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`,
-OpenAI Agents `needsApproval`, and LangChain
-`humanInTheLoopMiddleware`. There is no `guardApproval` /
+OpenAI Agents `needsApproval`, LangChain `humanInTheLoopMiddleware`,
+Google ADK `requireConfirmation`, and Cloudflare Think `needsApproval`.
+There is no `guardApproval` /
 `guardInterrupt`. Do not wrap `interrupt()` as Guard.
 
 ## Deny with `BeforeToolCallEvent.cancel` (and `guardTool` on authored callbacks). `BeforeToolsEvent.cancel` skips per-tool hooks — do not use it.
@@ -55,7 +62,8 @@ The authored `callback` is the deny point for tools you own. MCP,
 vended tools, and anything not wrapped with `guardTool` skip that
 callback. `guardHooks` is the invoke-wide gate for those. Official:
 set `event.cancel` to a string; `tool.stream()` does not run;
-`AfterToolCallEvent` still fires.
+`AfterToolCallEvent` still fires. It records the call even when an `action`
+or `metadata` callback fails, under the default label and its own metadata.
 
 Do not use `BeforeToolsEvent.cancel`. A truthy value skips
 `_toolExecutor.execute()`, so per-tool hooks never run.
@@ -71,7 +79,7 @@ Ask only what you cannot infer from the code; suggest defaults.
 3. Who is the **user** for metadata — an opaque user/tenant ID (never PII)?
    Default: none. Pass it via `metadata` on the policy. Put the
    conversation / session id you already have on
-   `agent.invoke(..., { invocationState: { sessionId } })` *and* on
+   `agent.invoke(..., { invocationState: { sessionId } })` _and_ on
    `guardHooks({ sessionId })`. That id is the correlation id, not the
    user.
 4. Is an Arcjet outage unacceptable? Every helper defaults to
@@ -113,7 +121,7 @@ versioned path: `@arcjet/guard/strands-agents/v1` resolves;
 install `zod` only if the app already uses it. Node 22+.
 
 ```sh
-npm install @arcjet/guard @strands-agents/sdk
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @strands-agents/sdk
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -130,7 +138,8 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/strands-agents/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -141,8 +150,8 @@ const lookupLimit = tokenBucket({
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
 // Scan free-text args (a note, reason, body). An opaque `orderNumber`
-// will not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// is not free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,
@@ -157,6 +166,10 @@ export const lookupOrder = guardTool(
   }),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderNumber: policyInput.server.string(input.orderNumber),
+    }),
     rules: (input) => [
       lookupLimit({ key: input.orderNumber, requested: 1 }),
       detectPii(input.note),
@@ -166,10 +179,19 @@ export const lookupOrder = guardTool(
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the authored callback never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as the
   callback return (`FunctionTool` wraps that object in a `JsonBlock`).
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules`, `metadata` or `sessionId` callback throws or returns a
+  value Guard cannot use. A failed callback never skips the guard call:
+  Guard is called without its value, so remote policy still evaluates the
+  call and a DENY stands.
 - Prefer omitting `outputSchema` on guarded tools, or verify the schema
   accepts `ArcjetDenialResult` / your `onDeny` shape. A denial is not
   schema-checked.

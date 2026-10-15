@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use the Vercel AI SDK (`ai` >= 7) on Node.js >= 22.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Vercel AI SDK app
@@ -18,7 +23,8 @@ rule:
 - **Observe-only** (record that something happened) → `captureAction()`
 
 All three attach the same correlation ID so the Arcjet Console reconstructs
-the whole run as one Sequence.
+the whole run as one Sequence. This is not hosted Claude Managed Agents
+(`@arcjet/guard/claude-managed-agents/v0`).
 
 ## Questions to ask the human first
 
@@ -87,13 +93,22 @@ Never stash it in module state or AsyncLocalStorage.
 
 ```ts
 import { guardTool, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
-import { tokenBucket } from "@arcjet/guard";
+import { tokenBucket, policyInput } from "@arcjet/guard";
 
-const lookupLimit = tokenBucket({ bucket: "lookups", refillRate: 5, intervalSeconds: 60, maxTokens: 10 });
+const lookupLimit = tokenBucket({
+  bucket: "lookups",
+  refillRate: 5,
+  intervalSeconds: 60,
+  maxTokens: 10,
+});
 
 const tools = {
   lookupOrder: guardTool(arcjet, lookupOrderTool, {
     action: "order.looked-up", // "resource.verb", past tense
+    actor: userId,
+    inputs: ({ orderNumber }) => ({
+      orderNumber: policyInput.server.string(orderNumber),
+    }),
     rules: ({ orderNumber }) => [lookupLimit({ key: `order:${orderNumber}`, requested: 1 })],
     // securityMetadata() maps the flat vocabulary to wire keys, so its fields
     // are strings. Nested values go alongside it in the raw metadata object.
@@ -105,13 +120,23 @@ const tools = {
 };
 ```
 
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - Omit `rules` to submit none. The guard call still happens, so the decision is
   correlatable and the call site stays reachable by policy configured outside
   the code — but it costs a round trip. Use `captureAction()` instead when you
-  want a record and no decision.
+  want a record no helper produced; pass `decision.id` as its `decisionId` to
+  join that record to a `guard()` call the application made itself.
 - `rules` may be a callback over the tool's parsed input, computed from the
   data being acted on — here, keying the rate limit on the specific order
   being looked up.
+- To screen PII in a free-text argument, add
+  `localDetectSensitiveInfo({ backend: rampart() })(input.note)` to `rules`.
+  `rampart` comes from `@arcjet/sensitive-info-rampart`, which detects PII
+  on-device and needs a server runtime (Node.js, Bun, or Deno).
 - On DENY the tool's `execute` never runs; the model receives a structured
   denial result carrying the deciding rule's own `reason` — for the
   `tokenBucket` above that is `reason: "RATE_LIMIT"`, `retryable: true`, and a
@@ -124,6 +149,13 @@ const tools = {
   `retryAfterSeconds: 5` backoff hint. For read-only operations like lookups,
   set `onGuardError: "allow"` if availability matters more than enforcement: the
   tool executes normally and the model receives its ordinary output.
+- A `rules` or `metadata` callback that throws, or returns a value Guard
+  cannot use, never skips the guard call: Guard is called without that
+  value (no local rules, or no policy metadata), so remote policy still
+  evaluates the call and a DENY stands. Otherwise `onGuardError` decides
+  as above, and the capture records `outcome: "unavailable"` under
+  `"deny"` or `outcome: "degraded"` under `"allow"`. `rules` must return
+  an array of rules bound to their input.
 - Pilot limitation: `guardTool` throws if the tool already declares its
   own `contextSchema`.
 - **Alternative form:** calling `guardAction` directly inside the tool's
@@ -218,8 +250,8 @@ two distinguishable in a handler. The fail-closed tool result carries a fixed
 `retryAfterSeconds: 5` backoff hint. The capture `outcome` on that path is
 `"unavailable"`, not `"denied"`, so an operator can query the two separately. The
 layering resolves a potential confusion: the core `@arcjet/guard` client still
-fails open by construction and *reports* it via `hasFailedOpen()`; these helpers
-*decide* to block on it.
+fails open by construction and _reports_ it via `hasFailedOpen()`; these helpers
+_decide_ to block on it.
 
 ## Metadata vocabulary
 
@@ -229,26 +261,34 @@ ID), `agent` (which automated actor), `workflow` (logical workflow name),
 (where effects go: `github`, `slack`, `internal`), `reversibility`
 (`reversible`/`compensable`/`irreversible`), `resource` (what's acted on,
 e.g. `repo:owner/name#123`). The `action` is not metadata — it is the guard
-label / capture action: `resource.verb` past tense, validated server-side as
-a slug (lowercase letters, digits, dash, and dot only — no underscores or
-uppercase). Use `order.looked-up`, not `order.looked_up`.
+label / capture action: `resource.verb` past tense (`order.looked-up`),
+validated server-side: ASCII letters of either case, digits, dash, dot, and
+underscore, starting and ending with a letter or digit, at most 256 bytes. A
+label is matched case-sensitively, so `Order.looked-up` and `order.looked-up`
+are different labels.
 
 Metadata accepts any JSON-serializable value — nested objects and arrays
 included. The server enforces the following limits, dropping keys that exceed
 them and reporting each drop on `decision.warnings`:
 
-| Limit | Value | Over the limit |
-|---|---|---|
-| Top-level keys | 128 | extra keys dropped |
-| Serialized bytes per value | 4 KiB | that key dropped |
-| Nesting depth per value | 10 | that key dropped |
-| Key names | letters, digits, `-`, `.`, `_` | that key dropped |
+| Limit                      | Value                          | Over the limit     |
+| -------------------------- | ------------------------------ | ------------------ |
+| Top-level keys             | 128                            | extra keys dropped |
+| Serialized bytes per value | 4 KiB                          | that key dropped   |
+| Nesting depth per value    | 10                             | that key dropped   |
+| Key names                  | letters, digits, `-`, `.`, `_` | that key dropped   |
 
 Nothing about metadata can fail a call or change a decision; it is excluded
 from fingerprinting. Metadata is untrusted and **not redacted** — no secrets
 or PII. Numbers are float64, so integers above `Number.MAX_SAFE_INTEGER`
 should be passed as strings. The SDK adds `AJ1017` warnings naming values it
 could not encode (`undefined`, a function, a `BigInt`, a circular reference).
+
+Human-in-the-loop APIs on other SDKs (`needsApproval`, `interrupt()`,
+`requireApproval`, Google ADK `requireConfirmation`, Cloudflare Think
+`needsApproval`) are not policy gates.
+This namespace gates with `guardTool` / `guardAction`. After a human yes,
+Guard still runs.
 
 ## Verify the integration
 

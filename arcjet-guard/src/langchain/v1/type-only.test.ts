@@ -44,7 +44,8 @@ test("type-only import scanner works on langchain fixtures", () => {
     },
     {
       name: "detects mixed type and value import (counts as value)",
-      content: 'import { type createAgent, createMiddleware } from "langchain";\nvoid createMiddleware;',
+      content:
+        'import { type createAgent, createMiddleware } from "langchain";\nvoid createMiddleware;',
       shouldHaveImport: true,
       shouldBeTypeOnly: false,
     },

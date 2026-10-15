@@ -73,7 +73,7 @@ export type ContentSecurityPolicyConfig = {
   // TODO: Support `reportOnly`
 };
 
-function unquote(value?: string | undefined) {
+function unquote(value?: string) {
   for (const [unquoted, quoted] of QUOTED) {
     if (value === quoted) {
       return unquoted;
@@ -134,7 +134,7 @@ function directivesToSvelteKitConfig(
  * @returns
  *   SvelteKit Content Security Policy configuration.
  */
-export function csp(options?: ContentSecurityPolicyConfig | undefined): SvelteKitCsp {
+export function csp(options?: ContentSecurityPolicyConfig): SvelteKitCsp {
   return {
     mode: options?.mode ? options.mode : "auto",
     directives:

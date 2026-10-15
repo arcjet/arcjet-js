@@ -1,4 +1,4 @@
-// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion, typescript/require-await -- test fixtures built from the real SDK types
+// oxlint-disable typescript/explicit-function-return-type, typescript/no-unsafe-type-assertion, typescript/require-await -- test fixtures built from the real SDK types
 /**
  * Behaviour against the real `@mastra/core` `createTool`, rather than the
  * hand-written `ToolAction` literals in `src/mastra/v1/*.test.ts`.

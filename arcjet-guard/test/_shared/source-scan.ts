@@ -291,8 +291,11 @@ export const EXPECTED_ROOT_KEYS = [
   ".",
   "./bun",
   "./claude-agent-sdk/v0",
+  "./claude-managed-agents/v0",
+  "./cloudflare-think/v0",
   "./fetch",
   "./genkit/v1",
+  "./google-adk/v2",
   "./langchain/v1",
   "./langgraph/v1",
   "./mastra/v1",
@@ -300,6 +303,7 @@ export const EXPECTED_ROOT_KEYS = [
   "./openai-agents/v0",
   "./package.json",
   "./strands-agents/v1",
+  "./tanstack-ai/v0",
   // The in-memory client for application tests. Deliberately a single entry
   // rather than a runtime-conditional one: it has no transport, so there is
   // nothing for a condition to select.

@@ -22,13 +22,14 @@
 code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
 
-This package is an alternative **detection backend** for Arcjet's
-[sensitive information][sensitive-info] rule. It runs the on-device
-[Rampart][rampart] named-entity-recognition model — a ~15&nbsp;MB quantized ONNX
-model — so the rule can detect names, addresses, and government/financial
-identifiers in addition to the four types the default WebAssembly engine
-detects. Everything runs locally (Node.js, Bun, or Deno); no data leaves your
-environment, and the model weights are bundled so nothing is fetched at runtime.
+This package is the recommended **detection backend** for Arcjet's
+[sensitive information][sensitive-info] rule and Arcjet Guard's
+`localDetectSensitiveInfo` rule. It runs the on-device [Rampart][rampart]
+named-entity-recognition model — a ~15&nbsp;MB quantized ONNX model — to detect
+names, addresses, government and financial identifiers, email addresses, phone
+numbers, IP addresses, and card numbers. Everything runs locally (Node.js, Bun,
+or Deno); no data leaves your environment, and the model weights are bundled so
+nothing is fetched at runtime.
 
 ## Installation
 
@@ -62,8 +63,27 @@ const decision = await aj.protect(req, {
 });
 ```
 
-Without a `backend`, the rule continues to use the default WebAssembly engine —
-this package is entirely opt-in.
+Pass `backend: rampart()` to every `sensitiveInfo` rule. The rule uses Rampart
+only when the backend is configured.
+
+With Arcjet Guard, pass the same backend to `localDetectSensitiveInfo`:
+
+```ts
+import { launchArcjet, localDetectSensitiveInfo } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
+
+const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
+
+const si = localDetectSensitiveInfo({
+  deny: ["GIVEN_NAME", "SURNAME", "EMAIL", "SSN"],
+  backend: rampart(),
+});
+
+const decision = await arcjet.guard({
+  label: "tools.summary",
+  rules: [si(userMessage)],
+});
+```
 
 ## Detected entities
 
@@ -103,22 +123,54 @@ rampart({
 });
 ```
 
-The model loads once on first use and is reused for every request. The
-token-based `detect` callback of the `sensitiveInfo` rule is not used by this
-backend; add a recognizer instead.
+The model loads once on first use and is reused for every request. To detect
+custom patterns, add a recognizer.
 
 > [!NOTE]
 > Inference runs in the request path, so its latency affects request handling.
 > The model performs best on Latin-script text; see the [model card][rampart]
 > for accuracy and language details.
 
+## Custom runtimes
+
+The bundled loader needs a filesystem and dynamic module loading, which edge
+runtimes such as Cloudflare Workers don't provide. Pass `classify` to replace
+the loader alone: it receives one chunk of text, already windowed to the model's
+input budget, and returns the model's raw tokens for that chunk. Everything
+else — normalization, windowing, offset reconstruction, token aggregation, and
+overlap resolution with the recognizers — stays in this package, so detection on
+a custom runtime matches detection on Node.js.
+
+```ts
+import { rampart } from "@arcjet/sensitive-info-rampart";
+import type { RawToken } from "@arcjet/sensitive-info-rampart";
+
+const backend = rampart({
+  async classify(value: string): Promise<RawToken[]> {
+    // Run the model with your runtime's own ONNX bindings, then return one
+    // token per wordpiece.
+    return [{ entity: "B-SURNAME", score: 0.98, word: "rivera", index: 4 }];
+  },
+});
+```
+
+Each token needs the raw BIO label (`entity`), its confidence (`score`), the
+wordpiece text (`word`, keeping any `##` continuation prefix), and its position
+in the sequence (`index`). Character offsets are reconstructed from `word`, so
+you don't have to provide `start` and `end`.
+
+To replace detection entirely — including windowing — pass `runModel` instead,
+which takes the whole value and returns spans.
+
+
 ## Bundlers and frameworks
 
-This package loads a native ONNX runtime (`@huggingface/transformers` /
-`onnxruntime-node`) and reads its bundled model weights from disk at runtime, so
-it must not be bundled by a server build. It also requires a server runtime with
-filesystem and native-addon access (Node.js, Bun, or Deno) — it does not run on
-edge runtimes.
+By default this package loads a native ONNX runtime
+(`@huggingface/transformers` / `onnxruntime-node`) and reads its bundled model
+weights from disk at runtime, so it must not be bundled by a server build. That
+loader requires a server runtime with filesystem and native-addon access
+(Node.js, Bun, or Deno); to run the backend elsewhere, supply your own
+classifier — see [Custom runtimes](#custom-runtimes).
 
 ### Next.js
 

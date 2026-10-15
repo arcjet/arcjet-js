@@ -94,7 +94,10 @@ test("Genkit namespace is a strict superset of the agents barrel with same ident
   const agentKeys = Object.keys(agentsBarrel);
 
   for (const key of agentKeys) {
-    assert.ok(genkitKeys.includes(key), `agents barrel key "${key}" must be present in genkit namespace`);
+    assert.ok(
+      genkitKeys.includes(key),
+      `agents barrel key "${key}" must be present in genkit namespace`,
+    );
     assert.strictEqual(
       (genkitNamespace as Record<string, unknown>)[key],
       (agentsBarrel as Record<string, unknown>)[key],
@@ -130,7 +133,11 @@ test("export map has no unversioned ./genkit and no wildcard subpaths", () => {
 
   for (const key of exportKeys) {
     if (key.startsWith("./genkit/")) {
-      assert.equal(key, "./genkit/v1", `export map must not have wildcard genkit subpaths; found "${key}"`);
+      assert.equal(
+        key,
+        "./genkit/v1",
+        `export map must not have wildcard genkit subpaths; found "${key}"`,
+      );
     }
   }
 });
@@ -144,6 +151,9 @@ test("does not export Eve / Mastra / Claude / LangGraph / OpenAI-only APIs", () 
     "langchainContext",
     "openaiAgentsContext",
     "strandsAgentContext",
+    "tanstackAiContext",
+    "cloudflareThinkContext",
+    "googleAdkContext",
     "guardInbound",
     "guardApproval",
     "guardInterrupt",

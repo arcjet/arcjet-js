@@ -182,7 +182,7 @@ type IntegrationRule<Characteristics extends readonly string[]> =
       // TODO: This only supports serializable options, so no custom detect
       // functions are supported but maybe they could be supported via a module
       // import
-      options: SensitiveInfoOptions<undefined>;
+      options: SensitiveInfoOptions;
     }
   | {
       type: "fixedWindow";
@@ -648,7 +648,7 @@ export type RemoteClientOptions = {
  * @returns
  *   Client.
  */
-export function createRemoteClient(options?: RemoteClientOptions | undefined) {
+export function createRemoteClient(options?: RemoteClientOptions) {
   const settings = options ?? {};
   return { baseUrl: settings.baseUrl, timeout: settings.timeout } as const;
 }

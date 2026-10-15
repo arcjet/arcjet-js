@@ -1,16 +1,8 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "import", "node", "promise"],
   "categories": {
     "correctness": "error",
     "suspicious": "error"
-  },
-  "rules": {
-    "eslint/no-warning-comments": "off",
-    "eslint/no-shadow": "off",
-    "eslint/no-underscore-dangle": "off",
-    "eslint/no-unused-vars": "off",
-    "unicorn/no-array-sort": "off"
   },
   "ignorePatterns": [
     "**/dist/**",
@@ -19,5 +11,59 @@
     "arcjet-guard/**",
     "**/src/wasm/**",
     "protocol/src/proto/**"
+  ],
+  "options": {
+    "reportUnusedDisableDirectives": "error",
+    "typeAware": true
+  },
+  "plugins": ["typescript", "unicorn", "oxc", "import", "node", "promise"],
+  "rules": {
+    "eslint/max-classes-per-file": "off", // Arbitrary threshold
+    "eslint/no-warning-comments": "off",
+    "eslint/no-shadow": "off",
+    "eslint/no-underscore-dangle": "off",
+    "eslint/no-unused-vars": "off",
+    "typescript/no-floating-promises": [
+      "error",
+      {
+        "allowForKnownSafeCalls": [
+          {
+            "from": "package",
+            "name": [
+              "after",
+              "afterEach",
+              "before",
+              "beforeEach",
+              "describe",
+              "it",
+              "suite",
+              "test"
+            ],
+            "package": "node:test"
+          }
+        ]
+      }
+    ],
+    // TODO: Rules below are newly reported now that type-aware linting runs for
+    // the whole workspace rather than only `arcjet-guard`. They are stylistic
+    // or need deliberate type work, not bug fixes. `arcjet-guard` keeps
+    // `no-unsafe-type-assertion` enabled through its own config.
+    // See tracking issue.
+    "typescript/await-thenable": "off",
+    "typescript/consistent-return": "off",
+    "typescript/no-redundant-type-constituents": "off",
+    "typescript/no-unnecessary-type-parameters": "off",
+    "typescript/no-unsafe-type-assertion": "off",
+    "unicorn/no-array-sort": "off"
+  },
+  "overrides": [
+    {
+      // Tests reference mocked methods rather than calling them, so the `this`
+      // scoping this rule guards against cannot arise.
+      "files": ["**/test/**"],
+      "rules": {
+        "typescript/unbound-method": "off"
+      }
+    }
   ]
 }

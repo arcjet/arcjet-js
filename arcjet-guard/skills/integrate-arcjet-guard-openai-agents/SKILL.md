@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use OpenAI Agents (@openai/agents >=0.17.0 <1) on Node.js >= 22. This is text Agent + run() / Runner, not Realtime, not Sandbox, not hosted / MCP / asTool.
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into an OpenAI Agents app
@@ -37,7 +42,8 @@ own tripwires, not this policy gate. Do not wrap them as Guard.
 
 `needsApproval` / `requireApproval` / `onApproval` is human-in-the-loop.
 The run pauses; `result.state.approve` / `reject`. Same trap as Mastra
-`requireApproval`, Claude `canUseTool`, and LangGraph `interrupt()`.
+`requireApproval`, Claude `canUseTool`, LangGraph `interrupt()`, and
+Google ADK `requireConfirmation`, and Cloudflare Think `needsApproval`.
 There is no `guardApproval`. Do not wrap them as Guard.
 
 ## `tool()` execute is the deny point; hosted, MCP, and handoffs are not
@@ -83,8 +89,9 @@ Ask only what you cannot infer from the code; suggest defaults.
    `session.getSessionId()` from the helper: `MemorySession` mints a UUID
    when constructed without `sessionId`. Do not use `traceId` (the SDK
    mints one when omitted).
-5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.** `guardTool`
-   throws if the tool already carries the Arcjet protection brand.
+5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
+   `@arcjet/guard/claude-managed-agents/v0`.** `guardTool` throws if the
+   tool already carries the Arcjet protection brand.
 6. **A denial from `guardTool` is a structured object, not a throw.**
    Throwing would hit the SDK `errorFunction` (a generic string, or
    `ToolCallError` when `outputSchema` / `errorFunction: null`). The
@@ -103,7 +110,7 @@ Zod is the OpenAI Agents peer, not ours — install `zod` only if the app
 already uses it for `tool({ parameters })`.
 
 ```sh
-npm install @arcjet/guard @openai/agents
+npm install @arcjet/guard @arcjet/sensitive-info-rampart @openai/agents
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -120,7 +127,8 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 import { tool } from "@openai/agents";
 import { z } from "zod";
 import { guardTool } from "@arcjet/guard/openai-agents/v0";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -131,9 +139,9 @@ const lookupLimit = tokenBucket({
   maxTokens: 10,
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
-// Scan free-text args (a note, reason, body). An opaque `orderId` will
-// not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// Scan free-text args (a note, reason, body). An opaque `orderId` is not
+// free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,
@@ -148,6 +156,10 @@ export const lookupOrder = guardTool(
   }),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input: { orderId: string; note: string }) => ({
+      orderId: policyInput.server.string(input.orderId),
+    }),
     rules: (input: { orderId: string; note: string }) => [
       lookupLimit({ key: input.orderId, requested: 1 }),
       detectPii(input.note),
@@ -157,10 +169,19 @@ export const lookupOrder = guardTool(
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the closed-over `execute` never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as the tool
   result (stringified by the runner).
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules`, `metadata` or `sessionId` callback throws or returns a
+  value Guard cannot use. A failed callback never skips the guard call:
+  Guard is called without its value, so remote policy still evaluates the
+  call and a DENY stands.
 - The runner treats the denial as the tool's output. If the tool sets
   `timeoutMs`, that race now covers the guard round trip too, so leave
   headroom for it; if it sets `outputGuardrails` or `customDataExtractor`,

@@ -1,11 +1,14 @@
 import type { AgentMiddleware, WrapToolCallHook } from "langchain";
 
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { langchainContext } from "./context.ts";
 import type { LangChainContextSource } from "./context.ts";
@@ -40,6 +43,18 @@ export interface GuardMiddlewarePolicy {
    * performs the guard call.
    */
   rules?: RuleWithInput[] | ((call: GuardMiddlewareCall) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(call, runtime) => …` matching
+   * `wrapToolCall`'s `request.runtime`. Derive it from
+   * `runtime.configurable`; never trust a model-produced tool input as the
+   * actor identity.
+   */
+  actor?: ActorResolver<[GuardMiddlewareCall, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(call, runtime) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[GuardMiddlewareCall, unknown?]>;
   /** Metadata merged over the derived LangChain context. */
   metadata?: ArcjetMetadata | ((call: GuardMiddlewareCall) => ArcjetMetadata);
   /**
@@ -175,27 +190,14 @@ function isToolCallRequest(value: unknown): value is {
   return typeof value["toolCall"]["name"] === "string";
 }
 
-function resolveAction(policy: GuardMiddlewarePolicy, call: GuardMiddlewareCall): string {
-  if (typeof policy.action === "function") {
-    return policy.action(call);
-  }
-  if (typeof policy.action === "string" && policy.action.length > 0) {
-    return policy.action;
-  }
-  return "tool.invoked";
-}
-
-function resolveSessionId(
-  policy: GuardMiddlewarePolicy,
-  call: GuardMiddlewareCall,
-): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(call);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
-  }
-  return undefined;
+/**
+ * The label for a static or absent `action`, and the label used when an
+ * `action` callback fails.
+ */
+function fallbackAction(policy: GuardMiddlewarePolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "tool.invoked";
 }
 
 function isBrandedTool(tool: unknown): boolean {
@@ -274,8 +276,15 @@ export function guardMiddleware(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy = {},
 ): LangChainGuardMiddleware {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardMiddleware");
+  }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body is structural; the hook type is what createAgent assigns without a cast
-  const wrapToolCall = ((request: unknown, handler: (request: unknown) => Promise<unknown>) => {
+  const wrapToolCall = (async (
+    request: unknown,
+    handler: (request: unknown) => Promise<unknown>,
+  ) => {
     if (!isToolCallRequest(request)) {
       return handler(request);
     }
@@ -288,30 +297,9 @@ export function guardMiddleware(
     const input = request.toolCall.args ?? {};
     const call: GuardMiddlewareCall = { toolName, input };
 
-    let action: string;
-    let sessionId: string | undefined;
-    let rules: RuleWithInput[] | undefined;
-    let policyMetadata: ArcjetMetadata | undefined;
-    try {
-      action = resolveAction(policy, call);
-      sessionId = resolveSessionId(policy, call);
-      rules = typeof policy.rules === "function" ? policy.rules(call) : policy.rules;
-      policyMetadata =
-        typeof policy.metadata === "function" ? policy.metadata(call) : policy.metadata;
-    } catch (error) {
-      const actionLabel = typeof policy.action === "string" ? policy.action : "tool.invoked";
-      if (shouldWarn()) {
-        console.warn(
-          '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-          actionLabel,
-          error,
-        );
-      }
-      if (policy.onGuardError === "allow") {
-        return handler(request);
-      }
-      return denialToolMessage(request, unavailableResult());
-    }
+    const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
+    const { action, sessionId, rules, metadata: policyMetadata } = resolved;
+    const remote = await resolveActorInputs(policy, action, call, request.runtime);
 
     const source = isContextSource(request.runtime) ? request.runtime : undefined;
     const agentCtx = langchainContext(source, sessionId === undefined ? undefined : { sessionId });
@@ -327,6 +315,8 @@ export function guardMiddleware(
       rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      degraded: resolved.degraded ?? remote.degraded,
+      ...remote.fields,
       // Unlike guard-tool.ts, these handlers return a promise: building the
       // denial has to await the dynamic `@langchain/core/messages` import.
       // `runGuarded` is `async` and returns the handler's value directly, so

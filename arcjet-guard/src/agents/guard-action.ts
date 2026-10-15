@@ -68,7 +68,6 @@ export class ArcjetDeniedError extends Error {
  * signals are caught and result in this error. This is distinct from
  * `ArcjetDeniedError`, which is thrown when a rule actively denies the action.
  */
-// oxlint-disable-next-line eslint/max-classes-per-file -- Paired exception class for unavailable vs denied paths
 export class ArcjetGuardUnavailableError extends Error {
   readonly action: string;
   readonly decision?: DecisionAllow;
@@ -226,6 +225,11 @@ export async function guardAction<T>(
 export interface CaptureActionOptions {
   /** Capture action: `"resource.verb"`, past tense. */
   action: string;
+  /**
+   * Join key referencing the decision this action relates to, taken from
+   * `decision.id` of a `guard()` call the application made itself.
+   */
+  decisionId?: string;
   /** Metadata merged over the context's. */
   metadata?: ArcjetMetadata;
 }
@@ -239,9 +243,14 @@ export interface CaptureActionOptions {
  * fact about what the application did. No `outcome` metadata is added (that's
  * only for guarded executions).
  *
+ * An application that called `guard()` itself — to read the decision rather
+ * than let a helper convert it to control flow — passes `decision.id` as
+ * `decisionId` so the record joins that decision instead of standing alone.
+ *
  * @param client - Guard client from `launchArcjet()`
  * @param ctx - Security context with correlation ID and metadata
- * @param opts - Capture options: `action` (required), `metadata` (optional)
+ * @param opts - Capture options: `action` (required), `decisionId` and
+ *   `metadata` (optional)
  *
  * @example
  * ```ts
@@ -259,6 +268,7 @@ export function captureAction(
   captureEvent(client, {
     action: opts.action,
     correlationId: ctx.correlationId,
+    ...(opts.decisionId !== undefined && { decisionId: opts.decisionId }),
     metadata: { ...ctx.metadata, ...opts.metadata },
   });
 }

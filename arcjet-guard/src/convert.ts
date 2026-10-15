@@ -272,6 +272,8 @@ export function reasonFromProto(r: GuardReason): Reason {
       return "SENSITIVE_INFO";
     case GuardReason.INPUT_CONSTRAINT:
       return "INPUT_CONSTRAINT";
+    case GuardReason.IP_THREAT:
+      return "IP_THREAT";
     case GuardReason.CUSTOM:
       return "CUSTOM";
     case GuardReason.ERROR:
@@ -440,6 +442,32 @@ function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult
         detectedEntityTypes: pr.result.value.detectedEntityTypes,
       };
       break;
+    // Server-side detection: Arcjet saw the value. It shares the local
+    // detector's result shape; `execution` is what tells the two apart.
+    case "sensitiveInfo":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "SENSITIVE_INFO",
+        type: "SENSITIVE_INFO",
+        warnings,
+        detectedEntityTypes: pr.result.value.detectedEntityTypes,
+        billing: billingFromProto(pr.result.value.billing),
+      };
+      break;
+    case "ipThreat":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "IP_THREAT",
+        type: "IP_THREAT",
+        warnings,
+        detected: pr.result.value.detected,
+        riskLevel: pr.result.value.riskLevel,
+        reputation: pr.result.value.reputation,
+        activities: pr.result.value.activities,
+        host: pr.result.value.host,
+        ip: pr.result.value.ip,
+      };
+      break;
     case "allowedStringValues":
     case "deniedStringValues":
     case "stringLength":
@@ -485,9 +513,21 @@ function policyResultFromProto(pr: ProtoGuardPolicyRuleResult): PolicyRuleResult
         code: pr.result.value.code || "UNKNOWN",
       };
       break;
+    case "policyExpression":
+      result = {
+        conclusion: conclusionFromProto(pr.result.value.conclusion),
+        reason: "POLICY_EXPRESSION",
+        type: "POLICY_EXPRESSION",
+        warnings,
+      };
+      break;
     case "notRun":
       result = { conclusion: "ALLOW", reason: "NOT_RUN", type: "NOT_RUN", warnings };
       break;
+    // Every variant is matched explicitly, with no `default`: the
+    // exhaustiveness lint requires `undefined`, and `no-useless-switch-case`
+    // forbids pairing it with a `default`. A variant added to the proto
+    // therefore fails this build rather than silently reading as UNKNOWN.
     case undefined:
       result = { conclusion: "ALLOW", reason: "UNKNOWN", type: "UNKNOWN", warnings };
   }

@@ -1,12 +1,15 @@
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
+import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { mastraAgentContext } from "./context.ts";
 import type { MastraContextSource } from "./context.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
 
 /**
  * Structural shape of a Mastra tool.
@@ -67,6 +70,17 @@ export interface GuardToolPolicy<TInput> {
    * call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, context) => …` matching
+   * Mastra `execute(input, context)`. Derive it from `requestContext`; never
+   * trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[TInput, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, context) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /** How to respond when guard evaluation is unavailable. Default `"deny"`. */
@@ -140,6 +154,7 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
   tool: TTool,
   policy: GuardToolPolicy<MastraToolInput<TTool>>,
 ): TTool {
+  assertValidAction(policy.action, "guardTool");
   if (typeof tool.execute !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error("@arcjet/guard: guardTool() requires a tool with an execute function");
@@ -153,7 +168,7 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
   const originalExecute = tool.execute.bind(tool);
 
   // Preserve class prototype and non-enumerable markers (`MASTRA_TOOL_MARKER`).
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.getPrototypeOf is typed `any`
   const proto = Object.getPrototypeOf(tool) as object | null;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.defineProperties copies every own descriptor, including symbols
   const wrapped = Object.defineProperties(
@@ -176,17 +191,17 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
         }),
     };
 
-    const rules = typeof policy.rules === "function" ? policy.rules(input) : policy.rules;
-    const policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(input) : policy.metadata;
-    const mergedMetadata = { ...metadata, ...policyMetadata };
+    const call = resolveCallPolicy(policy, input, policy.action);
+    const remote = await resolveActorInputs(policy, call.action, input, context);
+    const mergedMetadata = { ...metadata, ...call.metadata };
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- denial / unavailable results are structured objects the model reads; the tool's TOutput is the ALLOW path
     const result = await runGuarded<MastraToolOutput<TTool>>(client, {
-      action: policy.action,
-      rules,
+      action: call.action,
+      rules: call.rules,
       correlationId: agentCtx.correlationId,
       metadata: mergedMetadata,
+      degraded: call.degraded ?? remote.degraded,
+      ...remote.fields,
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- onDeny may return a custom shape; the ALLOW path is TOutput
       onDeny: ((decision: DecisionDeny) => {
         if (policy.onDeny === undefined) {

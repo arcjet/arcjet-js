@@ -20,7 +20,6 @@
  * this file to cover them.
  */
 
-// oxlint-disable eslint/no-unnecessary-type-assertion, eslint/explicit-function-return-type -- test infrastructure
 import { test } from "node:test";
 
 import type { McpClientConnectionDefinition, OpenAPIConnectionDefinition } from "eve/connections";

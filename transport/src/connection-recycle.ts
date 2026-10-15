@@ -1,5 +1,5 @@
 /**
- * Dead-connection recovery for the guard HTTP/2 transport.
+ * Dead-connection recovery for Arcjet HTTP/2 transports.
  *
  * A long-lived HTTP/2 session can die silently: an intermediary (NAT gateway,
  * L4 load balancer, connection-tracking table) can drop the connection state
@@ -8,12 +8,13 @@
  * RPC times out — and keeps timing out until TCP retransmission gives up many
  * minutes later, because nothing else tears the session down.
  *
- * The PING keep-alive configured in `transport-http2.ts` detects most of this,
- * but as a backstop this wrapper watches RPC outcomes: after a run of
- * consecutive deadline failures with no success in between, it aborts the
- * managed session so the next call dials a fresh connection.
+ * The PING keep-alive configured in `http2.ts` detects most of this, but as a
+ * backstop this wrapper watches RPC outcomes: after a run of consecutive
+ * deadline failures with no success in between, it aborts the managed session
+ * so the next call dials a fresh connection.
  *
- * @packageDocumentation
+ * Shared by `@arcjet/transport` (main SDK) and `@arcjet/guard` so both stay on
+ * the same recovery behavior.
  */
 
 import { Code, ConnectError } from "@connectrpc/connect";
@@ -109,7 +110,9 @@ export function withConnectionRecycling(
         throw error;
       }
     },
-    // Guard is unary-only; pass streaming calls through untouched.
+    // Streaming is passed through untouched; Arcjet's production paths are
+    // unary-only, and streaming outcomes are a weaker signal for a dead
+    // session (long-lived streams can fail for many non-connection reasons).
     stream(method, signal, timeoutMs, header, input, contextValues) {
       return transport.stream(method, signal, timeoutMs, header, input, contextValues);
     },
@@ -123,8 +126,10 @@ export function withConnectionRecycling(
  */
 function recycle(session: RecyclableSession): void {
   // Mirror the edge-safe, `ARCJET_LOG_LEVEL`-gated logging pattern of
-  // `detect-proxy.ts`: this event is the SDK healing a broken network path,
-  // which is worth surfacing during an incident, but stays quiet by default.
+  // `detect-proxy.ts` in `@arcjet/guard`: this event is the SDK healing a
+  // broken network path, which is worth surfacing during an incident, but
+  // stays quiet by default. Kept free of `@arcjet/logger` so the shared
+  // HTTP/2 path stays usable from packages that avoid that dependency.
   const level = globalThis.process?.env?.["ARCJET_LOG_LEVEL"];
   if (level === "debug" || level === "info" || level === "warn") {
     console.warn(

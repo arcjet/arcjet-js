@@ -1,5 +1,157 @@
 # Changelog
 
+## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/guard-v1.14.1) (2026-10-06)
+
+
+### 🪲 Bug Fixes
+
+* **guard:** accept uppercase ASCII in a guard label ([#6312](https://github.com/arcjet/arcjet-js/issues/6312)) ([fc9ef92](https://github.com/arcjet/arcjet-js/commit/fc9ef92d1e8e645ecc7dca6f325dddc1bfc85fe9))
+* **guard:** call Guard when a policy callback throws or returns a value it cannot use ([#6308](https://github.com/arcjet/arcjet-js/issues/6308)) ([a3d7f45](https://github.com/arcjet/arcjet-js/commit/a3d7f451d182c18658c84aa749b350c0494daf51))
+* **guard:** call Guard when an actor or inputs callback fails ([#6310](https://github.com/arcjet/arcjet-js/issues/6310)) ([084a6df](https://github.com/arcjet/arcjet-js/commit/084a6dfdaf040f863cf59aec71b2748c70771451))
+* **guard:** read the Eve approval responder from response.principal ([#6305](https://github.com/arcjet/arcjet-js/issues/6305)) ([1b531e2](https://github.com/arcjet/arcjet-js/commit/1b531e294fb37f4384782d8cddca5e4524080791))
+
+
+### 📚 Tests
+
+* **guard:** read Eve task and agent listeners through a typed accessor ([#6309](https://github.com/arcjet/arcjet-js/issues/6309)) ([50f687a](https://github.com/arcjet/arcjet-js/commit/50f687a6f9b77f4cf10cc08aeeb0ac585f575a25))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.14.0 to 1.14.1
+    * @arcjet/logger bumped from 1.14.0 to 1.14.1
+    * @arcjet/transport bumped from 1.14.0 to 1.14.1
+
+## [1.14.0](https://github.com/arcjet/arcjet-js/compare/v1.13.0...@arcjet/guard-v1.14.0) (2026-10-01)
+
+
+### 🚀 New Features
+
+* **guard:** accept decisionId on captureAction options ([#6298](https://github.com/arcjet/arcjet-js/issues/6298)) ([33bc5bb](https://github.com/arcjet/arcjet-js/commit/33bc5bb3f1d8ab419f80230f1044b525c9090a7a))
+* **guard:** add Cloudflare Think support as @arcjet/guard/cloudflare-think/v0 ([#6297](https://github.com/arcjet/arcjet-js/issues/6297)) ([42d2f98](https://github.com/arcjet/arcjet-js/commit/42d2f9816bad430b214d931ce41ea19fb140dfce))
+* **guard:** map server-side sensitive-info and IP-threat policy results ([#6304](https://github.com/arcjet/arcjet-js/issues/6304)) ([dc31b5c](https://github.com/arcjet/arcjet-js/commit/dc31b5c20728c7e4e008cc8ff4dbe2f58d465232))
+
+
+### 📝 Documentation
+
+* **guard:** point the LangChain skill at the page that exists ([#6294](https://github.com/arcjet/arcjet-js/issues/6294)) ([3b5dcbc](https://github.com/arcjet/arcjet-js/commit/3b5dcbc76cd30ea52db777b5def280a199519f6c))
+* **skills:** fix guard() object call shape and coding-agent routing ([#6302](https://github.com/arcjet/arcjet-js/issues/6302)) ([3da98d0](https://github.com/arcjet/arcjet-js/commit/3da98d0afac62dd33e447f67b6fe2afedc9f8550))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.13.0 to 1.14.0
+    * @arcjet/logger bumped from 1.13.0 to 1.14.0
+    * @arcjet/transport bumped from 1.13.0 to 1.14.0
+
+## [1.13.0](https://github.com/arcjet/arcjet-js/compare/v1.12.0...@arcjet/guard-v1.13.0) (2026-09-16)
+
+
+### 🚀 New Features
+
+* **guard:** add actor and inputs to every adapter policy ([#6277](https://github.com/arcjet/arcjet-js/issues/6277)) ([cd0355d](https://github.com/arcjet/arcjet-js/commit/cd0355d8aacbd973151d68f6dadf2c125eb29a3b))
+* **guard:** check a guard label before sending it ([#6289](https://github.com/arcjet/arcjet-js/issues/6289)) ([19fa51a](https://github.com/arcjet/arcjet-js/commit/19fa51af47c8405f52653c29d0761c045b5312ba))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** report the latest reset from a denying rate-limit rule ([#6288](https://github.com/arcjet/arcjet-js/issues/6288)) ([4c71c9c](https://github.com/arcjet/arcjet-js/commit/4c71c9ce9e4a90ebe3fdc4fcc8d54293f9e7a5ed))
+
+
+### 📝 Documentation
+
+* **skills:** sync Guard policy MCP flow and portable labels ([#6293](https://github.com/arcjet/arcjet-js/issues/6293)) ([0943ee3](https://github.com/arcjet/arcjet-js/commit/0943ee3e2d9f46534935c3cf03b93c5091595731))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deps-dev:** bump oxlint, oxfmt, and oxlint-tsgolint ([#6286](https://github.com/arcjet/arcjet-js/issues/6286)) ([fa54554](https://github.com/arcjet/arcjet-js/commit/fa54554d88fd8268e295c86798869e007e267ca4))
+
+
+### 📚 Tests
+
+* track connections so HTTP/2 tests terminate in node 24.20.0 ([#6285](https://github.com/arcjet/arcjet-js/issues/6285)) ([567dc00](https://github.com/arcjet/arcjet-js/commit/567dc009ac09d38e8110d054b6174e4f0bd8bbc3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.12.0 to 1.13.0
+    * @arcjet/logger bumped from 1.12.0 to 1.13.0
+    * @arcjet/transport bumped from 1.12.0 to 1.13.0
+
+## [1.12.0](https://github.com/arcjet/arcjet-js/compare/v1.11.0...@arcjet/guard-v1.12.0) (2026-09-08)
+
+
+### 🚀 New Features
+
+* **guard:** add Claude Managed Agents as `@arcjet/guard/claude-managed-agents/v0` ([#6265](https://github.com/arcjet/arcjet-js/issues/6265)) ([b137824](https://github.com/arcjet/arcjet-js/commit/b137824779c2e21886a8f8385ff008337f10d083))
+* **guard:** add Google ADK support as @arcjet/guard/google-adk/v2 ([#6264](https://github.com/arcjet/arcjet-js/issues/6264)) ([ed4edfb](https://github.com/arcjet/arcjet-js/commit/ed4edfb20a470c23817b51a52923359fb1b255f7))
+* **guard:** add TanStack AI support as @arcjet/guard/tanstack-ai/v0 ([#6260](https://github.com/arcjet/arcjet-js/issues/6260)) ([d730d57](https://github.com/arcjet/arcjet-js/commit/d730d57a124f03843f085d41f64b0355a09d1eab))
+* **guard:** record `degraded` when policy did not judge an action fully ([#6250](https://github.com/arcjet/arcjet-js/issues/6250)) ([bef4fec](https://github.com/arcjet/arcjet-js/commit/bef4fecbcd8fc104b733816f205adfa3ac3409b4))
+* **guard:** surface a policy expression rule result ([#6272](https://github.com/arcjet/arcjet-js/issues/6272)) ([92cea10](https://github.com/arcjet/arcjet-js/commit/92cea1052a14b705d7a562f1b5afc558e5bd8673))
+* ship versioned Agent Skills with TanStack Intent ([#6261](https://github.com/arcjet/arcjet-js/issues/6261)) ([d93d25e](https://github.com/arcjet/arcjet-js/commit/d93d25e5428069d3daac8cbe90856f70bed237dc))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** import Eve Approval types from eve/tools/approval ([#6253](https://github.com/arcjet/arcjet-js/issues/6253)) ([fa4c092](https://github.com/arcjet/arcjet-js/commit/fa4c0922e56073be0b5d61a5a1c1192e2171cea2))
+* **transport:** port HTTP/2 PING keep-alive and connection recycling ([#6255](https://github.com/arcjet/arcjet-js/issues/6255)) ([#6256](https://github.com/arcjet/arcjet-js/issues/6256)) ([e2c3304](https://github.com/arcjet/arcjet-js/commit/e2c3304cf2f407e4f8d639b0759157ba3dc150e7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.11.0 to 1.12.0
+    * @arcjet/logger bumped from 1.11.0 to 1.12.0
+    * @arcjet/transport bumped from 1.11.0 to 1.12.0
+
+## [1.11.0](https://github.com/arcjet/arcjet-js/compare/v1.10.0...@arcjet/guard-v1.11.0) (2026-08-25)
+
+
+### 🚀 New Features
+
+* **guard:** add Claude Agent SDK support as @arcjet/guard/claude-agent-sdk/v0 ([#6229](https://github.com/arcjet/arcjet-js/issues/6229)) ([43838ef](https://github.com/arcjet/arcjet-js/commit/43838ef336df9a71b16760575a7ae81abf711897))
+* **guard:** add Eve 0.34+ request/response approval support ([#6231](https://github.com/arcjet/arcjet-js/issues/6231)) ([66d8b0c](https://github.com/arcjet/arcjet-js/commit/66d8b0c66c2559889131db0ecdc06392cbda387a))
+* **guard:** add Genkit support as @arcjet/guard/genkit/v1 ([#6243](https://github.com/arcjet/arcjet-js/issues/6243)) ([4e41678](https://github.com/arcjet/arcjet-js/commit/4e416787b5aad709476173f5daf6c30212710c37))
+* **guard:** add LangChain createAgent support as @arcjet/guard/langchain/v1 ([#6248](https://github.com/arcjet/arcjet-js/issues/6248)) ([c49abcc](https://github.com/arcjet/arcjet-js/commit/c49abcc1f9afce7d284b6c294d0dcee5916ada86))
+* **guard:** add LangGraph support as @arcjet/guard/langgraph/v1 ([#6230](https://github.com/arcjet/arcjet-js/issues/6230)) ([a5debc7](https://github.com/arcjet/arcjet-js/commit/a5debc78e3cead84b3487f2a874efc9bbcb73845))
+* **guard:** add Mastra support as @arcjet/guard/mastra/v1 ([#6226](https://github.com/arcjet/arcjet-js/issues/6226)) ([40cf399](https://github.com/arcjet/arcjet-js/commit/40cf39910fc868559fc4558ccf747723f58f810a))
+* **guard:** add OpenAI Agents support as @arcjet/guard/openai-agents/v0 ([#6233](https://github.com/arcjet/arcjet-js/issues/6233)) ([0099fb7](https://github.com/arcjet/arcjet-js/commit/0099fb76e9229fa0b5922f938f4f1ce2e1033ce1))
+* **guard:** add Strands Agents support as `@arcjet/guard/strands-agents/v1` ([#6251](https://github.com/arcjet/arcjet-js/issues/6251)) ([f3a07ee](https://github.com/arcjet/arcjet-js/commit/f3a07ee675cbdd812a36dcb778ee4325d2f89617))
+* **guard:** graduate moderateContent from experimental ([#6228](https://github.com/arcjet/arcjet-js/issues/6228)) ([c50a947](https://github.com/arcjet/arcjet-js/commit/c50a9474c040b413e2f7334665642e37570b4003))
+* **guard:** one denial payload, per-framework envelopes ([#6240](https://github.com/arcjet/arcjet-js/issues/6240)) ([fdec043](https://github.com/arcjet/arcjet-js/commit/fdec043e082f3998bcff2278905e9b4a3e553fe1))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** agent adapter tweaks ([#6232](https://github.com/arcjet/arcjet-js/issues/6232)) ([286538e](https://github.com/arcjet/arcjet-js/commit/286538ec0357d2b9b655ed1158ae9ff3ac3939a0))
+* **guard:** export package.json from @arcjet/guard ([#6239](https://github.com/arcjet/arcjet-js/issues/6239)) ([7a3086a](https://github.com/arcjet/arcjet-js/commit/7a3086a82b4e9648f82efb429d45b679da87bbac))
+
+
+### 🧹 Miscellaneous Chores
+
+* change release to 1.11.0 ([#6246](https://github.com/arcjet/arcjet-js/issues/6246)) ([752bd24](https://github.com/arcjet/arcjet-js/commit/752bd242f7bd6f128b530a133fcae2f7d4d686fa))
+
+
+### ✅ Continuous Integration
+
+* **guard:** consolidate optional-peer absent unit tests ([#6244](https://github.com/arcjet/arcjet-js/issues/6244)) ([c5329da](https://github.com/arcjet/arcjet-js/commit/c5329da88c5c438e086bb931bda43d12c1704445))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.10.0 to 1.11.0
+    * @arcjet/logger bumped from 1.10.0 to 1.11.0
+
 ## [Unreleased]
 
 

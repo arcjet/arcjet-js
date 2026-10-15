@@ -8,6 +8,7 @@ import {
   stubClient,
   decisionAllow,
   decisionDenyRateLimit,
+  decisionAllowLabelRejected,
   decisionFailOpenAllow,
   fakeRule,
 } from "../../test/_shared/stub-client.ts";
@@ -174,7 +175,11 @@ test("AC4.9: captureAction emits capture with context's correlation ID and merge
   const captureCall = captureCalls[0] as Record<string, unknown>;
   assert.equal(captureCall.action, "notification.sent");
   assert.equal(captureCall.correlationId, "run-1");
-  assert.strictEqual(captureCall.decisionId, undefined, "no decisionId for captureAction");
+  assert.equal(
+    Object.hasOwn(captureCall, "decisionId"),
+    false,
+    "decisionId should be absent when the caller supplies none",
+  );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured metadata
   const metadata = captureCall.metadata as Record<string, unknown>;
   assert.deepEqual(
@@ -182,6 +187,27 @@ test("AC4.9: captureAction emits capture with context's correlation ID and merge
     { agent: "review-bot", destination: "slack" },
     "metadata should merge context then options (no outcome key)",
   );
+});
+
+test("captureAction forwards decisionId, joining the capture to a decision", () => {
+  const { client, captureCalls } = stubClient(decisionAllow());
+
+  const ctx = createAgentContext({
+    correlationId: "run-1",
+    metadata: { agent: "review-bot" },
+  });
+
+  captureAction(client, ctx, {
+    action: "review.prompt-injection",
+    decisionId: "gdec_01m20pwvwwf3296ecn8ecm2p9k",
+    metadata: { outcome: "detected" },
+  });
+
+  assert.equal(captureCalls.length, 1, "capture should be called once");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting captured values
+  const captureCall = captureCalls[0] as Record<string, unknown>;
+  assert.equal(captureCall.decisionId, "gdec_01m20pwvwwf3296ecn8ecm2p9k");
+  assert.equal(captureCall.correlationId, "run-1");
 });
 
 test("AC4.4: guard throws, onGuardError: 'allow' → fn runs, result passes through, fail-open warning", async () => {
@@ -221,6 +247,15 @@ test("AC4.4: guard throws, onGuardError: 'allow' → fn runs, result passes thro
     );
     assert.equal(guardCalls.length, 1, "guard should be called");
     assert.equal(captureCalls.length, 1, "capture should still fire");
+    // The action ran only because onGuardError is "allow", and policy judged
+    // none of it, so the record must not claim a success.
+    assert.equal(recorded(recorded(captureCalls[0])["metadata"])["outcome"], "degraded");
+    // No decision exists to point at, which is what says policy judged nothing.
+    assert.equal(
+      recorded(captureCalls[0])["decisionId"],
+      undefined,
+      "a call guard never judged has no decision id",
+    );
   } finally {
     console.warn = originalWarn;
     restoreLogLevel();
@@ -261,6 +296,14 @@ test("AC4.4: guard resolves fail-open ALLOW, onGuardError: 'allow' → fn runs, 
       "warning should mention failed open",
     );
     assert.equal(captureCalls.length, 1, "capture should fire");
+    // A failed-open decision judged nothing, so this is not a success either.
+    assert.equal(recorded(recorded(captureCalls[0])["metadata"])["outcome"], "degraded");
+    // The synthesized fail-open decision carries id "", which is suppressed.
+    assert.equal(
+      recorded(captureCalls[0])["decisionId"],
+      undefined,
+      "an empty id is not a decision id",
+    );
   } finally {
     console.warn = originalWarn;
     restoreLogLevel();
@@ -510,4 +553,51 @@ test("End to end against a real client: no rules does not read as an unavailable
   assert.strictEqual(result, sentinel);
 
   await arcjet.flush();
+});
+
+/**
+ * A label the service rejected is unevaluated policy.
+ *
+ * `AJ1023` means the label was replaced with `invalid-label`, so no published
+ * policy could have matched. The decision still reads ALLOW and
+ * `hasFailedOpen()` is false, which is exactly why this used to look like a
+ * guard that ran and permitted the call.
+ */
+test("a label the service rejected denies by default", async () => {
+  const { client } = stubClient(decisionAllowLabelRejected());
+  const ctx = createAgentContext({ correlationId: "c1" });
+  let ran = false;
+
+  await assert.rejects(
+    () =>
+      guardAction(client, ctx, { action: "tool.invoked" }, () => {
+        ran = true;
+        return Promise.resolve("ran");
+      }),
+    ArcjetGuardUnavailableError,
+  );
+  assert.equal(ran, false, "the guarded function must not run");
+});
+
+test("a label the service rejected runs under onGuardError allow", async () => {
+  const { client } = stubClient(decisionAllowLabelRejected());
+  const ctx = createAgentContext({ correlationId: "c2" });
+
+  const out = await guardAction(
+    client,
+    ctx,
+    { action: "tool.invoked", onGuardError: "allow" },
+    () => Promise.resolve("ran"),
+  );
+  assert.equal(out, "ran");
+});
+
+test("a decision with no AJ1023 is unaffected", async () => {
+  const { client } = stubClient(decisionAllow());
+  const ctx = createAgentContext({ correlationId: "c3" });
+
+  const out = await guardAction(client, ctx, { action: "tool.invoked" }, () =>
+    Promise.resolve("ran"),
+  );
+  assert.equal(out, "ran");
 });

@@ -105,7 +105,6 @@ test("rejects a session id over 256 characters and does not mint", () => {
 test("never reads traceId, even when it is the only string present", () => {
   const result = openaiAgentsContext({
     context: { traceId: "trace-minted-by-sdk" },
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- asserting we do not invent a traceId field on the source
     ...({ traceId: "envelope-trace" } as Record<string, unknown>),
   });
 
@@ -116,7 +115,6 @@ test("never reads traceId, even when it is the only string present", () => {
 test("does not call getSessionId on a session-shaped object", () => {
   let called = 0;
   const result = openaiAgentsContext({
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- session is not a documented source field
     ...({
       session: {
         getSessionId: () => {

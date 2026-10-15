@@ -3,9 +3,9 @@ import { test } from "node:test";
 
 import { jsonSchema, tool } from "ai";
 
-import { guardTool } from "./guard-tool.ts";
 import { setLogLevel } from "../../../test/_shared/log-level.ts";
 import { decisionAllow, stubClient } from "../../../test/_shared/stub-client.ts";
+import { guardTool } from "./guard-tool.ts";
 
 // A capture-only protected tool (no rules), so execute runs without a guard
 // call and the only thing under test is the missing-context warning.

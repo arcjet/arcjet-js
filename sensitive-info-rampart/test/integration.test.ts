@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { rampart } from "../dist/index.js";
+import { createModelRunner, planWindows, tokenUpperBound } from "../dist/model.js";
 
 // These tests load and run the real ONNX model. They are skipped when the
 // runtime can't load it (for example, no native onnxruntime binding), so the
@@ -176,4 +177,145 @@ test("a model that fails to load rejects and can be retried", async function () 
   await assert.rejects(() => backend.detect(context, "Alex", entities));
   // A second call also attempts a load (the failed one was not cached).
   await assert.rejects(() => backend.detect(context, "Alex", entities));
+});
+
+// The model's position limit, including [CLS] and [SEP].
+const MODEL_MAX_TOKENS = 512;
+
+type Pipeline = ((value: string) => Promise<never>) & {
+  tokenizer: (value: string) => { input_ids: { dims: number[] } };
+};
+
+// Loads the bundled pipeline directly, so a test can pass it through
+// `classify` and record the real token count of every model invocation.
+async function loadPipeline(): Promise<Pipeline> {
+  const { env, pipeline } = await import("@huggingface/transformers");
+  env.allowRemoteModels = false;
+  env.localModelPath = new URL("../models/", import.meta.url).pathname;
+  return (await pipeline("token-classification", "rampart", {
+    dtype: "q4",
+    device: "cpu",
+    local_files_only: true,
+  } as Record<string, unknown>)) as unknown as Pipeline;
+}
+
+async function recordingRunner(t: { skip(message: string): void }) {
+  let pipe: Pipeline;
+  try {
+    pipe = await loadPipeline();
+  } catch (error) {
+    t.skip(`model unavailable: ${(error as Error).message}`);
+    return undefined;
+  }
+  const lengths: number[] = [];
+  const run = createModelRunner({
+    async classify(chunk) {
+      lengths.push(pipe.tokenizer(chunk).input_ids.dims[1]);
+      return pipe(chunk);
+    },
+  });
+  return { run, lengths, pipe };
+}
+
+function found(value: string, spans: Array<{ start: number; end: number; type: string }>) {
+  return spans.map((span) => [value.slice(span.start, span.end), span.type].join("|"));
+}
+
+test("Hangul token expansion does not overflow the model", async function (t) {
+  // Regression: 341 characters of Hangul became 513 tokens and ONNX Runtime
+  // failed with "512 by 513", because BertNormalizer decomposes each syllable
+  // into three Jamo tokens that share one original offset.
+  const recording = await recordingRunner(t);
+  if (!recording) return;
+  const value = "각 ".repeat(170) + "x";
+  assert.equal(recording.pipe.tokenizer(value).input_ids.dims[1], 513);
+
+  await recording.run(value);
+  assert.equal(recording.lengths.length, 2);
+  assert.ok(Math.max(...recording.lengths) <= MODEL_MAX_TOKENS);
+});
+
+test("default runner scans the Hangul reproduction", async function (t) {
+  try {
+    await loadPipeline();
+  } catch (error) {
+    t.skip(`model unavailable: ${(error as Error).message}`);
+    return;
+  }
+  // Rejected with an ONNX Runtime broadcast error before the fix.
+  const spans = await createModelRunner()("각 ".repeat(170) + "x");
+  assert.ok(Array.isArray(spans));
+});
+
+test("token budget boundary", async function (t) {
+  const recording = await recordingRunner(t);
+  if (!recording) return;
+
+  const atBudget = "각 ".repeat(170);
+  await recording.run(atBudget);
+  assert.deepEqual(recording.lengths, [MODEL_MAX_TOKENS]);
+
+  recording.lengths.length = 0;
+  await recording.run(atBudget + "x");
+  assert.equal(recording.lengths.length, 2);
+  assert.ok(Math.max(...recording.lengths) <= MODEL_MAX_TOKENS);
+});
+
+test("tokenUpperBound is never below the real token count", async function (t) {
+  const recording = await recordingRunner(t);
+  if (!recording) return;
+  for (const value of [
+    "각 ".repeat(200),
+    "İstanbul ǅ ﬃ Straße ①②③ ｱｲｳ",
+    "नमस्ते दुनिया ".repeat(20),
+    "会议记录已经整理好了。議事録をまとめました。",
+    "a\u0301b\u0327c ".repeat(30),
+    "\u{1F600}\u{1F469}\u200D\u{1F4BB} emoji",
+    "\u200B\uFEFF\u00A0\u2028\u0085 separators",
+    "x".repeat(300),
+  ]) {
+    const real = recording.pipe.tokenizer(value).input_ids.dims[1] - 2;
+    assert.ok(
+      real <= tokenUpperBound(value),
+      `${real} > bound for ${JSON.stringify(value.slice(0, 20))}`,
+    );
+  }
+});
+
+test("long multilingual input scans to the end", async function (t) {
+  const recording = await recordingRunner(t);
+  if (!recording) return;
+  const filler =
+    "회의록 정리했습니다. 会议记录已经整理好了。議事録をまとめました。 Notes are done. ".repeat(
+      200,
+    );
+  const value = filler + "Contact Maria Garcia at 415-555-2671.";
+
+  const result = found(value, await recording.run(value));
+
+  assert.ok(result.includes("Maria|GIVEN_NAME"), result.slice(-5).join(","));
+  assert.ok(result.includes("Garcia|SURNAME"));
+  assert.ok(result.includes("415-555-2671|PHONE_NUMBER"));
+  assert.ok(recording.lengths.length > 10);
+  assert.ok(Math.max(...recording.lengths) <= MODEL_MAX_TOKENS);
+});
+
+test("a detection crossing a window boundary is reported whole", async function (t) {
+  const recording = await recordingRunner(t);
+  if (!recording) return;
+  const phone = "415-555-2671";
+  const prefix = "Please call Maria Garcia on ";
+  // Hangul filler costs three tokens per syllable; pad so the phone number
+  // straddles the end of the first window.
+  const filler = "각 ".repeat(Math.floor((510 - tokenUpperBound(prefix) - 2) / 3));
+  const value = filler + prefix + phone + " tomorrow.";
+  const [first] = planWindows(value);
+  const phoneStart = value.indexOf(phone);
+  assert.ok(phoneStart < first[1] && first[1] < phoneStart + phone.length);
+
+  const result = found(value, await recording.run(value));
+
+  assert.ok(result.includes(`${phone}|PHONE_NUMBER`), result.join(","));
+  assert.equal(recording.lengths.length, 2);
+  assert.ok(Math.max(...recording.lengths) <= MODEL_MAX_TOKENS);
 });

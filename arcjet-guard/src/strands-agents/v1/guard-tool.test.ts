@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion, typescript/unbound-method -- test infrastructure and mocks
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion -- test infrastructure and mocks
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -11,9 +11,10 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { DecisionDeny } from "../../types.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
+import type { DecisionDeny } from "../../types.ts";
 import type { StrandsTool } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 
@@ -484,9 +485,7 @@ test("ZodTool inner _functionTool callback is gated so stream() cannot bypass", 
   assert.ok(wrapped._functionTool);
   assert.notStrictEqual(wrapped._functionTool, tool._functionTool);
 
-  const result = asToolResult(
-    await wrapped._functionTool!._callback({}, toolContext("t")),
-  );
+  const result = asToolResult(await wrapped._functionTool!._callback({}, toolContext("t")));
   assert.equal(calls, 0);
   assert.equal(result.arcjetDenied, true);
 
@@ -501,4 +500,47 @@ test("never reads traceId from invocationState", async () => {
   const wrapped = guardTool(client, tool, { action: "order.looked-up" }) as FakeTool;
   await wrapped._callback({}, { invocationState: { traceId: "trace-minted" } });
   assert.equal("correlationId" in recorded(guardCalls[0]), false);
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createTool();
+  const wrapped = guardTool(client, tool as never, {
+    action: "test.action",
+    actor: (input: { id?: string }) => `actor-${input.id}`,
+    inputs: (input: { id?: string }) => ({ id: policyInput.server.string(String(input.id)) }),
+  });
+  await (
+    wrapped as unknown as { _callback: (input: unknown, ctx?: unknown) => Promise<unknown> }
+  )._callback({ id: "one" }, { invocationState: { sessionId: "t" } });
+  assert.equal(recorded(guardCalls[0]).actor, "actor-one");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createTool({
+    callback: async () => {
+      calls += 1;
+      return { ok: true };
+    },
+  });
+  const wrapped = guardTool(client, tool as never, {
+    action: "test.action",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = asDenial<ArcjetDenialResult>(
+    await (wrapped as unknown as { _callback: (input: unknown) => Promise<unknown> })._callback({
+      id: "one",
+    }),
+  );
+  assert.equal(result.reason, "ERROR");
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
+  assert.equal(calls, 0);
 });

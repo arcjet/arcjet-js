@@ -38,7 +38,7 @@ test("explicit ipSrc takes precedence over the cached Deno address and is stripp
   });
   const request = new Request("https://example.com/");
   const handler = client.handler(async (received) => {
-    await client.protect(received, { ipSrc: " application-owned:not-an-ip " });
+    await client.protect(received, { ipSrc: "8.8.8.8" });
     return new Response();
   });
 
@@ -47,6 +47,6 @@ test("explicit ipSrc takes precedence over the cached Deno address and is stripp
     remoteAddr: { hostname: "192.0.2.1", port: 1234, transport: "tcp" },
   });
 
-  assert.equal(details.ip, " application-owned:not-an-ip ");
+  assert.equal(details.ip, "8.8.8.8");
   assert.deepEqual(details.extra, {});
 });

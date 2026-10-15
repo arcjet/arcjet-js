@@ -98,6 +98,7 @@ export {
   type PolicyInputMap,
   type PolicyRuleResult,
   type RuleResultInputConstraint,
+  type RuleResultIpThreat,
   type StringMatchOperator,
 
   // Rule config types

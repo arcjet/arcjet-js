@@ -1,57 +1,69 @@
 {
   "name": "arcjet-js",
-  "version": "1.10.0",
+  "version": "1.14.1",
   "private": true,
   "workspaces": [
     "*"
   ],
   "scripts": {
     "build": "turbo run build",
-    "lint": "oxlint --disable-nested-config",
+    "lint": "oxlint",
     "test-api": "turbo run test-api",
     "test-coverage": "turbo run test-coverage",
     "test": "turbo test",
-    "format": "oxfmt --disable-nested-config",
-    "format:check": "oxfmt --disable-nested-config --check",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "oxfmt": "0.63.0",
-    "oxlint": "1.77.0",
-    "turbo": "2.10.10"
+    "oxfmt": "0.67.0",
+    "oxlint": "1.82.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "turbo": "2.11.7"
   },
   "overrides": {
-    "@bufbuild/protobuf": "2.14.0",
+    "@ai-sdk/anthropic": "4.0.54",
+    "@ai-sdk/openai": "4.0.67",
+    "@ai-sdk/provider-utils": "5.0.47",
+    "@fastify/ajv-compiler": {
+      "fast-uri": "3.1.8"
+    },
+    "@huggingface/transformers": {
+      "sharp": ">=0.35.5"
+    },
     "@nosecone/sveltekit": {
       "@sveltejs/kit": {
-        ".": "2.70.2",
-        "cookie": "0.7.2"
+        "cookie": ">=0.7.2"
       }
     },
-    "adm-zip": "0.6.0",
-    "fast-uri": "3.1.5",
+    "adm-zip": "0.6.1",
+    "ajv": {
+      "fast-uri": "3.1.8"
+    },
+    "eve@0.46.0": {
+      "undici": "8.11.2"
+    },
+    "fast-json-stringify": {
+      "fast-uri": "4.2.1"
+    },
     "miniflare": {
-      "undici": "7.29.0"
-    },
-    "nanoid": "3.3.18",
-    "postcss": "^8.5.10",
-    "rolldown-plugin-dts": {
-      "typescript": "7.0.2"
-    },
-    "rollup": "npm:@rollup/wasm-node",
-    "sharp": "0.35.3",
-    "svgo": "4.0.2",
-    "uuid": "11.1.1"
+      "sharp": ">=0.35.5",
+      "undici": ">=7.29.1"
+    }
   },
   "engines": {
     "node": ">=22.21.0 <23 || >=24.5.0",
     "npm": "^12.0.0"
   },
-  "packageManager": "npm@12.0.1",
+  "packageManager": "npm@12.0.2",
   "allowScripts": {
     "@firebase/util": false,
+    "@google/genai": false,
+    "@mongodb-js/zstd": false,
+    "core-js-pure": false,
     "esbuild": false,
     "fsevents": false,
+    "node-liblzma": false,
     "onnxruntime-node": false,
     "protobufjs": false,
     "sharp": false,

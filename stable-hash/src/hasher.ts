@@ -14,7 +14,7 @@ export interface StringWriter {
 interface SubtleCryptoLike {
   digest(
     algorithm: { name: string } | string,
-    data: ArrayBufferView<ArrayBufferLike> | ArrayBufferLike,
+    data: ArrayBufferView | ArrayBufferLike,
   ): Promise<ArrayBuffer>;
 }
 

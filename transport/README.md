@@ -68,6 +68,11 @@ This package exports the identifier
 [`createTransport`][api-create-transport].
 There is no default export.
 
+The unconditional subpath `@arcjet/transport/http2` exports
+[`createHttp2Transport`][api-create-http2-transport] for callers that need the
+Node HTTP/2 Connect path regardless of the package's runtime export conditions
+(used by `@arcjet/guard` on Bun).
+
 This package exports the [TypeScript][] types
 [`ProxyEnvironment`][api-proxy-environment],
 [`TransportLogger`][api-transport-logger], and
@@ -79,6 +84,17 @@ Creates a transport that talks to the Arcjet API. On Node.js it uses
 `@connectrpc/connect-node` over HTTP/2; separate entry points for Bun, Deno,
 Edge Light, and `workerd` use `@connectrpc/connect-web` instead. This is a thin
 wrapper around [`createConnectTransport`][connect-create-transport].
+
+Direct HTTP/2 sessions (and HTTP/2-over-`CONNECT` when `proxyHttpVersion` is
+`"2"`) enable PING keep-alive and recycle the connection after consecutive
+deadline failures, matching the recovery behavior introduced for Guard in
+[#6137](https://github.com/arcjet/arcjet-js/pull/6137).
+
+### `createHttp2Transport(baseUrl[, http2SessionOptions])`
+
+Creates a direct HTTP/2 Connect transport with PING keep-alive and
+deadline-based connection recycling. Returns `{ transport, sessionManager }` so
+callers can tear the session down. Import from `@arcjet/transport/http2`.
 
 ### Proxy support
 
@@ -186,6 +202,7 @@ Configuration for `createTransport` (TypeScript type).
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-create-http2-transport]: #createhttp2transportbaseurl-http2sessionoptions
 [api-create-transport]: #createtransportbaseurl-options
 [api-proxy-environment]: #proxyenvironment
 [api-transport-logger]: #transportlogger

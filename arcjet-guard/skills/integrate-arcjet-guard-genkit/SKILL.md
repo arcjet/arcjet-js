@@ -5,6 +5,11 @@ license: Apache-2.0
 compatibility: Requires the target app to use Genkit JS (genkit >=1.0.0 <2) on Node.js >= 22. This is JS genkit() + ai.defineTool + ai.generate, not Go / Python Genkit. guardMiddleware needs the generateMiddleware tool hook (Genkit >= 1.33).
 metadata:
   author: arcjet
+  type: core
+  library: "@arcjet/guard"
+  library_version: "1.14.1" # x-release-please-version
+sources:
+  - README.md
 ---
 
 # Integrate Arcjet Guard into a Genkit app
@@ -31,7 +36,8 @@ decision rule:
 
 This namespace is JS **`genkit()` + `ai.defineTool` + `ai.generate`**.
 Not Go / Python Genkit. Do not also wrap the same tool with
-`@arcjet/guard/vercel-ai/v7`. Zod is Genkit's, not ours.
+`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
+Zod is Genkit's, not ours.
 
 ## Screen user text before `generate()` — there is no inbound hook. Middleware `model` is not Guard.
 
@@ -45,8 +51,10 @@ the model call, not user text. It is not this policy gate.
 `interrupt()` / `defineInterrupt` / `@genkit-ai/middleware`
 `toolApproval` / `restartTool` / `finishReason === "interrupted"` is
 human-in-the-loop. Same trap as Mastra `requireApproval`, Claude
-`canUseTool`, LangGraph `interrupt()`, and OpenAI Agents
-`needsApproval`. There is no `guardApproval`. Do not wrap them as Guard.
+`canUseTool`, LangGraph `interrupt()`, OpenAI Agents
+`needsApproval`, Google ADK `requireConfirmation`, and Cloudflare Think
+`needsApproval`. There is no
+`guardApproval`. Do not wrap them as Guard.
 
 ## Deny inside `defineTool` (and `guardMiddleware`'s `tool` hook). MCP and filesystem-injected tools skip an unwrapped handler.
 
@@ -64,8 +72,9 @@ result. Throwing `ToolInterruptError` sets `finishReason: "interrupted"`
 (do not do this).
 
 `generate({ use })` must receive a **plain object `{ name, instantiate }`**.
-A raw function becomes a *model* hook only. A function with `instantiate`
-+ `plugin` throws “must be called with ()”.
+A raw function becomes a _model_ hook only. A function with `instantiate`
+
+- `plugin` throws “must be called with ()”.
 
 ## Questions to ask the human first
 
@@ -78,7 +87,7 @@ Ask only what you cannot infer from the code; suggest defaults.
 3. Who is the **user** for metadata — an opaque user/tenant ID (never PII)?
    Default: none. Pass it via `metadata` on the policy. Put the
    conversation / session id you already have on
-   `ai.generate({ context: { sessionId } })` *and* on
+   `ai.generate({ context: { sessionId } })` _and_ on
    `guardMiddleware({ sessionId })` — the tool hook does not receive ALS
    context today. That id is the correlation id, not the user.
 4. Is an Arcjet outage unacceptable? Every helper defaults to
@@ -107,7 +116,7 @@ Ask only what you cannot infer from the code; suggest defaults.
    throws if the tool already carries the Arcjet protection brand.
 6. **A denial from `guardTool` is a structured object, not a throw.**
    Wrap the returned `ToolAction` (the callable `generate()` invokes),
-   not the inner handler. `outputSchema` validation runs *inside*
+   not the inner handler. `outputSchema` validation runs _inside_
    `action()`. Wrapping outside means DENY returns `ArcjetDenialResult`
    without schema check, so the model still sees a completed tool
    result. Wrapping the inner handler would throw on schema mismatch
@@ -123,7 +132,7 @@ install `zod` only if the app already uses it outside `genkit`. Public
 API is `import { genkit, z } from "genkit"`. Node 22+.
 
 ```sh
-npm install @arcjet/guard genkit
+npm install @arcjet/guard @arcjet/sensitive-info-rampart genkit
 ```
 
 If the agent has no guard client yet, launch one **once at module scope**:
@@ -139,11 +148,12 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ```ts
 import { genkit, z } from "genkit";
 import { guardTool } from "@arcjet/guard/genkit/v1";
-import { tokenBucket, localDetectSensitiveInfo } from "@arcjet/guard";
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
-const ai = genkit({ /* plugins, default model */ });
+const ai = genkit({/* plugins, default model */});
 
 const lookupLimit = tokenBucket({
   refillRate: 10,
@@ -152,8 +162,8 @@ const lookupLimit = tokenBucket({
 });
 // Factory then text — same shape as `detectPromptInjection()(text)`.
 // Scan free-text args (a note, reason, body). An opaque `orderNumber`
-// will not trip EMAIL / phone / card / IP, so do not pass it here.
-const detectPii = localDetectSensitiveInfo();
+// is not free text, so do not pass it here.
+const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 
 export const lookupOrder = guardTool(
   arcjet,
@@ -170,6 +180,10 @@ export const lookupOrder = guardTool(
   ),
   {
     action: "order.looked-up",
+    actor: userId,
+    inputs: (input) => ({
+      orderNumber: policyInput.server.string(input.orderNumber),
+    }),
     rules: (input) => [
       lookupLimit({ key: input.orderNumber, requested: 1 }),
       detectPii(input.note),
@@ -179,10 +193,19 @@ export const lookupOrder = guardTool(
 ```
 
 - Omit `rules` to submit none. The guard call still happens.
+- Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
+  guard call so a remote policy that declares those names can evaluate.
+  Build each input with `policyInput`. A resolver that throws or returns a
+  value Guard cannot use is left out of the guard call, and `onGuardError`
+  decides.
 - On DENY the closed-over handler never runs. The model receives
   `{ arcjetDenied: true, reason, message, retryable }` as
   `toolResponse.output`.
-- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable.
+- Default `onGuardError: "deny"` blocks the tool if Arcjet is unreachable,
+  or if a `rules`, `metadata` or `sessionId` callback throws or returns a
+  value Guard cannot use. A failed callback never skips the guard call:
+  Guard is called without its value, so remote policy still evaluates the
+  call and a DENY stands.
 - Prefer omitting `outputSchema` on guarded tools, or verify the schema
   accepts `ArcjetDenialResult` / your `onDeny` shape. A denial is not
   schema-checked because the wrapper sits outside `action()`.

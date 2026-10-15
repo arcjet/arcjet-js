@@ -1,10 +1,14 @@
+import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
+import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
 import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { runGuarded } from "../../agents/guarded.ts";
 import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+import { withActiveGenkitContext } from "./active-context.ts";
 import { genkitContext } from "./context.ts";
 import type { GenkitContextSource } from "./context.ts";
 
@@ -63,6 +67,18 @@ export interface GuardToolPolicy<TInput> {
    * the guard call, which still costs a round trip and returns a decision.
    */
   rules?: RuleWithInput[] | ((input: TInput) => RuleWithInput[]);
+  /**
+   * Trusted actor identity, or a resolver `(input, options) => …` matching
+   * a Genkit `ToolAction` call. Derive it from `options.context` — including
+   * the active `generate({ context })` ALS context when the call options
+   * omit it. Never trust a model-produced tool input as the actor identity.
+   */
+  actor?: ActorResolver<[TInput, unknown?]>;
+  /**
+   * Typed remote-policy inputs, or a resolver `(input, options) => …`. Build
+   * each value with {@link policyInput}.
+   */
+  inputs?: InputsResolver<[TInput, unknown?]>;
   /** Metadata merged over the context's (object, or per-call function of the tool input). */
   metadata?: ArcjetMetadata | ((input: TInput) => ArcjetMetadata);
   /**
@@ -139,19 +155,6 @@ function toolArgs(input: unknown, action: string): unknown {
     );
   }
   return {};
-}
-
-function resolveSessionId<TInput>(
-  policy: GuardToolPolicy<TInput>,
-  input: TInput,
-): string | undefined {
-  if (typeof policy.sessionId === "function") {
-    return policy.sessionId(input);
-  }
-  if (typeof policy.sessionId === "string" && policy.sessionId.length > 0) {
-    return policy.sessionId;
-  }
-  return undefined;
 }
 
 /**
@@ -350,6 +353,7 @@ export function guardTool<TInput = unknown, TTool extends GenkitTool = GenkitToo
   tool: TTool,
   policy: GuardToolPolicy<TInput>,
 ): TTool {
+  assertValidAction(policy.action, "guardTool");
   if (typeof tool !== "function") {
     // oxlint-disable-next-line unicorn/prefer-type-error -- Error preserves backward compatibility with the other vendor namespaces
     throw new Error(
@@ -381,7 +385,6 @@ function wrapToolAction<TInput>(
 ): GenkitTool {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- GenkitTool's never[] call is the accept-any-ToolAction trick; invoke with the runtime args
   const originalCall = tool.bind(tool) as (input?: unknown, options?: unknown) => unknown;
-  // oxlint-disable-next-line typescript/unbound-method -- read to be bound to `tool` immediately below, which is the point
   const originalRun =
     typeof tool.run === "function"
       ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- same never[] accept-any trick as originalCall
@@ -404,9 +407,17 @@ function wrapToolAction<TInput>(
 
   if (originalRun !== undefined) {
     const newRun = (input?: unknown, options?: unknown): Promise<unknown> =>
-      runGuardedTool(client, tool, policy, input, options, () => Promise.resolve(originalRun(input, options)), {
-        wrapRunResult: true,
-      });
+      runGuardedTool(
+        client,
+        tool,
+        policy,
+        input,
+        options,
+        () => Promise.resolve(originalRun(input, options)),
+        {
+          wrapRunResult: true,
+        },
+      );
     Object.defineProperty(wrapped, "run", {
       value: newRun,
       writable: true,
@@ -442,7 +453,7 @@ function denialEnvelope(
   return extras.wrapRunResult ? { result: shaped, telemetry: { traceId: "", spanId: "" } } : shaped;
 }
 
-function runGuardedTool<TInput>(
+async function runGuardedTool<TInput>(
   client: ArcjetAgentClient,
   tool: GenkitTool,
   policy: GuardToolPolicy<TInput>,
@@ -457,31 +468,14 @@ function runGuardedTool<TInput>(
     wrapRunResult: extras?.wrapRunResult === true,
   };
 
-  let sessionId: string | undefined;
-  let rules: RuleWithInput[] | undefined;
-  let policyMetadata: ArcjetMetadata | undefined;
-  try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
-    const typedArgs = args as TInput;
-    sessionId = resolveSessionId(policy, typedArgs);
-    rules = typeof policy.rules === "function" ? policy.rules(typedArgs) : policy.rules;
-    policyMetadata =
-      typeof policy.metadata === "function" ? policy.metadata(typedArgs) : policy.metadata;
-  } catch (error) {
-    if (shouldWarn()) {
-      console.warn(
-        '@arcjet/guard: policy factory for "%s" threw; treating as a guard error:',
-        policy.action,
-        error,
-      );
-    }
-    if (policy.onGuardError === "allow") {
-      return execute();
-    }
-    return Promise.resolve(denialEnvelope(unavailableResult(), envelope));
-  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- args are the tool's parsed input; policy factories are typed against it
+  const typedArgs = args as TInput;
+  const call = resolveCallPolicy(policy, typedArgs, policy.action);
+  const { sessionId, rules, metadata: policyMetadata } = call;
+  const callOptions = await withActiveGenkitContext(options);
+  const remote = await resolveActorInputs(policy, policy.action, typedArgs, callOptions);
 
-  const source = isContextSource(options) ? options : undefined;
+  const source = isContextSource(callOptions) ? callOptions : undefined;
   const agentCtx = genkitContext(source, sessionId === undefined ? undefined : { sessionId });
 
   const toolName =
@@ -501,6 +495,8 @@ function runGuardedTool<TInput>(
     rules,
     correlationId: agentCtx.correlationId,
     metadata: mergedMetadata,
+    degraded: call.degraded ?? remote.degraded,
+    ...remote.fields,
     onDeny: (decision: DecisionDeny) => {
       if (policy.onDeny === undefined) {
         return asResult(denialResult(decision));

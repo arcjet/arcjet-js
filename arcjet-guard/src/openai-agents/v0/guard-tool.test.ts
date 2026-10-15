@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/no-unsafe-assignment, eslint/no-unsafe-argument, eslint/explicit-function-return-type, eslint/require-await, eslint/no-unnecessary-type-assertion, eslint/strict-boolean-expressions, typescript/unbound-method -- test infrastructure and mocks
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-member-access, eslint/explicit-function-return-type, eslint/require-await, eslint/strict-boolean-expressions, typescript/unbound-method -- test infrastructure and mocks
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -11,9 +11,10 @@ import {
   fakeRule,
   stubClient,
 } from "../../../test/_shared/stub-client.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
-import type { DecisionDeny } from "../../types.ts";
 import type { ArcjetDenialResult } from "../../agents/denial.ts";
+import { arcjetProtectedTool } from "../../agents/internal.ts";
+import { policyInput } from "../../policy-input.ts";
+import type { DecisionDeny } from "../../types.ts";
 import type { OpenAIAgentsTool } from "./guard-tool.ts";
 import { guardTool } from "./guard-tool.ts";
 
@@ -627,4 +628,41 @@ test("wraps invoke when the descriptor is non-writable", async () => {
   const result = asToolResult(await wrapped.invoke(runContext("t"), "{}"));
   assert.equal(calls, 0);
   assert.equal(result.arcjetDenied, true);
+});
+
+test("resolves actor and typed inputs onto the guard call", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const tool = createFunctionTool();
+  const wrapped = guardTool(client, tool, {
+    action: "test.action",
+    actor: (_input, rc) => String((rc as { context?: { sessionId?: string } })?.context?.sessionId),
+    inputs: (input: { id?: string }) => ({ id: policyInput.server.string(String(input.id)) }),
+  });
+  await wrapped.invoke(runContext("t"), JSON.stringify({ id: "one" }));
+  assert.equal(recorded(guardCalls[0]).actor, "t");
+  assert.deepEqual(recorded(guardCalls[0]).inputs, {
+    id: policyInput.server.string("one"),
+  });
+});
+
+test("an input resolver failure follows the fail-closed unavailable path", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  let calls = 0;
+  const tool = createFunctionTool({
+    execute: async () => {
+      calls += 1;
+      return { ok: true };
+    },
+  });
+  const wrapped = guardTool(client, tool, {
+    action: "test.action",
+    inputs: () => {
+      throw new Error("mapping failed");
+    },
+  });
+  const result = asToolResult(await wrapped.invoke(runContext("t"), JSON.stringify({ id: "one" })));
+  assert.equal(result.reason, "ERROR");
+  assert.equal(guardCalls.length, 1);
+  assert.equal("inputs" in recorded(guardCalls[0]), false);
+  assert.equal(calls, 0);
 });
