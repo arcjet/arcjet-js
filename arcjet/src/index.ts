@@ -3702,15 +3702,6 @@ export default function arcjet<
     throw new Error("Rules are required");
   }
 
-  if (typeof options.characteristics !== "undefined") {
-    try {
-      validateCharacteristics("characteristics", options.characteristics);
-    } catch (err) {
-      // oxlint-disable-next-line eslint/preserve-caught-error
-      throw new Error(`\`arcjet\` options error: ${errorMessage(err)}`);
-    }
-  }
-
   async function protect<Props extends PlainObject>(
     rules: ArcjetRule[],
     ctx: ArcjetAdapterContext,
@@ -3764,8 +3755,27 @@ export default function arcjet<
       extra: reportExtra,
     });
 
-    // Use `Array.isArray` rather than a truthy check: spreading a string such as
-    // `"ip.src"` would otherwise produce `["i", "p", ".", "s", "r", "c"]`.
+    // `protect()` never throws for bad configuration: return an ERROR decision
+    // instead. Use `Array.isArray` rather than a truthy check so a string such
+    // as `"ip.src"` is not spread into `["i", "p", ".", "s", "r", "c"]`.
+    if (typeof options.characteristics !== "undefined") {
+      try {
+        validateCharacteristics("characteristics", options.characteristics);
+      } catch (error) {
+        log.error(
+          { error: errorMessage(error) },
+          "Invalid characteristics. Please verify your Characteristics.",
+        );
+
+        return new ArcjetErrorDecision({
+          ttl: 0,
+          reason: new ArcjetErrorReason(`Invalid characteristics - ${errorMessage(error)}`),
+          // No results because we couldn't create a fingerprint
+          results: [],
+        });
+      }
+    }
+
     const characteristics = Array.isArray(options.characteristics)
       ? [...options.characteristics]
       : [];

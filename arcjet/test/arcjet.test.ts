@@ -115,58 +115,105 @@ test("`arcjet`", async function (t) {
     assert.equal("protect" in instance, true);
   });
 
-  await t.test("should throw when `characteristics` is a string", async function () {
-    assert.throws(function () {
-      arcjet({
+  await t.test("`.protect()`", async function (t) {
+    await t.test("should yield an error decision when `characteristics` is a string", async function () {
+      let errorParameters: unknown;
+      const instance = arcjet({
         // @ts-expect-error: test runtime behavior.
         characteristics: "ip.src",
         client: createLocalClient(),
         key: exampleKey,
-        log: console,
+        log: {
+          ...console,
+          debug() {},
+          error(...parameters) {
+            errorParameters = parameters;
+          },
+        },
         rules: [],
       });
-    }, /`arcjet` options error: invalid type for `characteristics` - expected an array/);
-  });
+      const decision = await instance.protect({}, { ip: "1.1.1.1" });
 
-  await t.test("should throw when `characteristics` is not an array", async function () {
-    assert.throws(function () {
-      arcjet({
-        // @ts-expect-error: test runtime behavior.
-        characteristics: 12345,
-        client: createLocalClient(),
-        key: exampleKey,
-        log: console,
-        rules: [],
-      });
-    }, /`arcjet` options error: invalid type for `characteristics` - expected an array/);
-  });
+      assert.equal(decision.isErrored(), true);
+      assert.equal(decision.reason.isError(), true);
+      assert.equal(
+        // @ts-expect-error: TODO(#4452): `message` should be accessible.
+        decision.reason.message,
+        "Invalid characteristics - invalid type for `characteristics` - expected an array",
+      );
+      assert.deepEqual(errorParameters, [
+        {
+          error: "invalid type for `characteristics` - expected an array",
+        },
+        "Invalid characteristics. Please verify your Characteristics.",
+      ]);
+    });
 
-  await t.test("should throw when `characteristics` contains a non-string", async function () {
-    assert.throws(function () {
-      arcjet({
-        // @ts-expect-error: test runtime behavior.
-        characteristics: [/foobar/],
-        client: createLocalClient(),
-        key: exampleKey,
-        log: console,
-        rules: [],
-      });
-    }, /`arcjet` options error: invalid type for `characteristics\[0]` - expected string/);
-  });
+    await t.test(
+      "should yield an error decision when `characteristics` is not an array",
+      async function () {
+        const instance = arcjet({
+          // @ts-expect-error: test runtime behavior.
+          characteristics: 12345,
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {}, error() {} },
+          rules: [],
+        });
+        const decision = await instance.protect({}, { ip: "1.1.1.1" });
 
-  await t.test("should throw when `characteristics` contains an empty string", async function () {
-    assert.throws(function () {
-      arcjet({
-        characteristics: [""],
-        client: createLocalClient(),
-        key: exampleKey,
-        log: console,
-        rules: [],
-      });
-    }, /`arcjet` options error: invalid value for `characteristics\[0]` - expected a non-empty string/);
-  });
+        assert.equal(decision.isErrored(), true);
+        assert.equal(
+          // @ts-expect-error: TODO(#4452): `message` should be accessible.
+          decision.reason.message,
+          "Invalid characteristics - invalid type for `characteristics` - expected an array",
+        );
+      },
+    );
 
-  await t.test("`.protect()`", async function (t) {
+    await t.test(
+      "should yield an error decision when `characteristics` contains a non-string",
+      async function () {
+        const instance = arcjet({
+          // @ts-expect-error: test runtime behavior.
+          characteristics: [/foobar/],
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {}, error() {} },
+          rules: [],
+        });
+        const decision = await instance.protect({}, { ip: "1.1.1.1" });
+
+        assert.equal(decision.isErrored(), true);
+        assert.equal(
+          // @ts-expect-error: TODO(#4452): `message` should be accessible.
+          decision.reason.message,
+          "Invalid characteristics - invalid type for `characteristics[0]` - expected string",
+        );
+      },
+    );
+
+    await t.test(
+      "should yield an error decision when `characteristics` contains an empty string",
+      async function () {
+        const instance = arcjet({
+          characteristics: [""],
+          client: createLocalClient(),
+          key: exampleKey,
+          log: { ...console, debug() {}, error() {} },
+          rules: [],
+        });
+        const decision = await instance.protect({}, { ip: "1.1.1.1" });
+
+        assert.equal(decision.isErrored(), true);
+        assert.equal(
+          // @ts-expect-error: TODO(#4452): `message` should be accessible.
+          decision.reason.message,
+          "Invalid characteristics - invalid value for `characteristics[0]` - expected a non-empty string",
+        );
+      },
+    );
+
     await t.test("should yield an error decision w/o parameters", async function () {
       let errorParameters: unknown;
       const instance = arcjet({
