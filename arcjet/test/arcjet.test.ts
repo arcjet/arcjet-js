@@ -116,38 +116,41 @@ test("`arcjet`", async function (t) {
   });
 
   await t.test("`.protect()`", async function (t) {
-    await t.test("should yield an error decision when `characteristics` is a string", async function () {
-      let errorParameters: unknown;
-      const instance = arcjet({
-        // @ts-expect-error: test runtime behavior.
-        characteristics: "ip.src",
-        client: createLocalClient(),
-        key: exampleKey,
-        log: {
-          ...console,
-          debug() {},
-          error(...parameters) {
-            errorParameters = parameters;
+    await t.test(
+      "should yield an error decision when `characteristics` is a string",
+      async function () {
+        let errorParameters: unknown;
+        const instance = arcjet({
+          // @ts-expect-error: test runtime behavior.
+          characteristics: "ip.src",
+          client: createLocalClient(),
+          key: exampleKey,
+          log: {
+            ...console,
+            debug() {},
+            error(...parameters) {
+              errorParameters = parameters;
+            },
           },
-        },
-        rules: [],
-      });
-      const decision = await instance.protect({}, { ip: "1.1.1.1" });
+          rules: [],
+        });
+        const decision = await instance.protect({}, { ip: "1.1.1.1" });
 
-      assert.equal(decision.isErrored(), true);
-      assert.equal(decision.reason.isError(), true);
-      assert.equal(
-        // @ts-expect-error: TODO(#4452): `message` should be accessible.
-        decision.reason.message,
-        "Invalid characteristics - invalid type for `characteristics` - expected an array",
-      );
-      assert.deepEqual(errorParameters, [
-        {
-          error: "invalid type for `characteristics` - expected an array",
-        },
-        "Invalid characteristics. Please verify your Characteristics.",
-      ]);
-    });
+        assert.equal(decision.isErrored(), true);
+        assert.equal(decision.reason.isError(), true);
+        assert.equal(
+          // @ts-expect-error: TODO(#4452): `message` should be accessible.
+          decision.reason.message,
+          "Invalid characteristics - invalid type for `characteristics` - expected an array",
+        );
+        assert.deepEqual(errorParameters, [
+          {
+            error: "invalid type for `characteristics` - expected an array",
+          },
+          "Invalid characteristics. Please verify your Characteristics.",
+        ]);
+      },
+    );
 
     await t.test(
       "should yield an error decision when `characteristics` is not an array",
