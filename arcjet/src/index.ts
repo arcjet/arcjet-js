@@ -137,6 +137,7 @@ const knownFields = [
   "protocol",
   "host",
   "path",
+  "rawPath",
   "headers",
   "body",
   "email",
@@ -531,7 +532,11 @@ function validateDetails(value: unknown): asserts value is ArcjetRequestDetails 
         return {
           key,
           required:
-            key !== "body" && key !== "email" && key !== "correlationId" && key !== "metadata",
+            key !== "body" &&
+            key !== "email" &&
+            key !== "correlationId" &&
+            key !== "metadata" &&
+            key !== "rawPath",
           validate:
             key === "headers"
               ? validateHeaders
@@ -1189,6 +1194,15 @@ export type SlidingWindowRateLimitOptions<Characteristics extends readonly strin
 };
 
 /**
+ * Verified signer identities supported by Decide Web Bot Auth. These identify
+ * the key-directory operator, which need not match the request User-Agent.
+ */
+export type ArcjetWebBotAuthSigner =
+  | "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory"
+  | "SIGNER:https://www.browserbase.com/.well-known/http-message-signatures-directory"
+  | "SIGNER:https://api.manus.im/.well-known/http-message-signatures-directory";
+
+/**
  * Configuration for the bot detection rule to allow certain bots and deny
  * others.
  */
@@ -1213,11 +1227,13 @@ export type BotOptionsAllow = {
    * user-agent of the `curl` tool.
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to allow
    * all search engine bots.
+   * A `SIGNER:` identity allows a verified Web Bot Auth directory operator
+   * when the request reaches the Decide RPC.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.
    */
-  allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  allow: Array<ArcjetWellKnownBot | ArcjetBotCategory | ArcjetWebBotAuthSigner>;
   /**
    * List of bots to deny,
    * cannot be combined with `allow`.
@@ -1256,11 +1272,13 @@ export type BotOptionsDeny = {
    * user-agent of the `curl` tool.
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to deny
    * all search engine bots.
+   * A `SIGNER:` identity matches a verified Web Bot Auth directory operator
+   * when the request reaches the Decide RPC.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.
    */
-  deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  deny: Array<ArcjetWellKnownBot | ArcjetBotCategory | ArcjetWebBotAuthSigner>;
 };
 
 /**
@@ -1879,6 +1897,8 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
      * Path of the request.
      */
     path: string;
+    /** Original origin-form request-target path, when available. */
+    rawPath?: string;
     /**
      * Headers of the request.
      */
@@ -3681,6 +3701,7 @@ export default function arcjet<
       protocol: request.protocol,
       host: request.host,
       path: request.path,
+      ...(request.rawPath ? { rawPath: request.rawPath } : {}),
       headers: new ArcjetHeaders(request.headers),
       cookies: request.cookies,
       query: request.query,

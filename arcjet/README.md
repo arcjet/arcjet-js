@@ -89,6 +89,31 @@ const aj = arcjet({
 });
 ```
 
+#### Web Bot Auth signer identities
+
+`detectBot()` can also allow or deny these verified signer identities:
+
+```ts
+detectBot({
+  mode: "LIVE",
+  allow: [
+    "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory",
+    "SIGNER:https://www.browserbase.com/.well-known/http-message-signatures-directory",
+    "SIGNER:https://api.manus.im/.well-known/http-message-signatures-directory",
+  ],
+});
+```
+
+Each ID identifies the operator of a Web Bot Auth key directory, not a
+particular User-Agent. Signature verification runs when the request reaches the
+Decide RPC; a request denied locally before that RPC is not signature verified.
+The Node, Fastify, and Nest adapters forward the original path from
+an origin-form request target when available, so Decide can verify signatures
+covering `@path`. Adapters that only receive a parsed URL cannot supply that
+path; Decide leaves those signatures unverified. If you call the core SDK with
+request details directly, set `rawPath` only from the original request target,
+without parsing or normalization.
+
 ### `tokenBucket(options)`
 
 Token bucket rate limit. Ideal for controlling AI token budgets. Set `capacity`

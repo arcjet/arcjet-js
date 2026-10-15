@@ -51,6 +51,10 @@
       "types": "./dist/convert.d.ts",
       "default": "./dist/convert.js"
     },
+    "./request-target.js": {
+      "types": "./dist/request-target.d.ts",
+      "default": "./dist/request-target.js"
+    },
     "./well-known-bots": {
       "types": "./dist/well-known-bots.d.ts",
       "default": "./dist/well-known-bots.js"

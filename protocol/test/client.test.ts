@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { Cache } from "@arcjet/cache";
-import { create } from "@bufbuild/protobuf";
+import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
 import { createRouterTransport } from "@connectrpc/connect";
 
 import {
@@ -28,6 +28,7 @@ import {
 } from "../dist/index.js";
 import {
   Conclusion,
+  DecideRequestSchema,
   DecideResponseSchema,
   DecideService,
   ReportResponseSchema,
@@ -317,7 +318,34 @@ test("createClient", async (t) => {
     assert.equal(seen, "wf_abcdef");
   });
 
-  await t.test("should send `correlationId` in the report request", async () => {
+  await t.test("should send an exact raw path only in the decide request", async () => {
+    let seen: string | undefined;
+    const client = createClient({
+      ...exampleClientOptions,
+      transport: createRouterTransport(({ service }) => {
+        service(DecideService, {
+          decide(decideRequest) {
+            seen = decideRequest.details?.rawPath;
+            const wire = toBinary(DecideRequestSchema, decideRequest);
+            assert.equal(fromBinary(DecideRequestSchema, wire).details?.rawPath, "/a/%2E%2e/../b");
+            return create(DecideResponseSchema, {
+              decision: { conclusion: Conclusion.ALLOW },
+            });
+          },
+        });
+      }),
+    });
+
+    await client.decide(
+      exampleContext,
+      { ...exampleDetails, path: "/b", rawPath: "/a/%2E%2e/../b" },
+      [],
+    );
+
+    assert.equal(seen, "/a/%2E%2e/../b");
+  });
+
+  await t.test("should send `correlationId` but omit rawPath in the report request", async () => {
     return new Promise((resolve, reject) => {
       const client = createClient({
         ...exampleClientOptions,
@@ -326,6 +354,7 @@ test("createClient", async (t) => {
             report(reportRequest) {
               try {
                 assert.equal(reportRequest.details?.correlationId, "wf_abcdef");
+                assert.equal(reportRequest.details?.rawPath, "");
 
                 setTimeout(resolve);
               } catch (error) {
@@ -340,7 +369,7 @@ test("createClient", async (t) => {
 
       client.report(
         exampleContext,
-        { ...exampleDetails, correlationId: "wf_abcdef" },
+        { ...exampleDetails, correlationId: "wf_abcdef", rawPath: "/signed" },
         new ArcjetDenyDecision({
           reason: new ArcjetReason(),
           results: [],

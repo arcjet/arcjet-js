@@ -6,6 +6,18 @@ import { MemoryCache } from "@arcjet/cache";
 import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../dist/index.js";
 
 describe("Primitive > detectBot", () => {
+  test("accepts verified signer identities for Decide bot_v2 policies", () => {
+    const signers = [
+      "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory",
+      "SIGNER:https://www.browserbase.com/.well-known/http-message-signatures-directory",
+      "SIGNER:https://api.manus.im/.well-known/http-message-signatures-directory",
+    ] as const;
+    const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [...signers] });
+    const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [...signers] });
+    assert.deepEqual(allowRule.allow, signers);
+    assert.deepEqual(denyRule.deny, signers);
+  });
+
   test("should throw w/o `options`", async function () {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.

@@ -21,6 +21,7 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
@@ -189,6 +190,9 @@ export interface ArcjetNodeRequest {
    * URL.
    */
   url?: string | undefined;
+
+  /** Original request target retained by Express when a mounted router rewrites `url`. */
+  originalUrl?: string | undefined;
 
   /**
    * Request body.
@@ -389,6 +393,10 @@ export default function arcjet<
       }
     }
     const method = request.method ?? "";
+    const rawPath =
+      rawPathFromOriginFormTarget(
+        typeof request.originalUrl === "string" ? request.originalUrl : undefined,
+      ) ?? rawPathFromOriginFormTarget(request.url);
     const host = headers.get("host") ?? "";
     let path = "";
     let query = "";
@@ -424,6 +432,7 @@ export default function arcjet<
       protocol,
       host,
       path,
+      ...(rawPath ? { rawPath } : {}),
       headers,
       cookies,
       query,

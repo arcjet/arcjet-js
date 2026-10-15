@@ -297,9 +297,26 @@ test("`arcjetFastify`", async function (t) {
         ip: "127.0.0.1",
         method: "GET",
         path: "/a",
+        rawPath: "/a",
         protocol: "http:",
         query: "?b",
       });
+
+      await arcjet.protect(
+        {
+          body: undefined,
+          headers: { host: "example.com" },
+          method: "GET",
+          protocol: "https",
+          raw: { url: "/a/%2E%2e/../b?x=%2f" },
+          server: {},
+          socket: {},
+          url: "/b?x=%2f",
+        },
+        { ipSrc: "127.0.0.1" },
+      );
+      assert.equal(request?.path, "/b");
+      assert.equal(request?.rawPath, "/a/%2E%2e/../b");
     });
   });
 

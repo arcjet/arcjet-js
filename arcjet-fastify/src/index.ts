@@ -6,6 +6,7 @@ import { type Cidr, findIp, parseProxies, type ProxyService } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 import type {
   ArcjetDecision,
@@ -97,6 +98,8 @@ export function createRemoteClient(
  * This is the minimum interface similar to `FastifyRequest` from `fastify`.
  */
 export interface ArcjetFastifyRequest {
+  /** Underlying Node request, whose URL retains the origin-form target. */
+  raw?: { url?: string | undefined } | undefined;
   /**
    * Request body.
    */
@@ -339,6 +342,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   }
 
   const method = request.method ?? "";
+  const rawPath = rawPathFromOriginFormTarget(request.raw?.url);
   const host = headers.get("host") ?? "";
   let path = "";
   let protocol =
@@ -374,6 +378,7 @@ function toArcjetRequest<Properties extends PlainObject>(
     ip,
     method,
     path,
+    ...(rawPath ? { rawPath } : {}),
     protocol,
     query,
   };

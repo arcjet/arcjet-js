@@ -24,6 +24,7 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 import { Inject, SetMetadata } from "@nestjs/common";
 import type {
@@ -141,6 +142,10 @@ type EventHandlerLike = (event: string, listener: (...args: any[]) => void) => v
  * Nest request.
  */
 export interface ArcjetNestRequest {
+  /** Fastify's underlying Node request, when Nest uses Fastify. */
+  raw?: { url?: string | undefined } | undefined;
+  /** Original request target retained by Express before router rewrites. */
+  originalUrl?: string | undefined;
   /**
    * Headers.
    */
@@ -367,6 +372,9 @@ function arcjet<
     }
 
     const method = request.method ?? "";
+    const rawPath =
+      rawPathFromOriginFormTarget(request.raw?.url) ??
+      rawPathFromOriginFormTarget(request.originalUrl);
     let host = "";
     // We use `id` to determine if the request object is from Fastify
     // This is mostly to avoid a deprecation warning in Express
@@ -421,6 +429,7 @@ function arcjet<
       protocol,
       host,
       path,
+      ...(rawPath ? { rawPath } : {}),
       headers,
       cookies,
       query,

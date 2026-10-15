@@ -372,6 +372,13 @@ detectBot({
 });
 ```
 
+For signed agents, `detectBot()` also accepts explicit `SIGNER:` IDs for the
+[ChatGPT, Browserbase, and Manus Web Bot Auth directories](arcjet/README.md#web-bot-auth-signer-identities).
+These identify the signer rather than a User-Agent. Verification happens when
+the request reaches Decide. The Node, Fastify, and Nest adapters can forward an
+original request path for signatures covering `@path`; adapters with only a
+parsed URL leave those signatures unverified.
+
 ### Rate limiting
 
 Arcjet supports token bucket, fixed window, and sliding window algorithms.

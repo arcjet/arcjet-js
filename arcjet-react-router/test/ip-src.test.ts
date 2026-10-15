@@ -41,5 +41,6 @@ test("explicit ipSrc overrides React Router context.ip and is stripped", async f
     { ipSrc: "203.0.113.10" },
   );
   assert.equal(details.ip, "203.0.113.10");
+  assert.equal(details.rawPath, undefined);
   assert.deepEqual(details.extra, {});
 });

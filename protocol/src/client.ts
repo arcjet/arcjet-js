@@ -193,6 +193,7 @@ export function createClient(options: ClientOptions): Client {
         protocol: details.protocol,
         host: details.host,
         path: details.path,
+        ...(details.rawPath ? { rawPath: details.rawPath } : {}),
         headers: Object.fromEntries(details.headers.entries()),
         cookies: details.cookies,
         query: details.query,

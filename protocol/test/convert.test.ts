@@ -1230,9 +1230,13 @@ test("convert", async (t) => {
     });
 
     await t.test("should create a bot protocol rule", () => {
+      const signerAllow =
+        "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory";
+      const signerDeny =
+        "SIGNER:https://www.browserbase.com/.well-known/http-message-signatures-directory";
       const rule = ArcjetRuleToProtocol({
-        allow: [],
-        deny: [],
+        allow: [signerAllow],
+        deny: [signerDeny],
         mode: "DRY_RUN",
         type: "BOT",
         priority: 1,
@@ -1251,7 +1255,7 @@ test("convert", async (t) => {
         create(RuleSchema, {
           rule: {
             case: "botV2",
-            value: { allow: [], mode: Mode.DRY_RUN, deny: [] },
+            value: { allow: [signerAllow], mode: Mode.DRY_RUN, deny: [signerDeny] },
           },
         }),
       );

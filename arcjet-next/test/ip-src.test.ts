@@ -48,5 +48,6 @@ test("explicit ipSrc overrides Next request address sources and is stripped", as
   );
 
   assert.equal(details.ip, "203.0.113.10");
+  assert.equal(details.rawPath, undefined);
   assert.deepEqual(details.extra, {});
 });
