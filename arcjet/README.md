@@ -106,14 +106,26 @@ detectBot({
 
 These names identify the signing operators independently of the request's
 User-Agent. `CHATGPT_AGENT` is distinct from `OPENAI_CRAWLER_USER`, which names
-the ChatGPT-User crawler. Signature verification runs when the request reaches
-the Decide RPC; a request denied locally before that RPC is not signature
-verified. The Node, Fastify, and Nest adapters forward the original path from
-an origin-form request target when available, so Decide can verify signatures
-covering `@path`. Adapters that only receive a parsed URL cannot supply that
-path; Decide leaves those signatures unverified. If you call the core SDK with
-request details directly, set `rawPath` only from the original request target,
-without parsing or normalization.
+the ChatGPT-User crawler. To configure a custom signing bot, use its exact
+public HTTPS signature-directory URL:
+
+```ts
+detectBot({
+  mode: "LIVE",
+  allow: ["SIGNER:https://bot.example/.well-known/http-message-signatures-directory"],
+});
+```
+
+The bot must publish a Web Bot Auth directory and sign its requests. Decide
+uses the configured directory to verify the signature when the request reaches
+the Decide RPC. It rejects noncanonical or private directory URLs. Requests
+denied locally before the RPC are not signature verified. The Node, Fastify,
+and Nest adapters forward the original path from an origin-form request target
+when available, so Decide can verify signatures covering `@path`. Adapters
+that only receive a parsed URL cannot supply that path; Decide leaves those
+signatures unverified. If you call the core SDK with request details directly,
+set `rawPath` only from the original request target, without parsing or
+normalization.
 
 ### `tokenBucket(options)`
 

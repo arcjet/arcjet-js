@@ -1194,13 +1194,15 @@ export type SlidingWindowRateLimitOptions<Characteristics extends readonly strin
 };
 
 /**
- * @deprecated Use `"CHATGPT_AGENT"`, `"BROWSERBASE"`, or `"MANUS_BOT"`.
- * Retained so existing signer policies remain type-compatible.
+ * A signing directory for a custom Web Bot Auth bot. Supply the exact,
+ * canonical HTTPS URL of its public signature directory. Signature
+ * verification runs when the request reaches the Decide RPC.
+ *
+ * Known signing operators can also be configured by their bot names, such as
+ * `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and `"MANUS_BOT"`.
  */
 export type ArcjetWebBotAuthSigner =
-  | "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory"
-  | "SIGNER:https://www.browserbase.com/.well-known/http-message-signatures-directory"
-  | "SIGNER:https://api.manus.im/.well-known/http-message-signatures-directory";
+  `SIGNER:https://${string}/.well-known/http-message-signatures-directory`;
 
 /**
  * Configuration for the bot detection rule to allow certain bots and deny
@@ -1230,6 +1232,8 @@ export type BotOptionsAllow = {
    * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
    * `"MANUS_BOT"` use the same bot names. Their signatures are verified when
    * the request reaches the Decide RPC.
+   * Use `"SIGNER:https://bot.example/.well-known/http-message-signatures-directory"`
+   * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.
@@ -1276,6 +1280,8 @@ export type BotOptionsDeny = {
    * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
    * `"MANUS_BOT"` use the same bot names. Their signatures are verified when
    * the request reaches the Decide RPC.
+   * Use `"SIGNER:https://bot.example/.well-known/http-message-signatures-directory"`
+   * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.

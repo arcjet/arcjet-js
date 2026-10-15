@@ -3,7 +3,12 @@ import { describe, test, mock } from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
 
-import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../dist/index.js";
+import {
+  type ArcjetCacheEntry,
+  type ArcjetWebBotAuthSigner,
+  ArcjetBotReason,
+  detectBot,
+} from "../dist/index.js";
 
 describe("Primitive > detectBot", () => {
   test("accepts signed agent bot names for Decide bot_v2 policies", () => {
@@ -14,10 +19,15 @@ describe("Primitive > detectBot", () => {
     assert.deepEqual(denyRule.deny, bots);
   });
 
-  test("keeps existing signer URL policies compatible", () => {
-    const signer = "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory";
-    const [rule] = detectBot({ mode: "DRY_RUN", allow: [signer] });
-    assert.deepEqual(rule.allow, [signer]);
+  test("accepts custom and known signer directory policies", () => {
+    const customSigner: ArcjetWebBotAuthSigner =
+      "SIGNER:https://bot.example/.well-known/http-message-signatures-directory";
+    const knownSigner: ArcjetWebBotAuthSigner =
+      "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory";
+    const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [customSigner, knownSigner] });
+    const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [customSigner] });
+    assert.deepEqual(allowRule.allow, [customSigner, knownSigner]);
+    assert.deepEqual(denyRule.deny, [customSigner]);
   });
 
   test("should throw w/o `options`", async function () {
