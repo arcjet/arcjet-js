@@ -9,7 +9,7 @@ export function rawPathFromOriginFormTarget(target: string | undefined): string 
   }
   for (let index = 0; index < target.length; index++) {
     const code = target.charCodeAt(index);
-    if (code <= 0x20 || code === 0x7f || code === 0x23) {
+    if (code <= 0x20 || code > 0x7e || code === 0x23) {
       return undefined;
     }
   }

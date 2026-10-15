@@ -436,9 +436,7 @@ export default function arcjet<
     }
     const method = request.method ?? "";
     const rawPath =
-      rawPathFromOriginFormTarget(
-        typeof request.originalUrl === "string" ? request.originalUrl : undefined,
-      ) ?? rawPathFromOriginFormTarget(request.url);
+      rawPathFromOriginFormTarget(request.originalUrl) ?? rawPathFromOriginFormTarget(request.url);
     const host = headers.get("host") ?? "";
     let path = "";
     let query = "";

@@ -400,8 +400,8 @@ interface ValidateInterfaceConfiguration {
  */
 const botValidations: ReadonlyArray<ValidationSchema> = [
   { key: "mode", required: false, validate: validateMode },
-  { key: "allow", required: false, validate: validateStringArray },
-  { key: "deny", required: false, validate: validateStringArray },
+  { key: "allow", required: false, validate: validateBotEntityArray },
+  { key: "deny", required: false, validate: validateBotEntityArray },
 ];
 
 /**
@@ -637,6 +637,82 @@ function validateStringArray(path: string, value: unknown): asserts value is Arr
 
   for (const [index, subvalue] of value.entries()) {
     validateString(path + "[" + index + "]", subvalue);
+  }
+}
+
+/** Match the directory hostname shape accepted by Arcjet Cloud. */
+function isPublicSignerHostname(hostname: string): boolean {
+  if (
+    hostname.length > 253 ||
+    !hostname.includes(".") ||
+    hostname.startsWith("[") ||
+    /^[0-9.]+$/.test(hostname) ||
+    !/^[a-z0-9.-]+$/i.test(hostname)
+  ) {
+    return false;
+  }
+
+  const labels = hostname.toLowerCase().split(".");
+  if (
+    labels.some(
+      (label) =>
+        label.length === 0 || label.length > 63 || label.startsWith("-") || label.endsWith("-"),
+    )
+  ) {
+    return false;
+  }
+
+  const tld = labels.at(-1);
+  if (
+    [
+      "localhost",
+      "local",
+      "internal",
+      "invalid",
+      "test",
+      "example",
+      "arpa",
+      "onion",
+      "lan",
+    ].includes(tld!)
+  ) {
+    return false;
+  }
+  return !["arcjet.com", "arcjettest.com"].some(
+    (zone) => hostname === zone || hostname.endsWith(`.${zone}`),
+  );
+}
+
+/** Validate custom signed bot syntax while Arcjet Cloud remains authoritative for directory safety. */
+function validateBotEntityArray(path: string, value: unknown): asserts value is Array<string> {
+  validateStringArray(path, value);
+
+  const prefix = "SIGNED_BOT:";
+  const directoryPath = "/.well-known/http-message-signatures-directory";
+  for (const [index, entity] of value.entries()) {
+    if (entity !== "SIGNED_BOT" && !entity.startsWith(prefix)) continue;
+
+    const directory = entity.slice(prefix.length);
+    let valid = false;
+    if (entity.startsWith(prefix) && directory.length <= 2048) {
+      try {
+        const parsed = new URL(directory);
+        valid =
+          parsed.protocol === "https:" &&
+          parsed.username === "" &&
+          parsed.password === "" &&
+          parsed.port === "" &&
+          isPublicSignerHostname(parsed.hostname) &&
+          directory === `${parsed.origin}${directoryPath}`;
+      } catch {
+        // Invalid URL syntax is reported with the same error as an invalid directory path.
+      }
+    }
+    if (!valid) {
+      throw new Error(
+        `invalid value for \`${path}[${index}]\` - expected a canonical HTTPS Web Bot Auth directory URL`,
+      );
+    }
   }
 }
 
@@ -1227,7 +1303,7 @@ export type BotOptionsAllow = {
    * all search engine bots.
    * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
    * `"MANUS_BOT"` use the same bot names. Arcjet Cloud verifies their signatures.
-   * Use `"SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory"`
+   * Use `"SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory"`
    * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
@@ -1274,7 +1350,7 @@ export type BotOptionsDeny = {
    * all search engine bots.
    * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
    * `"MANUS_BOT"` use the same bot names. Arcjet Cloud verifies their signatures.
-   * Use `"SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory"`
+   * Use `"SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory"`
    * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)

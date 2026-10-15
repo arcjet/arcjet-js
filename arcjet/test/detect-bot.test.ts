@@ -21,13 +21,37 @@ describe("Primitive > detectBot", () => {
 
   test("accepts custom and known signer directory policies", () => {
     const customSigner: ArcjetWebBotAuthSigner =
-      "SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory";
+      "SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory";
     const knownSigner: ArcjetWebBotAuthSigner =
       "SIGNED_BOT:https://chatgpt.com/.well-known/http-message-signatures-directory";
     const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [customSigner, knownSigner] });
     const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [customSigner] });
     assert.deepEqual(allowRule.allow, [customSigner, knownSigner]);
     assert.deepEqual(denyRule.deny, [customSigner]);
+  });
+
+  test("rejects malformed custom signer directory policies at runtime", () => {
+    for (const entity of [
+      "SIGNED_BOT",
+      "SIGNED_BOT:http://bot.example.com/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://bot.example.com/keys.json",
+      "SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory?x=1",
+      "SIGNED_BOT:https://user@bot.example.com/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://bot.example.com:8443/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://127.0.0.1/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://localhost/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://metadata.internal/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://arcjet.com/.well-known/http-message-signatures-directory",
+    ]) {
+      assert.throws(
+        () => detectBot({ allow: [entity as ArcjetWebBotAuthSigner] }),
+        /`detectBot` options error: invalid value for `allow\[0\]` - expected a canonical HTTPS Web Bot Auth directory URL/,
+      );
+      assert.throws(
+        () => detectBot({ deny: [entity as ArcjetWebBotAuthSigner] }),
+        /`detectBot` options error: invalid value for `deny\[0\]` - expected a canonical HTTPS Web Bot Auth directory URL/,
+      );
+    }
   });
 
   test("should throw w/o `options`", async function () {

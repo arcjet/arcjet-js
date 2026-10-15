@@ -112,7 +112,7 @@ public HTTPS signature-directory URL:
 ```ts
 detectBot({
   mode: "LIVE",
-  allow: ["SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory"],
+  allow: ["SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory"],
 });
 ```
 

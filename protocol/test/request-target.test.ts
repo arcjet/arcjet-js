@@ -21,6 +21,7 @@ test("rawPathFromOriginFormTarget rejects targets without raw origin-form proven
     "/a#fragment",
     "/a b",
     "/a\r\nb",
+    "/caf\u00e9",
   ]) {
     assert.equal(rawPathFromOriginFormTarget(target), undefined);
   }

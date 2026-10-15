@@ -249,6 +249,8 @@ export function createClient(options: ClientOptions): Client {
     ): void {
       const { log } = context;
 
+      // Only Decide verifies signatures covering @path. Report records an
+      // existing decision, so it does not need the unnormalized raw path.
       const cleanDetails = {
         ip: details.ip,
         method: details.method,
