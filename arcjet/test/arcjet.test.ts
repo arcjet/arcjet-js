@@ -93,6 +93,79 @@ test("`arcjet`", async function (t) {
     assert.equal("withRule" in instance, true);
   });
 
+  await t.test("should accept empty `characteristics`", async function () {
+    const instance = arcjet({
+      characteristics: [],
+      client: createLocalClient(),
+      key: exampleKey,
+      log: console,
+      rules: [],
+    });
+    assert.equal("protect" in instance, true);
+  });
+
+  await t.test("should accept non-empty `characteristics`", async function () {
+    const instance = arcjet({
+      characteristics: ["ip.src", "userId"],
+      client: createLocalClient(),
+      key: exampleKey,
+      log: console,
+      rules: [],
+    });
+    assert.equal("protect" in instance, true);
+  });
+
+  await t.test("should throw when `characteristics` is a string", async function () {
+    assert.throws(function () {
+      arcjet({
+        // @ts-expect-error: test runtime behavior.
+        characteristics: "ip.src",
+        client: createLocalClient(),
+        key: exampleKey,
+        log: console,
+        rules: [],
+      });
+    }, /`arcjet` options error: invalid type for `characteristics` - expected an array/);
+  });
+
+  await t.test("should throw when `characteristics` is not an array", async function () {
+    assert.throws(function () {
+      arcjet({
+        // @ts-expect-error: test runtime behavior.
+        characteristics: 12345,
+        client: createLocalClient(),
+        key: exampleKey,
+        log: console,
+        rules: [],
+      });
+    }, /`arcjet` options error: invalid type for `characteristics` - expected an array/);
+  });
+
+  await t.test("should throw when `characteristics` contains a non-string", async function () {
+    assert.throws(function () {
+      arcjet({
+        // @ts-expect-error: test runtime behavior.
+        characteristics: [/foobar/],
+        client: createLocalClient(),
+        key: exampleKey,
+        log: console,
+        rules: [],
+      });
+    }, /`arcjet` options error: invalid type for `characteristics\[0]` - expected string/);
+  });
+
+  await t.test("should throw when `characteristics` contains an empty string", async function () {
+    assert.throws(function () {
+      arcjet({
+        characteristics: [""],
+        client: createLocalClient(),
+        key: exampleKey,
+        log: console,
+        rules: [],
+      });
+    }, /`arcjet` options error: invalid value for `characteristics\[0]` - expected a non-empty string/);
+  });
+
   await t.test("`.protect()`", async function (t) {
     await t.test("should yield an error decision w/o parameters", async function () {
       let errorParameters: unknown;
