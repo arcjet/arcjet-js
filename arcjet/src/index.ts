@@ -50,6 +50,7 @@ import {
   ArcjetFilterReason,
   ArcjetPromptInjectionReason,
   ArcjetRateLimitReason,
+  botCategories,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
 import { runtime } from "@arcjet/runtime";
@@ -328,9 +329,10 @@ function toAnalyzeRequest(request: ArcjetRequestDetails): AnalyzeRequest {
   // Correlation ID and metadata are deliberately excluded from the analyze
   // request so they never feed the fingerprint (and therefore the decision cache
   // key). Two requests that differ only by either must share state.
-  const { correlationId, metadata, ...rest } = request;
+  const { correlationId, metadata, rawPath, ...rest } = request;
   void correlationId;
   void metadata;
+  void rawPath;
 
   return {
     ...rest,
@@ -640,50 +642,7 @@ function validateStringArray(path: string, value: unknown): asserts value is Arr
   }
 }
 
-/** Match the directory hostname shape accepted by Arcjet Cloud. */
-function isPublicSignerHostname(hostname: string): boolean {
-  if (
-    hostname.length > 253 ||
-    !hostname.includes(".") ||
-    hostname.startsWith("[") ||
-    /^[0-9.]+$/.test(hostname) ||
-    !/^[a-z0-9.-]+$/i.test(hostname)
-  ) {
-    return false;
-  }
-
-  const labels = hostname.toLowerCase().split(".");
-  if (
-    labels.some(
-      (label) =>
-        label.length === 0 || label.length > 63 || label.startsWith("-") || label.endsWith("-"),
-    )
-  ) {
-    return false;
-  }
-
-  const tld = labels.at(-1);
-  if (
-    [
-      "localhost",
-      "local",
-      "internal",
-      "invalid",
-      "test",
-      "example",
-      "arpa",
-      "onion",
-      "lan",
-    ].includes(tld!)
-  ) {
-    return false;
-  }
-  return !["arcjet.com", "arcjettest.com"].some(
-    (zone) => hostname === zone || hostname.endsWith(`.${zone}`),
-  );
-}
-
-/** Validate custom signed bot syntax while Arcjet Cloud remains authoritative for directory safety. */
+/** Validate the directory URL shape; Arcjet Cloud enforces fetch safety. */
 function validateBotEntityArray(path: string, value: unknown): asserts value is Array<string> {
   validateStringArray(path, value);
 
@@ -694,23 +653,21 @@ function validateBotEntityArray(path: string, value: unknown): asserts value is 
 
     const directory = entity.slice(prefix.length);
     let valid = false;
-    if (entity.startsWith(prefix) && directory.length <= 2048) {
+    if (entity.startsWith(prefix)) {
       try {
         const parsed = new URL(directory);
         valid =
           parsed.protocol === "https:" &&
-          parsed.username === "" &&
-          parsed.password === "" &&
-          parsed.port === "" &&
-          isPublicSignerHostname(parsed.hostname) &&
-          directory === `${parsed.origin}${directoryPath}`;
+          parsed.pathname === directoryPath &&
+          parsed.search === "" &&
+          parsed.hash === "";
       } catch {
         // Invalid URL syntax is reported with the same error as an invalid directory path.
       }
     }
     if (!valid) {
       throw new Error(
-        `invalid value for \`${path}[${index}]\` - expected a canonical HTTPS Web Bot Auth directory URL`,
+        `invalid value for \`${path}[${index}]\` - expected an HTTPS Web Bot Auth directory URL`,
       );
     }
   }
@@ -1363,6 +1320,27 @@ export type BotOptionsDeny = {
  * Configuration for the bot detection rule.
  */
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
+
+const signedBotIds = new Set<ArcjetWellKnownBot>([
+  "GOOGLE_AGENT",
+  "CHATGPT_AGENT",
+  "DUCKASSIST_BOT",
+  "BROWSERBASE",
+  "MANUS_BOT",
+]);
+
+function botPolicyMayVerifySignature(rule: ArcjetRule): boolean {
+  if (rule.type !== "BOT") return false;
+  const bot = rule as ArcjetBotRule<{}>;
+  if (!Array.isArray(bot.allow) || !Array.isArray(bot.deny)) return false;
+  return [...bot.allow, ...bot.deny].some((entity) => {
+    if (entity.startsWith("SIGNED_BOT:") || signedBotIds.has(entity as ArcjetWellKnownBot)) {
+      return true;
+    }
+    if (!Object.hasOwn(botCategories, entity)) return false;
+    return botCategories[entity as ArcjetBotCategory].some((id) => signedBotIds.has(id));
+  });
+}
 
 /**
  * Configuration for the email validation rule to allow certain email addresses
@@ -3779,7 +3757,9 @@ export default function arcjet<
       protocol: request.protocol,
       host: request.host,
       path: request.path,
-      ...(request.rawPath ? { rawPath: request.rawPath } : {}),
+      ...(typeof request.rawPath === "string" && request.rawPath.length > 0
+        ? { rawPath: request.rawPath }
+        : {}),
       headers: new ArcjetHeaders(request.headers),
       cookies: request.cookies,
       query: request.query,
@@ -3911,6 +3891,12 @@ export default function arcjet<
       }
     }
 
+    // A signature can change the bot identity independently of User-Agent.
+    // Defer bot rules with a signed identity to Arcjet Cloud, including cached
+    // unsigned denials, when this request carries a signature attempt.
+    const deferSignedBotRules =
+      details.headers.has("signature-input") && rules.some(botPolicyMayVerifySignature);
+
     const logLocalPerf = perf.measure("local");
     try {
       for (const [idx, rule] of rules.entries()) {
@@ -3928,7 +3914,9 @@ export default function arcjet<
           if (typeof localRule.protect !== "function") {
             throw new Error("rule must have a `protect` function");
           }
-          results[idx] = await localRule.protect(context, details);
+          if (!(deferSignedBotRules && localRule.type === "BOT")) {
+            results[idx] = await localRule.protect(context, details);
+          }
 
           // If a rule didn't return a rule result, we need to stub it to avoid
           // crashing. This should only happen if a user writes a custom local

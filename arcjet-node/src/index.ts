@@ -435,8 +435,8 @@ export default function arcjet<
       }
     }
     const method = request.method ?? "";
-    const rawPath =
-      rawPathFromOriginFormTarget(request.originalUrl) ?? rawPathFromOriginFormTarget(request.url);
+    const requestTarget = request.originalUrl ?? request.url;
+    const rawPath = rawPathFromOriginFormTarget(requestTarget);
     const host = headers.get("host") ?? "";
     let path = "";
     let query = "";
@@ -449,20 +449,20 @@ export default function arcjet<
     }
 
     // Do some very simple validation, but also try/catch around URL parsing
-    if (typeof request.url !== "undefined" && request.url !== "" && host !== "") {
+    if (typeof requestTarget !== "undefined" && requestTarget !== "" && host !== "") {
       try {
-        const url = new URL(request.url, `${protocol}//${host}`);
+        const url = new URL(requestTarget, `${protocol}//${host}`);
         path = url.pathname;
         query = url.search;
         protocol = url.protocol;
       } catch {
         // If the parsing above fails, just set the path as whatever url we
         // received.
-        path = request.url ?? "";
+        path = requestTarget ?? "";
         log.warn('Unable to parse URL. Using "%s" as `path`.', path);
       }
     } else {
-      path = request.url ?? "";
+      path = requestTarget ?? "";
     }
 
     return {

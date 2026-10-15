@@ -58,6 +58,7 @@ test("explicit ipSrc overrides the Nest request address and is stripped", async 
   );
 
   assert.equal(details.ip, "203.0.113.10");
+  assert.equal(details.path, "/signed/%2F");
   assert.equal(details.rawPath, "/signed/%2F");
   assert.deepEqual(details.extra, {});
 
@@ -73,4 +74,16 @@ test("explicit ipSrc overrides the Nest request address and is stripped", async 
     { ipSrc: "203.0.113.10" },
   );
   assert.equal(details.rawPath, "/fastify/%2f");
+
+  await client.protect(
+    {
+      headers: { host: "example.com" },
+      ip: "192.0.2.1",
+      method: "GET",
+      url: "/fallback/%2f?x=1",
+    },
+    { ipSrc: "203.0.113.10" },
+  );
+  assert.equal(details.path, "/fallback/%2f");
+  assert.equal(details.rawPath, "/fallback/%2f");
 });

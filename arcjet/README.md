@@ -118,10 +118,11 @@ detectBot({
 
 The bot must publish a Web Bot Auth directory and sign its requests. Arcjet Cloud
 uses the configured directory to verify the signatures. Directory URLs must be
-canonical, public HTTPS URLs. The Node, Fastify, and Nest adapters preserve the
-original request path when available, which is required for signatures covering
-`@path`. Adapters that only receive a parsed URL cannot supply that path, so
-Arcjet Cloud cannot verify those signatures. If you call the core SDK with
+canonical, public HTTPS URLs. The Node, Fastify, Nest, and Next.js Pages API
+route adapters preserve the original request path when available, which is
+required for signatures covering `@path`. Adapters that only receive a parsed
+URL cannot supply that path, so Arcjet Cloud cannot verify those signatures.
+If you call the core SDK with
 request details directly, set `rawPath` only from the original request target,
 without parsing or normalization.
 

@@ -36,21 +36,31 @@ describe("Primitive > detectBot", () => {
       "SIGNED_BOT:http://bot.example.com/.well-known/http-message-signatures-directory",
       "SIGNED_BOT:https://bot.example.com/keys.json",
       "SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory?x=1",
-      "SIGNED_BOT:https://user@bot.example.com/.well-known/http-message-signatures-directory",
-      "SIGNED_BOT:https://bot.example.com:8443/.well-known/http-message-signatures-directory",
-      "SIGNED_BOT:https://127.0.0.1/.well-known/http-message-signatures-directory",
-      "SIGNED_BOT:https://localhost/.well-known/http-message-signatures-directory",
-      "SIGNED_BOT:https://metadata.internal/.well-known/http-message-signatures-directory",
-      "SIGNED_BOT:https://arcjet.com/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory#fragment",
     ]) {
       assert.throws(
         () => detectBot({ allow: [entity as ArcjetWebBotAuthSigner] }),
-        /`detectBot` options error: invalid value for `allow\[0\]` - expected a canonical HTTPS Web Bot Auth directory URL/,
+        /`detectBot` options error: invalid value for `allow\[0\]` - expected an HTTPS Web Bot Auth directory URL/,
       );
       assert.throws(
         () => detectBot({ deny: [entity as ArcjetWebBotAuthSigner] }),
-        /`detectBot` options error: invalid value for `deny\[0\]` - expected a canonical HTTPS Web Bot Auth directory URL/,
+        /`detectBot` options error: invalid value for `deny\[0\]` - expected an HTTPS Web Bot Auth directory URL/,
       );
+    }
+  });
+
+  test("leaves signer directory fetch policy to Arcjet Cloud", () => {
+    for (const directory of [
+      "https://user@bot.example.com/.well-known/http-message-signatures-directory",
+      "https://bot.example.com:8443/.well-known/http-message-signatures-directory",
+      "https://127.0.0.1/.well-known/http-message-signatures-directory",
+      "https://localhost/.well-known/http-message-signatures-directory",
+      "https://metadata.internal/.well-known/http-message-signatures-directory",
+      "https://arcjet.com/.well-known/http-message-signatures-directory",
+      "https://Bot.Example.com/.well-known/http-message-signatures-directory",
+    ]) {
+      const entity = `SIGNED_BOT:${directory}` as ArcjetWebBotAuthSigner;
+      assert.deepEqual(detectBot({ allow: [entity] })[0].allow, [entity]);
     }
   });
 

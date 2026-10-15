@@ -32,6 +32,7 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
@@ -586,6 +587,7 @@ export default function arcjet<
     }
     const method = request.method ?? "";
     const host = headers.get("host") ?? "";
+    const rawPath = rawPathFromOriginFormTarget(request.url);
     let path = "";
     let query = "";
     let protocol = "";
@@ -645,6 +647,7 @@ export default function arcjet<
       protocol,
       host,
       path,
+      ...(rawPath ? { rawPath } : {}),
       headers,
       cookies,
       query,

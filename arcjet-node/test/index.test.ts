@@ -314,13 +314,13 @@ test("`arcjetNode`", async function (t) {
         {
           headers: { host: "example.com" },
           method: "GET",
-          originalUrl: "/mounted/%2E%2e/target?x=%2f",
-          url: "/target?x=%2f",
+          originalUrl: "/mounted/orders/%2F?x=%2f",
+          url: "/orders/%2F?x=%2f",
         },
         { ipSrc: "127.0.0.1" },
       );
-      assert.equal(request?.path, "/target");
-      assert.equal(request?.rawPath, "/mounted/%2E%2e/target");
+      assert.equal(request?.path, "/mounted/orders/%2F");
+      assert.equal(request?.rawPath, "/mounted/orders/%2F");
     });
 
     await t.test("should forward a `correlationId` passed as an option", async function () {

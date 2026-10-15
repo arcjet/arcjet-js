@@ -426,9 +426,9 @@ For signed agents, `detectBot()` accepts `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
 These identify the signer independently of the User-Agent. For a custom bot,
 use `"SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory"`
 with its public signature directory. Arcjet Cloud verifies the signatures. The
-Node, Fastify, and Nest adapters can forward an original request path for
-signatures covering `@path`; adapters with only a parsed URL leave those
-signatures unverified.
+Node, Fastify, Nest, and Next.js Pages API routes can forward an original
+request path for signatures covering `@path`; adapters with only a parsed URL
+leave those signatures unverified.
 
 ### Rate limiting
 

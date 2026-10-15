@@ -51,6 +51,10 @@
       "types": "./dist/convert.d.ts",
       "default": "./dist/convert.js"
     },
+    "./request-target": {
+      "types": "./dist/request-target.d.ts",
+      "default": "./dist/request-target.js"
+    },
     "./request-target.js": {
       "types": "./dist/request-target.d.ts",
       "default": "./dist/request-target.js"

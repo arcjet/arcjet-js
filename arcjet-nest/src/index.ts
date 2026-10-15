@@ -383,9 +383,8 @@ function arcjet<
     }
 
     const method = request.method ?? "";
-    const rawPath =
-      rawPathFromOriginFormTarget(request.raw?.url) ??
-      rawPathFromOriginFormTarget(request.originalUrl);
+    const requestTarget = request.raw?.url ?? request.originalUrl ?? request.url;
+    const rawPath = rawPathFromOriginFormTarget(requestTarget);
     let host = "";
     // We use `id` to determine if the request object is from Fastify
     // This is mostly to avoid a deprecation warning in Express
@@ -417,20 +416,20 @@ function arcjet<
     }
 
     // Do some very simple validation, but also try/catch around URL parsing
-    if (typeof request.url !== "undefined" && request.url !== "" && host !== "") {
+    if (typeof requestTarget !== "undefined" && requestTarget !== "" && host !== "") {
       try {
-        const url = new URL(request.url, `${protocol}//${host}`);
+        const url = new URL(requestTarget, `${protocol}//${host}`);
         path = url.pathname;
         query = url.search;
         protocol = url.protocol;
       } catch {
         // If the parsing above fails, just set the path as whatever url we
         // received.
-        path = request.url ?? "";
+        path = requestTarget ?? "";
         log.warn('Unable to parse URL. Using "%s" as `path`.', path);
       }
     } else {
-      path = request.url ?? "";
+      path = requestTarget ?? "";
     }
 
     return {

@@ -14,6 +14,7 @@ import arcjet, {
   ArcjetDenyDecision,
   ArcjetReason,
   ArcjetRuleResult,
+  detectBot,
 } from "../dist/index.js";
 
 const exampleKey = "ajkey_yourkey";
@@ -138,6 +139,74 @@ test("`arcjet`", async function (t) {
       const decision = await instance.protect({}, { ip: "1.1.1.1" });
 
       assert.equal(decision.isAllowed(), true);
+    });
+
+    await t.test(
+      "sends signed bot attempts to Decide despite a cached unsigned denial",
+      async function () {
+        for (const allowedBot of [
+          "CHATGPT_AGENT",
+          "CATEGORY:GOOGLE",
+          "SIGNED_BOT:https://signed.example.com/.well-known/http-message-signatures-directory",
+        ] as const) {
+          let remoteCalls = 0;
+          const instance = arcjet({
+            client: {
+              async decide() {
+                remoteCalls++;
+                return new ArcjetAllowDecision({ reason: new ArcjetReason(), results: [], ttl: 0 });
+              },
+              report() {},
+            },
+            key: exampleKey,
+            log: { ...console, debug() {} },
+            rules: [detectBot({ mode: "LIVE", allow: [allowedBot] })],
+          });
+          const unsigned = {
+            ...createRequest(),
+            headers: { "user-agent": "ChatGPT-User/1.0" },
+          };
+          const first = await instance.protect(createContext(), unsigned);
+          assert.equal(first.isDenied(), true, allowedBot);
+          assert.equal(remoteCalls, 0, allowedBot);
+
+          const signed = await instance.protect(createContext(), {
+            ...unsigned,
+            headers: { ...unsigned.headers, "signature-input": "sig1=()" },
+          });
+          assert.equal(signed.isAllowed(), true, allowedBot);
+          assert.equal(remoteCalls, 1, allowedBot);
+        }
+      },
+    );
+
+    await t.test("forwards only string rawPath values to Decide", async function () {
+      const received: Array<{ rawPath?: string | undefined }> = [];
+      const instance = arcjet({
+        client: {
+          async decide(_context, details) {
+            received.push(details);
+            return new ArcjetAllowDecision({ reason: new ArcjetReason(), results: [], ttl: 0 });
+          },
+          report() {},
+        },
+        key: exampleKey,
+        log: { ...console, debug() {} },
+        rules: [],
+      });
+      await instance.protect(createContext(), createRequest());
+      await instance.protect(createContext(), { ...createRequest(), rawPath: "/a/%2f" });
+      await instance.protect(createContext(), {
+        ...createRequest(),
+        rawPath: 42 as unknown as string,
+      });
+      assert.equal(received[0]?.rawPath, undefined);
+      assert.equal(received[1]?.rawPath, "/a/%2f");
+      assert.equal(received[2]?.rawPath, undefined);
+      assert.deepEqual(
+        received.map((details) => details.rawPath),
+        [undefined, "/a/%2f", undefined],
+      );
     });
 
     await t.test("should call `validate` and `protect` on rules", async function () {
