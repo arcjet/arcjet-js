@@ -91,6 +91,17 @@ describe("Primitive > tokenBucket", () => {
     }, /`tokenBucket` options error: invalid type for `characteristics` - expected an array/);
   });
 
+  test("validates `characteristics` items are non-empty if set", async () => {
+    assert.throws(() => {
+      tokenBucket({
+        characteristics: [""],
+        refillRate: 1,
+        interval: 1,
+        capacity: 1,
+      });
+    }, /`tokenBucket` options error: invalid value for `characteristics\[0]` - expected a non-empty string/);
+  });
+
   test("validates `refillRate` option is required", async () => {
     assert.throws(() => {
       tokenBucket(
@@ -472,6 +483,27 @@ describe("Primitive > fixedWindow", () => {
     }, /`fixedWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
   });
 
+  test("validates `characteristics` option is an array if set", async () => {
+    assert.throws(() => {
+      fixedWindow({
+        // @ts-expect-error
+        characteristics: 12345,
+        window: "1h",
+        max: 1,
+      });
+    }, /`fixedWindow` options error: invalid type for `characteristics` - expected an array/);
+  });
+
+  test("validates `characteristics` items are non-empty if set", async () => {
+    assert.throws(() => {
+      fixedWindow({
+        characteristics: [""],
+        window: "1h",
+        max: 1,
+      });
+    }, /`fixedWindow` options error: invalid value for `characteristics\[0]` - expected a non-empty string/);
+  });
+
   test("validates `window` option is required", async () => {
     assert.throws(() => {
       fixedWindow(
@@ -804,6 +836,27 @@ describe("Primitive > slidingWindow", () => {
         max: 1,
       });
     }, /`slidingWindow` options error: invalid value for `mode` - expected one of 'LIVE', 'DRY_RUN'/);
+  });
+
+  test("validates `characteristics` option is an array if set", async () => {
+    assert.throws(() => {
+      slidingWindow({
+        // @ts-expect-error
+        characteristics: 12345,
+        interval: 3600,
+        max: 1,
+      });
+    }, /`slidingWindow` options error: invalid type for `characteristics` - expected an array/);
+  });
+
+  test("validates `characteristics` items are non-empty if set", async () => {
+    assert.throws(() => {
+      slidingWindow({
+        characteristics: [""],
+        interval: 3600,
+        max: 1,
+      });
+    }, /`slidingWindow` options error: invalid value for `characteristics\[0]` - expected a non-empty string/);
   });
 
   test("validates `interval` option is required", async () => {

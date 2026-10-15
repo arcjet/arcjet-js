@@ -410,7 +410,7 @@ const slidingWindowValidations: ReadonlyArray<ValidationSchema> = [
   { key: "mode", required: false, validate: validateMode },
   {
     key: "characteristics",
-    validate: validateStringArray,
+    validate: validateCharacteristics,
     required: false,
   },
   { key: "max", required: true, validate: validateNumber },
@@ -636,6 +636,28 @@ function validateStringArray(path: string, value: unknown): asserts value is Arr
 }
 
 /**
+ * Validate characteristics: an array of non-empty strings.
+ *
+ * An empty array is allowed and means the default IP fingerprint.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not an array of non-empty strings.
+ */
+function validateCharacteristics(path: string, value: unknown): asserts value is Array<string> {
+  validateArray(path, value);
+
+  for (const [index, subvalue] of value.entries()) {
+    validateNonEmptyString(path + "[" + index + "]", subvalue);
+  }
+}
+
+/**
  * Validate a string.
  *
  * @param path
@@ -727,6 +749,26 @@ function validateString(path: string, value: unknown): asserts value is string {
 }
 
 /**
+ * Validate a non-empty string.
+ *
+ * @param path
+ *   Path to value.
+ * @param value
+ *   Value to validate.
+ * @returns
+ *   Nothing.
+ * @throws
+ *   When not a non-empty string.
+ */
+function validateNonEmptyString(path: string, value: unknown): asserts value is string {
+  validateString(path, value);
+
+  if (value.length === 0) {
+    throw new Error(`invalid value for \`${path}\` - expected a non-empty string`);
+  }
+}
+
+/**
  * Validate a function.
  *
  * @param path
@@ -809,7 +851,7 @@ function validateTokenBucketOptions(
       },
       {
         key: "characteristics",
-        validate: validateStringArray,
+        validate: validateCharacteristics,
         required: false,
       },
       { key: "refillRate", required: true, validate: validateNumber },
@@ -838,7 +880,7 @@ function validateFixedWindowOptions(
       { key: "mode", required: false, validate: validateMode },
       {
         key: "characteristics",
-        validate: validateStringArray,
+        validate: validateCharacteristics,
         required: false,
       },
       { key: "max", required: true, validate: validateNumber },
@@ -3713,7 +3755,30 @@ export default function arcjet<
       extra: reportExtra,
     });
 
-    const characteristics = options.characteristics ? [...options.characteristics] : [];
+    // `protect()` never throws for bad configuration: return an ERROR decision
+    // instead. Use `Array.isArray` rather than a truthy check so a string such
+    // as `"ip.src"` is not spread into `["i", "p", ".", "s", "r", "c"]`.
+    if (typeof options.characteristics !== "undefined") {
+      try {
+        validateCharacteristics("characteristics", options.characteristics);
+      } catch (error) {
+        log.error(
+          { error: errorMessage(error) },
+          "Invalid characteristics. Please verify your Characteristics.",
+        );
+
+        return new ArcjetErrorDecision({
+          ttl: 0,
+          reason: new ArcjetErrorReason(`Invalid characteristics - ${errorMessage(error)}`),
+          // No results because we couldn't create a fingerprint
+          results: [],
+        });
+      }
+    }
+
+    const characteristics = Array.isArray(options.characteristics)
+      ? [...options.characteristics]
+      : [];
 
     const waitUntil = lookupWaitUntil();
 
