@@ -21,9 +21,9 @@ describe("Primitive > detectBot", () => {
 
   test("accepts custom and known signer directory policies", () => {
     const customSigner: ArcjetWebBotAuthSigner =
-      "SIGNER:https://bot.example/.well-known/http-message-signatures-directory";
+      "SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory";
     const knownSigner: ArcjetWebBotAuthSigner =
-      "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory";
+      "SIGNED_BOT:https://chatgpt.com/.well-known/http-message-signatures-directory";
     const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [customSigner, knownSigner] });
     const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [customSigner] });
     assert.deepEqual(allowRule.allow, [customSigner, knownSigner]);

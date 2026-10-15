@@ -1192,13 +1192,13 @@ export type SlidingWindowRateLimitOptions<Characteristics extends readonly strin
 /**
  * A signing directory for a custom Web Bot Auth bot. Supply the exact,
  * canonical HTTPS URL of its public signature directory. Signature
- * verification runs when the request reaches the Decide RPC.
+ * verification runs in Arcjet Cloud.
  *
  * Known signing operators can also be configured by their bot names, such as
  * `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and `"MANUS_BOT"`.
  */
 export type ArcjetWebBotAuthSigner =
-  `SIGNER:https://${string}/.well-known/http-message-signatures-directory`;
+  `SIGNED_BOT:https://${string}/.well-known/http-message-signatures-directory`;
 
 /**
  * Configuration for the bot detection rule to allow certain bots and deny
@@ -1226,9 +1226,8 @@ export type BotOptionsAllow = {
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to allow
    * all search engine bots.
    * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
-   * `"MANUS_BOT"` use the same bot names. Their signatures are verified when
-   * the request reaches the Decide RPC.
-   * Use `"SIGNER:https://bot.example/.well-known/http-message-signatures-directory"`
+   * `"MANUS_BOT"` use the same bot names. Arcjet Cloud verifies their signatures.
+   * Use `"SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory"`
    * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
@@ -1274,9 +1273,8 @@ export type BotOptionsDeny = {
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to deny
    * all search engine bots.
    * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
-   * `"MANUS_BOT"` use the same bot names. Their signatures are verified when
-   * the request reaches the Decide RPC.
-   * Use `"SIGNER:https://bot.example/.well-known/http-message-signatures-directory"`
+   * `"MANUS_BOT"` use the same bot names. Arcjet Cloud verifies their signatures.
+   * Use `"SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory"`
    * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
