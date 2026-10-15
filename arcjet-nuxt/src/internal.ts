@@ -277,16 +277,31 @@ export default function arcjet<
 >(
   options: ArcjetOptions<Rules, Characteristics>,
 ): ArcjetNuxt<ExtraProps<Rules> & CharacteristicProps<Characteristics>> {
+  // Nuxt/Nitro may replace `process.env.RUNTIME_CONFIG` with an object at
+  // build time. Plain Node always stores env values as strings, so also accept
+  // a JSON payload (used by unit tests and any runtime that stringifies it).
   const config = process.env.RUNTIME_CONFIG as unknown;
   let key = "";
+  const runtimeConfig =
+    config && typeof config === "object"
+      ? config
+      : typeof config === "string" && config.length > 0
+        ? (() => {
+            try {
+              return JSON.parse(config) as unknown;
+            } catch {
+              return undefined;
+            }
+          })()
+        : undefined;
 
   if (
-    config &&
-    typeof config === "object" &&
-    "__ARCJET_KEY" in config &&
-    typeof config.__ARCJET_KEY === "string"
+    runtimeConfig &&
+    typeof runtimeConfig === "object" &&
+    "__ARCJET_KEY" in runtimeConfig &&
+    typeof runtimeConfig.__ARCJET_KEY === "string"
   ) {
-    key = config.__ARCJET_KEY;
+    key = runtimeConfig.__ARCJET_KEY;
   }
 
   const log = options.log ?? new Logger({ level: logLevel(process.env) });
