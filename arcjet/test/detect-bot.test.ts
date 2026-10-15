@@ -6,16 +6,18 @@ import { MemoryCache } from "@arcjet/cache";
 import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../dist/index.js";
 
 describe("Primitive > detectBot", () => {
-  test("accepts verified signer identities for Decide bot_v2 policies", () => {
-    const signers = [
-      "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory",
-      "SIGNER:https://www.browserbase.com/.well-known/http-message-signatures-directory",
-      "SIGNER:https://api.manus.im/.well-known/http-message-signatures-directory",
-    ] as const;
-    const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [...signers] });
-    const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [...signers] });
-    assert.deepEqual(allowRule.allow, signers);
-    assert.deepEqual(denyRule.deny, signers);
+  test("accepts signed agent bot names for Decide bot_v2 policies", () => {
+    const bots = ["CHATGPT_AGENT", "BROWSERBASE", "MANUS_BOT"] as const;
+    const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [...bots] });
+    const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [...bots] });
+    assert.deepEqual(allowRule.allow, bots);
+    assert.deepEqual(denyRule.deny, bots);
+  });
+
+  test("keeps existing signer URL policies compatible", () => {
+    const signer = "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory";
+    const [rule] = detectBot({ mode: "DRY_RUN", allow: [signer] });
+    assert.deepEqual(rule.allow, [signer]);
   });
 
   test("should throw w/o `options`", async function () {

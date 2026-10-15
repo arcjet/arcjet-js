@@ -372,12 +372,12 @@ detectBot({
 });
 ```
 
-For signed agents, `detectBot()` also accepts explicit `SIGNER:` IDs for the
-[ChatGPT, Browserbase, and Manus Web Bot Auth directories](arcjet/README.md#web-bot-auth-signer-identities).
-These identify the signer rather than a User-Agent. Verification happens when
-the request reaches Decide. The Node, Fastify, and Nest adapters can forward an
-original request path for signatures covering `@path`; adapters with only a
-parsed URL leave those signatures unverified.
+For signed agents, `detectBot()` accepts `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
+`"MANUS_BOT"` from the [bot list](arcjet/README.md#signed-agents).
+These identify the signer independently of the User-Agent. Verification
+happens when the request reaches Decide. The Node, Fastify, and Nest adapters
+can forward an original request path for signatures covering `@path`;
+adapters with only a parsed URL leave those signatures unverified.
 
 ### Rate limiting
 

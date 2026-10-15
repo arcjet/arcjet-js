@@ -89,25 +89,26 @@ const aj = arcjet({
 });
 ```
 
-#### Web Bot Auth signer identities
+#### Signed agents
 
-`detectBot()` can also allow or deny these verified signer identities:
+`detectBot()` uses the usual bot names for signed agents:
 
 ```ts
 detectBot({
   mode: "LIVE",
   allow: [
-    "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory",
-    "SIGNER:https://www.browserbase.com/.well-known/http-message-signatures-directory",
-    "SIGNER:https://api.manus.im/.well-known/http-message-signatures-directory",
+    "CHATGPT_AGENT",
+    "BROWSERBASE",
+    "MANUS_BOT",
   ],
 });
 ```
 
-Each ID identifies the operator of a Web Bot Auth key directory, not a
-particular User-Agent. Signature verification runs when the request reaches the
-Decide RPC; a request denied locally before that RPC is not signature verified.
-The Node, Fastify, and Nest adapters forward the original path from
+These names identify the signing operators independently of the request's
+User-Agent. `CHATGPT_AGENT` is distinct from `OPENAI_CRAWLER_USER`, which names
+the ChatGPT-User crawler. Signature verification runs when the request reaches
+the Decide RPC; a request denied locally before that RPC is not signature
+verified. The Node, Fastify, and Nest adapters forward the original path from
 an origin-form request target when available, so Decide can verify signatures
 covering `@path`. Adapters that only receive a parsed URL cannot supply that
 path; Decide leaves those signatures unverified. If you call the core SDK with

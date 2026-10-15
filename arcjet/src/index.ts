@@ -1194,8 +1194,8 @@ export type SlidingWindowRateLimitOptions<Characteristics extends readonly strin
 };
 
 /**
- * Verified signer identities supported by Decide Web Bot Auth. These identify
- * the key-directory operator, which need not match the request User-Agent.
+ * @deprecated Use `"CHATGPT_AGENT"`, `"BROWSERBASE"`, or `"MANUS_BOT"`.
+ * Retained so existing signer policies remain type-compatible.
  */
 export type ArcjetWebBotAuthSigner =
   | "SIGNER:https://chatgpt.com/.well-known/http-message-signatures-directory"
@@ -1227,8 +1227,9 @@ export type BotOptionsAllow = {
    * user-agent of the `curl` tool.
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to allow
    * all search engine bots.
-   * A `SIGNER:` identity allows a verified Web Bot Auth directory operator
-   * when the request reaches the Decide RPC.
+   * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
+   * `"MANUS_BOT"` use the same bot names. Their signatures are verified when
+   * the request reaches the Decide RPC.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.
@@ -1272,8 +1273,9 @@ export type BotOptionsDeny = {
    * user-agent of the `curl` tool.
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to deny
    * all search engine bots.
-   * A `SIGNER:` identity matches a verified Web Bot Auth directory operator
-   * when the request reaches the Decide RPC.
+   * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
+   * `"MANUS_BOT"` use the same bot names. Their signatures are verified when
+   * the request reaches the Decide RPC.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.
