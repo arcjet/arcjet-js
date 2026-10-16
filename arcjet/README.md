@@ -101,6 +101,7 @@ detectBot({
     "BROWSERBASE",
     "MANUS_BOT",
     "YOU_CRAWLER",
+    "OSANO_BOT",
   ],
 });
 ```
