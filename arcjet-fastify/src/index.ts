@@ -106,8 +106,6 @@ export function createRemoteClient(
  * This is the minimum interface similar to `FastifyRequest` from `fastify`.
  */
 export interface ArcjetFastifyRequest {
-  /** Underlying Node request, whose URL retains the origin-form target. */
-  raw?: { url?: string | undefined } | undefined;
   /**
    * Request body.
    */
@@ -122,6 +120,9 @@ export interface ArcjetFastifyRequest {
    * HTTP method of the request.
    */
   method: string;
+
+  /** Original request target before Fastify URL rewrites, if available. */
+  originalUrl?: string | undefined;
 
   /**
    * Protocol of the incoming request.
@@ -360,7 +361,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   }
 
   const method = request.method ?? "";
-  const rawPath = rawPathFromOriginFormTarget(request.raw?.url);
+  const rawPath = rawPathFromOriginFormTarget(request.originalUrl ?? request.url);
   const host = headers.get("host") ?? "";
   let path = "";
   let protocol =

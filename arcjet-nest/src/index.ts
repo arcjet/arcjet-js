@@ -383,7 +383,7 @@ function arcjet<
     }
 
     const method = request.method ?? "";
-    const requestTarget = request.raw?.url ?? request.originalUrl ?? request.url;
+    const requestTarget = request.originalUrl ?? request.raw?.url ?? request.url;
     const rawPath = rawPathFromOriginFormTarget(requestTarget);
     let host = "";
     // We use `id` to determine if the request object is from Fastify
