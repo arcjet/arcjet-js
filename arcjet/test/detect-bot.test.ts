@@ -3,9 +3,67 @@ import { describe, test, mock } from "node:test";
 
 import { MemoryCache } from "@arcjet/cache";
 
-import { type ArcjetCacheEntry, ArcjetBotReason, detectBot } from "../dist/index.js";
+import {
+  type ArcjetCacheEntry,
+  type ArcjetWebBotAuthSigner,
+  ArcjetBotReason,
+  detectBot,
+} from "../dist/index.js";
 
 describe("Primitive > detectBot", () => {
+  test("accepts signed agent bot names for Decide bot_v2 policies", () => {
+    const bots = ["CHATGPT_AGENT", "BROWSERBASE", "MANUS_BOT"] as const;
+    const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [...bots] });
+    const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [...bots] });
+    assert.deepEqual(allowRule.allow, bots);
+    assert.deepEqual(denyRule.deny, bots);
+  });
+
+  test("accepts custom and known signer directory policies", () => {
+    const customSigner: ArcjetWebBotAuthSigner =
+      "SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory";
+    const knownSigner: ArcjetWebBotAuthSigner =
+      "SIGNED_BOT:https://chatgpt.com/.well-known/http-message-signatures-directory";
+    const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [customSigner, knownSigner] });
+    const [denyRule] = detectBot({ mode: "DRY_RUN", deny: [customSigner] });
+    assert.deepEqual(allowRule.allow, [customSigner, knownSigner]);
+    assert.deepEqual(denyRule.deny, [customSigner]);
+  });
+
+  test("rejects malformed custom signer directory policies at runtime", () => {
+    for (const entity of [
+      "SIGNED_BOT",
+      "SIGNED_BOT:http://bot.example.com/.well-known/http-message-signatures-directory",
+      "SIGNED_BOT:https://bot.example.com/keys.json",
+      "SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory?x=1",
+      "SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory#fragment",
+    ]) {
+      assert.throws(
+        () => detectBot({ allow: [entity as ArcjetWebBotAuthSigner] }),
+        /`detectBot` options error: invalid value for `allow\[0\]` - expected an HTTPS Web Bot Auth directory URL/,
+      );
+      assert.throws(
+        () => detectBot({ deny: [entity as ArcjetWebBotAuthSigner] }),
+        /`detectBot` options error: invalid value for `deny\[0\]` - expected an HTTPS Web Bot Auth directory URL/,
+      );
+    }
+  });
+
+  test("leaves signer directory fetch policy to Arcjet Cloud", () => {
+    for (const directory of [
+      "https://user@bot.example.com/.well-known/http-message-signatures-directory",
+      "https://bot.example.com:8443/.well-known/http-message-signatures-directory",
+      "https://127.0.0.1/.well-known/http-message-signatures-directory",
+      "https://localhost/.well-known/http-message-signatures-directory",
+      "https://metadata.internal/.well-known/http-message-signatures-directory",
+      "https://arcjet.com/.well-known/http-message-signatures-directory",
+      "https://Bot.Example.com/.well-known/http-message-signatures-directory",
+    ]) {
+      const entity = `SIGNED_BOT:${directory}` as ArcjetWebBotAuthSigner;
+      assert.deepEqual(detectBot({ allow: [entity] })[0].allow, [entity]);
+    }
+  });
+
   test("should throw w/o `options`", async function () {
     assert.throws(function () {
       // @ts-expect-error: test runtime behavior.

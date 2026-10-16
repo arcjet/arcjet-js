@@ -227,7 +227,7 @@ test("`arcjetFastify`", async function (t) {
       assert.deepEqual(parameters, undefined);
     });
 
-    await t.test("should protect a request", async function () {
+    await t.test("should protect a request", async function (t) {
       const restore = capture();
 
       let request: ArcjetRequestDetails | undefined;
@@ -297,8 +297,66 @@ test("`arcjetFastify`", async function (t) {
         ip: "127.0.0.1",
         method: "GET",
         path: "/a",
+        rawPath: "/a",
         protocol: "http:",
         query: "?b",
+      });
+
+      await t.test("preserves the origin-form path from url without raw", async () => {
+        await arcjet.protect(
+          {
+            body: undefined,
+            headers: { host: "example.com" },
+            method: "GET",
+            protocol: "https",
+            server: {},
+            socket: {},
+            url: "/a/%2E%2e/../b?x=%2f",
+          },
+          { ipSrc: "127.0.0.1" },
+        );
+        assert.equal(request?.path, "/b");
+        assert.equal(request?.rawPath, "/a/%2E%2e/../b");
+      });
+
+      await t.test("preserves originalUrl when Fastify rewrites url", async () => {
+        const { server } = await createSimpleServer({
+          decide: (incoming) => arcjet.protect(incoming, { ipSrc: "127.0.0.1" }),
+          fastifyOptions: {
+            rewriteUrl() {
+              return "/rewritten?x=%2f";
+            },
+          },
+        });
+        try {
+          const response = await server.inject({
+            method: "GET",
+            url: "/signed/%2F/target?x=%2f",
+          });
+          assert.equal(response.statusCode, 200);
+          assert.equal(request?.path, "/rewritten");
+          assert.equal(request?.rawPath, "/signed/%2F/target");
+        } finally {
+          await server.close();
+        }
+      });
+
+      await t.test("does not replace an invalid originalUrl with a rewritten url", async () => {
+        await arcjet.protect(
+          {
+            body: undefined,
+            headers: { host: "example.com" },
+            method: "GET",
+            originalUrl: "https://example.com/a",
+            protocol: "https",
+            server: {},
+            socket: {},
+            url: "/rewritten?x=1",
+          },
+          { ipSrc: "127.0.0.1" },
+        );
+        assert.equal(request?.path, "/rewritten");
+        assert.equal(request?.rawPath, undefined);
       });
     });
   });

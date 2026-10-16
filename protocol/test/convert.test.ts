@@ -1230,9 +1230,11 @@ test("convert", async (t) => {
     });
 
     await t.test("should create a bot protocol rule", () => {
+      const botAllow = "CHATGPT_AGENT";
+      const botDeny = "BROWSERBASE";
       const rule = ArcjetRuleToProtocol({
-        allow: [],
-        deny: [],
+        allow: [botAllow],
+        deny: [botDeny],
         mode: "DRY_RUN",
         type: "BOT",
         priority: 1,
@@ -1251,7 +1253,7 @@ test("convert", async (t) => {
         create(RuleSchema, {
           rule: {
             case: "botV2",
-            value: { allow: [], mode: Mode.DRY_RUN, deny: [] },
+            value: { allow: [botAllow], mode: Mode.DRY_RUN, deny: [botDeny] },
           },
         }),
       );

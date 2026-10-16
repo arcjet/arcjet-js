@@ -30,6 +30,7 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 import { Inject, SetMetadata } from "@nestjs/common";
 import type {
@@ -147,6 +148,10 @@ type EventHandlerLike = (event: string, listener: (...args: any[]) => void) => v
  * Nest request.
  */
 export interface ArcjetNestRequest {
+  /** Fastify's underlying Node request, when Nest uses Fastify. */
+  raw?: { url?: string | undefined } | undefined;
+  /** Original request target retained by Express before router rewrites. */
+  originalUrl?: string | undefined;
   /**
    * Headers.
    */
@@ -378,6 +383,10 @@ function arcjet<
     }
 
     const method = request.method ?? "";
+    const requestTarget = request.raw?.url ?? request.originalUrl ?? request.url;
+    const rawPath = rawPathFromOriginFormTarget(
+      request.originalUrl ?? request.raw?.url ?? request.url,
+    );
     let host = "";
     // We use `id` to determine if the request object is from Fastify
     // This is mostly to avoid a deprecation warning in Express
@@ -409,20 +418,20 @@ function arcjet<
     }
 
     // Do some very simple validation, but also try/catch around URL parsing
-    if (typeof request.url !== "undefined" && request.url !== "" && host !== "") {
+    if (typeof requestTarget !== "undefined" && requestTarget !== "" && host !== "") {
       try {
-        const url = new URL(request.url, `${protocol}//${host}`);
+        const url = new URL(requestTarget, `${protocol}//${host}`);
         path = url.pathname;
         query = url.search;
         protocol = url.protocol;
       } catch {
         // If the parsing above fails, just set the path as whatever url we
         // received.
-        path = request.url ?? "";
+        path = requestTarget ?? "";
         log.warn('Unable to parse URL. Using "%s" as `path`.', path);
       }
     } else {
-      path = request.url ?? "";
+      path = requestTarget ?? "";
     }
 
     return {
@@ -432,6 +441,7 @@ function arcjet<
       protocol,
       host,
       path,
+      ...(rawPath ? { rawPath } : {}),
       headers,
       cookies,
       query,

@@ -1439,6 +1439,16 @@ export declare type RequestDetails = Message<"proto.decide.v1alpha1.RequestDetai
    * @generated from field: string correlation_id = 12;
    */
   correlationId: string;
+
+  /**
+   * The path portion of the original origin-form HTTP request target, before
+   * URL parsing or percent decoding and without its query. Empty when the
+   * adapter cannot provide the original target. Only Decide's Web Bot Auth
+   * verification uses this field; path remains the normalized SDK path.
+   *
+   * @generated from field: string raw_path = 13;
+   */
+  rawPath: string;
 };
 
 /**

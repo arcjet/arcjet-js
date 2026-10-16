@@ -14,6 +14,7 @@ import {
 import { Logger } from "@arcjet/logger";
 // TODO(@wooorm-arcjet): use export maps to hide file extensions and lock down API.
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 import type {
   ArcjetDecision,
@@ -119,6 +120,9 @@ export interface ArcjetFastifyRequest {
    * HTTP method of the request.
    */
   method: string;
+
+  /** Original request target before Fastify URL rewrites, if available. */
+  originalUrl?: string | undefined;
 
   /**
    * Protocol of the incoming request.
@@ -357,6 +361,7 @@ function toArcjetRequest<Properties extends PlainObject>(
   }
 
   const method = request.method ?? "";
+  const rawPath = rawPathFromOriginFormTarget(request.originalUrl ?? request.url);
   const host = headers.get("host") ?? "";
   let path = "";
   let protocol =
@@ -392,6 +397,7 @@ function toArcjetRequest<Properties extends PlainObject>(
     ip,
     method,
     path,
+    ...(rawPath ? { rawPath } : {}),
     protocol,
     query,
   };

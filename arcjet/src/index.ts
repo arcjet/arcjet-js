@@ -50,6 +50,7 @@ import {
   ArcjetFilterReason,
   ArcjetPromptInjectionReason,
   ArcjetRateLimitReason,
+  botCategories,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
 import { runtime } from "@arcjet/runtime";
@@ -137,6 +138,7 @@ const knownFields = [
   "protocol",
   "host",
   "path",
+  "rawPath",
   "headers",
   "body",
   "email",
@@ -327,9 +329,10 @@ function toAnalyzeRequest(request: ArcjetRequestDetails): AnalyzeRequest {
   // Correlation ID and metadata are deliberately excluded from the analyze
   // request so they never feed the fingerprint (and therefore the decision cache
   // key). Two requests that differ only by either must share state.
-  const { correlationId, metadata, ...rest } = request;
+  const { correlationId, metadata, rawPath, ...rest } = request;
   void correlationId;
   void metadata;
+  void rawPath;
 
   return {
     ...rest,
@@ -399,8 +402,8 @@ interface ValidateInterfaceConfiguration {
  */
 const botValidations: ReadonlyArray<ValidationSchema> = [
   { key: "mode", required: false, validate: validateMode },
-  { key: "allow", required: false, validate: validateStringArray },
-  { key: "deny", required: false, validate: validateStringArray },
+  { key: "allow", required: false, validate: validateBotEntityArray },
+  { key: "deny", required: false, validate: validateBotEntityArray },
 ];
 
 /**
@@ -531,7 +534,11 @@ function validateDetails(value: unknown): asserts value is ArcjetRequestDetails 
         return {
           key,
           required:
-            key !== "body" && key !== "email" && key !== "correlationId" && key !== "metadata",
+            key !== "body" &&
+            key !== "email" &&
+            key !== "correlationId" &&
+            key !== "metadata" &&
+            key !== "rawPath",
           validate:
             key === "headers"
               ? validateHeaders
@@ -632,6 +639,37 @@ function validateStringArray(path: string, value: unknown): asserts value is Arr
 
   for (const [index, subvalue] of value.entries()) {
     validateString(path + "[" + index + "]", subvalue);
+  }
+}
+
+/** Validate the directory URL shape; Arcjet Cloud enforces fetch safety. */
+function validateBotEntityArray(path: string, value: unknown): asserts value is Array<string> {
+  validateStringArray(path, value);
+
+  const prefix = "SIGNED_BOT:";
+  const directoryPath = "/.well-known/http-message-signatures-directory";
+  for (const [index, entity] of value.entries()) {
+    if (entity !== "SIGNED_BOT" && !entity.startsWith(prefix)) continue;
+
+    const directory = entity.slice(prefix.length);
+    let valid = false;
+    if (entity.startsWith(prefix)) {
+      try {
+        const parsed = new URL(directory);
+        valid =
+          parsed.protocol === "https:" &&
+          parsed.pathname === directoryPath &&
+          parsed.search === "" &&
+          parsed.hash === "";
+      } catch {
+        // Invalid URL syntax is reported with the same error as an invalid directory path.
+      }
+    }
+    if (!valid) {
+      throw new Error(
+        `invalid value for \`${path}[${index}]\` - expected an HTTPS Web Bot Auth directory URL`,
+      );
+    }
   }
 }
 
@@ -1227,6 +1265,17 @@ export type SlidingWindowRateLimitOptions<Characteristics extends readonly strin
 };
 
 /**
+ * A signing directory for a custom Web Bot Auth bot. Supply the exact,
+ * canonical HTTPS URL of its public signature directory. Signature
+ * verification runs in Arcjet Cloud.
+ *
+ * Known signing operators can also be configured by their bot names, such as
+ * `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and `"MANUS_BOT"`.
+ */
+export type ArcjetWebBotAuthSigner =
+  `SIGNED_BOT:https://${string}/.well-known/http-message-signatures-directory`;
+
+/**
  * Configuration for the bot detection rule to allow certain bots and deny
  * others.
  */
@@ -1251,11 +1300,15 @@ export type BotOptionsAllow = {
    * user-agent of the `curl` tool.
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to allow
    * all search engine bots.
+   * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
+   * `"MANUS_BOT"` use the same bot names. Arcjet Cloud verifies their signatures.
+   * Use `"SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory"`
+   * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.
    */
-  allow: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  allow: Array<ArcjetWellKnownBot | ArcjetBotCategory | ArcjetWebBotAuthSigner>;
   /**
    * List of bots to deny,
    * cannot be combined with `allow`.
@@ -1294,17 +1347,42 @@ export type BotOptionsDeny = {
    * user-agent of the `curl` tool.
    * You can also use bot categories such as `"CATEGORY:SEARCH_ENGINE"` to deny
    * all search engine bots.
+   * Signed agents such as `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
+   * `"MANUS_BOT"` use the same bot names. Arcjet Cloud verifies their signatures.
+   * Use `"SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory"`
+   * for a custom signing operator with a public Web Bot Auth directory.
    * See [*Identifying bots* on
    * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/identifying-bots)
    * for a list of bots and categories.
    */
-  deny: Array<ArcjetWellKnownBot | ArcjetBotCategory>;
+  deny: Array<ArcjetWellKnownBot | ArcjetBotCategory | ArcjetWebBotAuthSigner>;
 };
 
 /**
  * Configuration for the bot detection rule.
  */
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
+
+const signedBotIds = new Set<ArcjetWellKnownBot>([
+  "GOOGLE_AGENT",
+  "CHATGPT_AGENT",
+  "DUCKASSIST_BOT",
+  "BROWSERBASE",
+  "MANUS_BOT",
+]);
+
+function botPolicyMayVerifySignature(rule: ArcjetRule): boolean {
+  if (rule.type !== "BOT") return false;
+  const bot = rule as ArcjetBotRule<{}>;
+  if (!Array.isArray(bot.allow) || !Array.isArray(bot.deny)) return false;
+  return [...bot.allow, ...bot.deny].some((entity) => {
+    if (entity.startsWith("SIGNED_BOT:") || signedBotIds.has(entity as ArcjetWellKnownBot)) {
+      return true;
+    }
+    if (!Object.hasOwn(botCategories, entity)) return false;
+    return botCategories[entity as ArcjetBotCategory].some((id) => signedBotIds.has(id));
+  });
+}
 
 /**
  * Configuration for the email validation rule to allow certain email addresses
@@ -1917,6 +1995,8 @@ export type ArcjetRequest<Props extends PlainObject> = Simplify<
      * Path of the request.
      */
     path: string;
+    /** Original origin-form request-target path, when available. */
+    rawPath?: string;
     /**
      * Headers of the request.
      */
@@ -3731,6 +3811,9 @@ export default function arcjet<
       protocol: request.protocol,
       host: request.host,
       path: request.path,
+      ...(typeof request.rawPath === "string" && request.rawPath.length > 0
+        ? { rawPath: request.rawPath }
+        : {}),
       headers: new ArcjetHeaders(request.headers),
       cookies: request.cookies,
       query: request.query,
@@ -3885,6 +3968,12 @@ export default function arcjet<
       }
     }
 
+    // A signature can change the bot identity independently of User-Agent.
+    // Defer bot rules with a signed identity to Arcjet Cloud, including cached
+    // unsigned denials, when this request carries a signature attempt.
+    const deferSignedBotRules =
+      details.headers.has("signature-input") && rules.some(botPolicyMayVerifySignature);
+
     const logLocalPerf = perf.measure("local");
     try {
       for (const [idx, rule] of rules.entries()) {
@@ -3902,7 +3991,9 @@ export default function arcjet<
           if (typeof localRule.protect !== "function") {
             throw new Error("rule must have a `protect` function");
           }
-          results[idx] = await localRule.protect(context, details);
+          if (!(deferSignedBotRules && localRule.type === "BOT")) {
+            results[idx] = await localRule.protect(context, details);
+          }
 
           // If a rule didn't return a rule result, we need to stub it to avoid
           // crashing. This should only happen if a user writes a custom local

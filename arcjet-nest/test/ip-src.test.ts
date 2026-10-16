@@ -47,10 +47,59 @@ test("explicit ipSrc overrides the Nest request address and is stripped", async 
   const client = provider.useFactory(options);
 
   await client.protect(
-    { headers: { host: "example.com" }, ip: "192.0.2.1", method: "GET", url: "/" },
+    {
+      headers: { host: "example.com" },
+      ip: "192.0.2.1",
+      method: "GET",
+      originalUrl: "/signed/%2F?x=1",
+      url: "/normalized",
+    },
     { ipSrc: "203.0.113.10" },
   );
 
   assert.equal(details.ip, "203.0.113.10");
+  assert.equal(details.path, "/signed/%2F");
+  assert.equal(details.rawPath, "/signed/%2F");
   assert.deepEqual(details.extra, {});
+
+  await client.protect(
+    {
+      headers: { host: "example.com" },
+      id: "fastify",
+      ip: "192.0.2.1",
+      method: "GET",
+      raw: { url: "/fastify/%2f?x=1" },
+      url: "/normalized",
+    },
+    { ipSrc: "203.0.113.10" },
+  );
+  assert.equal(details.rawPath, "/fastify/%2f");
+
+  await client.protect(
+    {
+      headers: { host: "example.com" },
+      id: "fastify",
+      ip: "192.0.2.1",
+      method: "GET",
+      originalUrl: "/fastify-original/%2F?original=1",
+      raw: { url: "/fastify-rewritten?rewrite=1" },
+      url: "/fastify-rewritten?rewrite=1",
+    },
+    { ipSrc: "203.0.113.10" },
+  );
+  assert.equal(details.path, "/fastify-rewritten");
+  assert.equal(details.query, "?rewrite=1");
+  assert.equal(details.rawPath, "/fastify-original/%2F");
+
+  await client.protect(
+    {
+      headers: { host: "example.com" },
+      ip: "192.0.2.1",
+      method: "GET",
+      url: "/fallback/%2f?x=1",
+    },
+    { ipSrc: "203.0.113.10" },
+  );
+  assert.equal(details.path, "/fallback/%2f");
+  assert.equal(details.rawPath, "/fallback/%2f");
 });

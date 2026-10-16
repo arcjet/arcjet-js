@@ -1495,6 +1495,13 @@ export interface ArcjetRequestDetails {
   path: string;
 
   /**
+   * Original path from an origin-form HTTP request target, without the query.
+   * Omitted when an adapter only has a parsed or rewritten URL. This is used
+   * to verify Web Bot Auth signatures that cover `@path`.
+   */
+  rawPath?: string | undefined;
+
+  /**
    * Headers of the request.
    *
    * This is a [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) object.

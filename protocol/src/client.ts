@@ -193,6 +193,7 @@ export function createClient(options: ClientOptions): Client {
         protocol: details.protocol,
         host: details.host,
         path: details.path,
+        ...(details.rawPath ? { rawPath: details.rawPath } : {}),
         headers: Object.fromEntries(details.headers.entries()),
         cookies: details.cookies,
         query: details.query,
@@ -248,6 +249,8 @@ export function createClient(options: ClientOptions): Client {
     ): void {
       const { log } = context;
 
+      // Only Decide verifies signatures covering @path. Report records an
+      // existing decision, so it does not need the unnormalized raw path.
       const cleanDetails = {
         ip: details.ip,
         method: details.method,

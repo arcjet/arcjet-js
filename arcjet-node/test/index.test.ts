@@ -294,9 +294,33 @@ test("`arcjetNode`", async function (t) {
         ip: "127.0.0.1",
         method: "GET",
         path: "/a",
+        rawPath: "/a",
         protocol: "http:",
         query: "?b",
       });
+
+      await arcjet.protect(
+        {
+          headers: { host: "example.com" },
+          method: "GET",
+          url: "/a/%2E%2e/../b?x=%2f",
+        },
+        { ipSrc: "127.0.0.1" },
+      );
+      assert.equal(request?.path, "/b");
+      assert.equal(request?.rawPath, "/a/%2E%2e/../b");
+
+      await arcjet.protect(
+        {
+          headers: { host: "example.com" },
+          method: "GET",
+          originalUrl: "/mounted/orders/%2F?x=%2f",
+          url: "/orders/%2F?x=%2f",
+        },
+        { ipSrc: "127.0.0.1" },
+      );
+      assert.equal(request?.path, "/mounted/orders/%2F");
+      assert.equal(request?.rawPath, "/mounted/orders/%2F");
     });
 
     await t.test("should forward a `correlationId` passed as an option", async function () {

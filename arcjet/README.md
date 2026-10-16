@@ -89,6 +89,43 @@ const aj = arcjet({
 });
 ```
 
+#### Signed agents
+
+`detectBot()` uses the usual bot names for signed agents:
+
+```ts
+detectBot({
+  mode: "LIVE",
+  allow: [
+    "CHATGPT_AGENT",
+    "BROWSERBASE",
+    "MANUS_BOT",
+  ],
+});
+```
+
+These names identify the signing operators independently of the request's
+User-Agent. `CHATGPT_AGENT` is distinct from `OPENAI_CRAWLER_USER`, which names
+the ChatGPT-User crawler. To configure a custom signing bot, use its exact
+public HTTPS signature-directory URL:
+
+```ts
+detectBot({
+  mode: "LIVE",
+  allow: ["SIGNED_BOT:https://bot.example.com/.well-known/http-message-signatures-directory"],
+});
+```
+
+The bot must publish a Web Bot Auth directory and sign its requests. Arcjet Cloud
+uses the configured directory to verify the signatures. Directory URLs must be
+canonical, public HTTPS URLs. The Node, Fastify, Nest, and Next.js Pages API
+route adapters preserve the original request path when available, which is
+required for signatures covering `@path`. Adapters that only receive a parsed
+URL cannot supply that path, so Arcjet Cloud cannot verify those signatures.
+If you call the core SDK with
+request details directly, set `rawPath` only from the original request target,
+without parsing or normalization.
+
 ### `tokenBucket(options)`
 
 Token bucket rate limit. Ideal for controlling AI token budgets. Set `capacity`

@@ -48,5 +48,29 @@ test("explicit ipSrc overrides Next request address sources and is stripped", as
   );
 
   assert.equal(details.ip, "203.0.113.10");
+  assert.equal(details.rawPath, "/");
   assert.deepEqual(details.extra, {});
+
+  await client.protect(
+    {
+      headers: new Headers({ host: "example.com" }),
+      ip: "192.0.2.2",
+      method: "GET",
+      url: "/pages/%2F?x=1",
+    },
+    { ipSrc: "203.0.113.10" },
+  );
+  assert.equal(details.path, "/pages/%2F");
+  assert.equal(details.rawPath, "/pages/%2F");
+
+  await client.protect(
+    {
+      headers: new Headers({ host: "example.com" }),
+      ip: "192.0.2.2",
+      method: "GET",
+      url: "https://example.com/pages/%2F?x=1",
+    },
+    { ipSrc: "203.0.113.10" },
+  );
+  assert.equal(details.rawPath, undefined);
 });
