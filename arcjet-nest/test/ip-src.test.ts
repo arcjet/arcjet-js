@@ -81,13 +81,14 @@ test("explicit ipSrc overrides the Nest request address and is stripped", async 
       id: "fastify",
       ip: "192.0.2.1",
       method: "GET",
-      originalUrl: "/fastify-original/%2F?x=1",
-      raw: { url: "/fastify-rewritten?x=1" },
-      url: "/fastify-rewritten?x=1",
+      originalUrl: "/fastify-original/%2F?original=1",
+      raw: { url: "/fastify-rewritten?rewrite=1" },
+      url: "/fastify-rewritten?rewrite=1",
     },
     { ipSrc: "203.0.113.10" },
   );
-  assert.equal(details.path, "/fastify-original/%2F");
+  assert.equal(details.path, "/fastify-rewritten");
+  assert.equal(details.query, "?rewrite=1");
   assert.equal(details.rawPath, "/fastify-original/%2F");
 
   await client.protect(
