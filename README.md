@@ -421,8 +421,9 @@ detectBot({
 });
 ```
 
-For signed agents, `detectBot()` accepts `"CHATGPT_AGENT"`, `"BROWSERBASE"`, and
-`"MANUS_BOT"` from the [bot list](arcjet/README.md#signed-agents).
+For signed agents, `detectBot()` accepts catalog IDs with signing directories,
+including `"CHATGPT_AGENT"`, `"BROWSERBASE"`, `"YOU_CRAWLER"`, and
+`"OSANO_BOT"` from the [bot list](arcjet/README.md#signed-agents).
 These identify the signer independently of the User-Agent. For a custom bot,
 use `"SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory"`
 with its public signature directory. Arcjet Cloud verifies the signatures. The

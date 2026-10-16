@@ -134,6 +134,7 @@ export type ArcjetWellKnownBot =
   | "CLIQZ_CRAWLER"
   | "CLOUDFLARE_AI_SEARCH"
   | "CLOUDFLARE_ARCHIVER"
+  | "CLOUDFLARE_BROWSER_RUN"
   | "CLOUDFLARE_HEALTHCHECKS"
   | "CLOUDFLARE_PREFETCH"
   | "CLOUDFLARE_SECURITY_CENTER"
@@ -150,6 +151,7 @@ export type ArcjetWellKnownBot =
   | "COMPANYBOOK_CRAWLER"
   | "CONDUCTOR_CRAWLER"
   | "CONTENT_CRAWLER_SPIDER"
+  | "CONTEXT7_CRAWLER"
   | "CONTEXTAD_CRAWLER"
   | "CONTXBOT"
   | "CONVERA_CRAWLER"
@@ -183,6 +185,7 @@ export type ArcjetWellKnownBot =
   | "DEADLINKCHECKER"
   | "DEEPNOC_CRAWLER"
   | "DESKYO_BOT"
+  | "DETECTIFY"
   | "DEUSU_CRAWLER"
   | "DIFFBOT_CRAWLER"
   | "DIGG_CRAWLER"
@@ -281,6 +284,7 @@ export type ArcjetWellKnownBot =
   | "GIGABLAST_CRAWLER_OSS"
   | "GINGER_CRAWLER"
   | "GITHUB_CAMO"
+  | "GITHUB_HOOKSHOT"
   | "GLUTENFREEPLEASURE_CRAWLER"
   | "GNAM_GNAM_SPIDER"
   | "GNOWIT_CRAWLER"
@@ -410,6 +414,8 @@ export type ArcjetWellKnownBot =
   | "KAGI_CRAWLER"
   | "KAGI_FETCHER"
   | "KEMVI_CRAWLER"
+  | "KERNEL_AGENT"
+  | "KERNEL_SEARCH"
   | "KEYBASE_BOT"
   | "KIMI_BOT"
   | "KIMI_SEARCHBOT"
@@ -421,6 +427,7 @@ export type ArcjetWellKnownBot =
   | "L9EXPLORE"
   | "LAION_HUGGINGFACE_PROCESSOR"
   | "LANDAUMEDIA_CRAWLER"
+  | "LANE_AGENT"
   | "LASERLIKE_CRAWLER"
   | "LAW_UNIMI_CRAWLER"
   | "LB_SPIDER"
@@ -537,10 +544,12 @@ export type ArcjetWellKnownBot =
   | "NUZZEL_CRAWLER"
   | "OBSERVEPOINT_MONITOR"
   | "OCARINABOT"
+  | "OH_DEAR"
   | "OKRU_CRAWLER"
   | "OMGILI_CRAWLER"
   | "ONCRAWL"
   | "OPENAI_CRAWLER"
+  | "OPENAI_CRAWLER_ADS"
   | "OPENAI_CRAWLER_SEARCH"
   | "OPENAI_CRAWLER_USER"
   | "OPENGRAPHCHECK_CRAWLER"
@@ -549,6 +558,7 @@ export type ArcjetWellKnownBot =
   | "OPENTHEBOX_BOT"
   | "ORANGE_CRAWLER"
   | "ORANGE_FTGROUP_CRAWLER"
+  | "OSANO_BOT"
   | "OUTBRAIN_LINK_CHECKER"
   | "OUTCLICKS_CRAWLER"
   | "PAGE_TO_RSS"
@@ -604,6 +614,7 @@ export type ArcjetWellKnownBot =
   | "RANKACTIVE_CRAWLER"
   | "REDDIT_CRAWLER"
   | "REFIND_CRAWLER"
+  | "REFLECTIONBOT"
   | "REMCOSRAT_BOTNET"
   | "REPO_LOOKOUT_BOT"
   | "RETREVO_PAGE_ANALYZER"
@@ -626,6 +637,7 @@ export type ArcjetWellKnownBot =
   | "SCRIBD_CRAWLER"
   | "SCRITCH_CRAWLER"
   | "SCRUNCH_BOT"
+  | "SE_RANKING_CRAWLER"
   | "SEARCHATLAS_CRAWLER"
   | "SEEKBOT_CRAWLER"
   | "SEEKPORT_CRAWLER"
@@ -634,6 +646,7 @@ export type ArcjetWellKnownBot =
   | "SEMANTICSCHOLAR_CRAWLER"
   | "SEMPITECH_CRAWLER"
   | "SEMRUSH_CRAWLER"
+  | "SEMRUSH_SITE_AUDIT"
   | "SENTIONE_CRAWLER"
   | "SENTRY_CRAWLER"
   | "SENTRY_UPTIME_MONITOR"
@@ -649,6 +662,7 @@ export type ArcjetWellKnownBot =
   | "SERPSTATBOT_CRAWLER"
   | "SEZNAM_CRAWLER"
   | "SHAPBOT"
+  | "SHOPIFY_CLOUDSURF"
   | "SIMILARTECH_CRAWLER"
   | "SIMPLE_CRAWLER"
   | "SIRDATA_BOT"
@@ -884,6 +898,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "MSN_CRAWLER",
     "NANOINTERACTIVE_CRAWLER",
     "NETSEER_CRAWLER",
+    "OPENAI_CRAWLER_ADS",
     "PRODUCTSUP_CRAWLER",
     "QUANTCAST_CRAWLER",
     "SCOPE3_CRAWLER",
@@ -919,6 +934,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "CLOUDFLARE_AI_SEARCH",
     "COHERE_CRAWLER",
     "COMMONCRAWL_CRAWLER",
+    "CONTEXT7_CRAWLER",
     "CRAWL4AI",
     "CRAWLSPACE",
     "DIFFBOT_CRAWLER",
@@ -968,6 +984,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "PHIND_BOT",
     "PRIMAL_CRAWLER",
     "PYTHON_SCRAPY",
+    "REFLECTIONBOT",
     "SAFEDNS_CRAWLER",
     "SBINTUITIONS_BOT",
     "SEARCHATLAS_CRAWLER",
@@ -1180,6 +1197,8 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "NIXSTATS_CRAWLER",
     "NOAH_BOT",
     "OBSERVEPOINT_MONITOR",
+    "OH_DEAR",
+    "OSANO_BOT",
     "OUTBRAIN_LINK_CHECKER",
     "PAGEPEEKER_CRAWLER",
     "PINGDOM_CRAWLER",
@@ -1251,8 +1270,11 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "REPO_LOOKOUT_BOT",
     "RETROLISTE_CRAWLER",
     "SCREAMINGFROG_CRAWLER",
+    "SE_RANKING_CRAWLER",
+    "SEMRUSH_SITE_AUDIT",
     "SISTRIX_CRAWLER",
     "SITEBULB",
+    "SITEIMPROVE_CRAWLER",
     "STATUSNEST_CRAWLER",
     "TESTOMATO_CRAWLER",
     "UAS_LINK_CHECKER",
@@ -1350,6 +1372,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "AZURE_AI_SEARCHBOT",
     "BING_CRAWLER",
     "BING_OFFICE_STORE",
+    "CONTEXT7_CRAWLER",
     "DUCKASSIST_BOT",
     "DUCKDUCKGO_CRAWLER",
     "DUCKDUCKGO_CRAWLER_FAVICONS",
@@ -1375,6 +1398,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "JOBSWITHGPT_BOT",
     "KAGI_CRAWLER",
     "KAGI_FETCHER",
+    "KERNEL_SEARCH",
     "KIMI_SEARCHBOT",
     "LINGUEE_CRAWLER",
     "LYONL_CRAWLER",
@@ -1402,6 +1426,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "YAHOO_CRAWLER",
     "YANDEX_CRAWLER",
     "YANDEX_CRAWLER_JAVASCRIPT",
+    "YOU_CRAWLER",
     "ZANISTA_BOT",
     "ZEAL_BOT",
   ]),
@@ -1449,11 +1474,13 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
   "CATEGORY:TOOL": Object.freeze<ArcjetWellKnownBot[]>([
     "AMAZON_BEDROCK_AGENTCORE_BROWSER",
     "BROWSERBASE",
+    "CLOUDFLARE_BROWSER_RUN",
     "COOKIEHUB_SCAN",
     "CRAWLSPACE",
     "CURL",
     "CYPRESS",
     "DCRAWL",
+    "DETECTIFY",
     "DOMAINSPROJECT_CRAWLER",
     "FIRECRAWL_AGENT",
     "GHOST_INSPECTOR",
@@ -1465,7 +1492,9 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "IMG2DATASET",
     "INTERNETARCHIVE_CRAWLER_OSS",
     "IPIP_CRAWLER",
+    "KERNEL_AGENT",
     "L9EXPLORE",
+    "LANE_AGENT",
     "LAW_UNIMI_CRAWLER",
     "LINKCHECKER_PRO",
     "NAGIOS_CHECK_HTTP",
@@ -1473,7 +1502,11 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "NUTCH",
     "ONCRAWL",
     "POSTMAN",
+    "SE_RANKING_CRAWLER",
+    "SEMRUSH_SITE_AUDIT",
+    "SHOPIFY_CLOUDSURF",
     "SITEBULB",
+    "SITEIMPROVE_CRAWLER",
     "SUMMALY_CRAWLER",
     "TRAFILATURA",
     "WGET",
@@ -1747,7 +1780,6 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "SITEBOT_CRAWLER",
     "SITECHECKER_CRAWLER",
     "SITEEXPLORER_CRAWLER",
-    "SITEIMPROVE_CRAWLER",
     "SOCIALRANK_CRAWLER",
     "SOFTBYTELABS_CRAWLER",
     "SOGOU_CRAWLER",
@@ -1821,7 +1853,11 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "VERCEL_CRAWLER",
     "VERCEL_MONITOR_PREVIEW",
   ]),
-  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>(["ADYEN_WEBHOOK", "STRIPE_WEBHOOK"]),
+  "CATEGORY:WEBHOOK": Object.freeze<ArcjetWellKnownBot[]>([
+    "ADYEN_WEBHOOK",
+    "GITHUB_HOOKSHOT",
+    "STRIPE_WEBHOOK",
+  ]),
   "CATEGORY:YAHOO": Object.freeze<ArcjetWellKnownBot[]>([
     "YAHOO_AD_MONITORING",
     "YAHOO_CRAWLER",
