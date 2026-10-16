@@ -100,6 +100,8 @@ detectBot({
     "CHATGPT_AGENT",
     "BROWSERBASE",
     "MANUS_BOT",
+    "YOU_CRAWLER",
+    "OSANO_BOT",
   ],
 });
 ```

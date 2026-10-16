@@ -350,6 +350,16 @@ test("`arcjet`", async function (t) {
         for (const allowedBot of [
           "CHATGPT_AGENT",
           "CATEGORY:GOOGLE",
+          "YOU_CRAWLER",
+          "EXA_SEARCHBOT",
+          "CONTEXT7_CRAWLER",
+          "SHOPIFY_CLOUDSURF",
+          "KERNEL_AGENT",
+          "KERNEL_SEARCH",
+          "OSANO_BOT",
+          "CLOUDFLARE_BROWSER_RUN",
+          "LANE_AGENT",
+          "CATEGORY:MONITOR",
           "SIGNED_BOT:https://signed.example.com/.well-known/http-message-signatures-directory",
         ] as const) {
           let remoteCalls = 0;
