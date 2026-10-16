@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...v1.15.0) (2026-10-16)
+
+
+### 🚀 New Features
+
+* Support Web Bot Auth and SIGNED_BOT policies ([#6326](https://github.com/arcjet/arcjet-js/issues/6326)) ([54b675b](https://github.com/arcjet/arcjet-js/commit/54b675b810cc867adab99335252662520292a42a))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** return ERROR for missing or empty API key on protect ([#6330](https://github.com/arcjet/arcjet-js/issues/6330)) ([6d3d18d](https://github.com/arcjet/arcjet-js/commit/6d3d18d53a89e52184d4348a427410f4d72edc92))
+* validate characteristics at client construction ([#6329](https://github.com/arcjet/arcjet-js/issues/6329)) ([fb48086](https://github.com/arcjet/arcjet-js/commit/fb48086585aa9908ed86d75f67697617a772b2a4))
+
+
+### ✅ Continuous Integration
+
+* **publish:** wait for npm to show dist-tags against one deadline ([#6317](https://github.com/arcjet/arcjet-js/issues/6317)) ([d76c7e6](https://github.com/arcjet/arcjet-js/commit/d76c7e6e38fbc7b4b490995e8d57ff5533ed0e0a))
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...v1.14.1) (2026-10-06)
 
 
