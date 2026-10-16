@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/guard-v1.15.0) (2026-10-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/guard:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.14.1 to 1.15.0
+    * @arcjet/logger bumped from 1.14.1 to 1.15.0
+    * @arcjet/transport bumped from 1.14.1 to 1.15.0
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/guard-v1.14.1) (2026-10-06)
 
 
