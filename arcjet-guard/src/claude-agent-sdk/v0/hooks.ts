@@ -16,13 +16,20 @@ import {
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
 import { captureEvent, shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
-import { deniedReason, unavailableReason } from "../../agents/denial.ts";
+import {
+  deniedReason,
+  denialResult,
+  unavailableReason,
+  unavailableResult,
+} from "../../agents/denial.ts";
+import type { ArcjetDenialResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
 import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
 import { claudeAgentContext } from "./context.ts";
 import type { ClaudeContextSource } from "./context.ts";
 import { runGate } from "./gate.ts";
+import { canReplaceResult, replacementOutput, toolResultText } from "./tool-results.ts";
 
 /**
  * Input passed to `rules` / `metadata` / `action` callbacks on `guardHooks`
@@ -72,6 +79,54 @@ export interface GuardHooksInboundPolicy {
 }
 
 /**
+ * Input passed to `toolResults` callbacks: the tool call plus what it returned.
+ */
+export interface GuardHooksToolResult extends GuardHooksCall {
+  /** The tool's result as the hook reports it, unchanged. */
+  response: unknown;
+  /**
+   * The result's text: MCP text blocks in order, Bash's `stdout` and
+   * `stderr`, Read's file content, or the whole result as JSON. Never
+   * shortened.
+   */
+  text: string;
+}
+
+/**
+ * Result screen for `PostToolUse`: Guard runs over each tool's result before
+ * the model reads it.
+ *
+ * On DENY, or an unevaluated policy under the default `onGuardError: "deny"`,
+ * an MCP tool or a tool in {@link REPLACEABLE_BUILTIN_TOOLS} has its result
+ * replaced with the denial envelope through `updatedToolOutput`. Any other
+ * tool's replacement would be rejected by the CLI, which then sends the
+ * original result, so the run stops with `continue: false` instead. A stopped
+ * session still holds the original result and must not be resumed.
+ */
+export interface GuardHooksToolResultsPolicy {
+  /** Guard label and capture action. Defaults to `"tool.result"`. */
+  action?: string | ((result: GuardHooksToolResult) => string);
+  /**
+   * Rules to screen the result with. Required, and a function, because a rule
+   * has to be bound to text the tool has not returned yet.
+   */
+  rules: (result: GuardHooksToolResult) => RuleWithInput[];
+  /**
+   * Trusted actor identity, or a resolver `(result, hookInput) => …` matching
+   * Claude `PostToolUse`. No remote-policy inputs are sent: they belong to the
+   * call's own gate.
+   */
+  actor?: ActorResolver<[GuardHooksToolResult, PostToolUseHookInput]>;
+  /** Metadata merged over the derived Claude context. */
+  metadata?: ArcjetMetadata | ((result: GuardHooksToolResult) => ArcjetMetadata);
+  /**
+   * How to respond when the screen is unavailable. Defaults to the policy's
+   * `onGuardError`, then `"deny"`.
+   */
+  onGuardError?: OnGuardError;
+}
+
+/**
  * A tool `PreToolUse` must not gate, because `guardTool` already guards it.
  *
  * Either the exact name the hook reports (`"Bash"`,
@@ -85,7 +140,8 @@ export type GuardHooksExclusion = string | { server: string; name: string };
 
 /**
  * Policy for `guardHooks()` — PreToolUse (deny unwrapped / built-in tools),
- * UserPromptSubmit (inbound), and PostToolUse (capture only).
+ * UserPromptSubmit (inbound), and PostToolUse (capture, plus the result screen
+ * when `toolResults` is set).
  *
  * ## Screen inbound with UserPromptSubmit
  *
@@ -103,8 +159,9 @@ export type GuardHooksExclusion = string | { server: string; name: string };
  *
  * Built-ins (Bash, Write, …) and MCP tools you did not pass through
  * `guardTool` are gated here with `permissionDecision: "deny"`. A timeout
- * already fail-closes (the tool does not run). PostToolUse is capture only.
- * Annotations and sandbox settings are not enforcement.
+ * already fail-closes (the tool does not run). PostToolUse captures every
+ * call and blocks nothing unless `toolResults` is set. Annotations and
+ * sandbox settings are not enforcement.
  */
 export interface GuardHooksPolicy {
   /**
@@ -166,6 +223,11 @@ export interface GuardHooksPolicy {
   exclude?: readonly GuardHooksExclusion[];
   /** Inbound screen on `UserPromptSubmit`. Defaults to action `"message.received"`. */
   inbound?: GuardHooksInboundPolicy;
+  /**
+   * Result screen on `PostToolUse`. Not skipped by `exclude`, so a tool
+   * wrapped with `guardTool({ resultRules })` is screened twice.
+   */
+  toolResults?: GuardHooksToolResultsPolicy;
 }
 
 /**
@@ -245,13 +307,39 @@ function userPromptBlock(reason: string): HookJSONOutput {
 }
 
 /**
+ * Keep a denied result from the model: replace it where the CLI accepts a
+ * replacement, and stop the run everywhere else.
+ */
+function postToolUseDenial(
+  toolName: string,
+  response: unknown,
+  payload: ArcjetDenialResult,
+): HookJSONOutput {
+  const replacement = replacementOutput(toolName, response, JSON.stringify(payload));
+  if (replacement === undefined) {
+    return { continue: false, stopReason: payload.message };
+  }
+  return {
+    hookSpecificOutput: { hookEventName: "PostToolUse", updatedToolOutput: replacement },
+  };
+}
+
+function fallbackResultAction(policy: GuardHooksToolResultsPolicy): string {
+  return typeof policy.action === "string" && policy.action.length > 0
+    ? policy.action
+    : "tool.result";
+}
+
+/**
  * Claude Agent SDK hooks that screen inbound prompts and gate unwrapped tools.
  *
  * Registers three events:
  * - `UserPromptSubmit` — inbound screen. DENY is `{ decision: "block" }`.
  * - `PreToolUse` — the only deny for built-ins and unwrapped MCP. DENY is
  *   `permissionDecision: "deny"`.
- * - `PostToolUse` — capture only; never blocks.
+ * - `PostToolUse` — capture; with `toolResults`, also screens each tool's
+ *   result and keeps a denied one from the model (see
+ *   {@link GuardHooksToolResultsPolicy}).
  *
  * Use this for tools you did not pass through `guardTool`. Do not also wrap
  * the same authored tool with `@arcjet/guard/vercel-ai/v7`. Do not put
@@ -303,6 +391,17 @@ export function guardHooks(
     assertValidAction(policy.inbound.action, "guardHooks inbound");
   }
   const inboundPolicy: GuardHooksInboundPolicy = policy.inbound ?? {};
+  const resultsPolicy = policy.toolResults;
+  if (resultsPolicy !== undefined) {
+    if (typeof resultsPolicy.rules !== "function") {
+      throw new TypeError(
+        "@arcjet/guard: guardHooks toolResults.rules must be a function of the tool's result, since a rule has to be bound to text the tool has not returned yet",
+      );
+    }
+    if (typeof resultsPolicy.action === "string" && resultsPolicy.action !== "") {
+      assertValidAction(resultsPolicy.action, "guardHooks toolResults");
+    }
+  }
 
   const preToolUse: HookCallback = async (input): Promise<HookJSONOutput> => {
     try {
@@ -412,7 +511,7 @@ export function guardHooks(
     }
   };
 
-  const postToolUse: HookCallback = (input): Promise<HookJSONOutput> => {
+  const capturePostToolUse = (input: Parameters<HookCallback>[0]): void => {
     try {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- this matcher is registered only on PostToolUse
       const hookInput = input as PostToolUseHookInput;
@@ -456,7 +555,78 @@ export function guardHooks(
     } catch {
       // Never throw from a hook
     }
-    return Promise.resolve({});
+  };
+
+  const screenToolResult = async (
+    input: Parameters<HookCallback>[0],
+    results: GuardHooksToolResultsPolicy,
+  ): Promise<HookJSONOutput> => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- this matcher is registered only on PostToolUse
+    const hookInput = input as PostToolUseHookInput;
+    const toolName = stringField(hookInput.tool_name);
+    const response: unknown = hookInput.tool_response;
+    const onGuardError = results.onGuardError ?? policy.onGuardError ?? "deny";
+    try {
+      const result: GuardHooksToolResult = {
+        toolName,
+        input: hookInput.tool_input,
+        response,
+        text: toolResultText(toolName, response),
+      };
+      const resolved = resolveCallPolicy(results, result, fallbackResultAction(results));
+      const source = isContextSource(hookInput) ? hookInput : undefined;
+      const agentCtx = claudeAgentContext(
+        source,
+        policy.sessionId === undefined ? undefined : { sessionId: policy.sessionId },
+      );
+      const metadata: ArcjetMetadata = {
+        ...agentCtx.metadata,
+        "claude.phase": "result",
+        ...(toolName.length > 0 && { "claude.tool": toolName }),
+        ...resolved.metadata,
+      };
+      const remote = await resolveActorInputs(
+        results.actor === undefined ? {} : { actor: results.actor },
+        resolved.action,
+        result,
+        hookInput,
+      );
+
+      return await runGate<HookJSONOutput>(client, {
+        action: resolved.action,
+        rules: resolved.rules,
+        correlationId: agentCtx.correlationId,
+        metadata,
+        denialMetadata: {
+          "claude.denial": canReplaceResult(toolName) ? "replaced" : "run_stopped",
+        },
+        degraded: resolved.degraded ?? remote.degraded,
+        ...remote.fields,
+        onAllow: () => ({}),
+        onDeny: (decision) => postToolUseDenial(toolName, response, denialResult(decision)),
+        onUnavailable: () => postToolUseDenial(toolName, response, unavailableResult()),
+        onGuardError,
+      });
+    } catch (error) {
+      if (shouldWarn()) {
+        console.warn(
+          "@arcjet/guard: guardHooks PostToolUse screen threw; keeping the result from the model:",
+          error,
+        );
+      }
+      if (onGuardError === "allow") {
+        return {};
+      }
+      return postToolUseDenial(toolName, response, unavailableResult());
+    }
+  };
+
+  const postToolUse: HookCallback = async (input): Promise<HookJSONOutput> => {
+    capturePostToolUse(input);
+    if (resultsPolicy === undefined) {
+      return {};
+    }
+    return await screenToolResult(input, resultsPolicy);
   };
 
   return {

@@ -57,6 +57,12 @@ export async function runGate<T>(
     rules: RuleWithInput[] | undefined;
     correlationId: string | undefined;
     metadata: ArcjetMetadata;
+    /**
+     * Merged into the capture of every outcome that is not an allow — a deny,
+     * or an unevaluated policy failing closed — for a caller whose response to
+     * those differs from its response to an allow.
+     */
+    denialMetadata?: ArcjetMetadata;
     actor?: string;
     inputs?: PolicyInputMap;
     degraded?: Error | undefined;
@@ -75,6 +81,7 @@ export async function runGate<T>(
     rules,
     correlationId,
     metadata,
+    denialMetadata,
     degraded,
     onAllow,
     onDeny,
@@ -114,7 +121,7 @@ export async function runGate<T>(
       captureEvent(client, {
         action,
         ...correlation,
-        metadata: { ...metadata, outcome: "unavailable" },
+        metadata: { ...metadata, ...denialMetadata, outcome: "unavailable" },
       });
       return onUnavailable({ kind: "threw", error });
     }
@@ -146,7 +153,7 @@ export async function runGate<T>(
         action,
         ...correlation,
         ...(decisionId !== undefined && { decisionId }),
-        metadata: { ...metadata, outcome: "unavailable" },
+        metadata: { ...metadata, ...denialMetadata, outcome: "unavailable" },
       });
       return onUnavailable({ kind: "failed-open", decision });
     }
@@ -164,7 +171,7 @@ export async function runGate<T>(
         action,
         ...correlation,
         ...(decisionId !== undefined && { decisionId }),
-        metadata: { ...metadata, outcome: "unavailable" },
+        metadata: { ...metadata, ...denialMetadata, outcome: "unavailable" },
       });
       return onUnavailable({ kind: "failed-open", decision });
     }
@@ -178,7 +185,7 @@ export async function runGate<T>(
         action,
         ...correlation,
         ...(decisionId !== undefined && { decisionId }),
-        metadata: { ...metadata, outcome: "denied" },
+        metadata: { ...metadata, ...denialMetadata, outcome: "denied" },
       });
       return onDeny(decision);
     }
@@ -191,7 +198,7 @@ export async function runGate<T>(
         action,
         ...correlation,
         ...(decisionId !== undefined && { decisionId }),
-        metadata: { ...metadata, outcome: "unavailable" },
+        metadata: { ...metadata, ...denialMetadata, outcome: "unavailable" },
       });
       return onUnavailable({ kind: "threw", error: degraded });
     }
