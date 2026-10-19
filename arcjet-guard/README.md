@@ -949,9 +949,7 @@ Currently available:
   ```
 
 - **`@arcjet/guard/claude-agent-sdk/v0`** — Claude Agent SDK v0 integration.
-  Exports `guardTool`, `guardHooks`, and `claudeAgentContext`, plus
-  `REPLACEABLE_BUILTIN_TOOLS` and `canReplaceResult` for the tool-result
-  screen (`guardTool({ resultRules })`, `guardHooks({ toolResults })`). There is no
+  Exports `guardTool`, `guardHooks`, and `claudeAgentContext`. There is no
   `guardInbound` (inbound is `UserPromptSubmit` on `guardHooks`) and no
   `canUseTool` helper (`canUseTool` is skipped by `allowedTools`, allow
   rules, and `bypassPermissions` / `acceptEdits`):

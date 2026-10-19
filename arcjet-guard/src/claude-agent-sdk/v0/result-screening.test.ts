@@ -102,6 +102,18 @@ test("guardTool resultRules: rules receive the input, the result and its text", 
   assert.equal(seen[0]?.text, "page body for https://example.com");
 });
 
+test("guardTool resultRules: onDeny shapes a result denial too", async () => {
+  const { client } = sequencedClient(decisionAllow(), decisionDenyPromptInjection());
+  const tool = guardTool(client, fetchTool([]), {
+    action: "page.fetched",
+    resultRules: screenText(),
+    onDeny: () => ({ blocked: "by-result-screen" }),
+  });
+  const result = (await tool.handler({ url: "https://example.com" }, {})) as ClaudeCallToolResult;
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent?.["blocked"], "by-result-screen");
+});
+
 test("guardTool resultRules: resultAction overrides the label", async () => {
   const { client, guardCalls } = stubClient(decisionAllow());
   const tool = guardTool(client, fetchTool([]), {
@@ -217,9 +229,7 @@ function runPostToolUse(
 ): Promise<Record<string, unknown>> {
   const hook: HookCallback | undefined = hooks.PostToolUse?.[0]?.hooks[0];
   assert.ok(hook !== undefined);
-  return hook(input, "tu-1", { signal: new AbortController().signal }) as Promise<
-    Record<string, unknown>
-  >;
+  return hook(input, "tu-1", { signal: new AbortController().signal });
 }
 
 function screen(seen?: GuardHooksToolResult[]) {

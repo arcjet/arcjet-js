@@ -610,7 +610,9 @@ export function guardHooks(
     } catch (error) {
       if (shouldWarn()) {
         console.warn(
-          "@arcjet/guard: guardHooks PostToolUse screen threw; keeping the result from the model:",
+          onGuardError === "allow"
+            ? "@arcjet/guard: guardHooks PostToolUse screen threw; the result reaches the model because onGuardError is 'allow':"
+            : "@arcjet/guard: guardHooks PostToolUse screen threw; keeping the result from the model:",
           error,
         );
       }
@@ -621,12 +623,12 @@ export function guardHooks(
     }
   };
 
-  const postToolUse: HookCallback = async (input): Promise<HookJSONOutput> => {
+  const postToolUse: HookCallback = (input): Promise<HookJSONOutput> => {
     capturePostToolUse(input);
     if (resultsPolicy === undefined) {
-      return {};
+      return Promise.resolve({});
     }
-    return await screenToolResult(input, resultsPolicy);
+    return screenToolResult(input, resultsPolicy);
   };
 
   return {

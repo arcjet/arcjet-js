@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/explicit-function-return-type, eslint/require-await -- test infrastructure and mocks
+// oxlint-disable eslint/no-unsafe-type-assertion, eslint/require-await -- test infrastructure and mocks
 /**
  * `guardHooks({ toolResults })` through the CLI bundled with
  * `@anthropic-ai/claude-agent-sdk`.
@@ -99,7 +99,8 @@ async function run(
     let raw = "";
     req.on("data", (chunk: Buffer) => (raw += chunk.toString()));
     req.on("end", () => {
-      if (!req.url?.startsWith("/v1/messages") || req.url.includes("count_tokens")) {
+      const url = req.url ?? "";
+      if (!url.startsWith("/v1/messages") || url.includes("count_tokens")) {
         res.writeHead(200, { "content-type": "application/json" });
         res.end('{"input_tokens": 1}');
         return;
@@ -167,7 +168,11 @@ async function run(
       void _message;
     }
   } finally {
-    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await new Promise<void>((resolve) => {
+      server.close(() => {
+        resolve();
+      });
+    });
   }
   return recorded;
 }

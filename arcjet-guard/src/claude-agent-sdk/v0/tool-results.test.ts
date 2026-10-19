@@ -14,7 +14,7 @@ test("canReplaceResult: MCP tools and the listed built-ins", () => {
   assert.equal(canReplaceResult(MCP_NAME), true);
   assert.equal(canReplaceResult("Bash"), true);
   assert.equal(canReplaceResult("Read"), true);
-  assert.deepEqual([...REPLACEABLE_BUILTIN_TOOLS].toSorted(), ["Bash", "Read"]);
+  assert.deepEqual(REPLACEABLE_BUILTIN_TOOLS, new Set(["Bash", "Read"]));
 });
 
 test("canReplaceResult: everything else", () => {
@@ -88,10 +88,10 @@ test("replacementOutput: Read keeps the file path", () => {
     type: "text",
     file: { filePath: "/repo/a.md", content: "DENIED", numLines: 1, startLine: 1, totalLines: 1 },
   });
-  const pathless = replacementOutput("Read", { type: "image" }, "DENIED") as {
-    file: { filePath: string };
-  };
-  assert.equal(pathless.file.filePath, "");
+  assert.deepEqual(replacementOutput("Read", { type: "image" }, "DENIED"), {
+    type: "text",
+    file: { filePath: "", content: "DENIED", numLines: 1, startLine: 1, totalLines: 1 },
+  });
 });
 
 test("replacementOutput: undefined for tools outside the table", () => {

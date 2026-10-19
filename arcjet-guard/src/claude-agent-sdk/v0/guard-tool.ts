@@ -94,6 +94,8 @@ export interface GuardToolPolicy<TInput> {
    * Return a `CallToolResult` (`isError: true` recommended) or a plain
    * object, which is placed on `structuredContent`. Unavailable guards take
    * the `onUnavailable` path instead; this callback does not fire for outages.
+   * It also shapes a `resultRules` denial, so the model sees one denial shape
+   * for this tool whichever check denied.
    */
   onDeny?: (decision: DecisionDeny) => unknown;
   /**
@@ -284,7 +286,7 @@ export function guardTool<TTool extends ClaudeToolDefinition<any>>(
       { input, result: returned, text: callToolResultText(returned) },
       resultAction,
     );
-    return await runGuarded<ClaudeCallToolResult>(client, {
+    return runGuarded<ClaudeCallToolResult>(client, {
       action: resultAction,
       rules: screened.rules,
       correlationId: agentCtx.correlationId,
