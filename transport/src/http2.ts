@@ -13,7 +13,7 @@
  * the direct path.
  */
 
-import type { ClientSessionOptions, SecureClientSessionOptions } from "node:http2";
+import type { ClientSessionOptions, Http2Session, SecureClientSessionOptions } from "node:http2";
 
 import type { Transport } from "@connectrpc/connect";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
@@ -60,7 +60,7 @@ export function createHttp2Transport(
   baseUrl: string,
   http2SessionOptions?: Http2ConnectOptions,
 ): Http2TransportHandle {
-  const sessionManager = new Http2SessionManager(
+  const sessionManager = new GuardedHttp2SessionManager(
     baseUrl,
     {
       // Detect and survive silently dropped connections:
@@ -109,4 +109,105 @@ export function createHttp2Transport(
   );
 
   return { transport, sessionManager };
+}
+
+/**
+ * Session manager whose sessions cannot raise an uncaught exception once they
+ * are destroyed.
+ *
+ * `Http2SessionManager` destroys a session with an error when a PING times out
+ * or a GOAWAY arrives on an idle connection, and Node emits that `error` event
+ * once the socket has closed. If a request replaces the session or the idle
+ * timeout fires before then, the manager has already removed its `error`
+ * listener, so Node throws the error as an uncaught exception. Its keep-alive
+ * timer can also call `ping()` on a session that is already destroyed, which
+ * throws synchronously. Both happen when a serverless runtime thaws a frozen
+ * instance and every overdue timer and pending socket event runs at once.
+ *
+ * {@linkcode guardSession} guards each session that `connect()` opens or that
+ * serves a request.
+ */
+class GuardedHttp2SessionManager extends Http2SessionManager {
+  override async connect(): ReturnType<Http2SessionManager["connect"]> {
+    const state = await super.connect();
+    const session = currentSession(this);
+    if (session !== undefined) {
+      guardSession(session);
+    }
+    return state;
+  }
+
+  override async request(
+    ...parameters: Parameters<Http2SessionManager["request"]>
+  ): ReturnType<Http2SessionManager["request"]> {
+    const stream = await super.request(...parameters);
+    if (stream.session !== undefined) {
+      guardSession(stream.session);
+    }
+    return stream;
+  }
+}
+
+/**
+ * The ready session `manager` currently holds.
+ *
+ * `Http2SessionManager` exposes no accessor for the session that `connect()`
+ * opens, so this reads its private `s` field. If that field is missing or has
+ * another shape, it returns `undefined`, and the session is guarded by the
+ * first request that uses it.
+ *
+ * @param manager Session manager to read.
+ * @returns The ready session, or `undefined`.
+ */
+function currentSession(manager: Http2SessionManager): Http2Session | undefined {
+  const state: unknown = Reflect.get(manager, "s");
+  if (typeof state !== "object" || state === null) {
+    return undefined;
+  }
+  const { t, conn } = state as { t?: unknown; conn?: unknown };
+  if (
+    t !== "ready" ||
+    typeof conn !== "object" ||
+    conn === null ||
+    !("ping" in conn) ||
+    typeof conn.ping !== "function" ||
+    !("on" in conn) ||
+    typeof conn.on !== "function"
+  ) {
+    return undefined;
+  }
+  return conn as Http2Session;
+}
+
+const guardedSessions = new WeakSet<Http2Session>();
+
+/**
+ * Keep a no-op `error` listener on `session` for its whole life, and make
+ * `ping()` on it a no-op once it is destroyed.
+ *
+ * The manager's own listener still receives every error while it is
+ * attached; this one only stops Node from treating an error as unhandled
+ * after the manager has let go of the session.
+ *
+ * @param session Session the manager opened or used for a request.
+ */
+function guardSession(session: Http2Session): void {
+  if (guardedSessions.has(session)) {
+    return;
+  }
+  guardedSessions.add(session);
+
+  session.on("error", () => {});
+
+  const ping = session.ping.bind(session);
+  Object.defineProperty(session, "ping", {
+    configurable: true,
+    value(...parameters: Parameters<typeof ping>): boolean {
+      if (session.destroyed) {
+        return false;
+      }
+      return ping(...parameters);
+    },
+    writable: true,
+  });
 }
