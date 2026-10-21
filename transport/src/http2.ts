@@ -13,7 +13,7 @@
  * the direct path.
  */
 
-import type { ClientSessionOptions, SecureClientSessionOptions } from "node:http2";
+import type { ClientSessionOptions, Http2Session, SecureClientSessionOptions } from "node:http2";
 
 import type { Transport } from "@connectrpc/connect";
 import { createConnectTransport, Http2SessionManager } from "@connectrpc/connect-node";
@@ -60,7 +60,7 @@ export function createHttp2Transport(
   baseUrl: string,
   http2SessionOptions?: Http2ConnectOptions,
 ): Http2TransportHandle {
-  const sessionManager = new Http2SessionManager(
+  const sessionManager = new GuardedHttp2SessionManager(
     baseUrl,
     {
       // Detect and survive silently dropped connections:
@@ -109,4 +109,66 @@ export function createHttp2Transport(
   );
 
   return { transport, sessionManager };
+}
+
+/**
+ * Session manager whose sessions cannot raise an uncaught exception once they
+ * are destroyed.
+ *
+ * `Http2SessionManager` destroys a session with an error when a PING times out
+ * or a GOAWAY arrives on an idle connection, and Node emits that `error` event
+ * on a later tick. If a request replaces the session before then, the manager
+ * has already removed its `error` listener, so Node throws the error as an
+ * uncaught exception. Its keep-alive timer can also call `ping()` on a session
+ * that is already destroyed, which throws synchronously. Both happen when a
+ * serverless runtime thaws a frozen instance and every overdue timer and
+ * pending socket event runs in the same pass.
+ *
+ * Each session that serves a request is guarded by {@linkcode guardSession}.
+ * A session opened by the optimistic pre-connect is guarded by the first
+ * request that uses it.
+ */
+class GuardedHttp2SessionManager extends Http2SessionManager {
+  override async request(
+    ...parameters: Parameters<Http2SessionManager["request"]>
+  ): ReturnType<Http2SessionManager["request"]> {
+    const stream = await super.request(...parameters);
+    if (stream.session !== undefined) {
+      guardSession(stream.session);
+    }
+    return stream;
+  }
+}
+
+const guardedSessions = new WeakSet<Http2Session>();
+
+/**
+ * Keep a no-op `error` listener on `session` for its whole life, and make
+ * `ping()` on it a no-op once it is destroyed.
+ *
+ * The manager's own listener still receives every error while it is
+ * attached; this one only stops Node from treating an error as unhandled
+ * after the manager has let go of the session.
+ *
+ * @param session Session that served a request.
+ */
+function guardSession(session: Http2Session): void {
+  if (guardedSessions.has(session)) {
+    return;
+  }
+  guardedSessions.add(session);
+
+  session.on("error", () => {});
+
+  const ping = session.ping.bind(session);
+  Object.defineProperty(session, "ping", {
+    configurable: true,
+    value(...parameters: Parameters<typeof ping>): boolean {
+      if (session.destroyed) {
+        return false;
+      }
+      return ping(...parameters);
+    },
+    writable: true,
+  });
 }
