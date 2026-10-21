@@ -117,18 +117,26 @@ export function createHttp2Transport(
  *
  * `Http2SessionManager` destroys a session with an error when a PING times out
  * or a GOAWAY arrives on an idle connection, and Node emits that `error` event
- * on a later tick. If a request replaces the session before then, the manager
- * has already removed its `error` listener, so Node throws the error as an
- * uncaught exception. Its keep-alive timer can also call `ping()` on a session
- * that is already destroyed, which throws synchronously. Both happen when a
- * serverless runtime thaws a frozen instance and every overdue timer and
- * pending socket event runs in the same pass.
+ * once the socket has closed. If a request replaces the session or the idle
+ * timeout fires before then, the manager has already removed its `error`
+ * listener, so Node throws the error as an uncaught exception. Its keep-alive
+ * timer can also call `ping()` on a session that is already destroyed, which
+ * throws synchronously. Both happen when a serverless runtime thaws a frozen
+ * instance and every overdue timer and pending socket event runs at once.
  *
- * Each session that serves a request is guarded by {@linkcode guardSession}.
- * A session opened by the optimistic pre-connect is guarded by the first
- * request that uses it.
+ * {@linkcode guardSession} guards each session that `connect()` opens or that
+ * serves a request.
  */
 class GuardedHttp2SessionManager extends Http2SessionManager {
+  override async connect(): ReturnType<Http2SessionManager["connect"]> {
+    const state = await super.connect();
+    const session = currentSession(this);
+    if (session !== undefined) {
+      guardSession(session);
+    }
+    return state;
+  }
+
   override async request(
     ...parameters: Parameters<Http2SessionManager["request"]>
   ): ReturnType<Http2SessionManager["request"]> {
@@ -138,6 +146,37 @@ class GuardedHttp2SessionManager extends Http2SessionManager {
     }
     return stream;
   }
+}
+
+/**
+ * The ready session `manager` currently holds.
+ *
+ * `Http2SessionManager` exposes no accessor for the session that `connect()`
+ * opens, so this reads its private `s` field. If that field is missing or has
+ * another shape, it returns `undefined`, and the session is guarded by the
+ * first request that uses it.
+ *
+ * @param manager Session manager to read.
+ * @returns The ready session, or `undefined`.
+ */
+function currentSession(manager: Http2SessionManager): Http2Session | undefined {
+  const state: unknown = Reflect.get(manager, "s");
+  if (typeof state !== "object" || state === null) {
+    return undefined;
+  }
+  const { t, conn } = state as { t?: unknown; conn?: unknown };
+  if (
+    t !== "ready" ||
+    typeof conn !== "object" ||
+    conn === null ||
+    !("ping" in conn) ||
+    typeof conn.ping !== "function" ||
+    !("on" in conn) ||
+    typeof conn.on !== "function"
+  ) {
+    return undefined;
+  }
+  return conn as Http2Session;
 }
 
 const guardedSessions = new WeakSet<Http2Session>();
@@ -150,7 +189,7 @@ const guardedSessions = new WeakSet<Http2Session>();
  * attached; this one only stops Node from treating an error as unhandled
  * after the manager has let go of the session.
  *
- * @param session Session that served a request.
+ * @param session Session the manager opened or used for a request.
  */
 function guardSession(session: Http2Session): void {
   if (guardedSessions.has(session)) {

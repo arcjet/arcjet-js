@@ -44,6 +44,42 @@ async function requestSession(handle: Handle): Promise<http2.ClientHttp2Session>
   return session as http2.ClientHttp2Session;
 }
 
+// Send GOAWAY to idle `session` and make a request before Node emits the
+// resulting `error`, then return every uncaught exception raised meanwhile.
+//
+// The session manager's own `goaway` listener runs first and destroys the
+// session; Node emits the `error` once the socket has closed. A request made
+// in between replaces the session, as when a frozen serverless instance thaws
+// with a GOAWAY and a request both pending.
+async function goawayThenRequest(
+  handle: Handle,
+  serverSessions: Set<http2.ServerHttp2Session>,
+  session: http2.ClientHttp2Session,
+): Promise<unknown[]> {
+  const uncaught: unknown[] = [];
+  const onUncaught = (error: unknown) => uncaught.push(error);
+  process.on("uncaughtException", onUncaught);
+
+  try {
+    const replaced = new Promise<http2.ClientHttp2Session>((resolve, reject) => {
+      session.once("goaway", () => {
+        requestSession(handle).then(resolve, reject);
+      });
+    });
+    for (const serverSession of serverSessions) {
+      serverSession.goaway(http2.constants.NGHTTP2_NO_ERROR);
+    }
+
+    assert.notEqual(await replaced, session);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  } finally {
+    process.off("uncaughtException", onUncaught);
+  }
+
+  assert.equal(session.destroyed, true);
+  return uncaught;
+}
+
 test("@arcjet/transport/http2", async function (t) {
   await t.test(
     "should not raise an uncaught exception when a request replaces a session closed by GOAWAY",
@@ -51,32 +87,23 @@ test("@arcjet/transport/http2", async function (t) {
       await withHttp2Origin(async function (handle, serverSessions) {
         const session = await requestSession(handle);
 
-        const uncaught: unknown[] = [];
-        const onUncaught = (error: unknown) => uncaught.push(error);
-        process.on("uncaughtException", onUncaught);
+        assert.deepEqual(await goawayThenRequest(handle, serverSessions, session), []);
+      });
+    },
+  );
 
-        try {
-          // The session manager's own `goaway` listener runs first and destroys
-          // the idle session; Node emits the resulting `error` on a later tick.
-          // A request made in between replaces the session, as when a frozen
-          // serverless instance thaws with a GOAWAY and a request both pending.
-          const replaced = new Promise<http2.ClientHttp2Session>((resolve, reject) => {
-            session.once("goaway", () => {
-              requestSession(handle).then(resolve, reject);
-            });
-          });
-          for (const serverSession of serverSessions) {
-            serverSession.goaway(http2.constants.NGHTTP2_NO_ERROR);
-          }
+  await t.test(
+    "should not raise an uncaught exception when GOAWAY closes a pre-connected session that served no request",
+    async function () {
+      await withHttp2Origin(async function (handle, serverSessions) {
+        assert.equal(await handle.sessionManager.connect(), "idle");
+        // `Http2SessionManager` exposes the pre-connected session only through
+        // its private `s` field, which `@arcjet/transport` also reads.
+        const state: unknown = Reflect.get(handle.sessionManager, "s");
+        assert.ok(typeof state === "object" && state !== null && "conn" in state);
+        const session = state.conn as http2.ClientHttp2Session;
 
-          assert.notEqual(await replaced, session);
-          await new Promise((resolve) => setTimeout(resolve, 50));
-        } finally {
-          process.off("uncaughtException", onUncaught);
-        }
-
-        assert.equal(session.destroyed, true);
-        assert.deepEqual(uncaught, []);
+        assert.deepEqual(await goawayThenRequest(handle, serverSessions, session), []);
       });
     },
   );
