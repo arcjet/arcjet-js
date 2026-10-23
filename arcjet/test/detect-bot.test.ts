@@ -17,6 +17,7 @@ describe("Primitive > detectBot", () => {
       "BETTERUPTIME_MONITOR",
       "CCBOT_CRAWLER",
       "ISS_CRAWLER",
+      "JETMON",
       "PINTREST_CRAWLER",
     ];
     assert.deepEqual(detectBot({ allow: bots })[0].allow, bots);

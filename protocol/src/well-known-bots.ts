@@ -844,6 +844,14 @@ export type ArcjetWellKnownBot =
   | "ZOOMINFO_CRAWLER"
   | "ZUM_CRAWLER"
   | "ZUPERLIST_CRAWLER"
+  | "9BOT"
+  | "BETTERUPTIME_MONITOR"
+  | "CCBOT_CRAWLER"
+  | "CL0Q"
+  | "ISS_CRAWLER"
+  | "JETMON"
+  | "PINTREST_CRAWLER"
+  | "SYNTHETIC_MONITORING_AGENT"
   | "ARCJET_SIGNALS";
 
 export type ArcjetBotCategory =
