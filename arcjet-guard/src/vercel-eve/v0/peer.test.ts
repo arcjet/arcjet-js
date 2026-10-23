@@ -43,7 +43,7 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
   // Approval* types off the `eve/tools` barrel onto `eve/tools/approval`.
   const devDependencies = objectField(packageJson, "devDependencies");
   assert.ok(devDependencies, "package.json must have devDependencies");
-  assert.equal(devDependencies["eve"], "0.46.0", 'devDependencies.eve must be pinned to "0.46.0"');
+  assert.equal(devDependencies["eve"], "0.80.1", 'devDependencies.eve must be pinned to "0.80.1"');
 
   // Static assertion 2: peerDependenciesMeta.eve.optional is true
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");

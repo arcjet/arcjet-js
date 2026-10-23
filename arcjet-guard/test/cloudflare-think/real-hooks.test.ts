@@ -11,7 +11,7 @@
  * Floor is `@cloudflare/think@0.3.0`: that release made
  * `beforeToolCall` return a functional `ToolCallDecision`
  * (`allow` / `block` / `substitute`) and wraps every server-side
- * tool's `execute` so the hook runs first. 0.19.0 still publishes
+ * tool's `execute` so the hook runs first. 0.20.2 still publishes
  * that same union. The package cannot be value-imported in Node
  * (`cloudflare:` URL scheme), so this suite type-imports the SDK
  * and reads the installed `.d.ts`.
@@ -58,7 +58,7 @@ function readInstalledThinkTypes(): string {
   const pkg = JSON.parse(readFileSync(resolve(pkgRoot, "package.json"), "utf-8")) as {
     version?: string;
   };
-  assert.equal(pkg.version, "0.19.0");
+  assert.equal(pkg.version, "0.20.2");
   const thinkDts = readFileSync(resolve(pkgRoot, "dist/think.d.ts"), "utf-8");
   const chunk = /from "\.\/([^"]+)"/.exec(thinkDts);
   if (chunk === null) {

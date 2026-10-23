@@ -1038,7 +1038,9 @@ test("response rules function receives ApprovalResponseContext", async () => {
     response: {
       action: "resource.approved",
       rules: (ctx) => {
-        assert.equal(ctx.responder.principalId, "approver_789");
+        // The helper builds the eve 0.34–0.68 shape, which carries `responder`.
+        const legacy = ctx as unknown as { responder: { principalId: string } };
+        assert.equal(legacy.responder.principalId, "approver_789");
         assert.equal(ctx.request.toolName, "test.tool");
         assert.equal(ctx.request.callId, "call_abc");
         assert.equal(ctx.request.requestId, "req_xyz");
@@ -1066,7 +1068,7 @@ test("response empty toolName/callId/requestId omitted from metadata", async () 
 
   await requireResponse(approval)(
     createApprovalResponseContext({
-      request: { callId: "", requestId: "", toolName: "" },
+      request: { callId: "", requestId: "", toolName: "", principal: null },
     }),
   );
 
