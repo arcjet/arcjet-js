@@ -50,21 +50,24 @@ Prefer dash/dot in new labels. Check a label you build yourself with
 `validateGuardLabel`.
 
 ```ts
-const decision = await arcjet.guard({
-  label: "tools.get-weather",
-  rules: [/* ... */],
-  metadata: { user: { id: userId } },
-});
+async function getWeather(userId: string) {
+  const decision = await arcjet.guard({
+    label: "tools.get-weather",
+    rules: [/* ... */],
+    metadata: { user: { id: userId } },
+  });
 
-if (decision.conclusion === "DENY") {
-  const rateLimited = toolCallLimit.deniedResult(decision);
-  if (rateLimited) {
-    return { error: `rate limited, retry after ${rateLimited.resetAtUnixSeconds}` };
+  if (decision.conclusion === "DENY") {
+    const rateLimited = toolCallLimit.deniedResult(decision);
+    if (rateLimited) {
+      return { error: `rate limited, retry after ${rateLimited.resetAtUnixSeconds}` };
+    }
+    return { error: decision.reason };
   }
-  return { error: decision.reason };
-}
-if (decision.hasFailedOpen()) {
-  // ALLOW only because a rule could not run — deny here if the site is sensitive
+  if (decision.hasFailedOpen()) {
+    // ALLOW only because a rule could not run — deny here if the site is sensitive
+  }
+  // ... run the tool
 }
 ```
 

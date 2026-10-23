@@ -124,10 +124,10 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate authored tools
 
 ```ts
+import { tokenBucket, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/vercel-eve/v0";
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { guardTool } from "@arcjet/guard/vercel-eve/v0";
-import { tokenBucket, policyInput } from "@arcjet/guard";
 
 import { arcjet } from "../arcjet.js";
 
@@ -189,9 +189,9 @@ add a `response` policy.
 ## Step 3: Gate connection operations
 
 ```ts
-import { defineOpenAPIConnection } from "eve/connections";
-import { guardApproval } from "@arcjet/guard/vercel-eve/v0";
 import { tokenBucket } from "@arcjet/guard";
+import { guardApproval } from "@arcjet/guard/vercel-eve/v0";
+import { defineOpenAPIConnection } from "eve/connections";
 
 import { arcjet } from "../arcjet.js";
 
@@ -238,9 +238,9 @@ export default defineOpenAPIConnection({
 ## Step 4: Screen inbound messages
 
 ```ts
-import { defineChannel, POST } from "eve/channels";
-import { guardInbound } from "@arcjet/guard/vercel-eve/v0";
 import { detectPromptInjection } from "@arcjet/guard";
+import { guardInbound } from "@arcjet/guard/vercel-eve/v0";
+import { defineChannel, POST } from "eve/channels";
 
 import { arcjet } from "../arcjet.js";
 
@@ -327,8 +327,8 @@ export default defineChannel({
 ## Step 5: Record agent lifecycle events
 
 ```ts
-import { defineHook } from "eve/hooks";
 import { arcjetHooks } from "@arcjet/guard/vercel-eve/v0";
+import { defineHook } from "eve/hooks";
 
 import { arcjet } from "../arcjet.js";
 

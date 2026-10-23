@@ -104,7 +104,6 @@ async function main() {
     return;
   }
 
-  // oxlint-disable-next-line unicorn/consistent-function-scoping
   function report(label: string, d: ReturnType<typeof diff>) {
     if (d.added.length > 0) {
       console.log(`  ${label} added:   ${d.added.join(", ")}`);

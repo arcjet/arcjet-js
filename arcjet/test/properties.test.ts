@@ -65,6 +65,7 @@ test("Properties", async function (t) {
       rules: [],
     });
     const decision = await instance.protect(createContext(), createRequest());
+    // oxlint-disable-next-line typescript/no-generated-empty-object-type -- the assertion checks this type is exactly {}
     type PropertiesWithoutRules = Assert<IsEqual<Props<typeof instance>, {}>>;
     assert.equal(decision.conclusion, "ALLOW");
   });
@@ -94,6 +95,7 @@ test("Properties", async function (t) {
       rules: [[rule]],
     });
     const decision = await instance.protect(createContext(), createRequest());
+    // oxlint-disable-next-line typescript/no-generated-empty-object-type -- the assertion checks this type is exactly {}
     type PropertiesWithoutProperties = Assert<IsEqual<Props<typeof instance>, {}>>;
     assert.equal(decision.conclusion, "ALLOW");
 
@@ -104,6 +106,7 @@ test("Properties", async function (t) {
       rules: [],
     }).withRule([rule]);
     const withRuleDecision = await withRuleInstance.protect(createContext(), createRequest());
+    // oxlint-disable-next-line typescript/no-generated-empty-object-type -- the assertion checks this type is exactly {}
     type WithRulePropertiesWithoutProperties = Assert<IsEqual<Props<typeof withRuleInstance>, {}>>;
     assert.equal(withRuleDecision.conclusion, "ALLOW");
   });

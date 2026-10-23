@@ -119,26 +119,28 @@ import { claudeManagedAgentsContext, guardEvents } from "@arcjet/guard/claude-ma
 
 import { arcjet } from "./arcjet.js";
 
-const ctx = claudeManagedAgentsContext({ correlationId: conversationId });
-const events = [
-  { type: "user.message" as const, content: [{ type: "text" as const, text: userText }] },
-];
+async function sendUserMessage(userText: string) {
+  const ctx = claudeManagedAgentsContext({ correlationId: conversationId });
+  const events = [
+    { type: "user.message" as const, content: [{ type: "text" as const, text: userText }] },
+  ];
 
-const verdict = await guardEvents(
-  arcjet,
-  {
-    events,
-    inbound: {
-      action: "message.received",
-      rules: ({ text }) => [detectPromptInjection()(text)],
+  const verdict = await guardEvents(
+    arcjet,
+    {
+      events,
+      inbound: {
+        action: "message.received",
+        rules: ({ text }) => [detectPromptInjection()(text)],
+      },
+      context: ctx,
     },
-    context: ctx,
-  },
-  (body) => client.beta.sessions.events.send(session.id, body),
-);
+    (body) => client.beta.sessions.events.send(session.id, body),
+  );
 
-if (!verdict.allowed) {
-  return verdict.message;
+  if (!verdict.allowed) {
+    return verdict.message;
+  }
 }
 ```
 
@@ -164,34 +166,37 @@ const lookupLimit = tokenBucket({
   maxTokens: 10,
 });
 
-if (event.type === "agent.custom_tool_use") {
-  const gated = await guardCustomTool(
-    arcjet,
-    {
-      event,
-      execute: (input) => lookupOrder(input),
-      send: (result) => client.beta.sessions.events.send(session.id, { events: [result] }),
-    },
-    {
-      action: "order.looked-up",
-      actor: userId,
-      inputs: (input) => ({
-        orderNumber: policyInput.server.string(String(input["orderNumber"])),
-      }),
-      rules: (input) => [lookupLimit({ key: String(input["orderNumber"]), requested: 1 })],
-      context: ctx,
-    },
-  );
-  if (gated.allowed) {
-    await client.beta.sessions.events.send(session.id, {
-      events: [
-        {
-          type: "user.custom_tool_result",
-          custom_tool_use_id: event.id,
-          content: [{ type: "text", text: JSON.stringify(gated.output) }],
-        },
-      ],
-    });
+const stream = await client.beta.sessions.events.stream(session.id);
+for await (const event of stream) {
+  if (event.type === "agent.custom_tool_use") {
+    const gated = await guardCustomTool(
+      arcjet,
+      {
+        event,
+        execute: (input) => lookupOrder(input),
+        send: (result) => client.beta.sessions.events.send(session.id, { events: [result] }),
+      },
+      {
+        action: "order.looked-up",
+        actor: userId,
+        inputs: (input) => ({
+          orderNumber: policyInput.server.string(String(input["orderNumber"])),
+        }),
+        rules: (input) => [lookupLimit({ key: String(input["orderNumber"]), requested: 1 })],
+        context: ctx,
+      },
+    );
+    if (gated.allowed) {
+      await client.beta.sessions.events.send(session.id, {
+        events: [
+          {
+            type: "user.custom_tool_result",
+            custom_tool_use_id: event.id,
+            content: [{ type: "text", text: JSON.stringify(gated.output) }],
+          },
+        ],
+      });
+    }
   }
 }
 ```

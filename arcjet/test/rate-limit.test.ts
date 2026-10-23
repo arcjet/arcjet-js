@@ -606,6 +606,7 @@ describe("Primitive > fixedWindow", () => {
       window: "1h",
       max: 1,
     });
+    // oxlint-disable-next-line typescript/no-generated-empty-object-type -- the assertion checks this type is exactly {}
     type Test = Assert<IsEqual<Props<typeof rules>, {}>>;
   });
 
@@ -961,6 +962,7 @@ describe("Primitive > slidingWindow", () => {
       interval: "1h",
       max: 1,
     });
+    // oxlint-disable-next-line typescript/no-generated-empty-object-type -- the assertion checks this type is exactly {}
     type Test = Assert<IsEqual<Props<typeof rules>, {}>>;
   });
 

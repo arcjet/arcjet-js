@@ -135,11 +135,11 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate tool calls — Arcjet first
 
 ```ts
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import { chat } from "@tanstack/ai";
 import { toolCacheMiddleware } from "@tanstack/ai/middlewares";
-import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
-import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
-import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
