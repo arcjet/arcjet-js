@@ -132,6 +132,10 @@ export {
   defineCustomRule,
   policyInput,
 
+  // Guard labels
+  validateGuardLabel,
+  ArcjetInvalidLabelError,
+
   // Transport-agnostic factory
   launchArcjetWithTransport,
 
