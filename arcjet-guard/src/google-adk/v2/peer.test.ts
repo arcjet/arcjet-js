@@ -40,8 +40,8 @@ test("@google/adk is an optional peer and not a dependency", () => {
   assert.ok(devDependencies);
   assert.equal(
     devDependencies["@google/adk"],
-    "2.0.0",
-    'devDependencies["@google/adk"] must be pinned to "2.0.0"',
+    "2.3.0",
+    'devDependencies["@google/adk"] must be pinned to "2.3.0"',
   );
 
   const engines = objectField(packageJson, "engines");

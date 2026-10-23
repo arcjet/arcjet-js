@@ -11,7 +11,7 @@
  * (`>=0.8.0 <1`)**. Nothing in this module imports that package at
  * runtime: every TanStack AI type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls it in. Latest supported
- * development pin is 0.52.x. There is no `/v1` until TanStack AI
+ * development pin is 0.69.x. There is no `/v1` until TanStack AI
  * ships 1.x.
  *
  * **Note:** the version segment is `v0` because `@tanstack/ai` is

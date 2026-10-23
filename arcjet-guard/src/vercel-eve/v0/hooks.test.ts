@@ -440,9 +440,8 @@ test("AC6.2: turn.failed handler captures action, outcome, error.code, and eve.t
 // AC6.4: subagent.called captures child-session, subagent, and call
 test("AC6.4: subagent.called captures eve.child-session, eve.subagent, and eve.call", async () => {
   const client = createMockClient();
-  const definition = arcjetHooks(client);
 
-  const handler = definition.events?.["subagent.called"];
+  const handler = listeners(client)["subagent.called"];
   assert.ok(handler, "subagent.called handler must exist");
 
   const mockCtx = {
@@ -470,9 +469,8 @@ test("AC6.4: subagent.called captures eve.child-session, eve.subagent, and eve.c
 // AC6.4: subagent.completed does NOT capture child-session
 test("AC6.4: subagent.completed does not have eve.child-session", async () => {
   const client = createMockClient();
-  const definition = arcjetHooks(client);
 
-  const handler = definition.events?.["subagent.completed"];
+  const handler = listeners(client)["subagent.completed"];
   assert.ok(handler, "subagent.completed handler must exist");
 
   const mockCtx = {
@@ -520,7 +518,7 @@ function listeners(client: ArcjetAgentClient): Record<string, Listener | undefin
 
 test("subagent.called (eve 0.34–0.68) records eve.subagent-called with exact metadata", async () => {
   const client = createMockClient();
-  const handler = arcjetHooks(client).events?.["subagent.called"];
+  const handler = listeners(client)["subagent.called"];
   assert.ok(handler, "subagent.called handler must exist");
 
   await handler(
@@ -557,7 +555,7 @@ test("subagent.called (eve 0.34–0.68) records eve.subagent-called with exact m
 
 test("subagent.completed (eve 0.34–0.68) records eve.subagent-completed with exact metadata", async () => {
   const client = createMockClient();
-  const handler = arcjetHooks(client).events?.["subagent.completed"];
+  const handler = listeners(client)["subagent.completed"];
   assert.ok(handler, "subagent.completed handler must exist");
 
   await handler(
