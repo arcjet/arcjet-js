@@ -1,5 +1,39 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...v1.15.0) (2026-10-23)
+
+
+### 🚀 New Features
+
+* **guard:** screen Claude Agent SDK tool results before the model reads them ([#6324](https://github.com/arcjet/arcjet-js/issues/6324)) ([0ebc196](https://github.com/arcjet/arcjet-js/commit/0ebc1962331fff38d747fb7a61c8aa99825f10b8))
+* Support Web Bot Auth and SIGNED_BOT policies ([#6326](https://github.com/arcjet/arcjet-js/issues/6326)) ([54b675b](https://github.com/arcjet/arcjet-js/commit/54b675b810cc867adab99335252662520292a42a))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** return ERROR for missing or empty API key on protect ([#6330](https://github.com/arcjet/arcjet-js/issues/6330)) ([6d3d18d](https://github.com/arcjet/arcjet-js/commit/6d3d18d53a89e52184d4348a427410f4d72edc92))
+* **guard:** export validateGuardLabel and ArcjetInvalidLabelError from every runtime entry ([#6339](https://github.com/arcjet/arcjet-js/issues/6339)) ([58286cc](https://github.com/arcjet/arcjet-js/commit/58286cc615fd0248f362eb0fbdbc2734902d8f81))
+* **transport:** stop HTTP/2 session errors escaping as uncaught exceptions ([#6335](https://github.com/arcjet/arcjet-js/issues/6335)) ([53fc2be](https://github.com/arcjet/arcjet-js/commit/53fc2be217f3445927d1822843359b8c6ed4cacd))
+* validate characteristics at client construction ([#6329](https://github.com/arcjet/arcjet-js/issues/6329)) ([fb48086](https://github.com/arcjet/arcjet-js/commit/fb48086585aa9908ed86d75f67697617a772b2a4))
+
+
+### 🧹 Miscellaneous Chores
+
+* refresh well-known bot directory and analyzer wasm ([#6336](https://github.com/arcjet/arcjet-js/issues/6336)) ([0dfd734](https://github.com/arcjet/arcjet-js/commit/0dfd73497c14bdeec6b05dd78db0e75da92ea37c))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump @modelcontextprotocol/sdk from 1.30.1 to 1.32.0 ([#6315](https://github.com/arcjet/arcjet-js/issues/6315)) ([dbc7a64](https://github.com/arcjet/arcjet-js/commit/dbc7a6489ec6910cad2410d5a41bf042f1fd7929))
+* **deps-dev:** bump proxy-addr from 2.0.7 to 2.0.8 ([#6316](https://github.com/arcjet/arcjet-js/issues/6316)) ([96fb41c](https://github.com/arcjet/arcjet-js/commit/96fb41cc2d462b5d033a5f895671ab6446558576))
+* **deps:** bump smol-toml from 1.8.0 to 1.9.0 ([#6313](https://github.com/arcjet/arcjet-js/issues/6313)) ([f58c89f](https://github.com/arcjet/arcjet-js/commit/f58c89f4249982d18d980a56a01e1d4470708b40))
+* **deps:** bump source-map-js from 1.2.1 to 1.2.2 ([#6314](https://github.com/arcjet/arcjet-js/issues/6314)) ([146ff1e](https://github.com/arcjet/arcjet-js/commit/146ff1e77cb85bd45fda620a8059f8bf53a60007))
+
+
+### ✅ Continuous Integration
+
+* **publish:** wait for npm to show dist-tags against one deadline ([#6317](https://github.com/arcjet/arcjet-js/issues/6317)) ([d76c7e6](https://github.com/arcjet/arcjet-js/commit/d76c7e6e38fbc7b4b490995e8d57ff5533ed0e0a))
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...v1.14.1) (2026-10-06)
 
 

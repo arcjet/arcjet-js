@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/transport-v1.15.0) (2026-10-23)
+
+
+### 🪲 Bug Fixes
+
+* **transport:** stop HTTP/2 session errors escaping as uncaught exceptions ([#6335](https://github.com/arcjet/arcjet-js/issues/6335)) ([53fc2be](https://github.com/arcjet/arcjet-js/commit/53fc2be217f3445927d1822843359b8c6ed4cacd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.14.1 to 1.15.0
+    * @arcjet/logger bumped from 1.14.1 to 1.15.0
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/transport-v1.14.1) (2026-10-06)
 
 
