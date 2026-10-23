@@ -58,7 +58,7 @@
     "@arcjet/analyze": "1.14.1",
     "@types/node": "22.20.5",
     "arcjet": "1.14.1",
-    "tsdown": "0.23.0",
+    "tsdown": "0.23.1",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
