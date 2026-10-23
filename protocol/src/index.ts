@@ -9,8 +9,20 @@ import { typeid } from "./typeid.js";
 // `metadata` request property without depending on the module path.
 export type { ArcjetMetadata } from "./metadata.js";
 
-// Re-export the Well Known Bots from the generated file
-export type * from "./well-known-bots.js";
+// Keep historic rule IDs in the public type while the generated catalog lists
+// only current IDs. The analyzers translate these names to their successors.
+import type { ArcjetWellKnownBot as ArcjetCurrentWellKnownBot } from "./well-known-bots.js";
+export type { ArcjetBotCategory } from "./well-known-bots.js";
+
+/** Bot IDs accepted for compatibility with earlier rule configurations. */
+export type ArcjetLegacyWellKnownBot =
+  | "BETTERUPTIME_MONITOR"
+  | "CCBOT_CRAWLER"
+  | "ISS_CRAWLER"
+  | "PINTREST_CRAWLER";
+
+/** Identifiers for current and historic well known bots. */
+export type ArcjetWellKnownBot = ArcjetCurrentWellKnownBot | ArcjetLegacyWellKnownBot;
 
 // Re-export the Bot categories from the generated file
 export { categories as botCategories } from "./well-known-bots.js";

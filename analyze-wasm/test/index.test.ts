@@ -108,6 +108,24 @@ test("`wasm.detectBot`", async function (t) {
       { allowed: ["CURL"], denied: [], spoofed: false, verified: false },
     );
   });
+
+  await t.test("should translate legacy bot identifiers in rules", async function () {
+    for (const [legacy, canonical, userAgent] of [
+      ["BETTERUPTIME_MONITOR", "BETTERSTACK_MONITOR", "Better Uptime Bot"],
+      ["CCBOT_CRAWLER", "COMMONCRAWL_CRAWLER", "CCBot/2.0"],
+      ["ISS_CRAWLER", "OBOT_CRAWLER", "oBot/1.0"],
+      ["PINTREST_CRAWLER", "PINTEREST_CRAWLER", "Pinterestbot/1.0"],
+    ]) {
+      const result = wasm.detectBot(
+        JSON.stringify({ headers: { "user-agent": userAgent } }),
+        {
+          tag: "denied-bot-config",
+          val: { entities: [legacy], skipCustomDetect: false },
+        },
+      );
+      assert.ok(result.denied.includes(canonical), `${legacy} should deny ${canonical}`);
+    }
+  });
 });
 
 test("`wasm.detectSensitiveInfo`", async function (t) {

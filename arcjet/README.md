@@ -89,6 +89,11 @@ const aj = arcjet({
 });
 ```
 
+Existing rules using `BETTERUPTIME_MONITOR`, `CCBOT_CRAWLER`, `ISS_CRAWLER`, or
+`PINTREST_CRAWLER` remain accepted. They now match `BETTERSTACK_MONITOR`,
+`COMMONCRAWL_CRAWLER`, `OBOT_CRAWLER`, and `PINTEREST_CRAWLER`, respectively.
+Use the current IDs for new rules.
+
 #### Signed agents
 
 `detectBot()` uses the usual bot names for signed agents:
