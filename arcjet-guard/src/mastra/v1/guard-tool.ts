@@ -220,7 +220,7 @@ export function guardTool<TTool extends MastraToolDefinition<any, any>>(
           return denialResult(decision);
         }
       }) as (decision: DecisionDeny) => MastraToolOutput<TTool>,
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- unavailable result is a structured denial object, not TOutput
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- unavailable result is a structured denial object, not TOutput
       onUnavailable: () => unavailableResult() as MastraToolOutput<TTool>,
       execute: () => {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Mastra's execute context is generic over the tool's suspend/resume schema.

@@ -92,8 +92,8 @@ Never stash it in module state or AsyncLocalStorage.
 ## Step 4: Wrap model-invoked tools
 
 ```ts
-import { guardTool, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
 import { tokenBucket, policyInput } from "@arcjet/guard";
+import { guardTool, securityMetadata } from "@arcjet/guard/vercel-ai/v7";
 
 const lookupLimit = tokenBucket({
   bucket: "lookups",

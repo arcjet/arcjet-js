@@ -146,10 +146,10 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate authored tools
 
 ```ts
-import { genkit, z } from "genkit";
-import { guardTool } from "@arcjet/guard/genkit/v1";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/genkit/v1";
 import { rampart } from "@arcjet/sensitive-info-rampart";
+import { genkit, z } from "genkit";
 
 import { arcjet } from "./arcjet.js";
 
@@ -181,10 +181,10 @@ export const lookupOrder = guardTool(
   {
     action: "order.looked-up",
     actor: userId,
-    inputs: (input) => ({
+    inputs: (input: { orderNumber: string; note: string }) => ({
       orderNumber: policyInput.server.string(input.orderNumber),
     }),
-    rules: (input) => [
+    rules: (input: { orderNumber: string; note: string }) => [
       lookupLimit({ key: input.orderNumber, requested: 1 }),
       detectPii(input.note),
     ],
@@ -216,8 +216,8 @@ export const lookupOrder = guardTool(
 ## Step 3: Gate unwrapped / MCP / filesystem tools
 
 ```ts
-import { guardMiddleware } from "@arcjet/guard/genkit/v1";
 import { tokenBucket } from "@arcjet/guard";
+import { guardMiddleware } from "@arcjet/guard/genkit/v1";
 
 import { arcjet } from "./arcjet.js";
 

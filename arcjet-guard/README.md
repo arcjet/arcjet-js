@@ -559,6 +559,7 @@ talks to nothing:
 
 ```ts
 import { registerTestClient } from "@arcjet/guard/testing";
+
 import { refund } from "./refund.ts";
 
 test("refund captures an event", async () => {
@@ -858,6 +859,7 @@ Currently available:
   `captureAction`, and `securityMetadata`:
 
   ```ts
+  import { policyInput } from "@arcjet/guard";
   import {
     guardTool,
     aiToolsContext,
@@ -866,7 +868,6 @@ Currently available:
     captureAction,
     securityMetadata,
   } from "@arcjet/guard/vercel-ai/v7";
-  import { policyInput } from "@arcjet/guard";
 
   const ctx = createAgentContext({
     correlationId: requestId,
@@ -943,9 +944,9 @@ Currently available:
   rules, and `bypassPermissions` / `acceptEdits`):
 
   ```ts
+  import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
   import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
   import { guardTool, guardHooks } from "@arcjet/guard/claude-agent-sdk/v0";
-  import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
   import { z } from "zod";
 
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
@@ -1157,8 +1158,8 @@ Currently available:
   ```ts
   import { launchArcjet, tokenBucket } from "@arcjet/guard";
   import { guardTool, guardToolNode } from "@arcjet/guard/langgraph/v1";
-  import { ToolNode } from "@langchain/langgraph/prebuilt";
   import { tool } from "@langchain/core/tools";
+  import { ToolNode } from "@langchain/langgraph/prebuilt";
   import { z } from "zod";
 
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
@@ -1248,8 +1249,8 @@ real messages.
   ```ts
   import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
   import { guardTool, guardMiddleware, langchainContext } from "@arcjet/guard/langchain/v1";
-  import { createAgent } from "langchain";
   import { tool } from "@langchain/core/tools";
+  import { createAgent } from "langchain";
   import { z } from "zod";
 
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
@@ -1458,7 +1459,7 @@ they are not a deny. There is no `guardHooks` and no `guardToolNode`.
     {
       action: "order.looked-up",
       onGuardError: "deny",
-      rules: (input) => [limit({ key: input.orderNumber, requested: 1 })],
+      rules: (input: { orderNumber: string }) => [limit({ key: input.orderNumber, requested: 1 })],
     },
   );
 
@@ -1555,7 +1556,7 @@ correlation.
     {
       action: "order.looked-up",
       onGuardError: "deny",
-      rules: (input) => [limit({ key: input.orderNumber, requested: 1 })],
+      rules: (input: { orderNumber: string }) => [limit({ key: input.orderNumber, requested: 1 })],
     },
   );
 
@@ -1622,7 +1623,7 @@ Never read `traceId`. Never use `SessionManager` or `agent.id`.
   Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
   first-win; if `toolCacheMiddleware` (or anything else) skips first,
   Guard never runs. Default DENY is `{ type: "skip", result:
-ArcjetDenialResult }` so the tool never runs and the model sees the
+  ArcjetDenialResult }` so the tool never runs and the model sees the
   payload. Optional `onDeny: "abort"` stops the run with a reason
   string — the model does not get `ArcjetDenialResult`. The hook
   does not throw. Tools already branded by a sibling `guardTool`
@@ -1821,7 +1822,7 @@ not skip this gate.
   [`/guards/cloudflare-think/`](https://docs.arcjet.com/guards/cloudflare-think/).
 
   Default DENY is `{ action: "substitute", output:
-ArcjetDenialResult }` so the tool never runs and the model sees
+  ArcjetDenialResult }` so the tool never runs and the model sees
   the payload. Optional `onDeny: "block"` skips the tool with a
   reason string — the model does not get `ArcjetDenialResult`. The
   hook does not throw. Fail-closed unavailable stays substitute
@@ -2232,7 +2233,6 @@ Here's a complete example protecting both an AI tool call and an app-invoked act
 
 ```ts
 import { launchArcjet, tokenBucket } from "@arcjet/guard";
-import { tool, jsonSchema, generateText } from "ai";
 import {
   aiToolsContext,
   captureAction,
@@ -2241,6 +2241,7 @@ import {
   guardTool,
   securityMetadata,
 } from "@arcjet/guard/vercel-ai/v7";
+import { tool, jsonSchema, generateText } from "ai";
 
 // 1. Launch the guard client once (at module scope)
 const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });

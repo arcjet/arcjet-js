@@ -127,11 +127,11 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate authored tools
 
 ```ts
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/langgraph/v1";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { guardTool } from "@arcjet/guard/langgraph/v1";
-import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
-import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -214,9 +214,9 @@ Or put the same screen in the graph's first node. There is no
 ## Step 4: Gate tools you did not wrap
 
 ```ts
-import { ToolNode } from "@langchain/langgraph/prebuilt";
-import { guardToolNode } from "@arcjet/guard/langgraph/v1";
 import { tokenBucket } from "@arcjet/guard";
+import { guardToolNode } from "@arcjet/guard/langgraph/v1";
+import { ToolNode } from "@langchain/langgraph/prebuilt";
 
 import { arcjet } from "./arcjet.js";
 

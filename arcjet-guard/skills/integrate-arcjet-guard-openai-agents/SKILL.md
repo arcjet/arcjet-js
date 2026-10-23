@@ -124,11 +124,11 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate authored tools
 
 ```ts
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/openai-agents/v0";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import { tool } from "@openai/agents";
 import { z } from "zod";
-import { guardTool } from "@arcjet/guard/openai-agents/v0";
-import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
-import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
