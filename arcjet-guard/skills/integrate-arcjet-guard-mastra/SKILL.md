@@ -94,11 +94,11 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate authored tools
 
 ```ts
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/mastra/v1";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { guardTool } from "@arcjet/guard/mastra/v1";
-import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
-import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -158,9 +158,9 @@ export const lookupOrder = guardTool(
 ## Step 3: Screen inbound (and optional outbound) text
 
 ```ts
-import { Agent } from "@mastra/core/agent";
-import { guardProcessor } from "@arcjet/guard/mastra/v1";
 import { detectPromptInjection } from "@arcjet/guard";
+import { guardProcessor } from "@arcjet/guard/mastra/v1";
+import { Agent } from "@mastra/core/agent";
 
 import { arcjet } from "./arcjet.js";
 
@@ -197,8 +197,8 @@ export const agent = new Agent({
 ## Step 4: Gate tools you did not wrap
 
 ```ts
-import { guardHooks } from "@arcjet/guard/mastra/v1";
 import { tokenBucket } from "@arcjet/guard";
+import { guardHooks } from "@arcjet/guard/mastra/v1";
 
 import { arcjet } from "./arcjet.js";
 

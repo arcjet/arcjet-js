@@ -168,10 +168,10 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 ```ts
 import { tool } from "@anthropic-ai/claude-agent-sdk";
-import { z } from "zod";
-import { guardTool } from "@arcjet/guard/claude-agent-sdk/v0";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/claude-agent-sdk/v0";
 import { rampart } from "@arcjet/sensitive-info-rampart";
+import { z } from "zod";
 
 import { arcjet } from "./arcjet.js";
 
@@ -227,8 +227,8 @@ export const lookupOrder = guardTool(
 
 ```ts
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { guardHooks } from "@arcjet/guard/claude-agent-sdk/v0";
 import { detectPromptInjection } from "@arcjet/guard";
+import { guardHooks } from "@arcjet/guard/claude-agent-sdk/v0";
 
 import { arcjet } from "./arcjet.js";
 
@@ -264,8 +264,8 @@ for await (const message of query({
 ## Step 4: Gate tools you did not wrap
 
 ```ts
-import { guardHooks } from "@arcjet/guard/claude-agent-sdk/v0";
 import { detectPromptInjection, tokenBucket } from "@arcjet/guard";
+import { guardHooks } from "@arcjet/guard/claude-agent-sdk/v0";
 
 import { arcjet } from "./arcjet.js";
 

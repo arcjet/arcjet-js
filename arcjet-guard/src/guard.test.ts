@@ -651,80 +651,80 @@ describe("decisionFromProto", () => {
     assert.equal(decision.results[0].reason, "UNKNOWN");
   });
 });
+function multiRuleResponse(): {
+  rateLimit: RuleWithConfig;
+  rl1: RuleWithInput;
+  rl2: RuleWithInput;
+  prompt: RuleWithConfig;
+  pi: RuleWithInput;
+  response: GuardResponse;
+} {
+  const rateLimit = tokenBucket({
+    bucket: "test",
+    refillRate: 10,
+    intervalSeconds: 60,
+    maxTokens: 100,
+  });
+  const rl1 = rateLimit({ key: "alice" });
+  const rl2 = rateLimit({ key: "bob" });
+  const prompt = detectPromptInjection();
+  const pi = prompt("some text");
+
+  const response = makeResponse(GuardConclusion.ALLOW, [
+    {
+      resultId: "gres_1",
+      configId: rl1[symbolArcjetInternal].configId,
+      inputId: rl1[symbolArcjetInternal].inputId,
+      type: GuardRuleType.TOKEN_BUCKET,
+      result: {
+        case: "tokenBucket",
+        value: create(ResultTokenBucketSchema, {
+          conclusion: GuardConclusion.ALLOW,
+          remainingTokens: 95,
+          maxTokens: 100,
+          resetAtUnixSeconds: 60,
+          refillRate: 10,
+          refillIntervalSeconds: 60,
+        }),
+      },
+    },
+    {
+      resultId: "gres_2",
+      configId: rl2[symbolArcjetInternal].configId,
+      inputId: rl2[symbolArcjetInternal].inputId,
+      type: GuardRuleType.TOKEN_BUCKET,
+      result: {
+        case: "tokenBucket",
+        value: create(ResultTokenBucketSchema, {
+          conclusion: GuardConclusion.ALLOW,
+          remainingTokens: 90,
+          maxTokens: 100,
+          resetAtUnixSeconds: 58,
+          refillRate: 10,
+          refillIntervalSeconds: 60,
+        }),
+      },
+    },
+    {
+      resultId: "gres_3",
+      configId: pi[symbolArcjetInternal].configId,
+      inputId: pi[symbolArcjetInternal].inputId,
+      type: GuardRuleType.PROMPT_INJECTION,
+      result: {
+        case: "promptInjection",
+        value: create(ResultPromptInjectionSchema, {
+          conclusion: GuardConclusion.ALLOW,
+          detected: false,
+        }),
+      },
+    },
+  ]);
+
+  return { rateLimit, rl1, rl2, prompt, pi, response };
+}
+
 describe("Three-layer decision inspection", () => {
   // Helper: build a full response with multiple rules
-  function multiRuleResponse(): {
-    rateLimit: RuleWithConfig;
-    rl1: RuleWithInput;
-    rl2: RuleWithInput;
-    prompt: RuleWithConfig;
-    pi: RuleWithInput;
-    response: GuardResponse;
-  } {
-    const rateLimit = tokenBucket({
-      bucket: "test",
-      refillRate: 10,
-      intervalSeconds: 60,
-      maxTokens: 100,
-    });
-    const rl1 = rateLimit({ key: "alice" });
-    const rl2 = rateLimit({ key: "bob" });
-    const prompt = detectPromptInjection();
-    const pi = prompt("some text");
-
-    const response = makeResponse(GuardConclusion.ALLOW, [
-      {
-        resultId: "gres_1",
-        configId: rl1[symbolArcjetInternal].configId,
-        inputId: rl1[symbolArcjetInternal].inputId,
-        type: GuardRuleType.TOKEN_BUCKET,
-        result: {
-          case: "tokenBucket",
-          value: create(ResultTokenBucketSchema, {
-            conclusion: GuardConclusion.ALLOW,
-            remainingTokens: 95,
-            maxTokens: 100,
-            resetAtUnixSeconds: 60,
-            refillRate: 10,
-            refillIntervalSeconds: 60,
-          }),
-        },
-      },
-      {
-        resultId: "gres_2",
-        configId: rl2[symbolArcjetInternal].configId,
-        inputId: rl2[symbolArcjetInternal].inputId,
-        type: GuardRuleType.TOKEN_BUCKET,
-        result: {
-          case: "tokenBucket",
-          value: create(ResultTokenBucketSchema, {
-            conclusion: GuardConclusion.ALLOW,
-            remainingTokens: 90,
-            maxTokens: 100,
-            resetAtUnixSeconds: 58,
-            refillRate: 10,
-            refillIntervalSeconds: 60,
-          }),
-        },
-      },
-      {
-        resultId: "gres_3",
-        configId: pi[symbolArcjetInternal].configId,
-        inputId: pi[symbolArcjetInternal].inputId,
-        type: GuardRuleType.PROMPT_INJECTION,
-        result: {
-          case: "promptInjection",
-          value: create(ResultPromptInjectionSchema, {
-            conclusion: GuardConclusion.ALLOW,
-            detected: false,
-          }),
-        },
-      },
-    ]);
-
-    return { rateLimit, rl1, rl2, prompt, pi, response };
-  }
-
   test("Layer 1: decision.conclusion and decision.reason", () => {
     const { response, rl1, rl2, pi } = multiRuleResponse();
     const decision = decisionFromProto(response, [rl1, rl2, pi]);

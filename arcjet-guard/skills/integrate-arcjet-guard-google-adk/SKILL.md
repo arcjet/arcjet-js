@@ -145,10 +145,10 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate tool calls — Arcjet first
 
 ```ts
-import { Runner } from "@google/adk";
-import { guardPlugin } from "@arcjet/guard/google-adk/v2";
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardPlugin } from "@arcjet/guard/google-adk/v2";
 import { rampart } from "@arcjet/sensitive-info-rampart";
+import { Runner } from "@google/adk";
 
 import { arcjet } from "./arcjet.js";
 
