@@ -367,11 +367,14 @@ test("`arcjet`", async function (t) {
           "SIGNED_BOT:https://signed.example.com/.well-known/http-message-signatures-directory",
         ] as const) {
           let remoteCalls = 0;
+          let remoteDenies = false;
           const instance = arcjet({
             client: {
               async decide() {
                 remoteCalls++;
-                return new ArcjetAllowDecision({ reason: new ArcjetReason(), results: [], ttl: 0 });
+                return remoteDenies
+                  ? new ArcjetDenyDecision({ reason: new ArcjetReason(), results: [], ttl: 0 })
+                  : new ArcjetAllowDecision({ reason: new ArcjetReason(), results: [], ttl: 0 });
               },
               report() {},
             },
@@ -393,6 +396,15 @@ test("`arcjet`", async function (t) {
           });
           assert.equal(signed.isAllowed(), true, allowedBot);
           assert.equal(remoteCalls, 1, allowedBot);
+
+          // A signature attempt only delegates verification; a Cloud denial stands.
+          remoteDenies = true;
+          const signedDenied = await instance.protect(createContext(), {
+            ...unsigned,
+            headers: { ...unsigned.headers, "signature-input": "sig1=()" },
+          });
+          assert.equal(signedDenied.isDenied(), true, allowedBot);
+          assert.equal(remoteCalls, 2, allowedBot);
         }
       },
     );
