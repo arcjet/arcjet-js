@@ -76,7 +76,7 @@
     "@connectrpc/connect-node": "2.2.0",
     "@types/node": "22.20.5",
     "miniflare": "4.20260730.0",
-    "rolldown": "1.2.14",
+    "rolldown": "1.2.15",
     "tsdown": "0.23.1",
     "typescript": "7.0.2"
   },
