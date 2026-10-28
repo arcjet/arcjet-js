@@ -22,8 +22,8 @@ import type {
 
 export { cloudflare } from "@arcjet/ip";
 export type { ProxyService } from "@arcjet/ip";
-import { env } from "$env/dynamic/private";
-import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
+import { env as svelteKitEnv } from "$env/dynamic/private";
+import { type Env, baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
@@ -34,6 +34,44 @@ const VERSION = "1.14.1"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
+
+// On SvelteKit 3, `$env/dynamic/private` holds only the variables an app
+// declares in `src/env.ts`, so a variable it lacks is read from `process.env`
+// on runtimes that have one. `process` is read through `globalThis` because
+// not every edge runtime defines it.
+function readEnv(name: string): string | undefined {
+  return svelteKitEnv[name] ?? globalThis.process?.env?.[name];
+}
+
+const env: Env = {
+  get FLY_APP_NAME() {
+    return readEnv("FLY_APP_NAME");
+  },
+  get VERCEL() {
+    return readEnv("VERCEL");
+  },
+  get RENDER() {
+    return readEnv("RENDER");
+  },
+  get MODE() {
+    return readEnv("MODE");
+  },
+  get NODE_ENV() {
+    return readEnv("NODE_ENV");
+  },
+  get ARCJET_ENV() {
+    return readEnv("ARCJET_ENV");
+  },
+  get ARCJET_LOG_LEVEL() {
+    return readEnv("ARCJET_LOG_LEVEL");
+  },
+  get ARCJET_BASE_URL() {
+    return readEnv("ARCJET_BASE_URL");
+  },
+  get FIREBASE_CONFIG() {
+    return readEnv("FIREBASE_CONFIG");
+  },
+} satisfies { [K in keyof Env]-?: unknown };
 
 let warnedForAutomaticBodyRead = false;
 
