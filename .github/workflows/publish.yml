@@ -62,6 +62,10 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
+          # setup-node restores the npm cache by default (package.json sets
+          # packageManager). A publish run, now started automatically by a
+          # release, must not consume a cache another workflow wrote.
+          package-manager-cache: false
       - name: Pin npm
         uses: ./.github/actions/pin-npm
       - name: Resolve and validate the publish request
@@ -245,6 +249,8 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
+          # See preflight: never restore a cache into the publish job.
+          package-manager-cache: false
           registry-url: https://registry.npmjs.org
       - name: Pin npm
         uses: ./.github/actions/pin-npm
