@@ -23,6 +23,7 @@
   "bump-patch-for-minor-pre-major": false,
   "draft": false,
   "prerelease": false,
+  "always-update": true,
   "packages": {
     ".": {
       "component": "root",
