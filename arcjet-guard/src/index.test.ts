@@ -19,6 +19,7 @@ import {
   defineCustomRule,
 } from "./index.ts";
 import type { DiagnosticLogger } from "./index.ts";
+import * as indexModule from "./index.ts";
 import * as nodeEntrypoint from "./node.ts";
 import {
   DecideService,
@@ -108,6 +109,18 @@ describe("re-exports", () => {
     for (const [specifier, entrypoint] of entrypoints) {
       for (const name of ["registerArcjet", "unregisterArcjet", "guard", "capture", "flush"]) {
         assert.equal(typeof entrypoint[name], "function", `${specifier} must export ${name}`);
+      }
+    }
+  });
+
+  test("every value index.ts exports is exported, as the same object, from every entrypoint", () => {
+    // No `exports` condition resolves to index.ts, and each entrypoint lists
+    // its re-exports by name, so a value added to index.ts and left out of a
+    // list is missing from the package on that runtime. The same object, not
+    // an equal one, keeps `instanceof` working for exported classes.
+    for (const [name, value] of Object.entries(indexModule)) {
+      for (const [specifier, entrypoint] of entrypoints) {
+        assert.equal(entrypoint[name], value, `${specifier} must export ${name} from index.ts`);
       }
     }
   });

@@ -6,11 +6,24 @@ import { MemoryCache } from "@arcjet/cache";
 import {
   type ArcjetCacheEntry,
   type ArcjetWebBotAuthSigner,
+  type ArcjetWellKnownBot,
   ArcjetBotReason,
   detectBot,
 } from "../dist/index.js";
 
 describe("Primitive > detectBot", () => {
+  test("accepts legacy bot IDs in allow and deny rules", () => {
+    const bots: ArcjetWellKnownBot[] = [
+      "BETTERUPTIME_MONITOR",
+      "CCBOT_CRAWLER",
+      "ISS_CRAWLER",
+      "JETMON",
+      "PINTREST_CRAWLER",
+    ];
+    assert.deepEqual(detectBot({ allow: bots })[0].allow, bots);
+    assert.deepEqual(detectBot({ deny: bots })[0].deny, bots);
+  });
+
   test("accepts signed agent bot names for Decide bot_v2 policies", () => {
     const bots = ["CHATGPT_AGENT", "BROWSERBASE", "MANUS_BOT"] as const;
     const [allowRule] = detectBot({ mode: "DRY_RUN", allow: [...bots] });
