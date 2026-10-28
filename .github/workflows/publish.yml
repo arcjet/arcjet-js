@@ -1,9 +1,21 @@
 name: Publish
 # Surface the inputs everywhere the run is shown, including the environment
 # approval notification, since the approval UI does not display
-# workflow_dispatch inputs.
-run-name: "Publish ${{ github.ref_name }} to npm dist-tag ${{ inputs['dist-tag'] }}${{ inputs.dry-run && ' (dry run)' || '' }}"
+# workflow_dispatch inputs. A release event has no inputs, so its dist-tag is
+# derived from the tag the same way the preflight job derives it.
+run-name: "Publish ${{ github.ref_name }} to npm dist-tag ${{ github.event_name == 'release' && (contains(github.ref_name, '-') && 'rc' || 'latest') || inputs['dist-tag'] }}${{ inputs.dry-run && ' (dry run)' || '' }}"
 on:
+  # Starts a publish as soon as a GitHub release is published, so nobody has
+  # to remember to dispatch one after merging the Release Please PR. Release
+  # Please creates the release with the GitHub App token (see push.yml); a
+  # release created with GITHUB_TOKEN would not trigger this. Only the root
+  # package creates a GitHub release (every other package sets
+  # `skip-github-release`), so this fires once per version, not per package.
+  # Starting is all it does: the publish job still waits for a reviewer to
+  # approve the npm-publish environment.
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       dist-tag:
@@ -36,6 +48,11 @@ jobs:
     permissions:
       # Reads the repository and the latest release for the summary.
       contents: read
+    outputs:
+      # The validated request, so the publish job never reads raw inputs
+      # (which are empty on a release event).
+      dist-tag: ${{ steps.request.outputs['dist-tag'] }}
+      dry-run: ${{ steps.request.outputs.dry-run }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -47,16 +64,41 @@ jobs:
           node-version: 24
       - name: Pin npm
         uses: ./.github/actions/pin-npm
-      - name: Assert valid workflow inputs
+      - name: Resolve and validate the publish request
+        id: request
         env:
-          DIST_TAG: ${{ inputs['dist-tag'] }}
-          DRY_RUN: ${{ inputs.dry-run }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DIST_TAG: ${{ inputs['dist-tag'] }}
+          INPUT_DRY_RUN: ${{ inputs.dry-run }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              DIST_TAG="$INPUT_DIST_TAG"
+              DRY_RUN="$INPUT_DRY_RUN"
+              ;;
+            release)
+              # A release event carries no inputs. Derive the dist-tag from the
+              # tag as a person following CONTRIBUTING.md would choose it: a
+              # stable vX.Y.Z goes to `latest`, a pre-release such as
+              # v1.10.0-rc.0 goes to `rc` and never to `latest`. The tag format
+              # itself is asserted by the next step.
+              case "$REF_NAME" in
+                *-*) DIST_TAG=rc ;;
+                *) DIST_TAG=latest ;;
+              esac
+              DRY_RUN=false
+              ;;
+            *)
+              echo "::error::Unexpected event '$EVENT_NAME'."
+              exit 1
+              ;;
+          esac
           # The web form enforces the choice list, but API dispatches do not:
           # a missing input arrives as an empty string, and an empty dist-tag
-          # would publish `--tag ""`. Validating both inputs here also means
-          # the later steps (including the approval-facing summary) only ever
-          # see known values.
+          # would publish `--tag ""`. Validating both values here also means
+          # the later steps (including the approval-facing summary and the
+          # publish job) only ever see known values.
           case "$DIST_TAG" in
             latest|rc) ;;
             *)
@@ -71,6 +113,10 @@ jobs:
               exit 1
               ;;
           esac
+          {
+            echo "dist-tag=$DIST_TAG"
+            echo "dry-run=$DRY_RUN"
+          } >> "$GITHUB_OUTPUT"
       - name: Assert the workflow was dispatched on a release tag
         env:
           REF_TYPE: ${{ github.ref_type }}
@@ -107,7 +153,7 @@ jobs:
             exit 1
           fi
       - name: Assert stable versions when publishing to the latest dist-tag
-        if: inputs['dist-tag'] == 'latest'
+        if: steps.request.outputs['dist-tag'] == 'latest'
         run: |
           # The jq program is single-quoted on purpose.
           # shellcheck disable=SC2016
@@ -121,10 +167,48 @@ jobs:
             echo "::error::These versions do not look like stable releases; re-run with a pre-release dist-tag (e.g. 'rc') instead of 'latest'."
             exit 1
           fi
+      - name: Assert this version is not already on npm
+        env:
+          DRY_RUN: ${{ steps.request.outputs.dry-run }}
+          EXPECTED: ${{ github.ref_name }}
+        run: |
+          # npm never accepts a second publish of the same version, so a
+          # re-run cannot double-publish; this step makes that fail here,
+          # before anyone is asked to approve, instead of partway through the
+          # publish job. It matters now that a release event starts a run
+          # automatically and a person may also dispatch one for the same tag.
+          # If an earlier run published only some packages, recover by hand
+          # (see CONTRIBUTING.md); this step lists which ones are already up.
+          version="${EXPECTED#v}"
+          read -r -a names <<< "$(npm pkg get name --workspaces --json | jq -r '.[].name' | tr '\n' ' ')"
+          published=()
+          for pkg in "${names[@]}"; do
+            # A version that does not exist yet (or a package that has never
+            # been published) is E404; any other failure is not an answer.
+            if out="$(npm view --prefer-online "$pkg@$version" version 2>"$RUNNER_TEMP/npm-view.err")"; then
+              if [ "$out" = "$version" ]; then
+                published+=("$pkg")
+              fi
+            elif ! grep -q 'E404' "$RUNNER_TEMP/npm-view.err"; then
+              cat "$RUNNER_TEMP/npm-view.err"
+              echo "::error::Could not check whether $pkg@$version is already published."
+              exit 1
+            fi
+          done
+          if [ "${#published[@]}" -gt 0 ]; then
+            msg="Already published at $version: ${published[*]}"
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "::warning::$msg"
+            else
+              echo "::error::$msg. Nothing will be published twice; if an earlier run stopped partway, finish the remaining packages by hand."
+              exit 1
+            fi
+          fi
       - name: Summarize the publish request
         env:
-          DIST_TAG: ${{ inputs['dist-tag'] }}
-          DRY_RUN: ${{ inputs.dry-run }}
+          DIST_TAG: ${{ steps.request.outputs['dist-tag'] }}
+          DRY_RUN: ${{ steps.request.outputs.dry-run }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           # The jq program is single-quoted on purpose.
           # shellcheck disable=SC2016
@@ -132,6 +216,7 @@ jobs:
           {
             echo "## Publish request"
             echo "- npm dist-tag: \`$DIST_TAG\`"
+            echo "- started by: \`$EVENT_NAME\`"
             echo "- ref: \`$GITHUB_REF_NAME\` (\`$GITHUB_SHA\`)"
             echo "- dry run: \`$DRY_RUN\`"
             echo
@@ -169,10 +254,10 @@ jobs:
         run: npm test
       - name: Publish packages
         env:
-          DIST_TAG: ${{ inputs['dist-tag'] }}
+          DIST_TAG: ${{ needs.preflight.outputs['dist-tag'] }}
           # dry-run is a boolean with no publishConfig equivalent, so passing
           # it via the environment is safe and applies to every publish below.
-          npm_config_dry_run: ${{ inputs.dry-run }}
+          npm_config_dry_run: ${{ needs.preflight.outputs.dry-run }}
         run: |
           # Pass the dist-tag with --tag on each publish rather than the
           # npm_config_tag environment variable. A command-line --tag outranks
@@ -242,10 +327,10 @@ jobs:
             --workspace @arcjet/sveltekit
       - name: Verify dist-tags
         # Nothing was published on a dry run, so there is nothing to verify.
-        if: ${{ !inputs.dry-run }}
+        if: needs.preflight.outputs.dry-run == 'false'
         timeout-minutes: 25
         env:
-          DIST_TAG: ${{ inputs['dist-tag'] }}
+          DIST_TAG: ${{ needs.preflight.outputs['dist-tag'] }}
           EXPECTED: ${{ github.ref_name }}
         run: |
           # `npm publish` reports the requested tag but can silently write a

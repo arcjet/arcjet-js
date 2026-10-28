@@ -313,12 +313,15 @@ GitHub environment.
    sure to land something real after those.
 2. A person approves and merges that release PR. When it lands, Release Please
    creates the `vX.Y.Z` tag and GitHub release notes.
-3. A person goes to Actions -> Publish -> Run workflow, selects the release tag,
-   and chooses the `latest` dist-tag.
+3. Publishing the GitHub release starts the Publish workflow on that tag with
+   the `latest` dist-tag. Nobody needs to dispatch it. (Release Please creates
+   the release with its GitHub App token; a release created with
+   `GITHUB_TOKEN` would not start a workflow.)
 4. The `preflight` job runs immediately (no approval) and writes a summary of
    exactly what will be published. It fails the run early if the tag is not a
-   release tag, the package versions do not all match the tag, or a non-stable
-   version is being sent to `latest`.
+   release tag, the package versions do not all match the tag, a non-stable
+   version is being sent to `latest`, or any package is already published at
+   that version.
 5. Another team member is asked by GitHub to approve the gated `publish` job,
    and one person does, optionally with a comment.
 6. GitHub publishes to npm, which takes about 5 minutes.
@@ -339,11 +342,20 @@ stable release, an rc is cut manually:
    left behind will fail the run.
 3. Tag the release commit `v1.10.0-rc.0` and push the branch and tag.
 4. Go to Actions -> Publish -> Run workflow, select the rc tag, and be sure to
-   choose the `rc` dist-tag.
+   choose the `rc` dist-tag. (Publishing a GitHub release for the rc tag
+   instead starts the workflow automatically, and a tag with a pre-release
+   suffix always goes to `rc`.)
 5. Approve the gated `publish` job as with a stable release.
 
 The release branch is throwaway — the stable release still comes from Release
 Please on `main`.
+
+Actions -> Publish -> Run workflow still works for any release tag: use it for a
+dry run, or to publish a release whose automatic run failed. A run for a version
+that is already on npm fails in `preflight`, before anyone is asked to approve,
+so a re-run or a second dispatch cannot publish twice. If a run stopped partway
+through, `preflight` lists the packages already published, and finishing that
+release needs a maintainer: re-running the workflow will not.
 
 ### npm trusted publishing
 
