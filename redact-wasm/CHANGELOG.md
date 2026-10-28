@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/redact-wasm-v1.15.0) (2026-10-28)
+
+
+### 🧹 Miscellaneous Chores
+
+* sync proto & wasm ([#6343](https://github.com/arcjet/arcjet-js/issues/6343)) ([89f15b3](https://github.com/arcjet/arcjet-js/commit/89f15b30771aaf1768bb169f890688a304a001c2))
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/redact-wasm-v1.14.1) (2026-10-06)
 
 

@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/guard-v1.15.0) (2026-10-28)
+
+
+### 🚀 New Features
+
+* **guard:** screen Claude Agent SDK tool results before the model reads them ([#6324](https://github.com/arcjet/arcjet-js/issues/6324)) ([0ebc196](https://github.com/arcjet/arcjet-js/commit/0ebc1962331fff38d747fb7a61c8aa99825f10b8))
+
+
+### 🪲 Bug Fixes
+
+* **guard:** export validateGuardLabel and ArcjetInvalidLabelError from every runtime entry ([#6339](https://github.com/arcjet/arcjet-js/issues/6339)) ([58286cc](https://github.com/arcjet/arcjet-js/commit/58286cc615fd0248f362eb0fbdbc2734902d8f81))
+
+
+### 🧹 Miscellaneous Chores
+
+* sync proto & wasm ([#6343](https://github.com/arcjet/arcjet-js/issues/6343)) ([89f15b3](https://github.com/arcjet/arcjet-js/commit/89f15b30771aaf1768bb169f890688a304a001c2))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump @modelcontextprotocol/sdk from 1.30.1 to 1.32.0 ([#6315](https://github.com/arcjet/arcjet-js/issues/6315)) ([dbc7a64](https://github.com/arcjet/arcjet-js/commit/dbc7a6489ec6910cad2410d5a41bf042f1fd7929))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.14.1 to 1.15.0
+    * @arcjet/logger bumped from 1.14.1 to 1.15.0
+    * @arcjet/transport bumped from 1.14.1 to 1.15.0
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/guard-v1.14.1) (2026-10-06)
 
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@nosecone/next-v1.15.0) (2026-10-28)
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump next from 16.4.0 to 16.4.3 ([#6347](https://github.com/arcjet/arcjet-js/issues/6347)) ([6583dae](https://github.com/arcjet/arcjet-js/commit/6583daefb1eb97fab9d5f13daccc35563aa9bf78))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.14.1 to 1.15.0
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@nosecone/next-v1.14.1) (2026-10-06)
 
 

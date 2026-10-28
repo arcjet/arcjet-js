@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/fastify-v1.15.0) (2026-10-28)
+
+
+### 🚀 New Features
+
+* Support Web Bot Auth and SIGNED_BOT policies ([#6326](https://github.com/arcjet/arcjet-js/issues/6326)) ([54b675b](https://github.com/arcjet/arcjet-js/commit/54b675b810cc867adab99335252662520292a42a))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** return ERROR for missing or empty API key on protect ([#6330](https://github.com/arcjet/arcjet-js/issues/6330)) ([6d3d18d](https://github.com/arcjet/arcjet-js/commit/6d3d18d53a89e52184d4348a427410f4d72edc92))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/env bumped from 1.14.1 to 1.15.0
+    * @arcjet/headers bumped from 1.14.1 to 1.15.0
+    * @arcjet/ip bumped from 1.14.1 to 1.15.0
+    * @arcjet/logger bumped from 1.14.1 to 1.15.0
+    * @arcjet/protocol bumped from 1.14.1 to 1.15.0
+    * @arcjet/transport bumped from 1.14.1 to 1.15.0
+    * arcjet bumped from 1.14.1 to 1.15.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.14.1 to 1.15.0
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/fastify-v1.14.1) (2026-10-06)
 
 
