@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@nosecone/sveltekit-v1.15.0) (2026-10-28)
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump @sveltejs/kit from 2.70.3 to 3.0.0 ([#6344](https://github.com/arcjet/arcjet-js/issues/6344)) ([bd066a5](https://github.com/arcjet/arcjet-js/commit/bd066a5cc5490119e3e571cf8de654ba992ce99d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * nosecone bumped from 1.14.1 to 1.15.0
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@nosecone/sveltekit-v1.14.1) (2026-10-06)
 
 

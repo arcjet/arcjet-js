@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...v1.15.0) (2026-10-28)
+
+
+### 🚀 New Features
+
+* **guard:** screen Claude Agent SDK tool results before the model reads them ([#6324](https://github.com/arcjet/arcjet-js/issues/6324)) ([0ebc196](https://github.com/arcjet/arcjet-js/commit/0ebc1962331fff38d747fb7a61c8aa99825f10b8))
+* Support Web Bot Auth and SIGNED_BOT policies ([#6326](https://github.com/arcjet/arcjet-js/issues/6326)) ([54b675b](https://github.com/arcjet/arcjet-js/commit/54b675b810cc867adab99335252662520292a42a))
+
+
+### 🪲 Bug Fixes
+
+* **arcjet:** return ERROR for missing or empty API key on protect ([#6330](https://github.com/arcjet/arcjet-js/issues/6330)) ([6d3d18d](https://github.com/arcjet/arcjet-js/commit/6d3d18d53a89e52184d4348a427410f4d72edc92))
+* **guard:** export validateGuardLabel and ArcjetInvalidLabelError from every runtime entry ([#6339](https://github.com/arcjet/arcjet-js/issues/6339)) ([58286cc](https://github.com/arcjet/arcjet-js/commit/58286cc615fd0248f362eb0fbdbc2734902d8f81))
+* recognize Web Bot Auth signers added in well-known-bots d9812a9 ([#6348](https://github.com/arcjet/arcjet-js/issues/6348)) ([ee18ae0](https://github.com/arcjet/arcjet-js/commit/ee18ae0d26eae6a0d314f3ab53788f0d4473a8e2))
+* **sveltekit:** read Arcjet settings from process.env on SvelteKit 3 ([#6341](https://github.com/arcjet/arcjet-js/issues/6341)) ([0299bfc](https://github.com/arcjet/arcjet-js/commit/0299bfce62bb1e703da863ceff4042997b95493d))
+* **transport:** stop HTTP/2 session errors escaping as uncaught exceptions ([#6335](https://github.com/arcjet/arcjet-js/issues/6335)) ([53fc2be](https://github.com/arcjet/arcjet-js/commit/53fc2be217f3445927d1822843359b8c6ed4cacd))
+* validate characteristics at client construction ([#6329](https://github.com/arcjet/arcjet-js/issues/6329)) ([fb48086](https://github.com/arcjet/arcjet-js/commit/fb48086585aa9908ed86d75f67697617a772b2a4))
+
+
+### 🧹 Miscellaneous Chores
+
+* refresh well-known bot directory and analyzer wasm ([#6336](https://github.com/arcjet/arcjet-js/issues/6336)) ([0dfd734](https://github.com/arcjet/arcjet-js/commit/0dfd73497c14bdeec6b05dd78db0e75da92ea37c))
+* sync proto & wasm ([#6343](https://github.com/arcjet/arcjet-js/issues/6343)) ([89f15b3](https://github.com/arcjet/arcjet-js/commit/89f15b30771aaf1768bb169f890688a304a001c2))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump @modelcontextprotocol/sdk from 1.30.1 to 1.32.0 ([#6315](https://github.com/arcjet/arcjet-js/issues/6315)) ([dbc7a64](https://github.com/arcjet/arcjet-js/commit/dbc7a6489ec6910cad2410d5a41bf042f1fd7929))
+* **deps-dev:** bump @sveltejs/kit from 2.70.3 to 3.0.0 ([#6344](https://github.com/arcjet/arcjet-js/issues/6344)) ([bd066a5](https://github.com/arcjet/arcjet-js/commit/bd066a5cc5490119e3e571cf8de654ba992ce99d))
+* **deps-dev:** bump next from 16.4.0 to 16.4.3 ([#6347](https://github.com/arcjet/arcjet-js/issues/6347)) ([6583dae](https://github.com/arcjet/arcjet-js/commit/6583daefb1eb97fab9d5f13daccc35563aa9bf78))
+* **deps-dev:** bump proxy-addr from 2.0.7 to 2.0.8 ([#6316](https://github.com/arcjet/arcjet-js/issues/6316)) ([96fb41c](https://github.com/arcjet/arcjet-js/commit/96fb41cc2d462b5d033a5f895671ab6446558576))
+* **deps-dev:** bump qs from 6.16.0 to 6.16.2 ([#6342](https://github.com/arcjet/arcjet-js/issues/6342)) ([d0fbe79](https://github.com/arcjet/arcjet-js/commit/d0fbe792ab066b8d5e6eba07470a86e78daa596a))
+* **deps:** bump smol-toml from 1.8.0 to 1.9.0 ([#6313](https://github.com/arcjet/arcjet-js/issues/6313)) ([f58c89f](https://github.com/arcjet/arcjet-js/commit/f58c89f4249982d18d980a56a01e1d4470708b40))
+* **deps:** bump source-map-js from 1.2.1 to 1.2.2 ([#6314](https://github.com/arcjet/arcjet-js/issues/6314)) ([146ff1e](https://github.com/arcjet/arcjet-js/commit/146ff1e77cb85bd45fda620a8059f8bf53a60007))
+
+
+### ✅ Continuous Integration
+
+* allow Let's Encrypt revocation lookups from Windows and macOS runners ([#6345](https://github.com/arcjet/arcjet-js/issues/6345)) ([d6bd667](https://github.com/arcjet/arcjet-js/commit/d6bd66751c4d38021b41b2628edefa3185dc5935))
+* **publish:** wait for npm to show dist-tags against one deadline ([#6317](https://github.com/arcjet/arcjet-js/issues/6317)) ([d76c7e6](https://github.com/arcjet/arcjet-js/commit/d76c7e6e38fbc7b4b490995e8d57ff5533ed0e0a))
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...v1.14.1) (2026-10-06)
 
 
