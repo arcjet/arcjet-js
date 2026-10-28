@@ -73,5 +73,6 @@
     "sharp": false,
     "ssh2": false,
     "workerd": false
-  }
+  },
+  "trustedDependencies": []
 }
