@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/analyze-wasm-v1.15.0) (2026-10-28)
+
+
+### 🚀 New Features
+
+* Support Web Bot Auth and SIGNED_BOT policies ([#6326](https://github.com/arcjet/arcjet-js/issues/6326)) ([54b675b](https://github.com/arcjet/arcjet-js/commit/54b675b810cc867adab99335252662520292a42a))
+
+
+### 🧹 Miscellaneous Chores
+
+* refresh well-known bot directory and analyzer wasm ([#6336](https://github.com/arcjet/arcjet-js/issues/6336)) ([0dfd734](https://github.com/arcjet/arcjet-js/commit/0dfd73497c14bdeec6b05dd78db0e75da92ea37c))
+
 ## [1.14.1](https://github.com/arcjet/arcjet-js/compare/v1.14.0...@arcjet/analyze-wasm-v1.14.1) (2026-10-06)
 
 
