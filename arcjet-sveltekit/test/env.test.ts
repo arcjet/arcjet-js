@@ -72,9 +72,26 @@ async function ipForUnknownPeer(): Promise<string | undefined> {
   return details?.ip;
 }
 
-test.afterEach(() => {
-  delete svelteKitEnv.ARCJET_ENV;
-  delete process.env.ARCJET_ENV;
+// Any one of these set to `development` turns development mode on, so each is
+// cleared before every test and the inherited values restored at the end.
+const developmentFlags = ["ARCJET_ENV", "MODE", "NODE_ENV"] as const;
+const inherited = Object.fromEntries(developmentFlags.map((name) => [name, process.env[name]]));
+
+test.beforeEach(() => {
+  for (const name of developmentFlags) {
+    delete svelteKitEnv[name];
+    delete process.env[name];
+  }
+});
+
+test.after(() => {
+  for (const name of developmentFlags) {
+    if (inherited[name] === undefined) {
+      delete process.env[name];
+    } else {
+      process.env[name] = inherited[name];
+    }
+  }
 });
 
 test("a setting SvelteKit does not expose is read from process.env", async () => {
@@ -98,4 +115,16 @@ test("a setting SvelteKit exposes is used without process.env", async () => {
 
 test("a setting in neither leaves development mode off", async () => {
   assert.equal(await ipForUnknownPeer(), undefined);
+});
+
+test("a setting SvelteKit does not expose is unset on a runtime without process", async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, "process");
+  assert.ok(descriptor);
+  Object.defineProperty(globalThis, "process", { configurable: true, value: undefined });
+
+  try {
+    assert.equal(await ipForUnknownPeer(), undefined);
+  } finally {
+    Object.defineProperty(globalThis, "process", descriptor);
+  }
 });
