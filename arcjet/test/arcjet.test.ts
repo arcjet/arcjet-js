@@ -359,6 +359,10 @@ test("`arcjet`", async function (t) {
           "OSANO_BOT",
           "CLOUDFLARE_BROWSER_RUN",
           "LANE_AGENT",
+          "ISONSEARCH_CRAWLER",
+          "ISONAI_USER",
+          "LINER_BOT",
+          "LINER_USER",
           "CATEGORY:MONITOR",
           "SIGNED_BOT:https://signed.example.com/.well-known/http-message-signatures-directory",
         ] as const) {
