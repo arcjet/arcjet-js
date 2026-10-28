@@ -53,9 +53,9 @@ function asAppContext(value: unknown): TanStackAiContextSource | undefined {
 
 /**
  * TanStack's `ChatMiddlewareContext` always carries `requestId` and
- * `streamId` (both 0.8.0 and 0.52.x). Those fields are SDK-minted, so
+ * `streamId` (both 0.8.0 and 0.69.x). Those fields are SDK-minted, so
  * an envelope that looks like one must not be mined for correlation —
- * including the 0.52 `threadId` / deprecated `conversationId` alias.
+ * including the 0.69 `threadId` / deprecated `conversationId` alias.
  */
 function isMiddlewareEnvelope(source: TanStackAiContextSource): boolean {
   return typeof source.requestId === "string" && typeof source.streamId === "string";

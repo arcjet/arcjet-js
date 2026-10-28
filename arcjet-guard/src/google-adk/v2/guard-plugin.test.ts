@@ -40,7 +40,7 @@ async function runHook(plugin: GoogleAdkGuardPlugin, params: unknown) {
 }
 
 /**
- * ADK 2.0.0 `PluginManager.runCallbacks`: first non-undefined result
+ * ADK 2.0.0–2.3.0 `PluginManager.runCallbacks`: first non-undefined result
  * wins and remaining plugins are skipped.
  */
 async function firstWin(

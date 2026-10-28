@@ -11,7 +11,7 @@
  * (`>=2 <3`)**. Nothing in this module imports that package at
  * runtime: every Google ADK type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls it in. Latest supported
- * development pin is 2.0.0.
+ * development pin is 2.3.0.
  *
  * **Note:** the version segment is `v2` because it names Google ADK
  * JS 2.x. There is deliberately no unversioned

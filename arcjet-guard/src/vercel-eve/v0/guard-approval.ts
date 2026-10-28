@@ -303,15 +303,20 @@ function responseAgentContext<TInput>(
   // eveAgentContext is expected not to invoke getSandbox / getSkill during
   // metadata derivation. If that helper later starts calling them, this
   // response-time adapter would throw.
-  const sessionContext: SessionContext = {
+  //
+  // `getSkill` is required by `SessionContext` on eve 0.34–0.68 and absent
+  // from it on later releases. Assigning the stub through a variable, not as
+  // an object literal, satisfies both shapes.
+  const stub = {
     session,
-    getSandbox() {
+    getSandbox(): Promise<never> {
       return Promise.reject(new Error("@arcjet/guard: approval response context has no sandbox"));
     },
-    getSkill() {
+    getSkill(): never {
       throw new Error("@arcjet/guard: approval response context has no skill");
     },
   };
+  const sessionContext: SessionContext = stub;
   return omitBlankSessionCapture(eveAgentContext(sessionContext), sessionId);
 }
 

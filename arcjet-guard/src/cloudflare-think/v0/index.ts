@@ -11,7 +11,7 @@
  * (`>=0.3.0 <1`)**. Nothing in this module imports that package at
  * runtime: every Think type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls it in. Latest supported
- * development pin is 0.19.x. There is no `/v1` until Think ships
+ * development pin is 0.20.x. There is no `/v1` until Think ships
  * 1.x. The floor is 0.3.0 because that is the first release whose
  * `beforeToolCall` returns a functional `ToolCallDecision`
  * (`allow` / `block` / `substitute`).
