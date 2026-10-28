@@ -1812,8 +1812,9 @@ export declare type GuardRequest = Message<"proto.decide.v2.GuardRequest"> & {
 
   /**
    * A label identifying the protection boundary (e.g. "tools.weather").
-   * Required. Max 256 bytes. Only lowercase letters, digits, dash, dot, and
-   * underscore. Must start and end with a lowercase letter or digit. The
+   * Required. Max 256 bytes. Only ASCII letters of either case, digits, dash,
+   * dot, and underscore, matched case-sensitively. Must start and end with a
+   * letter or digit. The
    * cases every validator agrees on are in
    * proto/decide/v2/guard-label-cases.json in the arcjet monorepo.
    *
