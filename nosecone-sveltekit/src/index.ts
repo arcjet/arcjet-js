@@ -1,4 +1,3 @@
-import type { Handle, KitConfig } from "@sveltejs/kit";
 // oxlint-disable-next-line import/no-named-as-default
 import nosecone, {
   CONTENT_SECURITY_POLICY_DIRECTIVES,
@@ -22,6 +21,26 @@ export const defaults = {
 } as const;
 
 export { nosecone };
+
+// SvelteKit 2 exports `Handle` and `KitConfig` from `@sveltejs/kit`, SvelteKit 3
+// exports `Handle` from `@sveltejs/kit/hooks` and its config from
+// `@sveltejs/kit/vite`. Declare the shapes we need so our types work with both.
+
+/**
+ * SvelteKit `handle` hook.
+ */
+type Handle = <Event>(input: {
+  event: Event;
+  resolve: (event: Event) => Promise<Response> | Response;
+}) => Promise<Response>;
+
+/**
+ * SvelteKit `csp` configuration.
+ */
+type SvelteKitCsp = {
+  mode?: "hash" | "nonce" | "auto";
+  directives?: Record<string, string[] | boolean>;
+};
 
 /**
  * Create security headers.
@@ -56,8 +75,6 @@ export function createHook(options: Options = defaults): Handle {
   };
 }
 
-type SvelteKitCsp = Exclude<KitConfig["csp"], undefined>;
-
 /**
  * Content Security Policy configuration for SvelteKit.
  */
@@ -73,7 +90,7 @@ export type ContentSecurityPolicyConfig = {
   // TODO: Support `reportOnly`
 };
 
-function unquote(value?: string) {
+function unquote(value: string) {
   for (const [unquoted, quoted] of QUOTED) {
     if (value === quoted) {
       return unquoted;
@@ -118,7 +135,6 @@ function directivesToSvelteKitConfig(
     if (key === "upgrade-insecure-requests") {
       sveltekitDirectives[key] = true;
     } else {
-      // @ts-expect-error because we're mapping to SvelteKit options
       sveltekitDirectives[key] = values.map(unquote);
     }
   }
