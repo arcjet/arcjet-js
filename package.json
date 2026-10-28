@@ -16,21 +16,15 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "oxfmt": "0.73.0",
+    "oxfmt": "0.74.0",
     "oxlint": "1.88.0",
     "oxlint-tsgolint": "7.0.2004",
-    "turbo": "2.11.8"
+    "turbo": "2.11.10"
   },
   "overrides": {
     "@ai-sdk/anthropic": "4.0.81",
     "@ai-sdk/openai": "4.0.95",
     "@ai-sdk/provider-utils": "5.0.61",
-    "@fastify/ajv-compiler": {
-      "fast-uri": "3.1.8"
-    },
-    "@huggingface/transformers": {
-      "sharp": ">=0.35.5"
-    },
     "@nosecone/sveltekit": {
       "@sveltejs/kit": {
         "cookie": ">=0.7.2"
@@ -40,14 +34,8 @@
       "@anthropic-ai/sdk": "0.135.0"
     },
     "adm-zip": "0.6.1",
-    "ajv": {
-      "fast-uri": "3.1.8"
-    },
     "eve": {
       "undici": "^8.11.2"
-    },
-    "fast-json-stringify": {
-      "fast-uri": "4.2.2"
     },
     "miniflare": {
       "sharp": ">=0.35.5",
