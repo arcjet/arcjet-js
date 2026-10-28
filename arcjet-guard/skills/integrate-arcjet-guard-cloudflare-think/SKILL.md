@@ -132,9 +132,9 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate tool calls
 
 ```ts
-import { Think } from "@cloudflare/think";
-import { guardHooks } from "@arcjet/guard/cloudflare-think/v0";
 import { tokenBucket, policyInput } from "@arcjet/guard";
+import { guardHooks } from "@arcjet/guard/cloudflare-think/v0";
+import { Think } from "@cloudflare/think";
 
 import { arcjet } from "./arcjet.js";
 

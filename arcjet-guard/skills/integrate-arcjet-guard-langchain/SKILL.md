@@ -159,11 +159,11 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate authored tools
 
 ```ts
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/langchain/v1";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { guardTool } from "@arcjet/guard/langchain/v1";
-import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
-import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -190,7 +190,10 @@ export const lookupOrder = guardTool(
   {
     action: "order.looked-up",
     // Invoke config is the trusted half of LangChain `func`/`invoke`.
-    actor: (_input, runtime) => String(runtime?.configurable?.thread_id ?? userId),
+    actor: (_input, runtime) => {
+      const config = runtime as { configurable?: { thread_id?: string } } | undefined;
+      return String(config?.configurable?.thread_id ?? userId);
+    },
     inputs: (input) => ({
       orderNumber: policyInput.server.string(input.orderNumber),
     }),
@@ -222,9 +225,9 @@ export const lookupOrder = guardTool(
 ## Step 3: Gate unwrapped / MCP / runtime-discovered tools
 
 ```ts
-import { createAgent } from "langchain";
-import { guardMiddleware } from "@arcjet/guard/langchain/v1";
 import { tokenBucket } from "@arcjet/guard";
+import { guardMiddleware } from "@arcjet/guard/langchain/v1";
+import { createAgent } from "langchain";
 
 import { arcjet } from "./arcjet.js";
 

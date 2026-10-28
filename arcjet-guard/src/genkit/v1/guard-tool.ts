@@ -343,7 +343,7 @@ function copyToolDescriptors(tool: GenkitTool, onto: object): void {
  *   ),
  *   {
  *     action: "order.looked-up",
- *     rules: (input) => [lookupLimit({ key: input.orderNumber, requested: 1 })],
+ *     rules: (input: { orderNumber: string }) => [lookupLimit({ key: input.orderNumber, requested: 1 })],
  *   },
  * );
  * ```

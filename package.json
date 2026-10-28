@@ -16,9 +16,9 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "oxfmt": "0.67.0",
-    "oxlint": "1.82.0",
-    "oxlint-tsgolint": "7.0.2001",
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0",
+    "oxlint-tsgolint": "7.0.2004",
     "turbo": "2.11.8"
   },
   "overrides": {

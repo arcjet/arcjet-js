@@ -44,21 +44,24 @@ you build yourself with `validateGuardLabel` — a slug the service will not
 match reads as `ALLOW` with `hasFailedOpen()` false.
 
 ```ts
-const decision = await arcjet.guard({
-  label: "tools.get-weather",
-  rules: [/* ... */],
-  metadata: { user: { id: userId } },
-});
+async function getWeather(userId: string) {
+  const decision = await arcjet.guard({
+    label: "tools.get-weather",
+    rules: [/* ... */],
+    metadata: { user: { id: userId } },
+  });
 
-if (decision.conclusion === "DENY") {
-  const rateLimited = toolCallLimit.deniedResult(decision);
-  if (rateLimited) {
-    throw new Error(`rate limited – retry after unix ${rateLimited.resetAtUnixSeconds}`);
+  if (decision.conclusion === "DENY") {
+    const rateLimited = toolCallLimit.deniedResult(decision);
+    if (rateLimited) {
+      throw new Error(`rate limited – retry after unix ${rateLimited.resetAtUnixSeconds}`);
+    }
+    if (decision.reason === "PROMPT_INJECTION") {
+      throw new Error("input flagged as prompt injection");
+    }
+    return { error: decision.reason };
   }
-  if (decision.reason === "PROMPT_INJECTION") {
-    throw new Error("input flagged as prompt injection");
-  }
-  return { error: decision.reason };
+  // ... run the tool
 }
 ```
 

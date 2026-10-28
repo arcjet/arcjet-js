@@ -135,11 +135,11 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ## Step 2: Gate authored tools
 
 ```ts
+import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
+import { guardTool } from "@arcjet/guard/strands-agents/v1";
+import { rampart } from "@arcjet/sensitive-info-rampart";
 import { tool } from "@strands-agents/sdk";
 import { z } from "zod";
-import { guardTool } from "@arcjet/guard/strands-agents/v1";
-import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
-import { rampart } from "@arcjet/sensitive-info-rampart";
 
 import { arcjet } from "./arcjet.js";
 
@@ -167,10 +167,10 @@ export const lookupOrder = guardTool(
   {
     action: "order.looked-up",
     actor: userId,
-    inputs: (input) => ({
+    inputs: (input: { orderNumber: string; note: string }) => ({
       orderNumber: policyInput.server.string(input.orderNumber),
     }),
-    rules: (input) => [
+    rules: (input: { orderNumber: string; note: string }) => [
       lookupLimit({ key: input.orderNumber, requested: 1 }),
       detectPii(input.note),
     ],
@@ -199,9 +199,9 @@ export const lookupOrder = guardTool(
 ## Step 3: Gate unwrapped / MCP / vended tools
 
 ```ts
-import { Agent } from "@strands-agents/sdk";
-import { guardHooks } from "@arcjet/guard/strands-agents/v1";
 import { tokenBucket } from "@arcjet/guard";
+import { guardHooks } from "@arcjet/guard/strands-agents/v1";
+import { Agent } from "@strands-agents/sdk";
 
 import { arcjet } from "./arcjet.js";
 
