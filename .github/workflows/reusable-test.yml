@@ -51,6 +51,7 @@ jobs:
             *.apple-cloudkit.fe2.apple-dns.net:443
             *.apple-dns.net:443
             *.apple.com:443
+            *.c.lencr.org:80
             *.cdn-apple.com:443
             *.cloudflare.com:443
             *.data.microsoft.com:443
@@ -181,6 +182,7 @@ jobs:
             *.apple-cloudkit.fe2.apple-dns.net:443
             *.apple-dns.net:443
             *.apple.com:443
+            *.c.lencr.org:80
             *.cdn-apple.com:443
             *.cloudflare.com:443
             *.data.microsoft.com:443
@@ -330,6 +332,7 @@ jobs:
             *.apple-cloudkit.fe2.apple-dns.net:443
             *.apple-dns.net:443
             *.apple.com:443
+            *.c.lencr.org:80
             *.cdn-apple.com:443
             *.cloudflare.com:443
             *.data.microsoft.com:443
