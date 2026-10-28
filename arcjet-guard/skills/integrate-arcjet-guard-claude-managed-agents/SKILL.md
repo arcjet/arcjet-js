@@ -7,7 +7,7 @@ metadata:
   author: arcjet
   type: core
   library: "@arcjet/guard"
-  library_version: "1.14.1" # x-release-please-version
+  library_version: "1.15.0" # x-release-please-version
 sources:
   # Reviewed 2026-10-28: the oxfmt 0.74 reformat of README examples does not affect this skill.
   - README.md
