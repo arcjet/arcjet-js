@@ -121,7 +121,7 @@ test("TanStack AI namespace is a strict superset of the agents barrel with same 
   assert.deepEqual(sorted, expectedOwnExports);
 });
 
-test("export map has no unversioned ./tanstack-ai, no ./tanstack-ai/v1, and no wildcard subpaths", () => {
+test("export map has ./tanstack-ai/v0 and ./tanstack-ai/v1 only: no unversioned or wildcard subpaths", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
@@ -129,21 +129,21 @@ test("export map has no unversioned ./tanstack-ai, no ./tanstack-ai/v1, and no w
   const exportKeys = Object.keys(exportsMap);
 
   assert.ok(!exportKeys.includes("./tanstack-ai"), 'export map must not have "./tanstack-ai"');
-  assert.ok(
-    !exportKeys.includes("./tanstack-ai/v1"),
-    'export map must not have "./tanstack-ai/v1"',
-  );
   assert.ok(exportKeys.includes("./tanstack-ai/v0"), 'export map must have "./tanstack-ai/v0"');
+  assert.ok(exportKeys.includes("./tanstack-ai/v1"), 'export map must have "./tanstack-ai/v1"');
 
-  for (const key of exportKeys) {
-    if (key.startsWith("./tanstack-ai/")) {
-      assert.equal(
-        key,
-        "./tanstack-ai/v0",
-        `export map must not have wildcard tanstack-ai subpaths; found "${key}"`,
-      );
-    }
-  }
+  const tanstackKeys = exportKeys.filter((key) => key.startsWith("./tanstack-ai/"));
+  assert.deepEqual(
+    tanstackKeys,
+    ["./tanstack-ai/v0", "./tanstack-ai/v1"],
+    `export map must not have other tanstack-ai subpaths; found ${tanstackKeys.join(", ")}`,
+  );
+
+  const v1Entry = objectField(exportsMap, "./tanstack-ai/v1");
+  assert.deepEqual(v1Entry, {
+    types: "./dist/tanstack-ai/v1/index.d.ts",
+    import: "./dist/tanstack-ai/v1/index.js",
+  });
 });
 
 test("does not export guardTool, inbound, approval, or sibling-only APIs", () => {

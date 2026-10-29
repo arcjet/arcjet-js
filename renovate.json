@@ -104,9 +104,16 @@
       "allowedVersions": "<3"
     },
     {
-      "description": "Never automerge @tanstack/ai. It is pre-1.0, so a minor release may break. `@arcjet/guard/tanstack-ai/v0` types against ChatMiddleware, onBeforeToolCall, BeforeToolCallDecision, and chat({ context }). A green typecheck is necessary but not sufficient: the namespace also depends on onBeforeToolCall first-win composition (a preceding toolCacheMiddleware skip means Guard never runs) and on execute throws being swallowed into { error } — runtime contracts a typecheck cannot see. Keep the range below 1.0; tanstack-ai/v1 is added deliberately, not by a bump.",
+      "description": "Never automerge @tanstack/ai. `@arcjet/guard/tanstack-ai/v1` types against ChatMiddleware, onGuardToolCall, GuardToolCallDecision, chat({ context }), and chat({ threadId }). A green typecheck is necessary but not sufficient: the namespace also depends on onGuardToolCall running after every onBeforeToolCall and after the inputSchema check, with the final args — runtime contracts the test/tanstack-ai/v1 suite checks against the real chat(). Keep the range on 1.x; tanstack-ai/v2 is added deliberately, not by a bump. Matched by dependency name so the @tanstack/ai-v0 alias keeps its own rule.",
       "matchManagers": ["npm"],
-      "matchPackageNames": ["@tanstack/ai"],
+      "matchDepNames": ["@tanstack/ai"],
+      "automerge": false,
+      "allowedVersions": "<2"
+    },
+    {
+      "description": "Never automerge @tanstack/ai-v0, the npm alias of @tanstack/ai 0.x that `@arcjet/guard/tanstack-ai/v0` is tested against. 0.x minors may break. The namespace types against ChatMiddleware, onBeforeToolCall, BeforeToolCallDecision, and chat({ context }), and depends on onBeforeToolCall first-win composition and on execute throws being swallowed into { error } — runtime contracts a typecheck cannot see. Keep the alias below 1.0.",
+      "matchManagers": ["npm"],
+      "matchDepNames": ["@tanstack/ai-v0"],
       "automerge": false,
       "allowedVersions": "<1"
     },
