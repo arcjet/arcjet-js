@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { chat, toolDefinition } from "@tanstack/ai";
-import type { ChatMiddleware, ModelMessage } from "@tanstack/ai";
+import type { ChatMiddleware, ModelMessage, UIMessage } from "@tanstack/ai";
 import { toolCacheMiddleware } from "@tanstack/ai/middlewares";
 import { fakeText } from "@tanstack/ai/testing";
 
@@ -223,5 +223,97 @@ test("correlates on chat({ threadId }) when chat({ context }) has no id", async 
 test("gates a client tool before TanStack AI sends it to the client", async () => {
   const run = await runChat(decisionDenyPromptInjection(), { client: true });
   assert.equal(run.guardCalls.length, 1);
+  assert.equal(asDenial<ArcjetDenialResult>(toolResultPayload(run.toolMessage)).arcjetDenied, true);
+});
+
+async function runApproval(decision: Parameters<typeof stubClient>[0]): Promise<{
+  guardCallsWhileWaiting: number;
+  guardCalls: unknown[];
+  toolRuns: unknown[];
+  toolMessage: ModelMessage | undefined;
+}> {
+  const { client, guardCalls } = stubClient(decision);
+  const toolRuns: unknown[] = [];
+  const tool = toolDefinition({
+    name: "lookup",
+    description: "Look up an order",
+    needsApproval: true,
+  }).server((args: unknown) => {
+    toolRuns.push(args);
+    return { ok: true };
+  });
+  const middleware = [guardMiddleware(client)];
+  const fake = fakeText();
+
+  fake.setResponses([{ toolCalls: [{ name: "lookup", input: { q: "original" }, id: "call-1" }] }]);
+  let interrupted = false;
+  for await (const chunk of chat({
+    adapter: fake,
+    messages: [{ role: "user", content: "where is my order?" }],
+    threadId: "thread-caller",
+    tools: [tool],
+    middleware,
+  })) {
+    const event: Record<string, unknown> = { ...chunk };
+    const outcome = event["outcome"];
+    interrupted ||=
+      event["type"] === "RUN_FINISHED" &&
+      typeof outcome === "object" &&
+      outcome !== null &&
+      "type" in outcome &&
+      outcome.type === "interrupt";
+  }
+  assert.ok(interrupted, "the first run must stop for approval");
+  const guardCallsWhileWaiting = guardCalls.length;
+
+  let toolMessage: ModelMessage | undefined;
+  fake.setResponses([
+    ({ request }): { text: string } => {
+      toolMessage = request.messages.find((message) => message.role === "tool");
+      return { text: "done" };
+    },
+  ]);
+  const approved: UIMessage[] = [
+    { id: "u1", role: "user", parts: [{ type: "text", content: "where is my order?" }] },
+    {
+      id: "a1",
+      role: "assistant",
+      parts: [
+        {
+          type: "tool-call",
+          id: "call-1",
+          name: "lookup",
+          arguments: '{"q":"original"}',
+          state: "approval-responded",
+          approval: { id: "approval_call-1", needsApproval: true, approved: true },
+        },
+      ],
+    },
+  ];
+  for await (const chunk of chat({
+    adapter: fake,
+    messages: approved,
+    threadId: "thread-caller",
+    tools: [tool],
+    middleware,
+  })) {
+    void chunk;
+  }
+  return { guardCallsWhileWaiting, guardCalls, toolRuns, toolMessage };
+}
+
+test("needsApproval: no guard call while waiting; after a human yes, Guard runs once", async () => {
+  const run = await runApproval(decisionAllow());
+  assert.equal(run.guardCallsWhileWaiting, 0);
+  assert.equal(run.guardCalls.length, 1);
+  assert.deepEqual(run.toolRuns, [{ q: "original" }]);
+  assert.deepEqual(toolResultPayload(run.toolMessage), { ok: true });
+});
+
+test("needsApproval: a DENY after a human yes still skips the tool", async () => {
+  const run = await runApproval(decisionDenyPromptInjection());
+  assert.equal(run.guardCallsWhileWaiting, 0);
+  assert.equal(run.guardCalls.length, 1);
+  assert.equal(run.toolRuns.length, 0);
   assert.equal(asDenial<ArcjetDenialResult>(toolResultPayload(run.toolMessage)).arcjetDenied, true);
 });

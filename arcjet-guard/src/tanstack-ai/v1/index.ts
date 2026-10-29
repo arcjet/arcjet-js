@@ -7,12 +7,18 @@
  * framework-agnostic layer they build on, so a TanStack AI app needs
  * one import path and no notion of layering.
  *
- * **Requires the optional peer dependency `@tanstack/ai`
- * (`>=1.0.0 <2`)**. Nothing in this module imports that package at
- * runtime: every TanStack AI type arrives through `import type`, so
- * installing `@arcjet/guard` never pulls it in. Latest supported
- * development pin is 1.0.x. For TanStack AI 0.x use
- * `@arcjet/guard/tanstack-ai/v0`.
+ * **Requires `@tanstack/ai` 1.x.** The package declares one optional
+ * peer range, `>=0.8.0 <2`, for both this path and
+ * `@arcjet/guard/tanstack-ai/v0`, so npm and pnpm do not warn when this
+ * path is used with 0.x. TanStack AI 0.x never calls `onGuardToolCall`;
+ * `guardMiddleware` detects a 0.x run in `onStart`, warns, and aborts
+ * the run (or only warns with `onGuardError: "allow"`). For TanStack AI
+ * 0.x use `@arcjet/guard/tanstack-ai/v0`.
+ *
+ * Nothing in this module imports `@tanstack/ai` at runtime: every
+ * TanStack AI type arrives through `import type`, so installing
+ * `@arcjet/guard` never pulls it in. Latest supported development pin
+ * is 1.0.x.
  *
  * **Note:** the version segment names the SDK's major, not this
  * integration's iteration. There is deliberately no unversioned

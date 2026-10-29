@@ -87,6 +87,7 @@ export interface GuardMiddlewarePolicy {
  */
 export type TanStackAiGuardMiddleware = ChatMiddleware & {
   name: string;
+  onStart: NonNullable<ChatMiddleware["onStart"]>;
   onGuardToolCall: NonNullable<ChatMiddleware["onGuardToolCall"]>;
 };
 
@@ -104,6 +105,18 @@ function isToolCallHookContext(value: unknown): value is ToolCallHookContext {
   }
   return typeof value["toolName"] === "string";
 }
+
+/**
+ * TanStack AI 0.x never calls `onGuardToolCall`, so on a 0.x host this
+ * middleware would let every tool run ungated. `retry` is a required
+ * `ChatMiddlewareContext` field from 1.0 on, and 0.x does not have it.
+ */
+function isTanStackAi1Context(ctx: unknown): boolean {
+  return isRecord(ctx) && typeof ctx["retry"] === "function";
+}
+
+const WRONG_HOST_MESSAGE =
+  "@arcjet/guard/tanstack-ai/v1 needs @tanstack/ai 1.x, but this chat() run has no 1.x middleware context. TanStack AI 0.x never calls onGuardToolCall, so tools would run without Guard. Use @arcjet/guard/tanstack-ai/v0 with @tanstack/ai 0.x.";
 
 function isBrandedTool(tool: unknown): boolean {
   return tool !== null && typeof tool === "object" && arcjetProtectedTool in tool;
@@ -230,6 +243,12 @@ async function gateToolCall(
  * `onGuardToolCall` cannot wrap the tool; a later tool throw does
  * not flip that capture.
  *
+ * Requires TanStack AI 1.x. The `@tanstack/ai` peer range also admits
+ * 0.x (for `@arcjet/guard/tanstack-ai/v0`), and 0.x never calls
+ * `onGuardToolCall`. So the middleware also installs `onStart`: when
+ * the run's context is not a 1.x context it warns and aborts the run
+ * (or, with `onGuardError: "allow"`, only warns).
+ *
  * Do not double-wrap with `@arcjet/guard/vercel-ai/v7`. TanStack AI
  * is not the Vercel AI SDK.
  *
@@ -291,8 +310,23 @@ export function guardMiddleware(
     }
   };
 
+  const onStart = (ctx: ChatMiddlewareContext): void => {
+    if (isTanStackAi1Context(ctx)) {
+      return;
+    }
+    // Not gated on ARCJET_LOG_LEVEL: without it a wrong install is silent.
+    console.warn(`@arcjet/guard: ${WRONG_HOST_MESSAGE}`);
+    if (policy.onGuardError === "allow") {
+      return;
+    }
+    if (isRecord(ctx) && typeof ctx["abort"] === "function") {
+      ctx.abort(WRONG_HOST_MESSAGE);
+    }
+  };
+
   return {
     name: middlewareName(),
+    onStart,
     onGuardToolCall,
   };
 }

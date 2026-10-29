@@ -403,3 +403,58 @@ test("an input resolver failure follows the fail-closed unavailable path", async
   assert.equal(guardCalls.length, 1);
   assert.equal("inputs" in recorded(guardCalls[0]), false);
 });
+
+function withWarnings<T>(fn: () => T): { result: T; warnings: unknown[][] } {
+  const warnings: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args);
+  };
+  try {
+    return { result: fn(), warnings };
+  } finally {
+    console.warn = originalWarn;
+  }
+}
+
+test("onStart does nothing on a 1.x context (it has retry)", () => {
+  const { client } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client);
+  const aborts: unknown[] = [];
+  const ctx = {
+    ...middlewareCtx(),
+    retry: () => {},
+    abort: (reason?: string) => aborts.push(reason),
+  };
+  const { warnings } = withWarnings(() => mw.onStart(ctx as never));
+  assert.equal(aborts.length, 0);
+  assert.equal(warnings.length, 0);
+});
+
+test("onStart warns and aborts on a 0.x context (no retry)", () => {
+  const { client } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client);
+  const aborts: unknown[] = [];
+  const ctx = { ...middlewareCtx(), abort: (reason?: string) => aborts.push(reason) };
+  const { warnings } = withWarnings(() => mw.onStart(ctx as never));
+  assert.equal(aborts.length, 1);
+  assert.match(String(aborts[0]), /needs @tanstack\/ai 1\.x/);
+  assert.equal(warnings.length, 1);
+});
+
+test("onStart only warns on a 0.x context with onGuardError allow", () => {
+  const { client } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client, { onGuardError: "allow" });
+  const aborts: unknown[] = [];
+  const ctx = { ...middlewareCtx(), abort: (reason?: string) => aborts.push(reason) };
+  const { warnings } = withWarnings(() => mw.onStart(ctx as never));
+  assert.equal(aborts.length, 0);
+  assert.equal(warnings.length, 1);
+});
+
+test("onStart does not throw on a context without abort", () => {
+  const { client } = stubClient(decisionAllow());
+  const mw = guardMiddleware(client);
+  const { warnings } = withWarnings(() => mw.onStart({} as never));
+  assert.equal(warnings.length, 1);
+});
