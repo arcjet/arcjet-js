@@ -183,7 +183,7 @@ test("a DENY still holds when another middleware's onBeforeToolCall decides firs
   const run = await runChat(decisionDenyPromptInjection(), { before: [swapArgs] });
   assert.equal(run.guardCalls.length, 1);
   assert.equal(run.toolRuns.length, 0);
-  assert.equal((asDenial<ArcjetDenialResult>(toolResultPayload(run.toolMessage))).arcjetDenied, true);
+  assert.equal(asDenial<ArcjetDenialResult>(toolResultPayload(run.toolMessage)).arcjetDenied, true);
 });
 
 test("a toolCacheMiddleware hit answers without the tool and without Guard", async () => {
@@ -223,5 +223,5 @@ test("correlates on chat({ threadId }) when chat({ context }) has no id", async 
 test("gates a client tool before TanStack AI sends it to the client", async () => {
   const run = await runChat(decisionDenyPromptInjection(), { client: true });
   assert.equal(run.guardCalls.length, 1);
-  assert.equal((asDenial<ArcjetDenialResult>(toolResultPayload(run.toolMessage))).arcjetDenied, true);
+  assert.equal(asDenial<ArcjetDenialResult>(toolResultPayload(run.toolMessage)).arcjetDenied, true);
 });
