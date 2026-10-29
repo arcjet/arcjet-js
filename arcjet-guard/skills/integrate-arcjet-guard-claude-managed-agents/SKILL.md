@@ -2,14 +2,14 @@
 name: integrate-arcjet-guard-claude-managed-agents
 description: Integrate Arcjet security into Claude Managed Agents (hosted REST+SSE, beta managed-agents-2026-04-01) using @arcjet/guard — screen user.message / initial_events before sessions.events.send, and gate custom tools on agent.custom_tool_use. Use when asked to add Arcjet to Claude Managed Agents, rate limit custom tools, or block prompt injection on hosted sessions. Not the Claude Agent SDK.
 license: Apache-2.0
-compatibility: Requires the target app to use Claude Managed Agents via @anthropic-ai/sdk >=0.86.0 <1 on Node.js >= 22.
+compatibility: Requires the target app to use Claude Managed Agents via @anthropic-ai/sdk >=0.86.0 <2 on Node.js >= 22.
 metadata:
   author: arcjet
   type: core
   library: "@arcjet/guard"
   library_version: "1.15.0" # x-release-please-version
 sources:
-  # Reviewed 2026-10-28: the oxfmt 0.74 reformat of README examples does not affect this skill.
+  # Reviewed 2026-10-29: the README widens the @anthropic-ai/sdk peer range to <2; compatibility updated to match.
   - README.md
 ---
 

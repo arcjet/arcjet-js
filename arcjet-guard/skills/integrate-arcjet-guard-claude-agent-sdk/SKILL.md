@@ -9,6 +9,7 @@ metadata:
   library: "@arcjet/guard"
   library_version: "1.15.0" # x-release-please-version
 sources:
+  # Reviewed 2026-10-29: the README widens the claude-managed-agents/v0 @anthropic-ai/sdk peer range to <2; this skill is unaffected.
   - README.md
 ---
 
