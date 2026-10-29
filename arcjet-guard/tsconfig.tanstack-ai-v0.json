@@ -1,0 +1,26 @@
+{
+  // `@arcjet/guard/tanstack-ai/v0` targets `@tanstack/ai` 0.x, while the
+  // `@tanstack/ai` devDependency is the 1.x that `tanstack-ai/v1` targets.
+  // This project type-checks the v0 namespace and its real-SDK tests against
+  // the 0.x development alias `@tanstack/ai-v0` instead.
+  "extends": "./tsconfig.lint.json",
+  "compilerOptions": {
+    "paths": {
+      "@tanstack/ai": [
+        "./node_modules/@tanstack/ai-v0/dist/esm/index.d.ts",
+        "../node_modules/@tanstack/ai-v0/dist/esm/index.d.ts"
+      ],
+      // Subpath exports map to `<subpath>.d.ts` or `<subpath>/index.d.ts`.
+      // A subpath that fits neither fails to resolve rather than falling
+      // back to the 1.x package.
+      "@tanstack/ai/*": [
+        "./node_modules/@tanstack/ai-v0/dist/esm/*.d.ts",
+        "./node_modules/@tanstack/ai-v0/dist/esm/*/index.d.ts",
+        "../node_modules/@tanstack/ai-v0/dist/esm/*.d.ts",
+        "../node_modules/@tanstack/ai-v0/dist/esm/*/index.d.ts"
+      ]
+    }
+  },
+  "include": ["src/tanstack-ai/v0/**/*.ts", "test/tanstack-ai/v0/**/*.ts"],
+  "exclude": ["node_modules/"]
+}

@@ -143,10 +143,24 @@ change them:
   is a caller-owned id from helper options or
   `chat({ context })`. Never mint. Never `ctx.threadId`. Never
   `traceId` / `requestId` / `streamId`. There is no unversioned
-  `@arcjet/guard/tanstack-ai` alias and no `/v1` until TanStack AI
-  ships 1.x. Do not double-wrap with `@arcjet/guard/vercel-ai/v7`.
+  `@arcjet/guard/tanstack-ai` alias. Do not double-wrap with
+  `@arcjet/guard/vercel-ai/v7`.
   Do not name anything `contentGuardMiddleware`. Docs slug is
   `/guards/tanstack-ai/`.
+  `tanstack-ai/v1` is the same surface for TanStack AI 1.x, gated on
+  `ChatMiddleware.onGuardToolCall` instead: the 1.x guard tier runs
+  after every `onBeforeToolCall` and after the `inputSchema` check,
+  so Guard sees the final args, middleware order does not matter, and
+  an `onBeforeToolCall` skip (a `toolCacheMiddleware` hit) means no
+  guard runs. Correlation falls back to `ctx.threadId` last, because
+  1.x makes it a required caller value. Client tools are gated before
+  they are sent. The peer range does not stop `/v1` on 0.x (0.x never
+  calls `onGuardToolCall`), so `guardMiddleware` also installs
+  `onStart`, which warns and aborts a run whose context lacks the
+  1.x-only `retry`. v0 stays on 0.x: one `@tanstack/ai` peer range
+  covers both, the `@tanstack/ai` devDependency is 1.x, and the
+  `@tanstack/ai-v0` alias pins 0.x for `tsconfig.tanstack-ai-v0.json`
+  and `test/tanstack-ai/v0`.
 - **`google-adk/v2`** is JS `@google/adk` `Runner` +
   `BasePlugin.beforeToolCallback`: there is no `guardTool` (skip is
   the plugin return, not throw-from-execute), tool calls go through

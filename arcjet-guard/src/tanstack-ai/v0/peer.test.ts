@@ -25,7 +25,8 @@ test("@tanstack/ai is an optional peer and not a dependency", () => {
 
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies);
-  assert.equal(peerDependencies["@tanstack/ai"], ">=0.8.0 <1");
+  // One peer entry covers both namespaces: v0 targets 0.x and v1 targets 1.x.
+  assert.equal(peerDependencies["@tanstack/ai"], ">=0.8.0 <2");
 
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
   assert.ok(peerDependenciesMeta);
@@ -35,13 +36,14 @@ test("@tanstack/ai is an optional peer and not a dependency", () => {
 
   const dependencies = objectField(packageJson, "dependencies");
   assert.ok(!(dependencies && "@tanstack/ai" in dependencies));
+  assert.ok(!(dependencies && "@tanstack/ai-v0" in dependencies));
 
   const devDependencies = objectField(packageJson, "devDependencies");
   assert.ok(devDependencies);
   assert.equal(
-    devDependencies["@tanstack/ai"],
-    "0.69.0",
-    'devDependencies["@tanstack/ai"] must be pinned to "0.69.0"',
+    devDependencies["@tanstack/ai-v0"],
+    "npm:@tanstack/ai@0.69.0",
+    'devDependencies["@tanstack/ai-v0"] must alias @tanstack/ai pinned to "0.69.0"',
   );
 
   const engines = objectField(packageJson, "engines");
