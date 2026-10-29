@@ -100,7 +100,9 @@ test("guardCustomTool send payload is assignable to user.custom_tool_result para
 
 test("deny result with session_thread_id is assignable to user.custom_tool_result params", async () => {
   const { client } = stubClient(decisionDenyPromptInjection());
-  const event: BetaManagedAgentsAgentCustomToolUseEvent = {
+  // The SDK's event type gained `session_thread_id` after the 0.86.0 peer
+  // floor, so the literal is typed structurally to compile at the floor too.
+  const event: AgentCustomToolUseEvent = {
     type: "agent.custom_tool_use",
     id: "sevt_1",
     name: "lookup_order",
