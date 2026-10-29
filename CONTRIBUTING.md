@@ -154,7 +154,10 @@ change them:
   an `onBeforeToolCall` skip (a `toolCacheMiddleware` hit) means no
   guard runs. Correlation falls back to `ctx.threadId` last, because
   1.x makes it a required caller value. Client tools are gated before
-  they are sent. v0 stays on 0.x: one `@tanstack/ai` peer range
+  they are sent. The peer range does not stop `/v1` on 0.x (0.x never
+  calls `onGuardToolCall`), so `guardMiddleware` also installs
+  `onStart`, which warns and aborts a run whose context lacks the
+  1.x-only `retry`. v0 stays on 0.x: one `@tanstack/ai` peer range
   covers both, the `@tanstack/ai` devDependency is 1.x, and the
   `@tanstack/ai-v0` alias pins 0.x for `tsconfig.tanstack-ai-v0.json`
   and `test/tanstack-ai/v0`.

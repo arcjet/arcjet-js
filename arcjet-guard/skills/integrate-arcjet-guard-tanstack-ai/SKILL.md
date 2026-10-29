@@ -23,6 +23,12 @@ app's `@tanstack/ai` major:
 - `@tanstack/ai` 0.x → `@arcjet/guard/tanstack-ai/v0`. See
   [TanStack AI 0.x](#tanstack-ai-0x) for what differs.
 
+Check the installed major before you pick. The peer range `>=0.8.0 <2`
+admits both, so the package manager won't catch `/v1` on 0.x. TanStack AI
+0.x never calls `onGuardToolCall`: on a 0.x run the v1 middleware warns
+and aborts the run, or with `onGuardError: "allow"` only warns while tools
+run without Guard.
+
 Two surfaces, one decision rule:
 
 - **Tool calls** → `guardMiddleware()`. A `chat({ middleware })`

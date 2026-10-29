@@ -1607,19 +1607,26 @@ Correlation is a field the integrator puts on `invocationState`
 (`correlationId`, then `sessionId`, then `requestId`). Never mint.
 Never read `traceId`. Never use `SessionManager` or `agent.id`.
 
-- **`@arcjet/guard/tanstack-ai/v1`** — TanStack AI 1.x `chat({ middleware })`
-  - `ChatMiddleware.onGuardToolCall` integration. Exports `guardMiddleware`
-    and `tanstackAiContext`. This is **not** the Vercel AI SDK — do not also
-    wrap with `@arcjet/guard/vercel-ai/v7`. There is no `guardTool` (a throw
-    from `execute` is swallowed into `{ error }` and is not a usable deny
-    envelope), no `guardInbound` (screen with `guard()` before `chat()`;
-    `guard()` fails open — check `hasFailedOpen()`), and no `guardApproval`
-    (`needsApproval` / `defineInterrupt` / `onInterruptBoundary` is human
-    HITL, not policy). After a human yes, Guard still runs. Do not name
-    anything `contentGuardMiddleware` (TanStack already has that name). Docs
-    live at
-    [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
-    For TanStack AI 0.x, use `@arcjet/guard/tanstack-ai/v0`.
+- **`@arcjet/guard/tanstack-ai/v1`** — TanStack AI 1.x integration through
+  `chat({ middleware })` and `ChatMiddleware.onGuardToolCall`. Exports `guardMiddleware`
+  and `tanstackAiContext`. This is **not** the Vercel AI SDK — do not also
+  wrap with `@arcjet/guard/vercel-ai/v7`. There is no `guardTool` (a throw
+  from `execute` is swallowed into `{ error }` and is not a usable deny
+  envelope), no `guardInbound` (screen with `guard()` before `chat()`;
+  `guard()` fails open — check `hasFailedOpen()`), and no `guardApproval`
+  (`needsApproval` / `defineInterrupt` / `onInterruptBoundary` is human
+  HITL, not policy). After a human yes, Guard still runs. Do not name
+  anything `contentGuardMiddleware` (TanStack already has that name). Docs
+  live at
+  [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
+  For TanStack AI 0.x, use `@arcjet/guard/tanstack-ai/v0`.
+
+  **v1 needs TanStack AI 1.x.** The `@tanstack/ai` peer range,
+  `>=0.8.0 <2`, also admits 0.x, so a package manager doesn't warn, and
+  TanStack AI 0.x never calls `onGuardToolCall`. On a 0.x run,
+  `guardMiddleware` logs a warning from `onStart` and aborts the run
+  before the model is called. With `onGuardError: "allow"` it only warns,
+  and tools run without Guard.
 
   `onGuardToolCall` is the guard tier that TanStack AI 1.0 added for
   checks that must not be skipped. It runs after every
@@ -1684,6 +1691,36 @@ Never read `traceId`. Never use `SessionManager` or `agent.id`.
   });
   ```
 
+- **`@arcjet/guard/tanstack-ai/v0`** — TanStack AI 0.x integration through
+  `chat({ middleware })` and `ChatMiddleware.onBeforeToolCall`. Same
+  exports, policy, and deny shapes as `@arcjet/guard/tanstack-ai/v1`, for
+  apps on TanStack AI 0.x, which has no `onGuardToolCall`. It also runs on
+  1.x, but there use `@arcjet/guard/tanstack-ai/v1`. The inbound and HITL
+  sections that follow apply to both paths. v0 differs from v1 in the
+  following ways:
+
+  - Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
+    first-win: if `toolCacheMiddleware` (or anything else) decides
+    first, Guard never runs, and a `transformArgs` from a middleware
+    after Arcjet changes the args after Guard allowed them.
+  - Guard sees the args before the tool's `inputSchema` check.
+  - Correlation never reads `ctx.threadId`, because TanStack AI 0.x
+    generates one when the caller doesn't pass it.
+  - Client tools and provider-native tools with no local `execute` are
+    out of scope.
+
+  ```ts
+  import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
+
+  const stream = chat({
+    adapter,
+    messages,
+    tools: [lookupOrder],
+    context: { sessionId: conversationId },
+    middleware: [guardMiddleware(arcjet), toolCacheMiddleware()],
+  });
+  ```
+
 #### Screen inbound before `chat()` — there is no inbound hook.
 
 TanStack AI has no first-class inbound channel, so there is no
@@ -1702,45 +1739,19 @@ on the tool call. Same trap as Mastra `requireApproval`, Claude
 Agents `needsApproval`, and LangChain `humanInTheLoopMiddleware`.
 There is no `guardApproval`.
 
-#### Deny inside `guardMiddleware`'s `onGuardToolCall`. There is no `guardTool`.
+#### Deny inside `guardMiddleware`'s `onGuardToolCall` (v1) or `onBeforeToolCall` (v0). There is no `guardTool`.
 
-`onGuardToolCall` is the deny point. Default DENY is
+`onGuardToolCall` is the deny point in v1, and `onBeforeToolCall` in v0. Default DENY is
 `{ type: "skip", result: ArcjetDenialResult }`. Optional
 `onDeny: "abort"` returns `{ type: "abort", reason }` (the denial
 `message` string) and stops the run — the model does not get
 `ArcjetDenialResult`. `onDeny: "abort"` applies to real DENY only;
-unavailable stays skip. Do not throw from the hook. Among
+unavailable stays skip. Do not throw from the hook. In v1, among
 `onGuardToolCall` hooks the first decision wins, so a guard placed
-earlier that denies stops the call before Arcjet runs. Sibling
+earlier that denies stops the call before Arcjet runs. In v0, put
+Arcjet first, because `onBeforeToolCall` is first-win. Sibling
 `guardTool` brands are skipped; inbound `guard()` is a separate call
 and does not skip this gate.
-
-- **`@arcjet/guard/tanstack-ai/v0`** — TanStack AI 0.x `chat({ middleware })`
-  - `ChatMiddleware.onBeforeToolCall` integration. Same exports, policy,
-    and deny shapes as `@arcjet/guard/tanstack-ai/v1`, for apps on
-    TanStack AI 0.x, which has no `onGuardToolCall`. It also runs on 1.x,
-    but there use `@arcjet/guard/tanstack-ai/v1`. Differences from v1:
-  * Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
-    first-win: if `toolCacheMiddleware` (or anything else) decides
-    first, Guard never runs, and a `transformArgs` from a middleware
-    after Arcjet changes the args after Guard allowed them.
-  * Guard sees the args before the tool's `inputSchema` check.
-  * Correlation never reads `ctx.threadId`, because TanStack AI 0.x
-    generates one when the caller doesn't pass it.
-  * Client tools and provider-native tools with no local `execute` are
-    out of scope.
-
-  ```ts
-  import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
-
-  const stream = chat({
-    adapter,
-    messages,
-    tools: [lookupOrder],
-    context: { sessionId: conversationId },
-    middleware: [guardMiddleware(arcjet), toolCacheMiddleware()],
-  });
-  ```
 
 - **`@arcjet/guard/google-adk/v2`** — Google ADK JS `@google/adk`
   `Runner` + `BasePlugin.beforeToolCallback` integration. Exports
