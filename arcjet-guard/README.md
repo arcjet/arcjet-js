@@ -1607,37 +1607,44 @@ Correlation is a field the integrator puts on `invocationState`
 (`correlationId`, then `sessionId`, then `requestId`). Never mint.
 Never read `traceId`. Never use `SessionManager` or `agent.id`.
 
-- **`@arcjet/guard/tanstack-ai/v0`** — TanStack AI `chat({ middleware })` +
-  `ChatMiddleware.onBeforeToolCall` integration. Exports `guardMiddleware`
-  and `tanstackAiContext`. This is **not** the Vercel AI SDK — do not also
-  wrap with `@arcjet/guard/vercel-ai/v7`. There is no `guardTool` (a throw
-  from `execute` is swallowed into `{ error }` and is not a usable deny
-  envelope), no `guardInbound` (screen with `guard()` before `chat()`;
-  `guard()` fails open — check `hasFailedOpen()`), and no `guardApproval`
-  (`needsApproval` / `defineInterrupt` / `onInterruptBoundary` is human
-  HITL, not policy). After a human yes, Guard still runs. Do not name
-  anything `contentGuardMiddleware` (TanStack already has that name). Docs
-  live at
-  [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
+- **`@arcjet/guard/tanstack-ai/v1`** — TanStack AI 1.x `chat({ middleware })`
+  - `ChatMiddleware.onGuardToolCall` integration. Exports `guardMiddleware`
+    and `tanstackAiContext`. This is **not** the Vercel AI SDK — do not also
+    wrap with `@arcjet/guard/vercel-ai/v7`. There is no `guardTool` (a throw
+    from `execute` is swallowed into `{ error }` and is not a usable deny
+    envelope), no `guardInbound` (screen with `guard()` before `chat()`;
+    `guard()` fails open — check `hasFailedOpen()`), and no `guardApproval`
+    (`needsApproval` / `defineInterrupt` / `onInterruptBoundary` is human
+    HITL, not policy). After a human yes, Guard still runs. Do not name
+    anything `contentGuardMiddleware` (TanStack already has that name). Docs
+    live at
+    [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
+    For TanStack AI 0.x, use `@arcjet/guard/tanstack-ai/v0`.
 
-  Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
-  first-win; if `toolCacheMiddleware` (or anything else) skips first,
-  Guard never runs. Default DENY is `{ type: "skip", result:
-  ArcjetDenialResult }` so the tool never runs and the model sees the
-  payload. Optional `onDeny: "abort"` stops the run with a reason
-  string — the model does not get `ArcjetDenialResult`. The hook
-  does not throw. Tools already branded by a sibling `guardTool`
-  are skipped so Guard is not double-called. Inbound `guard()`
-  before `chat()` does not brand tools and does not skip this
-  gate. Correlation is a caller-owned id
-  from helper options or `chat({ context })`. Never mint. Never
-  `ctx.threadId`. Never `traceId` / `requestId` / `streamId`. Client
-  tools and provider-native tools with no local `execute` are out of
-  scope.
+  `onGuardToolCall` is the guard tier that TanStack AI 1.0 added for
+  checks that must not be skipped. It runs after every
+  `onBeforeToolCall` hook and after the tool's `inputSchema` check, so
+  Guard sees the args the tool runs with, and another middleware's
+  `transformArgs` can't change them after Guard allows the call. Where
+  Arcjet sits in the middleware array doesn't matter for that. An
+  `onBeforeToolCall` skip, such as a `toolCacheMiddleware` hit, answers
+  the call without running the tool, and no guard runs for it. Default
+  DENY is `{ type: "skip", result: ArcjetDenialResult }` so the tool
+  never runs and the model sees the payload. Optional
+  `onDeny: "abort"` stops the run with a reason string — the model
+  does not get `ArcjetDenialResult`. The hook does not throw. Tools
+  already branded by a sibling `guardTool` are skipped so Guard is not
+  double-called. Inbound `guard()` before `chat()` does not brand tools
+  and does not skip this gate. Correlation is a caller-owned id from
+  helper options or `chat({ context })`, and then the caller's
+  `chat({ threadId })`, which TanStack AI 1.x requires. Never mint.
+  Never `traceId` / `requestId` / `streamId`. Client tools with no
+  local `execute` are gated before TanStack AI sends them to the
+  client. Provider-native tools are out of scope.
 
   ```ts
   import { launchArcjet, detectPromptInjection, tokenBucket } from "@arcjet/guard";
-  import { guardMiddleware, tanstackAiContext } from "@arcjet/guard/tanstack-ai/v0";
+  import { guardMiddleware, tanstackAiContext } from "@arcjet/guard/tanstack-ai/v1";
   import { chat } from "@tanstack/ai";
 
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
@@ -1652,7 +1659,7 @@ Never read `traceId`. Never use `SessionManager` or `agent.id`.
   const decision = await arcjet.guard({
     label: "message.received",
     rules: [inbound(userText)],
-    ...tanstackAiContext({ context: appContext }),
+    ...tanstackAiContext({ threadId, context: appContext }),
   });
 
   if (decision.conclusion === "DENY") {
@@ -1665,13 +1672,13 @@ Never read `traceId`. Never use `SessionManager` or `agent.id`.
   const stream = chat({
     adapter,
     messages,
+    threadId,
     tools: [lookupOrder],
     context: appContext,
     middleware: [
       guardMiddleware(arcjet, {
         action: ({ toolName }) => `${toolName}.invoked`,
         rules: ({ toolName }) => [limit({ key: toolName, requested: 1 })],
-        sessionId: conversationId,
       }),
     ],
   });
@@ -1695,18 +1702,45 @@ on the tool call. Same trap as Mastra `requireApproval`, Claude
 Agents `needsApproval`, and LangChain `humanInTheLoopMiddleware`.
 There is no `guardApproval`.
 
-#### Deny inside `guardMiddleware`'s `onBeforeToolCall`. There is no `guardTool`.
+#### Deny inside `guardMiddleware`'s `onGuardToolCall`. There is no `guardTool`.
 
-`onBeforeToolCall` is the deny point. Default DENY is
+`onGuardToolCall` is the deny point. Default DENY is
 `{ type: "skip", result: ArcjetDenialResult }`. Optional
 `onDeny: "abort"` returns `{ type: "abort", reason }` (the denial
 `message` string) and stops the run — the model does not get
 `ArcjetDenialResult`. `onDeny: "abort"` applies to real DENY only;
-unavailable stays skip. Do not throw from the hook. Put Arcjet
-first — first-win composition means a preceding
-`toolCacheMiddleware` skip skips Guard too. Sibling `guardTool`
-brands are skipped; inbound `guard()` is a separate call and does
-not skip this gate.
+unavailable stays skip. Do not throw from the hook. Among
+`onGuardToolCall` hooks the first decision wins, so a guard placed
+earlier that denies stops the call before Arcjet runs. Sibling
+`guardTool` brands are skipped; inbound `guard()` is a separate call
+and does not skip this gate.
+
+- **`@arcjet/guard/tanstack-ai/v0`** — TanStack AI 0.x `chat({ middleware })`
+  - `ChatMiddleware.onBeforeToolCall` integration. Same exports, policy,
+    and deny shapes as `@arcjet/guard/tanstack-ai/v1`, for apps on
+    TanStack AI 0.x, which has no `onGuardToolCall`. It also runs on 1.x,
+    but there use `@arcjet/guard/tanstack-ai/v1`. Differences from v1:
+  * Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
+    first-win: if `toolCacheMiddleware` (or anything else) decides
+    first, Guard never runs, and a `transformArgs` from a middleware
+    after Arcjet changes the args after Guard allowed them.
+  * Guard sees the args before the tool's `inputSchema` check.
+  * Correlation never reads `ctx.threadId`, because TanStack AI 0.x
+    generates one when the caller doesn't pass it.
+  * Client tools and provider-native tools with no local `execute` are
+    out of scope.
+
+  ```ts
+  import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
+
+  const stream = chat({
+    adapter,
+    messages,
+    tools: [lookupOrder],
+    context: { sessionId: conversationId },
+    middleware: [guardMiddleware(arcjet), toolCacheMiddleware()],
+  });
+  ```
 
 - **`@arcjet/guard/google-adk/v2`** — Google ADK JS `@google/adk`
   `Runner` + `BasePlugin.beforeToolCallback` integration. Exports
@@ -1967,10 +2001,11 @@ importing only core guards are not forced to install unneeded packages:
   The peer range is `>=1.1.0 <2`. The floor is 1.1.0 because `HookOrder`
   - `interrupt()` shipped then; `cancel` itself is 1.0.0. Zod is their
     peer, not ours.
-- **`@arcjet/guard/tanstack-ai/v0`** requires `@tanstack/ai` (optional
-  peer, installed only to use `@arcjet/guard/tanstack-ai/v0`). The peer
-  range is `>=0.8.0 <1`. There is no `/v1` until TanStack AI ships 1.x.
-  Node stays Guard's existing floor.
+- **`@arcjet/guard/tanstack-ai/v1`** and **`@arcjet/guard/tanstack-ai/v0`**
+  require `@tanstack/ai` (optional peer, installed only to use one of
+  them). The peer range is `>=0.8.0 <2`: `/v1` is for 1.x and `/v0` is
+  for 0.8.0 to 0.x. Path segments match the TanStack AI major. Node stays
+  Guard's existing floor.
 - **`@arcjet/guard/google-adk/v2`** requires `@google/adk` (optional
   peer, installed only to use `@arcjet/guard/google-adk/v2`). The peer
   range is `>=2 <3`. Path is `/v2` to match ADK 2.x. Node stays
@@ -2041,7 +2076,7 @@ pnpm install @strands-agents/sdk
 ```
 
 ```sh
-# @arcjet/guard/tanstack-ai/v0
+# @arcjet/guard/tanstack-ai/v1
 pnpm install @tanstack/ai
 ```
 
@@ -2075,6 +2110,7 @@ is one path to learn and no layering to reason about.
 `@arcjet/guard/genkit/v1`,
 `@arcjet/guard/strands-agents/v1`,
 `@arcjet/guard/tanstack-ai/v0`,
+`@arcjet/guard/tanstack-ai/v1`,
 `@arcjet/guard/google-adk/v2`, and
 `@arcjet/guard/cloudflare-think/v0` now export
 these helpers. The open next step is
@@ -2383,7 +2419,7 @@ that a tool did not run:
 | LangChain        | Two envelopes: `guardTool` returns `{ arcjetDenied: true, … }` and `baseHandler` wraps it as a success `ToolMessage`; `guardMiddleware`'s `wrapToolCall` returns a real `ToolMessage` carrying the payload as `content` | `wrapToolCall`'s return skips `baseHandler`, so a bare object crashes the messages reducer, and a throw bubbles out of `invoke` and drops the fields |
 | Claude Agent SDK | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                                                                                                                                        | A throw is a raw exception; omitting `isError` looks like success                                                                                    |
 | Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                                                                                                                                         | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`                                                         |
-| TanStack AI      | `{ type: "skip", result: ArcjetDenialResult }` from `onBeforeToolCall`. Optional `onDeny: "abort"` returns `{ type: "abort", reason }`                                                                                  | A throw from `execute` is swallowed into `{ error }`. A throw from the hook aborts the run as an error, not a policy denial                          |
+| TanStack AI      | `{ type: "skip", result: ArcjetDenialResult }` from `onGuardToolCall` (v1) or `onBeforeToolCall` (v0). Optional `onDeny: "abort"` returns `{ type: "abort", reason }`                                                   | A throw from `execute` is swallowed into `{ error }`. A throw from the hook aborts the run as an error, not a policy denial                          |
 | Cloudflare Think | `{ action: "substitute", output: ArcjetDenialResult }` from `beforeToolCall`. Optional `onDeny: "block"` returns `{ action: "block", reason }`                                                                          | A throw from the hook is a hook error, not a policy denial. Fail-closed unavailable stays substitute                                                 |
 
 ```ts
@@ -2490,7 +2526,7 @@ For an example with Genkit, see [`genkit-agent`](https://github.com/arcjet/examp
 
 For an example with Strands Agents, see [`strands-agent`](https://github.com/arcjet/examples/tree/main/examples/strands-agent) (follow-up on that same PR): inbound screening before `invoke()` / `stream()`, `guardTool` / `guardHooks` (deny, PII on args, rate limit, fail-closed), and a caller-owned id on `invocationState`. `interrupt()` is HITL, not a policy gate; `BeforeToolCallEvent.cancel` is the deny point for unwrapped tools. Docs slug: [`/guards/strands-agents/`](https://docs.arcjet.com/guards/strands-agents/).
 
-For an example with TanStack AI, see [`tanstack-agent`](https://github.com/arcjet/examples/tree/main/examples/tanstack-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `chat()` (check `hasFailedOpen()`), `guardMiddleware` first in the middleware array (skip-deny, abort-deny, rate limit, fail-closed), and a caller-owned id on `chat({ context })`. `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL, not a policy gate; `onBeforeToolCall` is the deny point. Docs slug: [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
+For an example with TanStack AI, see [`tanstack-agent`](https://github.com/arcjet/examples/tree/main/examples/tanstack-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `chat()` (check `hasFailedOpen()`), `guardMiddleware` on `chat({ middleware })` (skip-deny, abort-deny, rate limit, fail-closed), and a caller-owned id on `chat({ context })`. `needsApproval` / `defineInterrupt` / `onInterruptBoundary` is HITL, not a policy gate; `onGuardToolCall` is the deny point in `@arcjet/guard/tanstack-ai/v1`, and `onBeforeToolCall` in `/v0`. Docs slug: [`/guards/tanstack-ai/`](https://docs.arcjet.com/guards/tanstack-ai/).
 
 For an example with Google ADK JS, see [`google-adk-agent`](https://github.com/arcjet/examples/tree/main/examples/google-adk-agent) (later follow-up; do not add it in this repo): inbound screening with `guard()` before `Runner.runAsync` (check `hasFailedOpen()`), `guardPlugin` first in `new Runner({ plugins })` (deny-dict skip, rate limit, fail-closed), and a caller-owned id on helper options (`guardPlugin({ sessionId })`; wins over durable `state`). ADK `Context` has no nested `context` field. `requireConfirmation` / `requestConfirmation` / `SecurityPlugin` CONFIRM is HITL, not a policy gate; `beforeToolCallback` is the deny point. Docs slug: [`/guards/google-adk/`](https://docs.arcjet.com/guards/google-adk/).
 

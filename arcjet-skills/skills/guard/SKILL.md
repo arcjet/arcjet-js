@@ -99,7 +99,8 @@ each input with `policyInput`. Omit them and the remote policy has nothing
 to read — its rules do not fire.
 
 Google ADK is `guardPlugin` (no `guardTool`). TanStack AI is
-`guardMiddleware` (do not wrap `execute`). LangChain `createAgent` is
+`guardMiddleware` (do not wrap `execute`): `/tanstack-ai/v1` for
+TanStack AI 1.x, `/tanstack-ai/v0` for 0.x. LangChain `createAgent` is
 `/langchain/v1`, not LangGraph.
 
 Load `@arcjet/skills#choose-protections` to pick rules. Exact signatures live
