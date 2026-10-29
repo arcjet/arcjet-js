@@ -131,6 +131,43 @@ jobs:
           node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
+      # The same floor check for `claude-managed-agents/v0`, whose
+      # `@anthropic-ai/sdk` range spans 0.x and 1.x while development pins a
+      # 1.x release. Its assignability tests are compile-time only, so the
+      # floor is type-checked as well as run.
+      #
+      # `--legacy-peer-deps` because other devDependencies declare their own
+      # `@anthropic-ai/sdk` peer (`@anthropic-ai/claude-agent-sdk` wants
+      # `>=0.93.0`, and a root override pins `@strands-agents/sdk`'s), which
+      # the floor does not meet. Only this namespace's resolution is asserted.
+      - name: Unit tests at the lowest supported @anthropic-ai/sdk
+        run: |
+          floor=$(node -e "
+            const r = require('./arcjet-guard/package.json').peerDependencies['@anthropic-ai/sdk'];
+            const m = /^>=\s*([0-9]+\.[0-9]+\.[0-9]+)/.exec(r);
+            if (!m) { console.error('cannot read a floor from peer range: ' + r); process.exit(1) }
+            process.stdout.write(m[1]);
+          ")
+          echo "lowest supported @anthropic-ai/sdk: $floor"
+          npm install "@anthropic-ai/sdk@$floor" --no-save --legacy-peer-deps --workspace @arcjet/guard
+          node -e "
+            const { createRequire } = require('node:module');
+            const { dirname, join } = require('node:path');
+            const { existsSync } = require('node:fs');
+            const resolver = createRequire(join(process.cwd(), 'arcjet-guard/src/claude-managed-agents/v0/index.ts'));
+            let dir = dirname(resolver.resolve('@anthropic-ai/sdk'));
+            while (!existsSync(join(dir, 'package.json'))) dir = dirname(dir);
+            const found = require(join(dir, 'package.json')).version;
+            if (found !== process.argv[1]) {
+              console.error('namespace resolves @anthropic-ai/sdk ' + found + ', expected the floor ' + process.argv[1]);
+              process.exit(1);
+            }
+            console.log('namespace resolves @anthropic-ai/sdk ' + found);
+          " "$floor"
+          npm run typecheck --workspace @arcjet/guard
+          node --test 'arcjet-guard/src/claude-managed-agents/**/*.test.ts'
+        working-directory: ${{ github.workspace }}
+
       # Each type-only vendor namespace is the same check: delete the optional
       # peer, prove it no longer resolves, then run `src/<namespace>` tests.
       # A static scan proves the imports are written `import type`; this proves
