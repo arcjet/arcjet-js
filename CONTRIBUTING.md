@@ -211,14 +211,18 @@ change them:
   `claudeManagedAgentsContext` (caller-owned only). Never mint.
   Never treat Anthropic session/event ids as if we created them.
   Never `traceId`. Peer is type-only `@anthropic-ai/sdk` `>=0.86.0
-  <1` (first release with `client.beta.agents` / `sessions` /
-  `environments`), not `@anthropic-ai/claude-agent-sdk`. Node stays
-  Guard's existing floor. Path is `/v0` because this is a public
-  beta — no unversioned alias, no `/v1`. Docs slug is
+  <2` (0.86.0 is the first release with `client.beta.agents` /
+  `sessions` / `environments`), not `@anthropic-ai/claude-agent-sdk`.
+  SDK 1.0 left the Managed Agents session event types unchanged, so
+  the range spans 0.x and 1.x on one path. Node stays Guard's
+  existing floor. Path is `/v0` because this is a public beta – it
+  tracks the Managed Agents beta API, not the SDK major – no
+  unversioned alias, no `/v1`. CI tests the 0.86.0 floor alongside
+  the 1.x dev pin. Docs slug is
   `/guards/claude-managed-agents/` (shared JS+Python page). Do not
   touch `/guards/claude-agent-sdk/` or `/guards/claude-agent-sdk-py/`.
   Do not add a `claude-managed-agents` example in this repo. The
-  workspace pins `@anthropic-ai/sdk` to `0.123.0` via a root
+  workspace pins `@anthropic-ai/sdk` to the dev pin via a root
   override so it does not collide with `@strands-agents/sdk`'s
   optional `^0.109.1` peer.
 - **Flat** — a single level under `@arcjet/guard`, no further nesting.

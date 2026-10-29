@@ -1937,8 +1937,8 @@ importing only core guards are not forced to install unneeded packages:
 - **`@arcjet/guard/claude-managed-agents/v0`** requires `@anthropic-ai/sdk`
   (optional type-only peer, installed only to use
   `@arcjet/guard/claude-managed-agents/v0`). The peer range is
-  `>=0.86.0 <1` — the first release with `client.beta.agents` /
-  `sessions` / `environments`. This is **not**
+  `>=0.86.0 <2`, which covers SDK 0.x and 1.x. 0.86.0 is the first release
+  with `client.beta.agents` / `sessions` / `environments`. This is **not**
   `@anthropic-ai/claude-agent-sdk`. Node stays Guard's existing floor.
 - **`@arcjet/guard/langgraph/v1`** requires `@langchain/langgraph` and
   `@langchain/core` (optional peers, installed only to use

@@ -8,16 +8,20 @@
  * PreToolUse**. This is not `@arcjet/guard/claude-agent-sdk/v0` and must not
  * reuse that adapter, its hooks, or `guardTool`.
  *
- * **Requires the optional type-only peer `@anthropic-ai/sdk` (`>=0.86.0 <1`)**,
- * the first release with `client.beta.agents` / `sessions` / `environments`.
+ * **Requires the optional type-only peer `@anthropic-ai/sdk` (`>=0.86.0 <2`)**.
+ * 0.86.0 is the first release with `client.beta.agents` / `sessions` /
+ * `environments`. SDK 1.x changed the default `anthropic-version` and removed
+ * legacy completions; the `managed-agents-2026-04-01` session event types this
+ * namespace mirrors are identical across 0.x and 1.x, so one path covers both.
  * Nothing in this module imports the SDK at runtime: every Anthropic type
  * arrives through structural types (and `import type` in assignability tests),
  * so installing `@arcjet/guard` never pulls `@anthropic-ai/sdk` in. Node stays
  * Guard's existing floor.
  *
  * **Note:** the version segment is `v0` because Managed Agents is a public
- * beta. There is deliberately no unversioned
- * `@arcjet/guard/claude-managed-agents` alias and no `/v1`.
+ * beta. It tracks that beta API, not the `@anthropic-ai/sdk` major. There is
+ * deliberately no unversioned `@arcjet/guard/claude-managed-agents` alias and
+ * no `/v1`.
  *
  * Three surfaces, and the things this namespace does not build:
  *
