@@ -490,6 +490,32 @@ decision.ip.threat?.activities; // Observed malicious behaviors
 decision.results; // ArcjetRuleResult[]
 ```
 
+### Errors from rules that run only in your app
+
+`sensitiveInfo`, and `filter` when the request passes `filterLocal`, read data
+that never leaves your app, so Arcjet Cloud cannot evaluate them. When one of
+these rules fails in `LIVE` mode, `protect()` returns an `ERROR` decision even
+if Arcjet Cloud allowed the request. Causes include:
+
+- The `sensitiveInfo` rule cannot read the request body.
+- The `sensitiveInfo` backend throws.
+- An invalid `filterLocal` value.
+- WebAssembly is not available in the runtime.
+
+An `ERROR` decision still fails open: `decision.isAllowed()` returns `true`. A
+`DENY` or `CHALLENGE` from Arcjet Cloud takes precedence over the error. The
+failing rule's `ERROR` result is in `decision.results`, and a failure in a
+`DRY_RUN` rule is reported there without changing the conclusion.
+
+If your app checks `decision.isErrored()` before `decision.isAllowed()`, for
+example to return a 500 error or to fail closed, it now takes that path for
+these failures. Before, these failures were not reported and the request was
+allowed.
+
+Rules that Arcjet Cloud also evaluates, such as rate limits, `shield`,
+`detectBot` and `validateEmail`, defer to Arcjet Cloud when WebAssembly is not
+available, and do not cause an `ERROR` decision.
+
 ### Bot verification details
 
 ```ts
