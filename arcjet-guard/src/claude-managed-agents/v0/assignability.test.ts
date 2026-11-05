@@ -4,6 +4,7 @@
  * Uses typed `const` declarations rather than casts — a cast would make the
  * test pass regardless.
  */
+import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import type {
@@ -123,4 +124,33 @@ test("deny result with session_thread_id is assignable to user.custom_tool_resul
     },
     { action: "order.looked-up" },
   );
+});
+
+test("an SDK-typed agent.custom_tool_use with session_thread_id is accepted and echoed", async () => {
+  const { client } = stubClient(decisionDenyPromptInjection());
+  // Assigned through a variable, not a literal, so this compiles at the 0.86.0
+  // floor, whose event type has no session_thread_id. From the release that
+  // added the field, its SDK type must fit the structural event.
+  const received = {
+    type: "agent.custom_tool_use" as const,
+    id: "sevt_1",
+    name: "lookup_order",
+    input: {},
+    processed_at: "2026-03-15T10:00:00Z",
+    session_thread_id: "thread_sub",
+  };
+  const event: BetaManagedAgentsAgentCustomToolUseEvent = received;
+
+  const gated = await guardCustomTool(
+    client,
+    {
+      event,
+      execute: () => Promise.resolve("nope"),
+      send: (result) => Promise.resolve(result),
+    },
+    { action: "order.looked-up" },
+  );
+
+  assert.ok(!gated.allowed);
+  assert.equal(gated.result.session_thread_id, "thread_sub");
 });
