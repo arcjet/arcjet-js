@@ -131,15 +131,19 @@ jobs:
           node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
-      # The same floor check for `claude-managed-agents/v0`, whose
-      # `@anthropic-ai/sdk` range spans 0.x and 1.x while development pins a
-      # 1.x release. Its assignability tests are compile-time only, so the
-      # floor is type-checked as well as run.
+      # The same floor check for `claude-managed-agents`. Its `@anthropic-ai/sdk`
+      # range spans 0.x (`/v0`) and 1.x (`/v1`, a re-export of `/v0`), and
+      # development pins a 1.x release, so this step is what keeps 0.x tested.
       #
       # `--legacy-peer-deps` because other devDependencies declare their own
       # `@anthropic-ai/sdk` peer (`@anthropic-ai/claude-agent-sdk` wants
       # `>=0.93.0`, and a root override pins `@strands-agents/sdk`'s), which
       # the floor does not meet. Only this namespace's resolution is asserted.
+      #
+      # The floor stays installed for every later step in this job. The type
+      # check is next, and the peer-absent step after it deletes the SDK
+      # outright. A step added after this one that needs the dev pin must
+      # reinstall it.
       - name: Unit tests at the lowest supported @anthropic-ai/sdk
         run: |
           floor=$(node -e "
@@ -164,9 +168,15 @@ jobs:
             }
             console.log('namespace resolves @anthropic-ai/sdk ' + found);
           " "$floor"
-          npm run typecheck --workspace @arcjet/guard
           node --test 'arcjet-guard/src/claude-managed-agents/**/*.test.ts'
         working-directory: ${{ github.workspace }}
+
+      # The assignability tests are compile-time only, so the floor is
+      # type-checked too. The result does not depend on the Node version, so
+      # it runs on one matrix leg.
+      - name: Type-check at the lowest supported @anthropic-ai/sdk
+        if: matrix.node == 24
+        run: npm run typecheck
 
       # Each type-only vendor namespace is the same check: delete the optional
       # peer, prove it no longer resolves, then run `src/<namespace>` tests.
