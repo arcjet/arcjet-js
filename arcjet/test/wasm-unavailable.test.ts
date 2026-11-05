@@ -12,7 +12,7 @@ type RuleErrorReport = { conclusion: string; message: string };
  * `@arcjet/analyze-wasm` so `initializeWasm` returns `undefined`.
  */
 function runUnavailable(): {
-  fingerprintDecision: { isErrored: boolean; isAllowed: boolean; message: string };
+  fingerprintDecision: { isErrored: boolean; isAllowed: boolean; decideCalls: number };
   email: RuleErrorReport;
   bot: RuleErrorReport;
   filter: RuleErrorReport;
@@ -122,17 +122,21 @@ const slidingWindowResult = await slidingWindowRule.protect(context, details);
 const [shieldRule] = shield({ mode: "LIVE" });
 const shieldResult = await shieldRule.protect(context, details);
 
+let decideCalls = 0;
 const instance = arcjet({
   key: "ajkey_test",
   log,
   rules: [],
   client: {
     async decide() {
+      decideCalls += 1;
       return new ArcjetAllowDecision({ ttl: 0, reason: new ArcjetReason(), results: [] });
     },
     report() {},
   },
 });
+// Top-level fingerprint unavailable must not skip Decide: the cloud service
+// can still fingerprint and evaluate remote rules.
 const fingerprintDecision = await instance.protect({}, { ip: "1.2.3.4" });
 
 process.stdout.write(
@@ -140,7 +144,7 @@ process.stdout.write(
     fingerprintDecision: {
       isErrored: fingerprintDecision.isErrored(),
       isAllowed: fingerprintDecision.isAllowed(),
-      message: reasonMessage(fingerprintDecision.reason),
+      decideCalls,
     },
     email: report(emailResult),
     bot: report(botResult),
@@ -172,12 +176,10 @@ process.stdout.write(
 test("Wasm unavailable maps to ERROR decisions without throwing", async function () {
   const report = runUnavailable();
 
-  assert.equal(report.fingerprintDecision.isErrored, true);
+  // Local fingerprint unavailable: continue to Decide so cloud rules still run.
+  assert.equal(report.fingerprintDecision.isErrored, false);
   assert.equal(report.fingerprintDecision.isAllowed, true);
-  assert.match(
-    report.fingerprintDecision.message,
-    /Failed to build fingerprint because Wasm is not supported/,
-  );
+  assert.equal(report.fingerprintDecision.decideCalls, 1);
 
   assert.equal(report.email.conclusion, "ERROR");
   assert.match(report.email.message, /EMAIL rule failed to run because Wasm is not supported/);

@@ -3993,20 +3993,19 @@ export default function arcjet<
     const logFingerprintPerf = perf.measure("fingerprint");
     try {
       const generated = await analyze.generateFingerprint(baseContext, toAnalyzeRequest(details));
+      // When Wasm is unavailable, `generateFingerprint` returns `undefined`.
+      // Keep an empty local fingerprint and continue so `client.decide()` still
+      // runs: the cloud service can fingerprint and evaluate remote rules.
+      // (Thrown fingerprint failures below remain hard errors — those are
+      // characteristic/config problems, not a missing Wasm runtime.)
       if (typeof generated === "undefined") {
-        log.error("Failed to build fingerprint because Wasm is not supported in this environment.");
-
-        return new ArcjetErrorDecision({
-          ttl: 0,
-          reason: new ArcjetErrorReason(
-            "Failed to build fingerprint because Wasm is not supported in this environment.",
-          ),
-          // No results because we couldn't create a fingerprint
-          results: [],
-        });
+        log.error(
+          "Failed to build local fingerprint because Wasm is not supported in this environment; continuing so the cloud service can decide.",
+        );
+      } else {
+        fingerprint = generated;
+        log.debug("fingerprint (%s): %s", rt, fingerprint);
       }
-      fingerprint = generated;
-      log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
       log.error(
         { error: errorMessage(error) },
