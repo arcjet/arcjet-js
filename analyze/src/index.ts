@@ -84,6 +84,29 @@ export {
 };
 
 /**
+ * Error thrown when an analyzer cannot run because WebAssembly is not
+ * available in this runtime.
+ *
+ * Callers can tell it apart from other failures by `code`, which also works
+ * when more than one copy of this package is installed.
+ */
+export class WasmUnavailableError extends Error {
+  /**
+   * Stable identifier for this failure.
+   */
+  readonly code = "WASM_UNAVAILABLE";
+
+  /**
+   * @param message
+   *   Message naming the analysis that could not run.
+   */
+  constructor(message: string) {
+    super(message);
+    this.name = "WasmUnavailableError";
+  }
+}
+
+/**
  * Number of bytes a code point occupies in UTF-8.
  *
  * @param codePoint
@@ -246,15 +269,14 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
  * @param request
  *   Request.
  * @returns
- *   Promise for a SHA-256 fingerprint, or `undefined` when WebAssembly is not
- *   available in this runtime.
- *   Callers must treat `undefined` as analyzer unavailable rather than as a
- *   successful empty result.
+ *   Promise for a SHA-256 fingerprint.
+ * @throws {WasmUnavailableError}
+ *   When WebAssembly is not available in this runtime.
  */
 export async function generateFingerprint(
   context: AnalyzeContext,
   request: AnalyzeRequest,
-): Promise<string | undefined> {
+): Promise<string> {
   const { log } = context;
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
@@ -264,7 +286,9 @@ export async function generateFingerprint(
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  return undefined;
+  throw new WasmUnavailableError(
+    "Failed to build fingerprint because Wasm is not supported in this environment.",
+  );
 }
 
 /**
@@ -277,14 +301,15 @@ export async function generateFingerprint(
  * @param options
  *   Configuration.
  * @returns
- *   Promise for a result, or `undefined` when WebAssembly is not available in
- *   this runtime.
+ *   Promise for a result.
+ * @throws {WasmUnavailableError}
+ *   When WebAssembly is not available in this runtime.
  */
 export async function isValidEmail(
   context: AnalyzeContext,
   value: string,
   options: EmailValidationConfig,
-): Promise<EmailValidationResult | undefined> {
+): Promise<EmailValidationResult> {
   const { log } = context;
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
@@ -294,7 +319,9 @@ export async function isValidEmail(
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  return undefined;
+  throw new WasmUnavailableError(
+    "EMAIL rule failed to run because Wasm is not supported in this environment.",
+  );
 }
 
 /**
@@ -307,14 +334,15 @@ export async function isValidEmail(
  * @param options
  *   Configuration.
  * @returns
- *   Promise for a result, or `undefined` when WebAssembly is not available in
- *   this runtime.
+ *   Promise for a result.
+ * @throws {WasmUnavailableError}
+ *   When WebAssembly is not available in this runtime.
  */
 export async function detectBot(
   context: AnalyzeContext,
   request: AnalyzeRequest,
   options: BotConfig,
-): Promise<BotResult | undefined> {
+): Promise<BotResult> {
   const { log } = context;
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
@@ -324,7 +352,9 @@ export async function detectBot(
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  return undefined;
+  throw new WasmUnavailableError(
+    "BOT rule failed to run because Wasm is not supported in this environment.",
+  );
 }
 
 /**
@@ -343,8 +373,9 @@ export async function detectBot(
  * @param detect
  *   Function to detect sensitive info (optional).
  * @returns
- *   Promise for a result, or `undefined` when WebAssembly is not available in
- *   this runtime.
+ *   Promise for a result.
+ * @throws {WasmUnavailableError}
+ *   When WebAssembly is not available in this runtime.
  */
 export async function detectSensitiveInfo(
   context: AnalyzeContext,
@@ -352,7 +383,7 @@ export async function detectSensitiveInfo(
   entities: SensitiveInfoEntities,
   contextWindowSize: number,
   detect?: DetectSensitiveInfoFunction,
-): Promise<SensitiveInfoResult | undefined> {
+): Promise<SensitiveInfoResult> {
   const { log } = context;
   const coreImports = createCoreImports(detect);
   const analyze = await initializeWasm(coreImports);
@@ -374,7 +405,9 @@ export async function detectSensitiveInfo(
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  return undefined;
+  throw new WasmUnavailableError(
+    "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
+  );
 }
 
 /**
@@ -389,8 +422,9 @@ export async function detectSensitiveInfo(
  * @param expressions
  *   Filter expressions.
  * @returns
- *   Promise to whether the filter matches the request, or `undefined` when
- *   WebAssembly is not available in this runtime.
+ *   Promise to whether the filter matches the request.
+ * @throws {WasmUnavailableError}
+ *   When WebAssembly is not available in this runtime.
  */
 export async function matchFilters(
   context: AnalyzeContext,
@@ -398,7 +432,7 @@ export async function matchFilters(
   localFields: string,
   expressions: ReadonlyArray<string>,
   allowIfMatch: boolean,
-): Promise<FilterResult | undefined> {
+): Promise<FilterResult> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
@@ -413,5 +447,7 @@ export async function matchFilters(
   }
 
   context.log.debug("WebAssembly is not supported in this runtime");
-  return undefined;
+  throw new WasmUnavailableError(
+    "FILTER rule failed to run because Wasm is not supported in this environment.",
+  );
 }

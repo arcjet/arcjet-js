@@ -709,49 +709,36 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
         });
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
 
-        if (result === undefined) {
-          localResult = {
-            case: "resultError" as const,
-            value: create(ResultErrorSchema, {
-              message:
-                backend === wasmSensitiveInfoBackend
-                  ? "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment."
-                  : "SENSITIVE_INFO rule failed to run because the sensitive info backend could not run.",
-              code: "SENSITIVE_INFO_ERROR",
-            }),
-          };
-        } else {
-          const deniedTypes = [
-            ...new Set(
-              result.denied
-                .map((d) => entityToString(d.identifiedType))
-                .filter((t): t is SensitiveInfoEntityType => t !== undefined),
-            ),
-          ];
-          localResult = {
-            case: "resultComputed" as const,
-            value: create(ResultLocalSensitiveInfoSchema, {
-              conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
-              // `detected`, like the evidence below, reports only recognized
-              // denied entities. Allowed findings remain private and do not
-              // affect the projected result.
-              detected: deniedTypes.length > 0,
-              detectedEntityTypes: deniedTypes,
-              detectedEntities: result.denied
-                .map((entity) => {
-                  const type = entityToString(entity.identifiedType);
-                  return type === undefined
-                    ? undefined
-                    : create(GuardSensitiveInfoEntitySchema, {
-                        type,
-                        start: entity.start,
-                        end: entity.end,
-                      });
-                })
-                .filter((entity) => entity !== undefined),
-            }),
-          };
-        }
+        const deniedTypes = [
+          ...new Set(
+            result.denied
+              .map((d) => entityToString(d.identifiedType))
+              .filter((t): t is SensitiveInfoEntityType => t !== undefined),
+          ),
+        ];
+        localResult = {
+          case: "resultComputed" as const,
+          value: create(ResultLocalSensitiveInfoSchema, {
+            conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
+            // `detected`, like the evidence below, reports only recognized
+            // denied entities. Allowed findings remain private and do not
+            // affect the projected result.
+            detected: deniedTypes.length > 0,
+            detectedEntityTypes: deniedTypes,
+            detectedEntities: result.denied
+              .map((entity) => {
+                const type = entityToString(entity.identifiedType);
+                return type === undefined
+                  ? undefined
+                  : create(GuardSensitiveInfoEntitySchema, {
+                      type,
+                      start: entity.start,
+                      end: entity.end,
+                    });
+              })
+              .filter((entity) => entity !== undefined),
+          }),
+        };
       } catch (err: unknown) {
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
         localResult = {

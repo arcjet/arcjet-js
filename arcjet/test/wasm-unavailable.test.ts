@@ -5,23 +5,25 @@ import { fileURLToPath } from "node:url";
 
 const arcjetRoot = fileURLToPath(new URL("..", import.meta.url));
 
-type RuleErrorReport = { conclusion: string; message: string };
+type RuleReport = { ruleId: string; state: string; conclusion: string; message: string };
+type DecisionReport = {
+  id: string;
+  conclusion: string;
+  isAllowed: boolean;
+  message: string;
+  results: Array<{ state: string; conclusion: string }>;
+  decideCalls: number;
+};
 
 /**
- * Exercise Wasm-unavailable ERROR mapping in a child process that mocks
- * `@arcjet/analyze-wasm` so `initializeWasm` returns `undefined`.
+ * Exercise the SDK in a child process that mocks `@arcjet/analyze-wasm` so
+ * `initializeWasm` returns `undefined`.
  */
 function runUnavailable(): {
-  fingerprintDecision: { isErrored: boolean; isAllowed: boolean; decideCalls: number };
-  email: RuleErrorReport;
-  bot: RuleErrorReport;
-  filter: RuleErrorReport;
-  sensitiveInfo: RuleErrorReport;
-  customSensitiveInfo: RuleErrorReport;
-  tokenBucket: RuleErrorReport;
-  fixedWindow: RuleErrorReport;
-  slidingWindow: RuleErrorReport;
-  shield: RuleErrorReport;
+  rules: Record<string, RuleReport>;
+  decisions: Record<string, DecisionReport>;
+  warnings: number;
+  emptyFingerprintCacheDecideCalls: number;
 } {
   const script = `
 import { mock } from "node:test";
@@ -44,16 +46,20 @@ const {
   slidingWindow,
   shield,
   ArcjetAllowDecision,
+  ArcjetDenyDecision,
   ArcjetReason,
+  ArcjetRuleResult,
 } = await import("arcjet");
 
-const log = { debug() {}, info() {}, warn() {}, error() {} };
+let warnings = 0;
+const log = { debug() {}, info() {}, warn() { warnings += 1; }, error() {} };
+const body = "4242424242424242";
 
 const context = {
   cache: new MemoryCache(),
   characteristics: [],
-  fingerprint: "fp-test",
-  getBody: async () => "4242424242424242",
+  fingerprint: "",
+  getBody: async () => body,
   key: "ajkey_test",
   log,
   runtime: "node",
@@ -71,91 +77,149 @@ const details = {
   query: "",
 };
 
-function reasonMessage(reason) {
-  return reason && typeof reason.message === "string" ? reason.message : String(reason);
+function ruleReport(result) {
+  return {
+    ruleId: result.ruleId,
+    state: result.state,
+    conclusion: result.conclusion,
+    message: typeof result.reason.message === "string" ? result.reason.message : "",
+  };
 }
 
-function report(result) {
-  return { conclusion: result.conclusion, message: reasonMessage(result.reason) };
+async function protectRule([rule], request = details) {
+  return ruleReport(await rule.protect(context, request));
 }
 
-const [emailRule] = validateEmail({ allow: [], mode: "LIVE" });
-const emailResult = await emailRule.protect(context, { ...details, email: "a@b.c" });
+const rules = {
+  email: await protectRule(validateEmail({ allow: [], mode: "LIVE" }), { ...details, email: "a@b.c" }),
+  bot: await protectRule(detectBot({ allow: [], mode: "LIVE" })),
+  filter: await protectRule(filter({ deny: ["ip.src == 1.2.3.4"], mode: "LIVE" })),
+  filterLocal: await protectRule(filter({ deny: ['local.plan == "free"'], mode: "LIVE" }), {
+    ...details,
+    extra: { filterLocal: JSON.stringify({ plan: "free" }) },
+  }),
+  sensitiveInfo: await protectRule(sensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"], mode: "LIVE" })),
+  customSensitiveInfo: await protectRule(
+    sensitiveInfo({
+      deny: ["CREDIT_CARD_NUMBER"],
+      mode: "LIVE",
+      backend: {
+        async detect() {
+          throw new Error("custom backend is down");
+        },
+      },
+    }),
+  ),
+  tokenBucket: await protectRule(
+    tokenBucket({ mode: "LIVE", refillRate: 1, interval: 60, capacity: 1 }),
+    { ...details, extra: { requested: "1" } },
+  ),
+  fixedWindow: await protectRule(fixedWindow({ mode: "LIVE", window: "1m", max: 1 })),
+  slidingWindow: await protectRule(slidingWindow({ mode: "LIVE", interval: 60, max: 1 })),
+  shield: await protectRule(shield({ mode: "LIVE" })),
+};
 
-const [botRule] = detectBot({ allow: [], mode: "LIVE" });
-const botResult = await botRule.protect(context, details);
+function notRun() {
+  return new ArcjetRuleResult({
+    ruleId: "",
+    fingerprint: "",
+    ttl: 0,
+    state: "NOT_RUN",
+    conclusion: "ALLOW",
+    reason: new ArcjetReason(),
+  });
+}
 
-const [filterRule] = filter({ deny: ["ip.src == 1.2.3.4"], mode: "LIVE" });
-const filterResult = await filterRule.protect(context, details);
-
-const [sensitiveRule] = sensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"], mode: "LIVE" });
-const sensitiveResult = await sensitiveRule.protect(context, details);
-
-const [customSensitiveRule] = sensitiveInfo({
-  deny: ["CREDIT_CARD_NUMBER"],
-  mode: "LIVE",
-  backend: {
-    async detect() {
-      return undefined;
+async function decide(name, instanceRules, makeDecision) {
+  let decideCalls = 0;
+  const instance = arcjet({
+    key: "ajkey_test",
+    log,
+    rules: instanceRules,
+    client: {
+      async decide() {
+        decideCalls += 1;
+        return makeDecision();
+      },
+      report() {},
     },
-  },
-});
-const customSensitiveResult = await customSensitiveRule.protect(context, details);
+  });
+  const decision = await instance.protect({ getBody: async () => body }, { ip: "1.2.3.4" });
+  return {
+    id: decision.id,
+    conclusion: decision.conclusion,
+    isAllowed: decision.isAllowed(),
+    message: typeof decision.reason.message === "string" ? decision.reason.message : "",
+    results: decision.results.map((r) => ({ state: r.state, conclusion: r.conclusion })),
+    decideCalls,
+  };
+}
 
-const [tokenBucketRule] = tokenBucket({
-  mode: "LIVE",
-  refillRate: 1,
-  interval: 60,
-  capacity: 1,
-});
-const tokenBucketResult = await tokenBucketRule.protect(context, {
-  ...details,
-  extra: { ...details.extra, requested: "1" },
-});
+const allow = () =>
+  new ArcjetAllowDecision({ id: "lreq_allow", ttl: 0, reason: new ArcjetReason(), results: [notRun()] });
 
-const [fixedWindowRule] = fixedWindow({ mode: "LIVE", window: "1m", max: 1 });
-const fixedWindowResult = await fixedWindowRule.protect(context, details);
+const decisions = {
+  noRules: await decide("noRules", [], () =>
+    new ArcjetAllowDecision({ ttl: 0, reason: new ArcjetReason(), results: [] }),
+  ),
+  sensitiveInfoLive: await decide(
+    "sensitiveInfoLive",
+    [sensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"], mode: "LIVE" })],
+    allow,
+  ),
+  sensitiveInfoDryRun: await decide(
+    "sensitiveInfoDryRun",
+    [sensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"], mode: "DRY_RUN" })],
+    allow,
+  ),
+  sensitiveInfoDecideDeny: await decide(
+    "sensitiveInfoDecideDeny",
+    [sensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"], mode: "LIVE" })],
+    () => new ArcjetDenyDecision({ ttl: 0, reason: new ArcjetReason(), results: [notRun()] }),
+  ),
+  sensitiveInfoNoDecideResults: await decide(
+    "sensitiveInfoNoDecideResults",
+    [sensitiveInfo({ deny: ["CREDIT_CARD_NUMBER"], mode: "LIVE" })],
+    () => new ArcjetAllowDecision({ ttl: 0, reason: new ArcjetReason(), results: [] }),
+  ),
+  emailLive: await decide("emailLive", [validateEmail({ allow: [], mode: "LIVE" })], allow),
+};
 
-const [slidingWindowRule] = slidingWindow({ mode: "LIVE", interval: 60, max: 1 });
-const slidingWindowResult = await slidingWindowRule.protect(context, details);
-
-const [shieldRule] = shield({ mode: "LIVE" });
-const shieldResult = await shieldRule.protect(context, details);
-
-let decideCalls = 0;
-const instance = arcjet({
+// A Decide DENY cached under an empty fingerprint must not answer the next
+// request: every client would share that key.
+const [botRule] = detectBot({ allow: [], mode: "LIVE" });
+const { ruleId: botRuleId } = await botRule.protect(context, details);
+let emptyFingerprintCacheDecideCalls = 0;
+const cached = arcjet({
   key: "ajkey_test",
   log,
-  rules: [],
+  rules: [[botRule]],
   client: {
     async decide() {
-      decideCalls += 1;
-      return new ArcjetAllowDecision({ ttl: 0, reason: new ArcjetReason(), results: [] });
+      emptyFingerprintCacheDecideCalls += 1;
+      return new ArcjetDenyDecision({
+        ttl: 60,
+        reason: new ArcjetReason(),
+        results: [
+          new ArcjetRuleResult({
+            ruleId: botRuleId,
+            fingerprint: "",
+            ttl: 60,
+            state: "RUN",
+            conclusion: "DENY",
+            reason: new ArcjetReason(),
+          }),
+        ],
+      });
     },
     report() {},
   },
 });
-// Top-level fingerprint unavailable must not skip Decide: the cloud service
-// can still fingerprint and evaluate remote rules.
-const fingerprintDecision = await instance.protect({}, { ip: "1.2.3.4" });
+await cached.protect({}, { ip: "1.2.3.4", headers: { "user-agent": "curl/8.0" } });
+await cached.protect({}, { ip: "5.6.7.8", headers: { "user-agent": "curl/8.0" } });
 
 process.stdout.write(
-  JSON.stringify({
-    fingerprintDecision: {
-      isErrored: fingerprintDecision.isErrored(),
-      isAllowed: fingerprintDecision.isAllowed(),
-      decideCalls,
-    },
-    email: report(emailResult),
-    bot: report(botResult),
-    filter: report(filterResult),
-    sensitiveInfo: report(sensitiveResult),
-    customSensitiveInfo: report(customSensitiveResult),
-    tokenBucket: report(tokenBucketResult),
-    fixedWindow: report(fixedWindowResult),
-    slidingWindow: report(slidingWindowResult),
-    shield: report(shieldResult),
-  }),
+  JSON.stringify({ rules, decisions, warnings, emptyFingerprintCacheDecideCalls }),
 );
 `;
 
@@ -173,41 +237,94 @@ process.stdout.write(
   return JSON.parse(result.stdout);
 }
 
-test("Wasm unavailable maps to ERROR decisions without throwing", async function () {
-  const report = runUnavailable();
+const report = runUnavailable();
 
-  // Local fingerprint unavailable: continue to Decide so cloud rules still run.
-  assert.equal(report.fingerprintDecision.isErrored, false);
-  assert.equal(report.fingerprintDecision.isAllowed, true);
-  assert.equal(report.fingerprintDecision.decideCalls, 1);
-
-  assert.equal(report.email.conclusion, "ERROR");
-  assert.match(report.email.message, /EMAIL rule failed to run because Wasm is not supported/);
-
-  assert.equal(report.bot.conclusion, "ERROR");
-  assert.match(report.bot.message, /BOT rule failed to run because Wasm is not supported/);
-
-  assert.equal(report.filter.conclusion, "ERROR");
-  assert.match(report.filter.message, /FILTER rule failed to run because Wasm is not supported/);
-
-  assert.equal(report.sensitiveInfo.conclusion, "ERROR");
-  assert.match(
-    report.sensitiveInfo.message,
-    /SENSITIVE_INFO rule failed to run because Wasm is not supported/,
-  );
-
-  assert.equal(report.customSensitiveInfo.conclusion, "ERROR");
-  assert.match(
-    report.customSensitiveInfo.message,
-    /SENSITIVE_INFO rule failed to run because the sensitive info backend could not run/,
-  );
-
-  for (const name of ["tokenBucket", "fixedWindow", "slidingWindow", "shield"] as const) {
-    assert.equal(report[name].conclusion, "ERROR", name);
-    assert.match(
-      report[name].message,
-      /Failed to build fingerprint because Wasm is not supported/,
-      name,
-    );
+test("Wasm unavailable: rules Decide also evaluates defer to it", function () {
+  for (const name of [
+    "email",
+    "bot",
+    "filter",
+    "tokenBucket",
+    "fixedWindow",
+    "slidingWindow",
+    "shield",
+  ]) {
+    assert.equal(report.rules[name].state, "NOT_RUN", name);
+    assert.equal(report.rules[name].conclusion, "ALLOW", name);
+    assert.notEqual(report.rules[name].ruleId, "", name);
   }
+});
+
+test("Wasm unavailable: local-only rules return ERROR with their rule ID", function () {
+  const { filterLocal, sensitiveInfo, customSensitiveInfo } = report.rules;
+
+  assert.equal(filterLocal.conclusion, "ERROR");
+  assert.equal(filterLocal.state, "RUN");
+  assert.notEqual(filterLocal.ruleId, "");
+  assert.match(filterLocal.message, /^FILTER rule failed to run because Wasm is not supported/);
+
+  assert.equal(sensitiveInfo.conclusion, "ERROR");
+  assert.equal(sensitiveInfo.state, "RUN");
+  assert.notEqual(sensitiveInfo.ruleId, "");
+  assert.match(
+    sensitiveInfo.message,
+    /^SENSITIVE_INFO rule failed to run because Wasm is not supported/,
+  );
+
+  assert.equal(customSensitiveInfo.conclusion, "ERROR");
+  assert.equal(customSensitiveInfo.message, "custom backend is down");
+});
+
+test("Wasm unavailable: `protect()` still calls Decide", function () {
+  const { noRules } = report.decisions;
+
+  assert.equal(noRules.decideCalls, 1);
+  assert.equal(noRules.conclusion, "ALLOW");
+});
+
+test("Wasm unavailable: a LIVE local-only ERROR turns Decide's ALLOW into ERROR", function () {
+  const decision = report.decisions.sensitiveInfoLive;
+
+  assert.equal(decision.conclusion, "ERROR");
+  assert.equal(decision.isAllowed, true);
+  assert.equal(decision.id, "lreq_allow");
+  assert.match(decision.message, /^SENSITIVE_INFO rule failed/);
+  // Decide's `NOT_RUN` result for the rule is replaced, not duplicated.
+  assert.deepEqual(decision.results, [{ state: "RUN", conclusion: "ERROR" }]);
+});
+
+test("Wasm unavailable: a DRY_RUN local-only ERROR is reported but keeps ALLOW", function () {
+  const decision = report.decisions.sensitiveInfoDryRun;
+
+  assert.equal(decision.conclusion, "ALLOW");
+  assert.deepEqual(decision.results, [{ state: "DRY_RUN", conclusion: "ERROR" }]);
+});
+
+test("Wasm unavailable: a Decide DENY stands over a local ERROR", function () {
+  const decision = report.decisions.sensitiveInfoDecideDeny;
+
+  assert.equal(decision.conclusion, "DENY");
+  assert.deepEqual(decision.results, [{ state: "RUN", conclusion: "ERROR" }]);
+});
+
+test("Wasm unavailable: a local ERROR is appended when Decide has no result to replace", function () {
+  const decision = report.decisions.sensitiveInfoNoDecideResults;
+
+  assert.equal(decision.conclusion, "ERROR");
+  assert.deepEqual(decision.results, [{ state: "RUN", conclusion: "ERROR" }]);
+});
+
+test("Wasm unavailable: rules Decide evaluates leave its decision unchanged", function () {
+  const decision = report.decisions.emailLive;
+
+  assert.equal(decision.conclusion, "ALLOW");
+  assert.deepEqual(decision.results, [{ state: "NOT_RUN", conclusion: "ALLOW" }]);
+});
+
+test("Wasm unavailable: the missing-Wasm warning is logged once per process", function () {
+  assert.equal(report.warnings, 1);
+});
+
+test("Wasm unavailable: an empty fingerprint is never used as a cache key", function () {
+  assert.equal(report.emptyFingerprintCacheDecideCalls, 2);
 });

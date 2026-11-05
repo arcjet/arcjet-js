@@ -638,7 +638,7 @@ describe("Primitive > sensitiveInfo", () => {
     assert.equal(result.state, "RUN");
   });
 
-  test("it throws when custom function returns non-string", async () => {
+  test("it returns ERROR when custom function returns non-string", async () => {
     const context = {
       key: "test-key",
       fingerprint: "test-fingerprint",
@@ -674,9 +674,12 @@ describe("Primitive > sensitiveInfo", () => {
       },
     });
     assert.equal(rule.type, "SENSITIVE_INFO");
-    await assert.rejects(async () => {
-      const _ = await rule.protect(context, details);
-    }, new Error("invalid entity type"));
+    const result = await rule.protect(context, details);
+    assert.equal(result.conclusion, "ERROR");
+    assert.equal(result.state, "RUN");
+    assert.notEqual(result.ruleId, "");
+    assert.ok(result.reason.isError());
+    assert.equal(result.reason.message, "invalid entity type");
   });
 
   test("it allows custom entities identified by a function that would have otherwise been blocked", async () => {

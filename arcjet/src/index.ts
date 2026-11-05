@@ -9,7 +9,7 @@ import type {
   BotConfig,
   EmailValidationConfig,
 } from "@arcjet/analyze";
-import { MemoryCache } from "@arcjet/cache";
+import { type Cache, MemoryCache } from "@arcjet/cache";
 import * as duration from "@arcjet/duration";
 import { ArcjetHeaders } from "@arcjet/headers";
 import type {
@@ -79,26 +79,183 @@ function errorMessage(err: unknown): string {
 }
 
 /**
- * Build an ERROR rule result when a Wasm-backed analyzer could not run.
+ * Check whether an error is `WasmUnavailableError` from `@arcjet/analyze`.
  *
- * Callers map `undefined` from `@arcjet/analyze` into this result so `protect()`
- * stays non-throwing and fail-open while remaining inspectable via
- * `isErrored()` / `reason.isError()`.
+ * Compares `code` rather than using `instanceof` so it also works when more
+ * than one copy of `@arcjet/analyze` is installed.
+ *
+ * @param error
+ *   Error.
+ * @returns
+ *   Whether WebAssembly is unavailable in this runtime.
  */
-function wasmUnavailableRuleResult(
+function isWasmUnavailableError(error: unknown): boolean {
+  return error instanceof Error && "code" in error && error.code === "WASM_UNAVAILABLE";
+}
+
+/**
+ * Await an `@arcjet/analyze` call, resolving to `undefined` when WebAssembly
+ * is unavailable in this runtime. Any other error is rethrown.
+ *
+ * @param analysis
+ *   Pending analysis.
+ * @returns
+ *   Promise for the result, or `undefined` without WebAssembly.
+ */
+async function unlessWasmUnavailable<T>(analysis: Promise<T>): Promise<T | undefined> {
+  try {
+    return await analysis;
+  } catch (error) {
+    if (isWasmUnavailableError(error)) {
+      return undefined;
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Build the result of a rule that could not run locally because WebAssembly
+ * is unavailable, but that Decide also evaluates.
+ *
+ * Decide's result is authoritative for these rules, so the local result is
+ * `NOT_RUN` rather than `ERROR`: nothing has failed that Decide does not
+ * cover. See the ADR `2026-11-05-js-sdk-surfaces-wasm-unavailable-instead-of-soft-allowing`.
+ *
+ * @param ruleId
+ *   Rule ID.
+ * @param fingerprint
+ *   Fingerprint.
+ * @param reason
+ *   Empty reason of the rule's type.
+ * @returns
+ *   Rule result.
+ */
+function deferredToDecide(
   ruleId: string,
   fingerprint: string,
-  state: "RUN" | "DRY_RUN" | "NOT_RUN",
-  message: string,
+  reason: ArcjetReason,
 ): ArcjetRuleResult {
   return new ArcjetRuleResult({
     ruleId,
     fingerprint,
     ttl: 0,
-    state,
-    conclusion: "ERROR",
-    reason: new ArcjetErrorReason(message),
+    state: "NOT_RUN",
+    conclusion: "ALLOW",
+    reason,
   });
+}
+
+/**
+ * Rule types whose local ERROR results `protect()` adds to Decide's decision.
+ *
+ * Decide never evaluates `SENSITIVE_INFO` (the body never leaves the process),
+ * so a local failure is otherwise invisible. Decide evaluates `FILTER` but
+ * never sees `filterLocal`, so a local filter failure is surfaced too. Without
+ * WebAssembly, a filter that does not need `filterLocal` defers to Decide
+ * instead of returning ERROR.
+ */
+const localErrorRuleTypes: ReadonlySet<string> = new Set(["SENSITIVE_INFO", "FILTER"]);
+
+/**
+ * Whether a missing-WebAssembly warning was logged in this process.
+ */
+let warnedWasmUnavailable = false;
+
+/**
+ * Wrap a cache so that an empty key is never read or written.
+ *
+ * The fingerprint is empty when no local fingerprint could be built, because
+ * WebAssembly is unavailable. Every client would share that key, so a cached
+ * DENY for one client would apply to all of them.
+ *
+ * @param cache
+ *   Cache.
+ * @returns
+ *   Cache that ignores empty keys.
+ */
+function skipEmptyKeys<T>(cache: Cache<T>): Cache<T> {
+  return {
+    async get(namespace, key) {
+      return key === "" ? [undefined, 0] : cache.get(namespace, key);
+    },
+    set(namespace, key, value, ttl) {
+      if (key !== "") {
+        cache.set(namespace, key, value, ttl);
+      }
+    },
+  };
+}
+
+/**
+ * Add the local ERROR results that Decide cannot know about to its decision.
+ *
+ * Decide receives rule configs, not local results. A rule it never evaluates
+ * (such as `sensitiveInfo`) comes back `NOT_RUN`, so without this step a local
+ * failure would be dropped and the caller would see a plain ALLOW.
+ *
+ * A Decide DENY or CHALLENGE stands. An ALLOW becomes an ERROR decision when a
+ * LIVE rule failed, which still fails open (`isAllowed()` is `true`).
+ *
+ * @param decision
+ *   Decision from Decide.
+ * @param rules
+ *   Rules sent to Decide, in order.
+ * @param results
+ *   Local results, index-aligned with `rules`.
+ * @returns
+ *   Decision.
+ */
+function withLocalErrors(
+  decision: ArcjetDecision,
+  rules: ReadonlyArray<ArcjetRule>,
+  results: ReadonlyArray<ArcjetRuleResult>,
+): ArcjetDecision {
+  // Decide prepends remote rules, so the SDK's rules are the last results.
+  const offset = decision.results.length - rules.length;
+  const merged = [...decision.results];
+  let mergedCount = 0;
+  let liveError: { rule: ArcjetRule; result: ArcjetRuleResult } | undefined;
+
+  for (const [idx, result] of results.entries()) {
+    const rule = rules[idx];
+    if (result.conclusion !== "ERROR" || !localErrorRuleTypes.has(rule.type)) {
+      continue;
+    }
+
+    // Replace Decide's `NOT_RUN` for this rule; keep any result it computed.
+    const target = offset + idx;
+    if (offset >= 0 && merged[target].state === "NOT_RUN") {
+      merged[target] = result;
+    } else {
+      merged.push(result);
+    }
+    mergedCount += 1;
+
+    if (rule.mode === "LIVE" && typeof liveError === "undefined") {
+      liveError = { rule, result };
+    }
+  }
+
+  if (mergedCount === 0) {
+    return decision;
+  }
+
+  if (typeof liveError !== "undefined" && decision.conclusion === "ALLOW") {
+    const { reason } = liveError.result;
+    return new ArcjetErrorDecision({
+      id: decision.id,
+      ttl: 0,
+      ip: decision.ip,
+      reason: reason.isError()
+        ? reason
+        : new ArcjetErrorReason(`${liveError.rule.type} rule failed to run`),
+      results: merged,
+    });
+  }
+
+  decision.results = merged;
+  return decision;
 }
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -1590,15 +1747,15 @@ export interface SensitiveInfoBackend {
    * @param options
    *   Per-detection options from the rule configuration (optional).
    * @returns
-   *   Promise for the allowed and denied spans, or `undefined` when the
-   *   backend could not run (for example when WebAssembly is unavailable).
+   *   Promise for the allowed and denied spans. Reject when the backend
+   *   cannot run; the rule then returns an ERROR result with that reason.
    */
   detect(
     context: SensitiveInfoBackendContext,
     value: string,
     entities: SensitiveInfoEntities,
     options?: SensitiveInfoBackendOptions,
-  ): Promise<SensitiveInfoResult | undefined>;
+  ): Promise<SensitiveInfoResult>;
 }
 
 /**
@@ -2166,18 +2323,13 @@ export function tokenBucket<const Characteristics extends readonly string[] = []
           log: context.log,
         };
 
-        const fingerprint = await analyze.generateFingerprint(
-          analyzeContext,
-          toAnalyzeRequest(details),
-        );
-        if (typeof fingerprint === "undefined") {
-          return wasmUnavailableRuleResult(
-            ruleId,
-            context.fingerprint,
-            mode === "LIVE" ? "RUN" : "DRY_RUN",
-            "Failed to build fingerprint because Wasm is not supported in this environment.",
-          );
-        }
+        // Without WebAssembly there is no local fingerprint. The empty
+        // fingerprint never hits the cache, so this rule is `NOT_RUN` locally
+        // and Decide, which fingerprints the request itself, evaluates it.
+        const fingerprint =
+          (await unlessWasmUnavailable(
+            analyze.generateFingerprint(analyzeContext, toAnalyzeRequest(details)),
+          )) ?? "";
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached && cached.reason.isRateLimit()) {
@@ -2314,18 +2466,13 @@ export function fixedWindow<const Characteristics extends readonly string[] = []
           log: context.log,
         };
 
-        const fingerprint = await analyze.generateFingerprint(
-          analyzeContext,
-          toAnalyzeRequest(details),
-        );
-        if (typeof fingerprint === "undefined") {
-          return wasmUnavailableRuleResult(
-            ruleId,
-            context.fingerprint,
-            mode === "LIVE" ? "RUN" : "DRY_RUN",
-            "Failed to build fingerprint because Wasm is not supported in this environment.",
-          );
-        }
+        // Without WebAssembly there is no local fingerprint. The empty
+        // fingerprint never hits the cache, so this rule is `NOT_RUN` locally
+        // and Decide, which fingerprints the request itself, evaluates it.
+        const fingerprint =
+          (await unlessWasmUnavailable(
+            analyze.generateFingerprint(analyzeContext, toAnalyzeRequest(details)),
+          )) ?? "";
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached && cached.reason.isRateLimit()) {
@@ -2454,18 +2601,13 @@ export function slidingWindow<const Characteristics extends readonly string[] = 
           log: context.log,
         };
 
-        const fingerprint = await analyze.generateFingerprint(
-          analyzeContext,
-          toAnalyzeRequest(details),
-        );
-        if (typeof fingerprint === "undefined") {
-          return wasmUnavailableRuleResult(
-            ruleId,
-            context.fingerprint,
-            mode === "LIVE" ? "RUN" : "DRY_RUN",
-            "Failed to build fingerprint because Wasm is not supported in this environment.",
-          );
-        }
+        // Without WebAssembly there is no local fingerprint. The empty
+        // fingerprint never hits the cache, so this rule is `NOT_RUN` locally
+        // and Decide, which fingerprints the request itself, evaluates it.
+        const fingerprint =
+          (await unlessWasmUnavailable(
+            analyze.generateFingerprint(analyzeContext, toAnalyzeRequest(details)),
+          )) ?? "";
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached && cached.reason.isRateLimit()) {
@@ -2859,20 +3001,27 @@ export function sensitiveInfo<
           val: entitiesVal,
         };
 
-        const backend = options.backend || wasmSensitiveInfoBackend;
-        const result = await backend.detect(context, value, entities, {
-          contextWindowSize: options.contextWindowSize || 1,
-          detect: convertedDetect,
-        });
-
         const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+        const backend = options.backend || wasmSensitiveInfoBackend;
+        let result: Awaited<ReturnType<SensitiveInfoBackend["detect"]>>;
 
-        if (typeof result === "undefined") {
-          const message =
-            backend === wasmSensitiveInfoBackend
-              ? "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment."
-              : "SENSITIVE_INFO rule failed to run because the sensitive info backend could not run.";
-          return wasmUnavailableRuleResult(ruleId, fingerprint, state, message);
+        // Decide never evaluates this rule, so a backend that cannot run
+        // (including the default one without WebAssembly) is an ERROR, which
+        // `protect()` adds to the decision.
+        try {
+          result = await backend.detect(context, value, entities, {
+            contextWindowSize: options.contextWindowSize || 1,
+            detect: convertedDetect,
+          });
+        } catch (error) {
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "ERROR",
+            reason: new ArcjetErrorReason(error),
+          });
         }
 
         const reason = new ArcjetSensitiveInfoReason({
@@ -3030,16 +3179,12 @@ export function validateEmail(options: EmailOptions): [ArcjetEmailRule<{ email: 
         // while the email changes. This is also why the `email` rule results
         // always have a `ttl` of 0.
 
-        const result = await analyze.isValidEmail(context, email, config);
-        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+        const result = await unlessWasmUnavailable(analyze.isValidEmail(context, email, config));
         if (typeof result === "undefined") {
-          return wasmUnavailableRuleResult(
-            ruleId,
-            fingerprint,
-            state,
-            "EMAIL rule failed to run because Wasm is not supported in this environment.",
-          );
+          return deferredToDecide(ruleId, fingerprint, new ArcjetEmailReason({ emailTypes: [] }));
         }
+
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
         if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ruleId,
@@ -3220,18 +3365,19 @@ export function detectBot(options: BotOptions): [ArcjetBotRule<{}>] {
           });
         }
 
-        const result = await analyze.detectBot(context, toAnalyzeRequest(request), config);
-
-        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+        const result = await unlessWasmUnavailable(
+          analyze.detectBot(context, toAnalyzeRequest(request), config),
+        );
 
         if (typeof result === "undefined") {
-          return wasmUnavailableRuleResult(
+          return deferredToDecide(
             ruleId,
             fingerprint,
-            state,
-            "BOT rule failed to run because Wasm is not supported in this environment.",
+            new ArcjetBotReason({ allowed: [], denied: [], verified: false, spoofed: false }),
           );
         }
+
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
         // If this is a bot and of a type that we want to block, then block!
         if (result.denied.length > 0) {
@@ -3359,18 +3505,13 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
           log: context.log,
         };
 
-        const fingerprint = await analyze.generateFingerprint(
-          analyzeContext,
-          toAnalyzeRequest(details),
-        );
-        if (typeof fingerprint === "undefined") {
-          return wasmUnavailableRuleResult(
-            ruleId,
-            context.fingerprint,
-            mode === "LIVE" ? "RUN" : "DRY_RUN",
-            "Failed to build fingerprint because Wasm is not supported in this environment.",
-          );
-        }
+        // Without WebAssembly there is no local fingerprint. The empty
+        // fingerprint never hits the cache, so this rule is `NOT_RUN` locally
+        // and Decide, which fingerprints the request itself, evaluates it.
+        const fingerprint =
+          (await unlessWasmUnavailable(
+            analyze.generateFingerprint(analyzeContext, toAnalyzeRequest(details)),
+          )) ?? "";
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached) {
@@ -3713,15 +3854,6 @@ export function filter(options: FilterOptions): [ArcjetFilterRule] {
             allow.length > 0,
           );
 
-          if (typeof result === "undefined") {
-            return wasmUnavailableRuleResult(
-              ruleId,
-              context.fingerprint,
-              state,
-              "FILTER rule failed to run because Wasm is not supported in this environment.",
-            );
-          }
-
           ruleResult = new ArcjetRuleResult({
             conclusion: result.allowed ? "ALLOW" : "DENY",
             fingerprint: context.fingerprint,
@@ -3731,6 +3863,17 @@ export function filter(options: FilterOptions): [ArcjetFilterRule] {
             ttl: result.allowed ? 0 : 60,
           });
         } catch (error) {
+          // Decide evaluates filter expressions too, but it never sees
+          // `filterLocal`. Without WebAssembly, defer to Decide unless the
+          // request needs local fields.
+          if (isWasmUnavailableError(error) && !request.extra.filterLocal) {
+            return deferredToDecide(
+              ruleId,
+              context.fingerprint,
+              new ArcjetFilterReason({ matchedExpressions: [], undeterminedExpressions: [] }),
+            );
+          }
+
           ruleResult = new ArcjetRuleResult({
             conclusion: "ERROR",
             fingerprint: context.fingerprint,
@@ -3879,7 +4022,7 @@ export default function arcjet<
   // A local cache of block decisions. Might be emphemeral per request,
   // depending on the way the runtime works, but it's worth a try.
   // TODO(#132): Support configurable caching
-  const cache = new MemoryCache<ArcjetCacheEntry>();
+  const cache = skipEmptyKeys(new MemoryCache<ArcjetCacheEntry>());
 
   if (!Array.isArray(rules)) {
     throw new Error("Rules are required");
@@ -3992,16 +4135,20 @@ export default function arcjet<
 
     const logFingerprintPerf = perf.measure("fingerprint");
     try {
-      const generated = await analyze.generateFingerprint(baseContext, toAnalyzeRequest(details));
-      // When Wasm is unavailable, `generateFingerprint` returns `undefined`.
-      // Keep an empty local fingerprint and continue so `client.decide()` still
-      // runs: the cloud service can fingerprint and evaluate remote rules.
-      // (Thrown fingerprint failures below remain hard errors — those are
-      // characteristic/config problems, not a missing Wasm runtime.)
+      const generated = await unlessWasmUnavailable(
+        analyze.generateFingerprint(baseContext, toAnalyzeRequest(details)),
+      );
+      // Without WebAssembly, keep the empty fingerprint and continue: Decide
+      // fingerprints the request and evaluates the rules it supports. The
+      // cache ignores the empty key. Other fingerprint failures are
+      // configuration problems and still return an ERROR decision below.
       if (typeof generated === "undefined") {
-        log.error(
-          "Failed to build local fingerprint because Wasm is not supported in this environment; continuing so the cloud service can decide.",
-        );
+        if (!warnedWasmUnavailable) {
+          warnedWasmUnavailable = true;
+          log.warn(
+            "WebAssembly is not supported in this environment: local analysis is skipped and rules that only run locally return ERROR",
+          );
+        }
       } else {
         fingerprint = generated;
         log.debug("fingerprint (%s): %s", rt, fingerprint);
@@ -4237,7 +4384,7 @@ export default function arcjet<
         }
       }
 
-      return decision;
+      return withLocalErrors(decision, rules, results);
     } catch (err) {
       log.info("Encountered problem getting remote decision: %s", errorMessage(err));
       const decision = new ArcjetErrorDecision({
