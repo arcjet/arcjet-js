@@ -811,6 +811,30 @@ describe("ruleToProto", () => {
     }
   });
 
+  test("backend returning undefined is captured as a rule error result", async () => {
+    const backend: SensitiveInfoBackend = {
+      detect() {
+        return Promise.resolve(undefined);
+      },
+    };
+
+    const rule = localDetectSensitiveInfo({ deny: ["SSN"], backend });
+    const input = rule("123-45-6789");
+    const proto = await ruleToProto(input);
+
+    assert.equal(proto.rule.rule.case, "localSensitiveInfo");
+    if (proto.rule.rule.case === "localSensitiveInfo") {
+      assert.equal(proto.rule.rule.value.localResult.case, "resultError");
+      if (proto.rule.rule.value.localResult.case === "resultError") {
+        assert.match(
+          proto.rule.rule.value.localResult.value.message,
+          /SENSITIVE_INFO rule failed to run because Wasm is not supported/,
+        );
+        assert.equal(proto.rule.rule.value.localResult.value.code, "SENSITIVE_INFO_ERROR");
+      }
+    }
+  });
+
   test("backend errors are captured as a rule error result", async () => {
     const backend: SensitiveInfoBackend = {
       detect() {

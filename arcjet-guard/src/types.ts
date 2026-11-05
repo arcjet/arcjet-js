@@ -207,14 +207,15 @@ export interface SensitiveInfoBackend {
    * @param options
    *   Per-detection options from the rule configuration (optional).
    * @returns
-   *   Promise for the allowed and denied spans.
+   *   Promise for the allowed and denied spans, or `undefined` when the
+   *   backend could not run (for example when WebAssembly is unavailable).
    */
   detect(
     context: SensitiveInfoBackendContext,
     value: string,
     entities: SensitiveInfoEntities,
     options?: SensitiveInfoBackendOptions,
-  ): Promise<SensitiveInfoResult>;
+  ): Promise<SensitiveInfoResult | undefined>;
 }
 
 /** Result from a token bucket rate limit evaluation. */

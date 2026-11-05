@@ -246,24 +246,23 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
  * @param request
  *   Request.
  * @returns
- *   Promise for a SHA-256 fingerprint.
+ *   Promise for a SHA-256 fingerprint, or `undefined` when WebAssembly is not
+ *   available in this runtime.
  */
 export async function generateFingerprint(
   context: AnalyzeContext,
   request: AnalyzeRequest,
-): Promise<string> {
+): Promise<string | undefined> {
   const { log } = context;
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.generateFingerprint(JSON.stringify(request), context.characteristics);
-    // Ignore the `else` branch as we test in places that have WebAssembly.
-    /* node:coverage ignore next 4 */
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  return "";
+  return undefined;
 }
 
 /**
@@ -276,25 +275,24 @@ export async function generateFingerprint(
  * @param options
  *   Configuration.
  * @returns
- *   Promise for a result.
+ *   Promise for a result, or `undefined` when WebAssembly is not available in
+ *   this runtime.
  */
 export async function isValidEmail(
   context: AnalyzeContext,
   value: string,
   options: EmailValidationConfig,
-): Promise<EmailValidationResult> {
+): Promise<EmailValidationResult | undefined> {
   const { log } = context;
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.isValidEmail(value, options);
-    // Ignore the `else` branch as we test in places that have WebAssembly.
-    /* node:coverage ignore next 4 */
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  return { blocked: [], validity: "valid" };
+  return undefined;
 }
 
 /**
@@ -307,25 +305,24 @@ export async function isValidEmail(
  * @param options
  *   Configuration.
  * @returns
- *   Promise for a result.
+ *   Promise for a result, or `undefined` when WebAssembly is not available in
+ *   this runtime.
  */
 export async function detectBot(
   context: AnalyzeContext,
   request: AnalyzeRequest,
   options: BotConfig,
-): Promise<BotResult> {
+): Promise<BotResult | undefined> {
   const { log } = context;
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
   if (typeof analyze !== "undefined") {
     return analyze.detectBot(JSON.stringify(request), options);
-    // Ignore the `else` branch as we test in places that have WebAssembly.
-    /* node:coverage ignore next 4 */
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  return { allowed: [], denied: [], spoofed: false, verified: false };
+  return undefined;
 }
 
 /**
@@ -344,7 +341,8 @@ export async function detectBot(
  * @param detect
  *   Function to detect sensitive info (optional).
  * @returns
- *   Promise for a result.
+ *   Promise for a result, or `undefined` when WebAssembly is not available in
+ *   this runtime.
  */
 export async function detectSensitiveInfo(
   context: AnalyzeContext,
@@ -352,7 +350,7 @@ export async function detectSensitiveInfo(
   entities: SensitiveInfoEntities,
   contextWindowSize: number,
   detect?: DetectSensitiveInfoFunction,
-): Promise<SensitiveInfoResult> {
+): Promise<SensitiveInfoResult | undefined> {
   const { log } = context;
   const coreImports = createCoreImports(detect);
   const analyze = await initializeWasm(coreImports);
@@ -371,14 +369,10 @@ export async function detectSensitiveInfo(
       allowed: toStringIndices(value, result.allowed),
       denied: toStringIndices(value, result.denied),
     };
-    // Ignore the `else` branch as we test in places that have WebAssembly.
-    /* node:coverage ignore next 4 */
   }
 
   log.debug("WebAssembly is not supported in this runtime");
-  throw new Error(
-    "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
-  );
+  return undefined;
 }
 
 /**
@@ -393,7 +387,8 @@ export async function detectSensitiveInfo(
  * @param expressions
  *   Filter expressions.
  * @returns
- *   Promise to whether the filter matches the request.
+ *   Promise to whether the filter matches the request, or `undefined` when
+ *   WebAssembly is not available in this runtime.
  */
 export async function matchFilters(
   context: AnalyzeContext,
@@ -401,7 +396,7 @@ export async function matchFilters(
   localFields: string,
   expressions: ReadonlyArray<string>,
   allowIfMatch: boolean,
-): Promise<FilterResult> {
+): Promise<FilterResult | undefined> {
   const coreImports = createCoreImports();
   const analyze = await initializeWasm(coreImports);
 
@@ -413,10 +408,8 @@ export async function matchFilters(
       expressions,
       allowIfMatch,
     );
-    // Ignore the `else` branch as we test in places that have WebAssembly.
-    /* node:coverage ignore next 4 */
   }
 
   context.log.debug("WebAssembly is not supported in this runtime");
-  throw new Error("FILTER rule failed to run because Wasm is not supported in this environment.");
+  return undefined;
 }
