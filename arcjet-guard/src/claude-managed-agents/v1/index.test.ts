@@ -58,7 +58,7 @@ test("package.json maps ./claude-managed-agents/v1 to its own dist entry", () =>
   assert.ok(typeof packageJson === "object" && packageJson !== null && "exports" in packageJson);
   const exportsMap = packageJson.exports;
   assert.ok(typeof exportsMap === "object" && exportsMap !== null);
-  assert.deepEqual((exportsMap as Record<string, unknown>)["./claude-managed-agents/v1"], {
+  assert.deepEqual(new Map(Object.entries(exportsMap)).get("./claude-managed-agents/v1"), {
     types: "./dist/claude-managed-agents/v1/index.d.ts",
     import: "./dist/claude-managed-agents/v1/index.js",
   });
