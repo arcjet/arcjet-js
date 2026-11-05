@@ -237,7 +237,8 @@ export function createToolCallGate(
     } catch (error) {
       if (shouldWarn()) {
         console.warn(
-          `@arcjet/guard: ${options.hook} for a TanStack AI tool threw; treating as a guard error:`,
+          "@arcjet/guard: %s for a TanStack AI tool threw; treating as a guard error:",
+          options.hook,
           error,
         );
       }
