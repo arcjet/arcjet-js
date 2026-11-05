@@ -79,6 +79,29 @@ function errorMessage(err: unknown): string {
   return "Unknown problem";
 }
 
+/**
+ * Build an ERROR rule result when a Wasm-backed analyzer could not run.
+ *
+ * Callers map `undefined` from `@arcjet/analyze` into this result so `protect()`
+ * stays non-throwing and fail-open while remaining inspectable via
+ * `isErrored()` / `reason.isError()`.
+ */
+function wasmUnavailableRuleResult(
+  ruleId: string,
+  fingerprint: string,
+  state: "RUN" | "DRY_RUN" | "NOT_RUN",
+  message: string,
+): ArcjetRuleResult {
+  return new ArcjetRuleResult({
+    ruleId,
+    fingerprint,
+    ttl: 0,
+    state,
+    conclusion: "ERROR",
+    reason: new ArcjetErrorReason(message),
+  });
+}
+
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
 // our use.
 //
@@ -1579,14 +1602,15 @@ export interface SensitiveInfoBackend {
    * @param options
    *   Per-detection options from the rule configuration (optional).
    * @returns
-   *   Promise for the allowed and denied spans.
+   *   Promise for the allowed and denied spans, or `undefined` when the
+   *   backend could not run (for example when WebAssembly is unavailable).
    */
   detect(
     context: SensitiveInfoBackendContext,
     value: string,
     entities: SensitiveInfoEntities,
     options?: SensitiveInfoBackendOptions,
-  ): Promise<SensitiveInfoResult>;
+  ): Promise<SensitiveInfoResult | undefined>;
 }
 
 /**
@@ -2160,6 +2184,14 @@ export function tokenBucket<const Characteristics extends readonly string[] = []
           analyzeContext,
           toAnalyzeRequest(details),
         );
+        if (typeof fingerprint === "undefined") {
+          return wasmUnavailableRuleResult(
+            ruleId,
+            context.fingerprint,
+            mode === "LIVE" ? "RUN" : "DRY_RUN",
+            "Failed to build fingerprint because Wasm is not supported in this environment.",
+          );
+        }
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached && cached.reason.isRateLimit()) {
@@ -2300,6 +2332,14 @@ export function fixedWindow<const Characteristics extends readonly string[] = []
           analyzeContext,
           toAnalyzeRequest(details),
         );
+        if (typeof fingerprint === "undefined") {
+          return wasmUnavailableRuleResult(
+            ruleId,
+            context.fingerprint,
+            mode === "LIVE" ? "RUN" : "DRY_RUN",
+            "Failed to build fingerprint because Wasm is not supported in this environment.",
+          );
+        }
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached && cached.reason.isRateLimit()) {
@@ -2432,6 +2472,14 @@ export function slidingWindow<const Characteristics extends readonly string[] = 
           analyzeContext,
           toAnalyzeRequest(details),
         );
+        if (typeof fingerprint === "undefined") {
+          return wasmUnavailableRuleResult(
+            ruleId,
+            context.fingerprint,
+            mode === "LIVE" ? "RUN" : "DRY_RUN",
+            "Failed to build fingerprint because Wasm is not supported in this environment.",
+          );
+        }
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached && cached.reason.isRateLimit()) {
@@ -2859,6 +2907,15 @@ export function sensitiveInfo<
           detect: convertedDetect,
         });
 
+        if (typeof result === "undefined") {
+          return wasmUnavailableRuleResult(
+            ruleId,
+            fingerprint,
+            state,
+            "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
+          );
+        }
+
         const reason = new ArcjetSensitiveInfoReason({
           denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
           allowed: convertAnalyzeDetectedSensitiveInfoEntity(result.allowed),
@@ -3016,6 +3073,14 @@ export function validateEmail(options: EmailOptions): [ArcjetEmailRule<{ email: 
 
         const result = await analyze.isValidEmail(context, email, config);
         const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+        if (typeof result === "undefined") {
+          return wasmUnavailableRuleResult(
+            ruleId,
+            fingerprint,
+            state,
+            "EMAIL rule failed to run because Wasm is not supported in this environment.",
+          );
+        }
         if (result.validity === "valid") {
           return new ArcjetRuleResult({
             ruleId,
@@ -3200,6 +3265,15 @@ export function detectBot(options: BotOptions): [ArcjetBotRule<{}>] {
 
         const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
+        if (typeof result === "undefined") {
+          return wasmUnavailableRuleResult(
+            ruleId,
+            fingerprint,
+            state,
+            "BOT rule failed to run because Wasm is not supported in this environment.",
+          );
+        }
+
         // If this is a bot and of a type that we want to block, then block!
         if (result.denied.length > 0) {
           return new ArcjetRuleResult({
@@ -3330,6 +3404,14 @@ export function shield(options: ShieldOptions): [ArcjetShieldRule<{}>] {
           analyzeContext,
           toAnalyzeRequest(details),
         );
+        if (typeof fingerprint === "undefined") {
+          return wasmUnavailableRuleResult(
+            ruleId,
+            context.fingerprint,
+            mode === "LIVE" ? "RUN" : "DRY_RUN",
+            "Failed to build fingerprint because Wasm is not supported in this environment.",
+          );
+        }
 
         const [cached, ttl] = await context.cache.get(ruleId, fingerprint);
         if (cached) {
@@ -3672,6 +3754,15 @@ export function filter(options: FilterOptions): [ArcjetFilterRule] {
             allow.length > 0,
           );
 
+          if (typeof result === "undefined") {
+            return wasmUnavailableRuleResult(
+              ruleId,
+              context.fingerprint,
+              state,
+              "FILTER rule failed to run because Wasm is not supported in this environment.",
+            );
+          }
+
           ruleResult = new ArcjetRuleResult({
             conclusion: result.allowed ? "ALLOW" : "DENY",
             fingerprint: context.fingerprint,
@@ -3942,7 +4033,20 @@ export default function arcjet<
 
     const logFingerprintPerf = perf.measure("fingerprint");
     try {
-      fingerprint = await analyze.generateFingerprint(baseContext, toAnalyzeRequest(details));
+      const generated = await analyze.generateFingerprint(baseContext, toAnalyzeRequest(details));
+      if (typeof generated === "undefined") {
+        log.error("Failed to build fingerprint because Wasm is not supported in this environment.");
+
+        return new ArcjetErrorDecision({
+          ttl: 0,
+          reason: new ArcjetErrorReason(
+            "Failed to build fingerprint because Wasm is not supported in this environment.",
+          ),
+          // No results because we couldn't create a fingerprint
+          results: [],
+        });
+      }
+      fingerprint = generated;
       log.debug("fingerprint (%s): %s", rt, fingerprint);
     } catch (error) {
       log.error(
