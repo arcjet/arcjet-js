@@ -813,8 +813,9 @@ describe("ruleToProto", () => {
 
   test("backend returning undefined is captured as a rule error result", async () => {
     const backend: SensitiveInfoBackend = {
-      detect() {
-        return Promise.resolve();
+      detect(): ReturnType<SensitiveInfoBackend["detect"]> {
+        const unavailable: Awaited<ReturnType<SensitiveInfoBackend["detect"]>> = undefined;
+        return Promise.resolve(unavailable);
       },
     };
 
@@ -822,8 +823,8 @@ describe("ruleToProto", () => {
     const input = rule("123-45-6789");
     const proto = await ruleToProto(input);
 
-    assert.equal(proto.rule.rule.case, "localSensitiveInfo");
-    if (proto.rule.rule.case === "localSensitiveInfo") {
+    assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+    if (proto.rule?.rule.case === "localSensitiveInfo") {
       assert.equal(proto.rule.rule.value.localResult.case, "resultError");
       if (proto.rule.rule.value.localResult.case === "resultError") {
         assert.match(
