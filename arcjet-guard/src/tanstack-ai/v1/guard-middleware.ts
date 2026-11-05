@@ -1,22 +1,11 @@
-import type {
-  ChatMiddleware,
-  ChatMiddlewareContext,
-  GuardToolCallDecision,
-  ToolCallHookContext,
-} from "@tanstack/ai";
+import type { ChatMiddleware, ChatMiddlewareContext } from "@tanstack/ai";
 
-import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
-import { shouldWarn } from "../../agents/capture.ts";
 import type { ArcjetAgentClient } from "../../agents/capture.ts";
-import { denialResult, unavailableResult } from "../../agents/denial.ts";
 import type { OnGuardError } from "../../agents/guard-action.ts";
-import { runGuarded } from "../../agents/guarded.ts";
-import { arcjetProtectedTool } from "../../agents/internal.ts";
-import { assertValidAction } from "../../agents/label.ts";
-import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
+import type { ArcjetMetadata, RuleWithInput } from "../../types.ts";
+import { createToolCallGate, middlewareName } from "../v0/guard-middleware.ts";
 import { tanstackAiContext } from "./context.ts";
-import type { TanStackAiContextSource } from "./context.ts";
 
 /**
  * Input passed to `rules` / `metadata` / `action` callbacks on
@@ -91,19 +80,8 @@ export type TanStackAiGuardMiddleware = ChatMiddleware & {
   onGuardToolCall: NonNullable<ChatMiddleware["onGuardToolCall"]>;
 };
 
-function isContextSource(value: unknown): value is TanStackAiContextSource {
-  return value !== null && typeof value === "object";
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object";
-}
-
-function isToolCallHookContext(value: unknown): value is ToolCallHookContext {
-  if (!isRecord(value)) {
-    return false;
-  }
-  return typeof value["toolName"] === "string";
 }
 
 /**
@@ -117,85 +95,6 @@ function isTanStackAi1Context(ctx: unknown): boolean {
 
 const WRONG_HOST_MESSAGE =
   "@arcjet/guard/tanstack-ai/v1 needs @tanstack/ai 1.x, but this chat() run has no 1.x middleware context. TanStack AI 0.x never calls onGuardToolCall, so tools would run without Guard. Use @arcjet/guard/tanstack-ai/v0 with @tanstack/ai 0.x.";
-
-function isBrandedTool(tool: unknown): boolean {
-  return tool !== null && typeof tool === "object" && arcjetProtectedTool in tool;
-}
-
-/**
- * The label for a static or absent `action`, and the label used when an
- * `action` callback fails.
- */
-function fallbackAction(policy: GuardMiddlewarePolicy): string {
-  return typeof policy.action === "string" && policy.action.length > 0
-    ? policy.action
-    : "tool.invoked";
-}
-
-function denyDecision(
-  policy: GuardMiddlewarePolicy,
-  payload: { message: string },
-  kind: "deny" | "unavailable",
-): GuardToolCallDecision {
-  if (kind === "deny" && policy.onDeny === "abort") {
-    return { type: "abort", reason: payload.message };
-  }
-  return { type: "skip", result: payload };
-}
-
-let middlewareSeq = 0;
-
-/**
- * A registry key, not a secret: `chat({ middleware })` composes
- * middleware by name in logs, and two distinct instances sharing one
- * would be indistinguishable. The counter alone is not enough because
- * a second copy of this module starts counting at one again.
- */
-function middlewareName(): string {
-  middlewareSeq += 1;
-  return `arcjet-guard-${middlewareSeq}-${crypto.randomUUID().slice(0, 8)}`;
-}
-
-async function gateToolCall(
-  client: ArcjetAgentClient,
-  policy: GuardMiddlewarePolicy,
-  ctx: ChatMiddlewareContext,
-  hookCtx: ToolCallHookContext,
-): Promise<GuardToolCallDecision> {
-  if (isBrandedTool(hookCtx.tool)) {
-    return undefined;
-  }
-
-  const toolName = hookCtx.toolName;
-  const input = hookCtx.args ?? {};
-  const call: GuardMiddlewareCall = { toolName, input };
-
-  const resolved = resolveCallPolicy(policy, call, fallbackAction(policy));
-  const { action, sessionId, rules, metadata: policyMetadata } = resolved;
-  const remote = await resolveActorInputs(policy, action, call, ctx);
-
-  const source = isContextSource(ctx) ? ctx : undefined;
-  const agentCtx = tanstackAiContext(source, sessionId === undefined ? undefined : { sessionId });
-
-  const metadata: ArcjetMetadata = {
-    ...agentCtx.metadata,
-    ...(toolName.length > 0 && { "tanstack-ai.tool": toolName }),
-  };
-  const mergedMetadata = { ...metadata, ...policyMetadata };
-
-  return runGuarded<GuardToolCallDecision>(client, {
-    action,
-    rules,
-    correlationId: agentCtx.correlationId,
-    metadata: mergedMetadata,
-    degraded: resolved.degraded ?? remote.degraded,
-    ...remote.fields,
-    onDeny: (decision: DecisionDeny) => denyDecision(policy, denialResult(decision), "deny"),
-    onUnavailable: () => denyDecision(policy, unavailableResult(), "unavailable"),
-    execute: () => Promise.resolve(),
-    onGuardError: policy.onGuardError ?? "deny",
-  });
-}
 
 /**
  * A `chat({ middleware })` middleware whose `onGuardToolCall` is the
@@ -283,32 +182,10 @@ export function guardMiddleware(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy = {},
 ): TanStackAiGuardMiddleware {
-  // An empty action means "unset" here and falls back to the default.
-  if (typeof policy.action === "string" && policy.action !== "") {
-    assertValidAction(policy.action, "guardMiddleware");
-  }
-  const onGuardToolCall = async (
-    ctx: ChatMiddlewareContext,
-    hookCtx: ToolCallHookContext,
-  ): Promise<GuardToolCallDecision> => {
-    try {
-      if (!isToolCallHookContext(hookCtx)) {
-        return undefined;
-      }
-      return await gateToolCall(client, policy, ctx, hookCtx);
-    } catch (error) {
-      if (shouldWarn()) {
-        console.warn(
-          "@arcjet/guard: onGuardToolCall for a TanStack AI tool threw; treating as a guard error:",
-          error,
-        );
-      }
-      if (policy.onGuardError === "allow") {
-        return undefined;
-      }
-      return denyDecision(policy, unavailableResult(), "unavailable");
-    }
-  };
+  const onGuardToolCall = createToolCallGate(client, policy, {
+    hook: "onGuardToolCall",
+    context: tanstackAiContext,
+  });
 
   const onStart = (ctx: ChatMiddlewareContext): void => {
     if (isTanStackAi1Context(ctx)) {

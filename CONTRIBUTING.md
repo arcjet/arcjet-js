@@ -157,7 +157,10 @@ change them:
   they are sent. The peer range does not stop `/v1` on 0.x (0.x never
   calls `onGuardToolCall`), so `guardMiddleware` also installs
   `onStart`, which warns and aborts a run whose context lacks the
-  1.x-only `retry`. v0 stays on 0.x: one `@tanstack/ai` peer range
+  1.x-only `retry`. v1 imports v0's tool-call gate (`createToolCallGate`)
+  and context helpers from `../v0/` rather than copying them; only the
+  hook, the 0.x-host check, and the `threadId` fallback differ. v0 stays
+  on 0.x: one `@tanstack/ai` peer range
   covers both, the `@tanstack/ai` devDependency is 1.x, and the
   `@tanstack/ai-v0` alias pins 0.x for `tsconfig.tanstack-ai-v0.json`
   and `test/tanstack-ai/v0`.

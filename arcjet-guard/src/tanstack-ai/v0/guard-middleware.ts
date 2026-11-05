@@ -1,9 +1,4 @@
-import type {
-  BeforeToolCallDecision,
-  ChatMiddleware,
-  ChatMiddlewareContext,
-  ToolCallHookContext,
-} from "@tanstack/ai";
+import type { ChatMiddleware, ChatMiddlewareContext, ToolCallHookContext } from "@tanstack/ai";
 
 import { resolveActorInputs, resolveCallPolicy } from "../../agents/actor-inputs.ts";
 import type { ActorResolver, InputsResolver } from "../../agents/actor-inputs.ts";
@@ -16,7 +11,7 @@ import { arcjetProtectedTool } from "../../agents/internal.ts";
 import { assertValidAction } from "../../agents/label.ts";
 import type { ArcjetMetadata, DecisionDeny, RuleWithInput } from "../../types.ts";
 import { tanstackAiContext } from "./context.ts";
-import type { TanStackAiContextSource } from "./context.ts";
+import type { TanStackAiAgentContext, TanStackAiContextSource } from "./context.ts";
 
 /**
  * Input passed to `rules` / `metadata` / `action` callbacks on
@@ -89,6 +84,35 @@ export type TanStackAiGuardMiddleware = ChatMiddleware & {
   onBeforeToolCall: NonNullable<ChatMiddleware["onBeforeToolCall"]>;
 };
 
+/**
+ * What the shared tool-call gate returns: `undefined` lets the call run.
+ * It is assignable to TanStack AI 0.x `BeforeToolCallDecision` and 1.x
+ * `GuardToolCallDecision`, so `tanstack-ai/v1` reuses this gate on
+ * `onGuardToolCall`.
+ *
+ * @internal Not exported from `@arcjet/guard/tanstack-ai/v0`.
+ */
+export type ToolCallGateDecision =
+  | void
+  | undefined
+  | { type: "skip"; result: unknown }
+  | { type: "abort"; reason: string };
+
+/**
+ * The per-version parts of the shared tool-call gate.
+ *
+ * @internal Not exported from `@arcjet/guard/tanstack-ai/v0`.
+ */
+export interface ToolCallGateOptions {
+  /** The TanStack AI hook the gate is installed on, for the warning text. */
+  hook: string;
+  /** Derive correlation and metadata from the middleware context. */
+  context: (
+    source: TanStackAiContextSource | undefined,
+    init: { sessionId: string } | undefined,
+  ) => TanStackAiAgentContext;
+}
+
 function isContextSource(value: unknown): value is TanStackAiContextSource {
   return value !== null && typeof value === "object";
 }
@@ -122,7 +146,7 @@ function denyDecision(
   policy: GuardMiddlewarePolicy,
   payload: { message: string },
   kind: "deny" | "unavailable",
-): BeforeToolCallDecision {
+): ToolCallGateDecision {
   if (kind === "deny" && policy.onDeny === "abort") {
     return { type: "abort", reason: payload.message };
   }
@@ -136,8 +160,10 @@ let middlewareSeq = 0;
  * middleware by name in logs, and two distinct instances sharing one
  * would be indistinguishable. The counter alone is not enough because
  * a second copy of this module starts counting at one again.
+ *
+ * @internal Not exported from `@arcjet/guard/tanstack-ai/v0`.
  */
-function middlewareName(): string {
+export function middlewareName(): string {
   middlewareSeq += 1;
   return `arcjet-guard-${middlewareSeq}-${crypto.randomUUID().slice(0, 8)}`;
 }
@@ -145,9 +171,10 @@ function middlewareName(): string {
 async function gateToolCall(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy,
+  options: ToolCallGateOptions,
   ctx: ChatMiddlewareContext,
   hookCtx: ToolCallHookContext,
-): Promise<BeforeToolCallDecision> {
+): Promise<ToolCallGateDecision> {
   if (isBrandedTool(hookCtx.tool)) {
     return undefined;
   }
@@ -161,7 +188,7 @@ async function gateToolCall(
   const remote = await resolveActorInputs(policy, action, call, ctx);
 
   const source = isContextSource(ctx) ? ctx : undefined;
-  const agentCtx = tanstackAiContext(source, sessionId === undefined ? undefined : { sessionId });
+  const agentCtx = options.context(source, sessionId === undefined ? undefined : { sessionId });
 
   const metadata: ArcjetMetadata = {
     ...agentCtx.metadata,
@@ -169,7 +196,7 @@ async function gateToolCall(
   };
   const mergedMetadata = { ...metadata, ...policyMetadata };
 
-  return runGuarded<BeforeToolCallDecision>(client, {
+  return runGuarded<ToolCallGateDecision>(client, {
     action,
     rules,
     correlationId: agentCtx.correlationId,
@@ -181,6 +208,45 @@ async function gateToolCall(
     execute: () => Promise.resolve(),
     onGuardError: policy.onGuardError ?? "deny",
   });
+}
+
+/**
+ * The tool-call gate both TanStack AI namespaces install: v0 on
+ * `onBeforeToolCall`, v1 on `onGuardToolCall`. It validates a static
+ * `action` up front, and the returned hook never throws: a failure is a
+ * guard error, so it denies (skip with the unavailable payload) unless
+ * `onGuardError` is `"allow"`.
+ *
+ * @internal Not exported from `@arcjet/guard/tanstack-ai/v0`.
+ */
+export function createToolCallGate(
+  client: ArcjetAgentClient,
+  policy: GuardMiddlewarePolicy,
+  options: ToolCallGateOptions,
+): (ctx: ChatMiddlewareContext, hookCtx: ToolCallHookContext) => Promise<ToolCallGateDecision> {
+  // An empty action means "unset" here and falls back to the default.
+  if (typeof policy.action === "string" && policy.action !== "") {
+    assertValidAction(policy.action, "guardMiddleware");
+  }
+  return async (ctx, hookCtx): Promise<ToolCallGateDecision> => {
+    try {
+      if (!isToolCallHookContext(hookCtx)) {
+        return undefined;
+      }
+      return await gateToolCall(client, policy, options, ctx, hookCtx);
+    } catch (error) {
+      if (shouldWarn()) {
+        console.warn(
+          `@arcjet/guard: ${options.hook} for a TanStack AI tool threw; treating as a guard error:`,
+          error,
+        );
+      }
+      if (policy.onGuardError === "allow") {
+        return undefined;
+      }
+      return denyDecision(policy, unavailableResult(), "unavailable");
+    }
+  };
 }
 
 /**
@@ -254,35 +320,11 @@ export function guardMiddleware(
   client: ArcjetAgentClient,
   policy: GuardMiddlewarePolicy = {},
 ): TanStackAiGuardMiddleware {
-  // An empty action means "unset" here and falls back to the default.
-  if (typeof policy.action === "string" && policy.action !== "") {
-    assertValidAction(policy.action, "guardMiddleware");
-  }
-  const onBeforeToolCall = async (
-    ctx: ChatMiddlewareContext,
-    hookCtx: ToolCallHookContext,
-  ): Promise<BeforeToolCallDecision> => {
-    try {
-      if (!isToolCallHookContext(hookCtx)) {
-        return undefined;
-      }
-      return await gateToolCall(client, policy, ctx, hookCtx);
-    } catch (error) {
-      if (shouldWarn()) {
-        console.warn(
-          "@arcjet/guard: onBeforeToolCall for a TanStack AI tool threw; treating as a guard error:",
-          error,
-        );
-      }
-      if (policy.onGuardError === "allow") {
-        return undefined;
-      }
-      return denyDecision(policy, unavailableResult(), "unavailable");
-    }
-  };
-
   return {
     name: middlewareName(),
-    onBeforeToolCall,
+    onBeforeToolCall: createToolCallGate(client, policy, {
+      hook: "onBeforeToolCall",
+      context: tanstackAiContext,
+    }),
   };
 }

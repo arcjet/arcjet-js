@@ -1,6 +1,15 @@
 import { shouldWarn } from "../../agents/capture.ts";
-import { correlationIdProblem } from "../../agents/context.ts";
 import type { ArcjetMetadata } from "../../types.ts";
+import {
+  asContextSource,
+  firstValidId,
+  isMiddlewareEnvelope,
+  readAppContext,
+  validMetadataString,
+} from "../v0/context.ts";
+import type { TanStackAiAgentContext } from "../v0/context.ts";
+
+export type { TanStackAiAgentContext } from "../v0/context.ts";
 
 /**
  * Structural source `tanstackAiContext` can read.
@@ -34,90 +43,6 @@ export interface TanStackAiContextSource {
   requestId?: unknown;
   /** Present on TanStack's middleware envelope. Never used for correlation. */
   streamId?: unknown;
-}
-
-/**
- * Context derived from a TanStack AI `chat()` run. `correlationId` is
- * omitted when nothing valid was present — this helper never mints one.
- */
-export interface TanStackAiAgentContext {
-  correlationId?: string;
-  metadata?: ArcjetMetadata;
-}
-
-function asContextSource(source: unknown): TanStackAiContextSource | undefined {
-  if (source === undefined || source === null || typeof source !== "object") {
-    return undefined;
-  }
-  return source;
-}
-
-function asAppContext(value: unknown): TanStackAiContextSource | undefined {
-  if (value === undefined || value === null || typeof value !== "object" || Array.isArray(value)) {
-    return undefined;
-  }
-  return value;
-}
-
-/**
- * TanStack's `ChatMiddlewareContext` always carries SDK-minted
- * `requestId` and `streamId`, so an envelope that looks like one is
- * not mined for app ids. Only its `context` and `threadId` are read.
- */
-function isMiddlewareEnvelope(source: TanStackAiContextSource): boolean {
-  return typeof source.requestId === "string" && typeof source.streamId === "string";
-}
-
-/**
- * The integrator-owned app object. On a `chat({ context })` /
- * `ChatMiddlewareContext` envelope that is `source.context`. On a bare
- * app object it is the source itself.
- */
-function readAppContext(
-  source: TanStackAiContextSource | undefined,
-): TanStackAiContextSource | undefined {
-  if (source === undefined) {
-    return undefined;
-  }
-  const nested = asAppContext(source.context);
-  if (nested !== undefined) {
-    return nested;
-  }
-  if (isMiddlewareEnvelope(source)) {
-    return undefined;
-  }
-  return source;
-}
-
-function firstValidId(candidates: ReadonlyArray<{ value: unknown; label: string }>): {
-  id: string | undefined;
-  rejected: string | undefined;
-} {
-  let rejected: string | undefined;
-  for (const candidate of candidates) {
-    if (typeof candidate.value !== "string") {
-      continue;
-    }
-    const problem = correlationIdProblem(candidate.value);
-    if (problem === undefined) {
-      return { id: candidate.value, rejected: undefined };
-    }
-    rejected = `${candidate.label} (${problem})`;
-  }
-  return { id: undefined, rejected };
-}
-
-function validMetadataString(values: unknown[]): string | undefined {
-  for (const value of values) {
-    if (typeof value !== "string" || value.length === 0) {
-      continue;
-    }
-    if (correlationIdProblem(value) !== undefined) {
-      continue;
-    }
-    return value;
-  }
-  return undefined;
 }
 
 /**
@@ -176,7 +101,7 @@ export function tanstackAiContext(
         sessionId: envelope?.sessionId,
         conversationId: envelope?.conversationId,
       };
-  const threadId = envelope?.threadId;
+  const threadId = source?.threadId;
 
   const { id: correlationId, rejected } = firstValidId([
     { value: fromApp.correlationId, label: "context.correlationId" },
