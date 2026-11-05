@@ -191,7 +191,7 @@ change them:
   returns a functional `ToolCallDecision`. Do not double-wrap with
   `@arcjet/guard/vercel-ai/v7`. Think is not the Vercel AI SDK.
   Docs slug is `/guards/cloudflare-think/`.
-- **`claude-managed-agents/v0`** is hosted Claude Managed Agents
+- **`claude-managed-agents/v0`** and **`/v1`** are hosted Claude Managed Agents
   (REST+SSE, beta `managed-agents-2026-04-01`): Anthropic runs the
   tool loop and there is no PreToolUse. This is **not**
   `claude-agent-sdk/v0` — do not reuse that adapter, its hooks, or
@@ -213,12 +213,14 @@ change them:
   Never `traceId`. Peer is type-only `@anthropic-ai/sdk` `>=0.86.0
   <2` (0.86.0 is the first release with `client.beta.agents` /
   `sessions` / `environments`), not `@anthropic-ai/claude-agent-sdk`.
-  SDK 1.0 left the Managed Agents session event types unchanged, so
-  the range spans 0.x and 1.x on one path. Node stays Guard's
-  existing floor. Path is `/v0` because this is a public beta – it
-  tracks the Managed Agents beta API, not the SDK major – no
-  unversioned alias, no `/v1`. CI tests the 0.86.0 floor alongside
-  the 1.x dev pin. Docs slug is
+  The version segment names the SDK major: `/v0` is for SDK 0.x and
+  `/v1` for SDK 1.x. SDK 1.0 left the Managed Agents session event
+  types unchanged, so `/v1` is a pure re-export of `/v0` (a test
+  asserts it) and both share one peer range – npm peer ranges are
+  per package, not per subpath. When a later SDK release changes those
+  event types, `/v1` gets its own implementation instead. Node stays
+  Guard's existing floor. No unversioned alias. CI tests the 0.86.0
+  floor alongside the 1.x dev pin. Docs slug is
   `/guards/claude-managed-agents/` (shared JS+Python page). Do not
   touch `/guards/claude-agent-sdk/` or `/guards/claude-agent-sdk-py/`.
   Do not add a `claude-managed-agents` example in this repo. The

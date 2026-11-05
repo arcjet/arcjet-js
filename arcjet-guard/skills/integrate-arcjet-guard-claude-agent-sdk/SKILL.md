@@ -9,7 +9,7 @@ metadata:
   library: "@arcjet/guard"
   library_version: "1.15.0" # x-release-please-version
 sources:
-  # Reviewed 2026-10-29: the README widens the claude-managed-agents/v0 @anthropic-ai/sdk peer range to <2; this skill is unaffected.
+  # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
   - README.md
 ---
 
@@ -136,7 +136,7 @@ Ask only what you cannot infer from the code; suggest defaults.
    and omits `correlationId` when neither is a valid id. Subagent
    `agent_id` is metadata, not the correlation id.
 6. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
-   `@arcjet/guard/claude-managed-agents/v0`.** There is no public
+   `@arcjet/guard/claude-managed-agents/v1`.** There is no public
    `@arcjet/guard/agents` export. Claude tools are `tool()`, not AI SDK
    `tool()`, and this is not hosted Claude Managed Agents. `guardTool`
    throws if the tool already carries the Arcjet protection brand. Applying
