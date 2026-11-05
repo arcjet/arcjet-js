@@ -42,8 +42,8 @@ test("@tanstack/ai is an optional peer and not a dependency", () => {
   assert.ok(devDependencies);
   assert.equal(
     devDependencies["@tanstack/ai"],
-    "1.0.0",
-    'devDependencies["@tanstack/ai"] must be pinned to "1.0.0"',
+    "1.0.1",
+    'devDependencies["@tanstack/ai"] must be pinned to "1.0.1"',
   );
 
   const engines = objectField(packageJson, "engines");
