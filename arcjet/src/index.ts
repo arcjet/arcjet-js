@@ -2868,12 +2868,11 @@ export function sensitiveInfo<
         const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
         if (typeof result === "undefined") {
-          return wasmUnavailableRuleResult(
-            ruleId,
-            fingerprint,
-            state,
-            "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
-          );
+          const message =
+            backend === wasmSensitiveInfoBackend
+              ? "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment."
+              : "SENSITIVE_INFO rule failed to run because the sensitive info backend could not run.";
+          return wasmUnavailableRuleResult(ruleId, fingerprint, state, message);
         }
 
         const reason = new ArcjetSensitiveInfoReason({

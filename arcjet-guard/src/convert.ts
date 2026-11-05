@@ -714,7 +714,9 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
             case: "resultError" as const,
             value: create(ResultErrorSchema, {
               message:
-                "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment.",
+                backend === wasmSensitiveInfoBackend
+                  ? "SENSITIVE_INFO rule failed to run because Wasm is not supported in this environment."
+                  : "SENSITIVE_INFO rule failed to run because the sensitive info backend could not run.",
               code: "SENSITIVE_INFO_ERROR",
             }),
           };

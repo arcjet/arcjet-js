@@ -814,7 +814,7 @@ describe("ruleToProto", () => {
   test("backend returning undefined is captured as a rule error result", async () => {
     const backend: SensitiveInfoBackend = {
       detect() {
-        return Promise.resolve(undefined);
+        return Promise.resolve();
       },
     };
 
@@ -828,7 +828,7 @@ describe("ruleToProto", () => {
       if (proto.rule.rule.value.localResult.case === "resultError") {
         assert.match(
           proto.rule.rule.value.localResult.value.message,
-          /SENSITIVE_INFO rule failed to run because Wasm is not supported/,
+          /SENSITIVE_INFO rule failed to run because the sensitive info backend could not run/,
         );
         assert.equal(proto.rule.rule.value.localResult.value.code, "SENSITIVE_INFO_ERROR");
       }
