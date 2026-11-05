@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-claude-managed-agents
 description: Integrate Arcjet security into Claude Managed Agents (hosted REST+SSE, beta managed-agents-2026-04-01) using @arcjet/guard — screen user.message / initial_events before sessions.events.send, and gate custom tools on agent.custom_tool_use. Use when asked to add Arcjet to Claude Managed Agents, rate limit custom tools, or block prompt injection on hosted sessions. Not the Claude Agent SDK.
 license: Apache-2.0
-compatibility: Requires the target app to use Claude Managed Agents via @anthropic-ai/sdk >=0.86.0 <2 on Node.js >= 22.
+compatibility: Requires the target app to use Claude Managed Agents via @anthropic-ai/sdk >=0.86.0 <2 on Node.js >= 22. Import /v1 with SDK 1.x and /v0 with SDK 0.x.
 metadata:
   author: arcjet
   type: core
@@ -11,13 +11,13 @@ metadata:
 sources:
   # Reviewed 2026-11-05: the README adds @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x and scopes /v0 to 0.x; this skill is unaffected.
   # Reviewed 2026-10-28: the oxfmt 0.74 reformat of README examples does not affect this skill.
-  # Reviewed 2026-10-29: the README widens the @anthropic-ai/sdk peer range to <2; compatibility updated to match.
+  # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; import guidance updated to match.
   - README.md
 ---
 
 # Integrate Arcjet Guard into Claude Managed Agents
 
-`@arcjet/guard`'s Claude Managed Agents v0 namespace wraps the agent's
+`@arcjet/guard`'s Claude Managed Agents namespace wraps the agent's
 existing Arcjet client. It never talks to the Arcjet API itself. Anthropic
 runs the hosted tool loop. There is **no PreToolUse**.
 
@@ -77,10 +77,13 @@ Ask only what you cannot infer from the code; suggest defaults.
    no PreToolUse, no `UserPromptSubmit`. Do not also wrap with
    `@arcjet/guard/claude-agent-sdk/v0` or `@arcjet/guard/vercel-ai/v7`.
 2. **There is no `guardInbound`.** The helper is `guardEvents`.
-3. **The import path is versioned and there is no alias.**
-   `@arcjet/guard/claude-managed-agents/v0`.
-   `@arcjet/guard/claude-managed-agents` does not resolve. There is no
-   `/v1`.
+3. **The import path is versioned and matches the SDK major.** Check
+   the app's installed `@anthropic-ai/sdk`: 1.x imports
+   `@arcjet/guard/claude-managed-agents/v1`, 0.x imports
+   `@arcjet/guard/claude-managed-agents/v0`. `/v1` re-exports `/v0`, so
+   the helpers behave the same through either path. Do not mix the two
+   paths in one app. `@arcjet/guard/claude-managed-agents` does not
+   resolve.
 4. **Correlation is caller-owned, never minted.** Do not pass
    `session.id` / event ids to `claudeManagedAgentsContext` as if Arcjet
    created them. Never `traceId`.
@@ -100,7 +103,9 @@ Ask only what you cannot infer from the code; suggest defaults.
 ## Step 1: Install and find the guard client
 
 Install `@arcjet/guard` (required), plus `@anthropic-ai/sdk` (optional
-peer, needed for types). Always use the versioned path.
+peer, needed for types). Always use the versioned path. The examples
+in this skill use `/v1` for SDK 1.x; with SDK 0.x, import `/v0`
+instead.
 
 ```sh
 npm install @arcjet/guard @anthropic-ai/sdk
@@ -118,7 +123,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 ```ts
 import { detectPromptInjection } from "@arcjet/guard";
-import { claudeManagedAgentsContext, guardEvents } from "@arcjet/guard/claude-managed-agents/v0";
+import { claudeManagedAgentsContext, guardEvents } from "@arcjet/guard/claude-managed-agents/v1";
 
 import { arcjet } from "./arcjet.js";
 
@@ -159,7 +164,7 @@ on-device in your app process before anything is sent to Anthropic.
 
 ```ts
 import { tokenBucket, policyInput } from "@arcjet/guard";
-import { guardCustomTool } from "@arcjet/guard/claude-managed-agents/v0";
+import { guardCustomTool } from "@arcjet/guard/claude-managed-agents/v1";
 
 import { arcjet } from "./arcjet.js";
 

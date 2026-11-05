@@ -95,6 +95,10 @@
       "types": "./dist/claude-managed-agents/v0/index.d.ts",
       "import": "./dist/claude-managed-agents/v0/index.js"
     },
+    "./claude-managed-agents/v1": {
+      "types": "./dist/claude-managed-agents/v1/index.d.ts",
+      "import": "./dist/claude-managed-agents/v1/index.js"
+    },
     "./cloudflare-think/v0": {
       "types": "./dist/cloudflare-think/v0/index.d.ts",
       "import": "./dist/cloudflare-think/v0/index.js"

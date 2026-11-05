@@ -9,6 +9,7 @@ metadata:
   library: "@arcjet/skills"
   library_version: "1.15.0" # x-release-please-version
 sources:
+  # Reviewed 2026-11-05: docs/guard.md adds the claude-managed-agents/v1 row; this skill has no per-SDK import table.
   - docs/guard.md
 ---
 

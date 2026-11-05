@@ -10,7 +10,7 @@ metadata:
   library_version: "1.15.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-05: the README adds @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x and scopes /v0 to 0.x; this skill is unaffected.
-  # Reviewed 2026-10-29: the README widens the claude-managed-agents/v0 @anthropic-ai/sdk peer range to <2; this skill is unaffected.
+  # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
   - README.md
 ---
 
@@ -92,7 +92,7 @@ Ask only what you cannot infer from the code; suggest defaults.
    when constructed without `sessionId`. Do not use `traceId` (the SDK
    mints one when omitted).
 5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
-   `@arcjet/guard/claude-managed-agents/v0`.** `guardTool` throws if the
+   `@arcjet/guard/claude-managed-agents/v1`.** `guardTool` throws if the
    tool already carries the Arcjet protection brand.
 6. **A denial from `guardTool` is a structured object, not a throw.**
    Throwing would hit the SDK `errorFunction` (a generic string, or

@@ -129,7 +129,7 @@ test("Managed Agents namespace is a strict superset of the agents barrel with sa
   assert.deepEqual(sorted, expectedOwnExports);
 });
 
-test("export map has no unversioned ./claude-managed-agents, no /v1, and no wildcards", () => {
+test("export map has /v0 and /v1, no unversioned ./claude-managed-agents, and no wildcards", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
@@ -140,21 +140,17 @@ test("export map has no unversioned ./claude-managed-agents, no /v1, and no wild
     !exportKeys.includes("./claude-managed-agents"),
     'export map must not have "./claude-managed-agents"',
   );
-  assert.ok(
-    !exportKeys.includes("./claude-managed-agents/v1"),
-    'export map must not have "./claude-managed-agents/v1"',
-  );
-  assert.ok(
-    exportKeys.includes("./claude-managed-agents/v0"),
-    'export map must have "./claude-managed-agents/v0"',
-  );
+
+  const versioned = ["./claude-managed-agents/v0", "./claude-managed-agents/v1"];
+  for (const key of versioned) {
+    assert.ok(exportKeys.includes(key), `export map must have "${key}"`);
+  }
 
   for (const key of exportKeys) {
     if (key.startsWith("./claude-managed-agents/")) {
-      assert.equal(
-        key,
-        "./claude-managed-agents/v0",
-        `export map must not have wildcard claude-managed-agents subpaths; found "${key}"`,
+      assert.ok(
+        versioned.includes(key),
+        `export map must not have other claude-managed-agents subpaths; found "${key}"`,
       );
     }
   }
