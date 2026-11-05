@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 const analyzeRoot = fileURLToPath(new URL("..", import.meta.url));
 
 /**
- * Run analyzer calls in a child process with `WebAssembly` removed so
- * `initializeWasm` returns `undefined`.
+ * Run analyzer calls in a child process that mocks `@arcjet/analyze-wasm`
+ * so `initializeWasm` returns `undefined`.
  */
 function runUnavailable(): {
   email: unknown;
@@ -17,9 +17,13 @@ function runUnavailable(): {
   filter: unknown;
 } {
   const script = `
-Reflect.deleteProperty(globalThis, "WebAssembly");
-process.on("uncaughtException", () => process.exit(0));
-process.on("unhandledRejection", () => process.exit(0));
+import { mock } from "node:test";
+
+mock.module("@arcjet/analyze-wasm", {
+  namedExports: {
+    initializeWasm: async () => undefined,
+  },
+});
 
 const analyze = await import("@arcjet/analyze");
 const ctx = {
@@ -64,14 +68,17 @@ process.stdout.write(
     filter: mark(filter),
   }),
 );
-process.exit(0);
 `;
 
-  const result = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
-    cwd: analyzeRoot,
-    encoding: "utf8",
-    env: process.env,
-  });
+  const result = spawnSync(
+    process.execPath,
+    ["--experimental-test-module-mocks", "--input-type=module", "-e", script],
+    {
+      cwd: analyzeRoot,
+      encoding: "utf8",
+      env: process.env,
+    },
+  );
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   return JSON.parse(result.stdout);

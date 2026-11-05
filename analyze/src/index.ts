@@ -248,6 +248,8 @@ function createCoreImports(detect?: DetectSensitiveInfoFunction): ImportObject {
  * @returns
  *   Promise for a SHA-256 fingerprint, or `undefined` when WebAssembly is not
  *   available in this runtime.
+ *   Callers must treat `undefined` as analyzer unavailable rather than as a
+ *   successful empty result.
  */
 export async function generateFingerprint(
   context: AnalyzeContext,
