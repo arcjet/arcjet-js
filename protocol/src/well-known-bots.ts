@@ -633,6 +633,7 @@ export type ArcjetWellKnownBot =
   | "RETREVO_PAGE_ANALYZER"
   | "RETROLISTE_CRAWLER"
   | "RIDDER_CRAWLER"
+  | "RIVER_CRAWLER"
   | "RIVVA_CRAWLER"
   | "RSSBOT_FEEDFETCHER"
   | "RSSING_CRAWLER"
@@ -1013,6 +1014,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "PRORATA_CRAWLER",
     "PYTHON_SCRAPY",
     "REFLECTIONBOT",
+    "RIVER_CRAWLER",
     "SAFEDNS_CRAWLER",
     "SBINTUITIONS_BOT",
     "SEARCHATLAS_CRAWLER",
