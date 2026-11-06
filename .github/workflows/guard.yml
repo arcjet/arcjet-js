@@ -131,6 +131,53 @@ jobs:
           node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
         working-directory: ${{ github.workspace }}
 
+      # The same check for `@arcjet/guard/tanstack-ai/v0`. The `@tanstack/ai`
+      # devDependency is the 1.x that `/v1` targets; v0 is typed and tested
+      # through the `@tanstack/ai-v0` alias, so the floor goes into the alias.
+      # The floor has no `./testing` export, so the real `chat()` suite stays
+      # at the development pin (see tsconfig.tanstack-ai-v0-floor.json).
+      #
+      # The step puts the alias back on the development pin when it is done,
+      # so a later step (another floor check's `npm run typecheck`, for one)
+      # never type-checks the real `chat()` suite against the floor.
+      - name: Unit tests at the lowest supported @tanstack/ai (tanstack-ai/v0)
+        run: |
+          floor=$(node -e "
+            const r = require('./arcjet-guard/package.json').peerDependencies['@tanstack/ai'];
+            const m = /^>=\s*([0-9]+\.[0-9]+\.[0-9]+)/.exec(r);
+            if (!m) { console.error('cannot read a floor from peer range: ' + r); process.exit(1) }
+            process.stdout.write(m[1]);
+          ")
+          echo "lowest supported @tanstack/ai: $floor"
+          npm install "@tanstack/ai-v0@npm:@tanstack/ai@$floor" --no-save --workspace @arcjet/guard
+          # The alias's exports map has no require condition and no
+          # ./package.json, so find it the way Node does: the nearest
+          # node_modules/@tanstack/ai-v0 walking up from the v0 tests.
+          node -e "
+            const { dirname, join } = require('node:path');
+            const { existsSync } = require('node:fs');
+            let dir = join(process.cwd(), 'arcjet-guard/test/tanstack-ai/v0');
+            let manifest;
+            for (;;) {
+              const candidate = join(dir, 'node_modules/@tanstack/ai-v0/package.json');
+              if (existsSync(candidate)) { manifest = candidate; break; }
+              const parent = dirname(dir);
+              if (parent === dir) { console.error('@tanstack/ai-v0 not found'); process.exit(1); }
+              dir = parent;
+            }
+            const found = require(manifest).version;
+            if (found !== process.argv[1]) {
+              console.error('v0 tests resolve @tanstack/ai-v0 ' + found + ', expected the floor ' + process.argv[1]);
+              process.exit(1);
+            }
+            console.log('v0 tests resolve @tanstack/ai-v0 ' + found);
+          " "$floor"
+          (cd arcjet-guard && npx tsc --project tsconfig.tanstack-ai-v0-floor.json --noEmit)
+          node --test 'arcjet-guard/src/tanstack-ai/v0/**/*.test.ts' arcjet-guard/test/tanstack-ai/v0/real-middleware.test.ts
+          pin=$(node -p "require('./arcjet-guard/package.json').devDependencies['@tanstack/ai-v0']")
+          npm install "@tanstack/ai-v0@$pin" --no-save --workspace @arcjet/guard
+        working-directory: ${{ github.workspace }}
+
       # Each type-only vendor namespace is the same check: delete the optional
       # peer, prove it no longer resolves, then run `src/<namespace>` tests.
       # A static scan proves the imports are written `import type`; this proves

@@ -11,14 +11,14 @@
  * (`>=0.8.0 <1`)**. Nothing in this module imports that package at
  * runtime: every TanStack AI type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls it in. Latest supported
- * development pin is 0.69.x. There is no `/v1` until TanStack AI
- * ships 1.x.
+ * development pin is 0.69.x. For TanStack AI 1.x use
+ * `@arcjet/guard/tanstack-ai/v1`, which gates tools with the 1.x
+ * `onGuardToolCall` guard tier.
  *
- * **Note:** the version segment is `v0` because `@tanstack/ai` is
- * pre-1.0. There is deliberately no unversioned
- * `@arcjet/guard/tanstack-ai` alias. A `v1` namespace is added when
- * the SDK reaches 1.0; the segment names the SDK's major, not this
- * integration's iteration. 0.x minors can break.
+ * **Note:** the version segment is `v0` because this namespace targets
+ * `@tanstack/ai` 0.x. There is deliberately no unversioned
+ * `@arcjet/guard/tanstack-ai` alias. The segment names the SDK's
+ * major, not this integration's iteration. 0.x minors can break.
  *
  * v0 is `chat({ middleware })` + `ChatMiddleware.onBeforeToolCall`.
  * Not the Vercel AI SDK — do not also wrap with

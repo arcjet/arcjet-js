@@ -9,5 +9,10 @@
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
-  "exclude": ["node_modules/", "test/runtime/**"]
+  "exclude": [
+    "node_modules/",
+    "test/runtime/**",
+    // Checked against @tanstack/ai 0.x by tsconfig.tanstack-ai-v0.json.
+    "test/tanstack-ai/v0/**"
+  ]
 }

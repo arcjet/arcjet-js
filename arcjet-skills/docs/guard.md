@@ -116,7 +116,8 @@ Prefer the versioned Guard namespaces over hand-wrapping every tool:
 | Genkit JS | `@arcjet/guard/genkit/v1` |
 | Google ADK JS | `@arcjet/guard/google-adk/v2` |
 | Strands Agents JS | `@arcjet/guard/strands-agents/v1` |
-| TanStack AI | `@arcjet/guard/tanstack-ai/v0` |
+| TanStack AI 1.x | `@arcjet/guard/tanstack-ai/v1` |
+| TanStack AI 0.x | `@arcjet/guard/tanstack-ai/v0` |
 | Cloudflare Think | `@arcjet/guard/cloudflare-think/v0` |
 
 Unversioned aliases do not resolve. Load the matching
@@ -146,7 +147,7 @@ per-framework: return the object (AI SDK, Mastra, OpenAI Agents, Genkit
 `toolResponse.output`, LangGraph, LangChain `guardTool`, Google ADK plugin
 dict, Strands `guardTool`); wrap it (Claude Agent SDK `isError: true`,
 LangChain `guardMiddleware` `ToolMessage`, Strands `guardHooks` cancel
-string, TanStack `onBeforeToolCall` skip, Cloudflare Think
+string, TanStack `onGuardToolCall` (v1) or `onBeforeToolCall` (v0) skip, Cloudflare Think
 `beforeToolCall` substitute); or throw `ArcjetDeniedError`
 (Eve, unless `onDeny: "result"`). A throw from a return-style adapter
 drops the fields.
