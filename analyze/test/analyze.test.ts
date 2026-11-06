@@ -22,6 +22,7 @@ const exampleEmailOptions = {
 test("@arcjet/analyze", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("@arcjet/analyze")).sort(), [
+      "WasmUnavailableError",
       "detectBot",
       "detectSensitiveInfo",
       "generateFingerprint",
