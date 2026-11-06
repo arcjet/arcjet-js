@@ -9,6 +9,7 @@ metadata:
   library: "@arcjet/guard"
   library_version: "1.15.0" # x-release-please-version
 sources:
+  # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
   - README.md
 ---
 
@@ -91,7 +92,7 @@ Ask only what you cannot infer from the code; suggest defaults.
    Sequence. `langgraphAgentContext` reads `thread_id` / `checkpoint_ns` /
    run id and omits `correlationId` when none of those is a valid id.
 5. **Do not double-wrap with `@arcjet/guard/vercel-ai/v7` or
-   `@arcjet/guard/claude-managed-agents/v0`.** LangGraph tools are
+   `@arcjet/guard/claude-managed-agents/v1`.** LangGraph tools are
    LangChain `tool()`, but this namespace brands them. `guardTool`
    throws if the tool already carries the Arcjet protection brand.
    `guardToolNode` skips already-branded tools so Guard is not double-called.

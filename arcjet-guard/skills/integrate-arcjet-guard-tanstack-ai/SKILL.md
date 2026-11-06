@@ -9,6 +9,7 @@ metadata:
   library: "@arcjet/guard"
   library_version: "1.15.0" # x-release-please-version
 sources:
+  # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
   - README.md
 ---
 
@@ -39,7 +40,7 @@ There is **no `guardTool`**. A throw from `execute` is swallowed into
 
 This namespace is TanStack AI **`chat({ middleware })` +
 `onBeforeToolCall`**. Not the Vercel AI SDK. Do not also wrap with
-`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
+`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v1`.
 Client tools and provider-native tools with no local `execute` are out
 of scope.
 

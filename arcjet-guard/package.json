@@ -95,6 +95,10 @@
       "types": "./dist/claude-managed-agents/v0/index.d.ts",
       "import": "./dist/claude-managed-agents/v0/index.js"
     },
+    "./claude-managed-agents/v1": {
+      "types": "./dist/claude-managed-agents/v1/index.d.ts",
+      "import": "./dist/claude-managed-agents/v1/index.js"
+    },
     "./cloudflare-think/v0": {
       "types": "./dist/cloudflare-think/v0/index.d.ts",
       "import": "./dist/cloudflare-think/v0/index.js"
@@ -161,7 +165,7 @@
   "devDependencies": {
     "@ai-sdk/provider-utils": "5.0.61",
     "@anthropic-ai/claude-agent-sdk": "0.3.302",
-    "@anthropic-ai/sdk": "0.135.0",
+    "@anthropic-ai/sdk": "1.1.0",
     "@cloudflare/think": "0.20.2",
     "@google/adk": "2.3.0",
     "@langchain/core": "1.2.20",
@@ -185,7 +189,7 @@
   "peerDependencies": {
     "@ai-sdk/provider-utils": ">=5 <6",
     "@anthropic-ai/claude-agent-sdk": ">=0.1.0 <1",
-    "@anthropic-ai/sdk": ">=0.86.0 <1",
+    "@anthropic-ai/sdk": ">=0.86.0 <2",
     "@cloudflare/think": ">=0.3.0 <1",
     "@google/adk": ">=2 <3",
     "@langchain/core": ">=1 <2",
