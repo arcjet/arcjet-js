@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.15.1](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/nest-v1.15.1) (2026-11-06)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/nest:** Synchronize arcjet-js versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.15.0 to 1.15.1
+    * @arcjet/env bumped from 1.15.0 to 1.15.1
+    * @arcjet/headers bumped from 1.15.0 to 1.15.1
+    * @arcjet/ip bumped from 1.15.0 to 1.15.1
+    * @arcjet/logger bumped from 1.15.0 to 1.15.1
+    * @arcjet/protocol bumped from 1.15.0 to 1.15.1
+    * @arcjet/transport bumped from 1.15.0 to 1.15.1
+    * arcjet bumped from 1.15.0 to 1.15.1
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/nest-v1.15.0) (2026-10-28)
 
 
