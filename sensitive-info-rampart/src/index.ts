@@ -26,6 +26,18 @@ export type { ModelOptions, ModelRunner, RawToken } from "./model.js";
  */
 export interface RampartOptions extends ModelOptions {
   /**
+   * Largest input, in UTF-16 code units (`value.length`), to scan (default:
+   * `100_000`).
+   *
+   * Scan time grows with input length, so this bounds the work one request can
+   * cause. The `sensitiveInfo` and `localDetectSensitiveInfo` rules deny a longer
+   * value without scanning any of it, rather than scanning only the first part
+   * and letting the rest through.
+   *
+   * Must be a positive safe integer. There is no unlimited setting.
+   */
+  maxInputChars?: number;
+  /**
    * Deterministic recognizers to run alongside the model (default:
    * {@linkcode defaultRecognizers}).
    *
@@ -51,6 +63,11 @@ export interface RampartOptions extends ModelOptions {
    */
   runModel?: ModelRunner;
 }
+
+/**
+ * Default for {@linkcode RampartOptions.maxInputChars}, matching the Python SDK.
+ */
+const DEFAULT_MAX_INPUT_CHARS = 100_000;
 
 function overlaps(a: DetectedSpan, b: DetectedSpan): boolean {
   return a.start < b.end && b.start < a.end;
@@ -103,6 +120,9 @@ function mergeSpans(groups: ReadonlyArray<ReadonlyArray<DetectedSpan>>): Detecte
  * use and reused for every subsequent request. On runtimes the bundled loader
  * cannot run on, such as Cloudflare Workers, supply your own classifier with
  * {@link ModelOptions.classify}.
+ *
+ * Input longer than {@link RampartOptions.maxInputChars} (default `100_000`
+ * UTF-16 code units) is denied by the rule without being scanned.
  *
  * Supported sensitive info types (all built-in {@link ArcjetSensitiveInfoType}
  * values, so they can be listed in `allow`/`deny` directly, or all at once via
@@ -161,10 +181,22 @@ function mergeSpans(groups: ReadonlyArray<ReadonlyArray<DetectedSpan>>): Detecte
  *   ```
  */
 export function rampart(options: RampartOptions = {}): SensitiveInfoBackend {
+  const maxInputChars = options.maxInputChars ?? DEFAULT_MAX_INPUT_CHARS;
+  if (
+    typeof maxInputChars !== "number" ||
+    !Number.isSafeInteger(maxInputChars) ||
+    maxInputChars <= 0
+  ) {
+    throw new Error(
+      `\`rampart\` options error: \`maxInputChars\` must be a positive safe integer, received ${String(maxInputChars)}`,
+    );
+  }
+
   const recognizers = options.recognizers ?? defaultRecognizers;
   const runModel = options.runModel ?? createModelRunner(options);
 
   return {
+    maxInputChars,
     async detect(
       context: SensitiveInfoBackendContext,
       value: string,

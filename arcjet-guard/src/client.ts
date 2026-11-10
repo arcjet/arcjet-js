@@ -8,6 +8,7 @@
  * @packageDocumentation
  */
 
+import { Logger } from "@arcjet/logger";
 import { create } from "@bufbuild/protobuf";
 import {
   ConnectError,
@@ -21,7 +22,12 @@ import {
   type CaptureDeliveryOptions,
   type WaitUntil,
 } from "./capture-delivery.ts";
-import { ruleToProto, decisionFromProto, decisionMembers } from "./convert.ts";
+import {
+  ruleToProto,
+  decisionFromProto,
+  decisionMembers,
+  type SensitiveInfoLimitLogger,
+} from "./convert.ts";
 import {
   createDiagnosticHandler,
   symbolArcjetDiagnostics,
@@ -55,6 +61,7 @@ import {
   WarningSchema,
 } from "./proto/proto/decide/v2/decide_pb.js";
 import { policyCapabilities, type PreparedPolicy, RemotePolicyRuntime } from "./remote-policy.ts";
+import { validateSensitiveInfoBackendLimit } from "./rules.ts";
 import { symbolArcjetInternal } from "./symbol.ts";
 import type {
   CaptureOptions,
@@ -119,12 +126,34 @@ export function createGuardClient(options: GuardClientOptions): {
 } {
   const { key, transport, userAgent = defaultUserAgent() } = options;
 
+  validateSensitiveInfoBackendLimit(
+    options.sensitiveInfoBackend,
+    "`sensitiveInfoBackend.maxInputChars`",
+  );
+
+  // Warns once per sensitive-info input denied for exceeding the backend's
+  // `maxInputChars`. Uses the caller's logger when given, else an
+  // `@arcjet/logger` built on first use. Logging is observational, so a
+  // throwing logger must not turn a local denial into a conversion failure.
+  let limitSink: DiagnosticLogger | undefined;
+  const limitLog: SensitiveInfoLimitLogger = {
+    warn(message: string): void {
+      try {
+        limitSink ??= options.logger ?? new Logger({ level: "warn" });
+        limitSink.warn(message);
+      } catch {
+        // Ignore: see above.
+      }
+    },
+  };
+
   const client = createConnectClient(DecideService, transport);
   const remotePolicy = new RemotePolicyRuntime(
     key,
     userAgent,
     (request, callOptions) => client.getGuardPolicy(request, callOptions),
     options.sensitiveInfoBackend,
+    limitLog,
   );
   // Spread rather than `{ logger: options.logger }`: under
   // `exactOptionalPropertyTypes` an explicit `undefined` is not assignable to an
@@ -245,6 +274,7 @@ export function createGuardClient(options: GuardClientOptions): {
             const submission = await ruleToProto(rule, opts.signal, {
               ruleIndex,
               warningsOut: ruleWarnings,
+              log: limitLog,
             });
             return { submission, warnings: ruleWarnings };
           }),

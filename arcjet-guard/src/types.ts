@@ -196,6 +196,17 @@ export interface SensitiveInfoBackendOptions {
  */
 export interface SensitiveInfoBackend {
   /**
+   * Largest input, in UTF-16 code units (`value.length`), the backend scans
+   * (optional).
+   *
+   * When set, a longer value is denied without calling
+   * {@link SensitiveInfoBackend.detect}, so no part of it is scanned: the
+   * `localDetectSensitiveInfo` rule reports a computed `DENY` with no detected
+   * entities, and a remotely configured policy treats it as a local denial.
+   * Leave it unset to scan input of any length.
+   */
+  readonly maxInputChars?: number | undefined;
+  /**
    * Detect sensitive information in `value`.
    *
    * @param context

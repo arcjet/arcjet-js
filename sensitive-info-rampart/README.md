@@ -114,6 +114,8 @@ rampart({
   device: "webgpu",
   // Minimum confidence for a model token to count (default: 0.5).
   threshold: 0.6,
+  // Longest input to scan, in UTF-16 code units (default: 100_000).
+  maxInputChars: 50_000,
   // Add or replace the deterministic recognizers. This is the extension point
   // for custom detection with this backend.
   recognizers: [
@@ -130,6 +132,29 @@ custom patterns, add a recognizer.
 > Inference runs in the request path, so its latency affects request handling.
 > The model performs best on Latin-script text; see the [model card][rampart]
 > for accuracy and language details.
+
+### Input size limit
+
+Scan time grows with input length, so the backend caps how much text it scans.
+`maxInputChars` sets the cap in UTF-16 code units, the unit of a JavaScript
+string's `length`. The default is `100_000`. It must be a positive safe
+integer; `rampart()` throws otherwise, and there is no unlimited setting.
+
+The rule denies longer input without scanning any of it. It does not scan the
+first part and let the rest through:
+
+- With the `sensitiveInfo` rule, the result has conclusion `DENY` and an
+  `ArcjetErrorReason` whose message gives the input length and the limit, so
+  `decision.isDenied()` is `true` and `decision.reason.isSensitiveInfo()` is
+  `false`. In `DRY_RUN` mode the result is reported but not enforced.
+- With `localDetectSensitiveInfo`, and with sensitive-info inputs in a remotely
+  configured Guard policy, the rule reports a `DENY` with no detected entities.
+  Guard enforces it when the rule is `LIVE`.
+
+Each denial logs one warning with the input length and the limit. The text
+itself is never logged.
+
+If your app accepts longer input, raise `maxInputChars` to fit it.
 
 ## Custom runtimes
 

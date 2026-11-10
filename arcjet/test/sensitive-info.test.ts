@@ -6,6 +6,7 @@ import { MemoryCache } from "@arcjet/cache";
 import arcjet, {
   type ArcjetCacheEntry,
   ArcjetAllowDecision,
+  ArcjetErrorReason,
   ArcjetReason,
   ArcjetSensitiveInfoReason,
   sensitiveInfo,
@@ -1055,7 +1056,229 @@ describe("Primitive > sensitiveInfo", () => {
     // The custom entity is reported with its plain string type.
     assert.deepEqual(result.reason.denied, [{ start: 3, end: 7, identifiedType: "GIVEN_NAME" }]);
   });
+
+  describe("backend `maxInputChars`", () => {
+    const secret = "Hi Alex, my SSN is 472-81-0094.";
+
+    function ruleContext() {
+      return {
+        key: "test-key",
+        fingerprint: "test-fingerprint",
+        runtime: "test",
+        log: createMockLogger(),
+        characteristics: [],
+        cache: new MemoryCache<ArcjetCacheEntry>(),
+        getBody: () => Promise.resolve(secret),
+      };
+    }
+
+    const details = {
+      ip: "172.100.1.1",
+      method: "POST",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    // `protect()` takes request details without `extra`.
+    const { extra: _extra, ...request } = details;
+
+    test("rejects a `maxInputChars` that is not a positive safe integer", () => {
+      for (const maxInputChars of [0, -1, 1.5, Infinity, NaN, Number.MAX_SAFE_INTEGER + 1, "10"]) {
+        assert.throws(
+          () =>
+            sensitiveInfo({
+              deny: [],
+              backend: {
+                maxInputChars: maxInputChars as number,
+                detect: async () => ({ allowed: [], denied: [] }),
+              },
+            }),
+          /`sensitiveInfo` options error: invalid value for `backend.maxInputChars` - expected a positive safe integer/,
+          `expected ${String(maxInputChars)} to be rejected`,
+        );
+      }
+    });
+
+    test("denies input over the limit in LIVE mode without calling `detect`", async () => {
+      const backend = limitedBackend(secret.length - 1);
+      const context = ruleContext();
+      const [rule] = sensitiveInfo({ mode: "LIVE", deny: ["GIVEN_NAME"], backend });
+
+      const result = await rule.protect(context, details);
+
+      assert.equal(backend.detect.mock.callCount(), 0);
+      assert.equal(result.conclusion, "DENY");
+      assert.equal(result.state, "RUN");
+      assert.equal(result.ttl, 0);
+      assert.ok(result.reason instanceof ArcjetErrorReason);
+      assert.equal(
+        result.reason.message,
+        `sensitive info input of ${secret.length} characters exceeds the backend limit of ${secret.length - 1}`,
+      );
+      assert.equal(context.log.warn.mock.callCount(), 1);
+      assert.equal(
+        JSON.stringify(context.log.warn.mock.calls[0].arguments).includes(secret),
+        false,
+      );
+    });
+
+    test("reports, but does not enforce, input over the limit in DRY_RUN mode", async () => {
+      const backend = limitedBackend(5);
+      const [rule] = sensitiveInfo({ mode: "DRY_RUN", deny: ["GIVEN_NAME"], backend });
+
+      const result = await rule.protect(ruleContext(), details);
+
+      assert.equal(backend.detect.mock.callCount(), 0);
+      assert.equal(result.conclusion, "DENY");
+      assert.equal(result.state, "DRY_RUN");
+      assert.ok(result.reason instanceof ArcjetErrorReason);
+    });
+
+    test("scans input exactly at the limit", async () => {
+      const backend = limitedBackend(secret.length);
+      const [rule] = sensitiveInfo({ mode: "LIVE", deny: ["GIVEN_NAME"], backend });
+
+      const result = await rule.protect(ruleContext(), details);
+
+      assert.equal(backend.detect.mock.callCount(), 1);
+      assert.equal(result.conclusion, "DENY");
+      assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    });
+
+    test("counts UTF-16 code units, like `value.length`", async () => {
+      // One astral code point is two UTF-16 code units.
+      const value = "\u{1F600}";
+      assert.equal(value.length, 2);
+      const backend = limitedBackend(1);
+      const [rule] = sensitiveInfo({ mode: "LIVE", deny: ["GIVEN_NAME"], backend });
+
+      const result = await rule.protect(ruleContext(), {
+        ...details,
+        extra: { sensitiveInfoValue: value },
+      });
+
+      assert.equal(backend.detect.mock.callCount(), 0);
+      assert.equal(result.conclusion, "DENY");
+    });
+
+    test("scans input of any length when the backend declares no limit", async () => {
+      const backend = limitedBackend();
+      const [rule] = sensitiveInfo({ mode: "LIVE", deny: ["GIVEN_NAME"], backend });
+
+      const result = await rule.protect(ruleContext(), {
+        ...details,
+        extra: { sensitiveInfoValue: "Hi Alex " + "x".repeat(200_000) },
+      });
+
+      assert.equal(backend.detect.mock.callCount(), 1);
+      assert.ok(result.reason instanceof ArcjetSensitiveInfoReason);
+    });
+
+    test("`protect()` returns a reported DENY decision in LIVE mode", async () => {
+      const key = "test-key";
+      const log = { ...createMockLogger() };
+      const backend = limitedBackend(5);
+      const report = mock.fn();
+      const decide = mock.fn(async () => {
+        throw new Error("Should not be reached");
+      });
+
+      const aj = arcjet({
+        key,
+        rules: [sensitiveInfo({ mode: "LIVE", deny: ["GIVEN_NAME"], backend })],
+        client: { decide, report },
+        log,
+      });
+
+      const decision = await aj.protect(
+        {
+          cache: new MemoryCache<ArcjetCacheEntry>(),
+          characteristics: [],
+          fingerprint: "",
+          async getBody() {
+            return "";
+          },
+          key,
+          log,
+          runtime: "",
+        },
+        { ...request, sensitiveInfoValue: secret },
+      );
+
+      assert.equal(backend.detect.mock.callCount(), 0);
+      assert.equal(decision.isDenied(), true);
+      assert.equal(decision.reason.isSensitiveInfo(), false);
+      assert.equal(decision.reason.isError(), true);
+      assert.equal(decide.mock.callCount(), 0);
+      assert.equal(report.mock.callCount(), 1);
+      // The text is neither reported nor logged.
+      assert.equal(JSON.stringify(report.mock.calls[0].arguments).includes(secret), false);
+      assert.equal(JSON.stringify(log.warn.mock.calls).includes(secret), false);
+    });
+
+    test("`protect()` does not enforce the limit in DRY_RUN mode", async () => {
+      const key = "test-key";
+      const log = { ...createMockLogger() };
+      const backend = limitedBackend(5);
+      const report = mock.fn();
+      const decide = mock.fn(
+        async () => new ArcjetAllowDecision({ reason: new ArcjetReason(), results: [], ttl: 0 }),
+      );
+
+      const aj = arcjet({
+        key,
+        rules: [sensitiveInfo({ mode: "DRY_RUN", deny: ["GIVEN_NAME"], backend })],
+        client: { decide, report },
+        log,
+      });
+
+      const decision = await aj.protect(
+        {
+          cache: new MemoryCache<ArcjetCacheEntry>(),
+          characteristics: [],
+          fingerprint: "",
+          async getBody() {
+            return "";
+          },
+          key,
+          log,
+          runtime: "",
+        },
+        { ...request, sensitiveInfoValue: secret },
+      );
+
+      assert.equal(backend.detect.mock.callCount(), 0);
+      assert.equal(decision.isDenied(), false);
+      // The dry-run result is still sent to `decide` with the other results.
+      assert.equal(decide.mock.callCount(), 1);
+    });
+  });
 });
+
+/**
+ * A backend that counts `detect` calls and denies a `GIVEN_NAME` span, with an
+ * optional scan limit.
+ */
+function limitedBackend(maxInputChars?: number) {
+  return {
+    ...(maxInputChars === undefined ? {} : { maxInputChars }),
+    detect: mock.fn(async () => ({
+      allowed: [],
+      denied: [
+        {
+          start: 3,
+          end: 7,
+          identifiedType: { tag: "custom" as const, val: "GIVEN_NAME" },
+        },
+      ],
+    })),
+  };
+}
 
 function createMockLogger() {
   return {
