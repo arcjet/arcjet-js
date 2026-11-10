@@ -166,7 +166,11 @@ medical record numbers, so screen PHI with a server input.
 The server-side detector allows up to 3 seconds to screen a value over 2 KB,
 and a live rule fails closed if the scan doesn't finish. Pass `timeoutSeconds`
 above `3` to `guard()` (the default is `2`) so the client doesn't stop waiting
-first, and deny when `decision.hasFailedOpen()` is `true`. Split text longer than about 100 KB into parts and screen each one.
+first, and deny when `decision.hasFailedOpen()` is `true`.
+
+A request screens up to two different texts over 2 KB, and a third fails a
+live rule closed. To screen text longer than about 100 KB, split it into parts
+and screen each part in its own `guard()` call.
 
 [remote-policies]: https://docs.arcjet.com/guards/remote-policies#detectors
 [phi]: https://docs.arcjet.com/sensitive-info/phi
