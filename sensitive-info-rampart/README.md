@@ -154,7 +154,22 @@ first part and let the rest through:
 Each denial logs one warning with the input length and the limit. The text
 itself is never logged.
 
-If your app accepts longer input, raise `maxInputChars` to fit it.
+### Longer text and PHI
+
+Rampart suits typical request fields. If your app accepts longer text, raise
+`maxInputChars` to fit it when the extra latency fits your budget, or send the
+text as a `SERVER` input to the server-side sensitive information detector in
+an [agent guard policy][remote-policies], which screens values up to about
+100 KB. Only the server-side detector detects the [PHI types][phi], such as
+medical record numbers, so screen PHI with a server input.
+
+The server-side detector screens a value over 2 KB within 3 seconds, and allows
+it unscreened if the scan doesn't finish. Deny when `decision.hasFailedOpen()`
+is `true`, and pass `timeoutSeconds` above `3` to `guard()` (the default is
+`2`). Split text longer than about 100 KB into parts and screen each one.
+
+[remote-policies]: https://docs.arcjet.com/guards/remote-policies#detectors
+[phi]: https://docs.arcjet.com/sensitive-info/phi
 
 ## Custom runtimes
 

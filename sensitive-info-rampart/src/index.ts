@@ -34,7 +34,9 @@ export interface RampartOptions extends ModelOptions {
    * value without scanning any of it, rather than scanning only the first part
    * and letting the rest through.
    *
-   * Must be a positive safe integer. There is no unlimited setting.
+   * Must be a positive safe integer. There is no unlimited setting. For longer
+   * text, or to detect PHI, use the server-side sensitive information detector
+   * in an agent guard policy instead.
    */
   maxInputChars?: number;
   /**
