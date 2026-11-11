@@ -30,9 +30,10 @@ path under this repository.
 
 ## Agent Skills
 
-JS/TS Agent Skills ship in npm packages via TanStack Intent, not in
-`arcjet/skills`. Keep `SKILL.md` files beside their source docs
-(`arcjet-skills/docs/`, `arcjet-guard/README.md`). Validate with
+`arcjet/skills` is the canonical source for Arcjet Agent Skills. Change
+guidance there first, then bring it into this repo, where JS/TS skills ship
+in npm packages via TanStack Intent. Keep `SKILL.md` files beside their
+source docs (`arcjet-skills/docs/`, `arcjet-guard/README.md`). Validate with
 `intent validate`. Conservative stale checks fail a PR when a declared
 source changes and the skill does not. Consumers allowlist packages and
 load one skill per task; editor hooks are not a security boundary.

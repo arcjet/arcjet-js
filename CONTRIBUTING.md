@@ -394,11 +394,13 @@ released, or a release run will fail:
 
 ## Agent Skills
 
-Versioned [Agent Skills](https://agentskills.io) ship inside npm packages via
-[TanStack Intent](https://tanstack.com/intent). Do not add new skills to
-[`arcjet/skills`](https://github.com/arcjet/skills) for JS/TS guidance — that
-repo is the older marketplace install. JS skills live next to the docs they
-were derived from:
+[`arcjet/skills`](https://github.com/arcjet/skills) is the canonical source
+for Arcjet [Agent Skills](https://agentskills.io). It is also bundled into
+[`arcjet/arcjet-plugin`](https://github.com/arcjet/arcjet-plugin). Change
+guidance there first, then bring the JS/TS parts into this repo, where
+versioned skills ship inside npm packages via
+[TanStack Intent](https://tanstack.com/intent). JS skills live next to the
+docs they were derived from:
 
 - General request / CLI / MCP / Guard routing: [`arcjet-skills/`](./arcjet-skills)
 - Guard vendor integrations: [`arcjet-guard/skills/`](./arcjet-guard/skills)
