@@ -101,6 +101,13 @@ list it, `@huggingface/transformers`, and `onnxruntime-node` in
 add the rule in the route with `aj.withRule()` (import `sensitiveInfo` from
 `arcjet`), not in `astro.config.mjs`.
 
+Rampart denies input longer than `maxInputChars` (default `100_000` UTF-16
+code units) without scanning any of it. The decision is `isDenied()` with an
+ERROR reason (`reason.isError()` true, `isSensitiveInfo()` false), so keep
+the catch-all `isDenied()`; optionally answer 413. `DRY_RUN` logs a warning
+and doesn't deny. For longer text or PHI, use the server-side detector in a
+Guard policy. Don't add your own length pre-check.
+
 Pass a trusted `userId` on the rule that needs it. Pass `correlationId`
 when the decision must join another request or guard call.
 

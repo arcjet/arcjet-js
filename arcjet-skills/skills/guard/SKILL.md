@@ -86,6 +86,13 @@ inherit the client's `sensitiveInfoBackend`, so share one instance. On
 Cloudflare Workers or edge runtimes, pass `rampart()` a `classify` function.
 `moderateContent()` is Guard-only.
 
+Rampart denies input longer than `maxInputChars` (default `100_000`)
+without scanning it: the rule returns DENY with no detected entities, and a
+`LOCAL` policy input is denied the same way. For longer text or PHI, send a
+`SERVER` input to the server-side detector (~100 KB per value; at most two
+values over 2 KB per call; pass `timeoutSeconds` above `3` and deny on
+`hasFailedOpen()`).
+
 `capture()` is visibility, never a deny. `flush()` on shutdown.
 
 ## Versioned wrappers

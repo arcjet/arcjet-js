@@ -102,6 +102,13 @@ needs a filesystem; on Cloudflare Workers or other edge runtimes, pass
 `rampart()` a `classify` function that runs the model on your runtime.
 `moderateContent()` is Guard-only.
 
+Rampart denies input longer than `maxInputChars` (default `100_000`)
+without scanning it: the rule returns DENY with no detected entities, and a
+`LOCAL` policy input is denied the same way. For longer text or PHI, send a
+`SERVER` input to the server-side detector (~100 KB per value; at most two
+values over 2 KB per call; pass `timeoutSeconds` above `3` and deny on
+`hasFailedOpen()`).
+
 ## Framework wrappers
 
 Prefer the versioned Guard namespaces over hand-wrapping every tool:

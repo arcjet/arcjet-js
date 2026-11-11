@@ -170,6 +170,13 @@ const routeAj = aj.withRule(
 );
 ```
 
+Rampart denies input longer than `maxInputChars` (default `100_000` UTF-16
+code units) without scanning any of it. The decision is `isDenied()` with an
+ERROR reason (`reason.isError()` true, `isSensitiveInfo()` false), so keep
+the catch-all `isDenied()`; optionally answer 413. `DRY_RUN` logs a warning
+and doesn't deny. For longer text or PHI, use the server-side detector in a
+Guard policy. Don't add your own length pre-check.
+
 Pass `correlationId` when the decision must join another request, guard
 call, or agent trace. It does not affect fingerprinting.
 
@@ -218,7 +225,8 @@ before reading.
 - Checking only `reason.isBot()` / `isShield()` with no catch-all
   `isDenied()` (remote-rule denials pass)
 - Allowing an errored decision on an AI or PII route
-- Adding a manual length pre-check instead of capping request body size
+- Checking only `reason.isSensitiveInfo()`: an over-limit input is a DENY
+  with an ERROR reason
 - Copying `X-Forwarded-For` into `ipSrc` to hide an unverified-header warning
 - Hardcoding `ARCJET_KEY`
 

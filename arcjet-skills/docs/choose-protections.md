@@ -62,8 +62,8 @@ addresses. It needs a server runtime with filesystem access (Node.js, Bun, or
 Deno), so its bundled loader can't run on Cloudflare Workers or edge
 runtimes. Always pass the backend; a Rampart entity listed without it never
 matches. The rule doesn't inherit the client's backend. Only each finding's
-entity type and position leave the process, never the matched text. Cap
-request body size; inference is slow on long text. Fail closed: deny (503)
+entity type and position leave the process, never the matched text. Input
+over `maxInputChars` (default `100_000`) is denied without scanning. Fail closed: deny (503)
 when the decision errored.
 
 PHI types (`MEDICAL_RECORD_NUMBER`, `HEALTH_PLAN_BENEFICIARY_NUMBER`,
