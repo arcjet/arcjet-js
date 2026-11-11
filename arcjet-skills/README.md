@@ -129,6 +129,9 @@ This list is for this package only. It does not scan other dependencies.
 
 ## Maintainers
 
+Guidance originates in [`arcjet/skills`](https://github.com/arcjet/skills),
+the canonical source. Port changes from there; don't fix guidance only here.
+
 Skill files live beside the docs they were derived from (`docs/` in this
 package; `README.md` for `@arcjet/guard` skills). Each `SKILL.md` declares
 those paths in `sources`.

@@ -11,9 +11,12 @@ MCP server handlers, queue workers, and background jobs.
 The word "server" on MCP is misleading. MCP tools are invoked over stdio or
 SSE and do not receive an HTTP request.
 
-Claude Code / Copilot HTTP hooks are not `@arcjet/guard`. Author the
-policy via MCP and install hooks from https://docs.arcjet.com/coding-agents
-(omit `?surface=`). **Execute on** is Tool call, Prompt, or Model switch.
+Coding-agent hooks (Claude Code, Copilot, Codex, Cursor, Muse Code) are not
+`@arcjet/guard`. Publish a coding-agent policy from a Console starter
+(**Execute on**: Tool call, Prompt, or Model switch) and install the hooks
+from the vendor's page under https://docs.arcjet.com/coding-agents. Don't add
+a `matcher`, `label`, or `?surface=`. Claude Code and Copilot HTTP hooks fail
+open on any non-2xx, including `401`.
 
 ## Client
 
@@ -99,6 +102,13 @@ needs a filesystem; on Cloudflare Workers or other edge runtimes, pass
 `rampart()` a `classify` function that runs the model on your runtime.
 `moderateContent()` is Guard-only.
 
+Rampart denies input longer than `maxInputChars` (default `100_000`)
+without scanning it: the rule returns DENY with no detected entities, and a
+`LOCAL` policy input is denied the same way. For longer text or PHI, send a
+`SERVER` input to the server-side detector (~100 KB per value; at most two
+values over 2 KB per call; pass `timeoutSeconds` above `3` and deny on
+`hasFailedOpen()`).
+
 ## Framework wrappers
 
 Prefer the versioned Guard namespaces over hand-wrapping every tool:
@@ -137,8 +147,26 @@ Every JS wrapper policy accepts optional `actor` and `inputs` (static values
 or a resolver over that adapter's native call — parsed input plus trusted
 runtime/context, like Vercel AI's `(input, ctx)`). Build each
 input with `policyInput` so a remote policy that declares those names can
-evaluate. Omit them and the remote policy has nothing to read — its rules do
-not fire.
+evaluate.
+
+`rules`, `metadata`, `action`, and `sessionId` callbacks must be
+synchronous; `actor` and `inputs` may be async. A callback that throws,
+returns an unusable value, or (for the synchronous ones) returns a Promise is
+treated as failed: Guard still runs without that value, a
+remote DENY stands, then `onGuardError` (`"deny"` by default) decides.
+
+A required policy input that is missing or has the wrong kind is `AJP1003`
+(actor `AJP1002`): wrappers deny, core `guard()` returns ALLOW with
+`hasFailedOpen()`. An input the policy does not declare is dropped with
+warning `AJ1060`. Copy **Generate the SDK call** from the Console policy so
+names match.
+
+Limits per call: 50 rules (`AJ1003`), 64 inputs, ~100 KB per server string,
+256 items per list. Prompt injection and moderation deny text over 128 KiB;
+moderation evaluates the first 60 KB (`AJ1142`). Empty text is allowed
+unscreened (`AJ1062`). Gate moderation and prompt injection on
+`DENY || hasFailedOpen()`. Warnings reach only the SDK, never the Console —
+log `decision.warnings`.
 
 Every adapter uses one `ArcjetDenialResult` payload
 (`{ arcjetDenied: true, reason, message, retryable }`). Delivery is

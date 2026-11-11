@@ -50,7 +50,17 @@ Pick the adapter the app already uses (`@arcjet/next`, `@arcjet/node`,
 hand-edit `package.json` and guess a version.
 
 Omitted `mode` is `DRY_RUN`. `detectBot` requires exactly one of `allow` or
-`deny`. `detectPromptInjection` takes `mode` only — no `threshold`.
+`deny`. `detectPromptInjection` takes `mode` only — no `threshold`; text over
+128 KiB is denied in LIVE, and a missing message fails open.
+
+Signed agents (Web Bot Auth) go in the same `allow` / `deny` lists, by
+catalog name (`CHATGPT_AGENT`, `BROWSERBASE`, …) or as
+`SIGNED_BOT:https://<host>/.well-known/http-message-signatures-directory`.
+An allow list such as `CATEGORY:SEARCH_ENGINE` now denies verified browser
+agents; add the signers you want. Check `isDenied()` before `isVerifiedBot`.
+Signatures covering `@path` verify only on `@arcjet/node` (Express),
+`@arcjet/fastify`, `@arcjet/nest`, and Next.js Pages API routes. A signature
+is identity, not authorization; keep rate limits on.
 
 One client. `withRule()` clones share the decision cache. A second
 `arcjet()` constructor does not.
@@ -79,8 +89,9 @@ Call `protect()` once per request, in the route handler. Not Express
 middleware. Not Next.js middleware.
 
 Branch only when the status differs: rate limit → 429; email / PII /
-prompt injection → 400; everything else → 403. `isErrored()` is fail-open —
-log and allow.
+prompt injection → 400; then a catch-all `isDenied()` → 403 (remote-rule
+denials only reach it). `isErrored()` fails open: on AI or PII routes deny
+with 503; log-and-allow is fine for Shield, bots, and rate limits.
 
 Configure `sensitiveInfo` with `backend: rampart()` from
 `@arcjet/sensitive-info-rampart` (on-device PII detection). It runs on
@@ -89,6 +100,13 @@ list it, `@huggingface/transformers`, and `onnxruntime-node` in
 `serverExternalPackages` and keep the route on the Node.js runtime. On Astro,
 add the rule in the route with `aj.withRule()` (import `sensitiveInfo` from
 `arcjet`), not in `astro.config.mjs`.
+
+Rampart denies input longer than `maxInputChars` (default `100_000` UTF-16
+code units) without scanning any of it. The decision is `isDenied()` with an
+ERROR reason (`reason.isError()` true, `isSensitiveInfo()` false), so keep
+the catch-all `isDenied()`; optionally answer 413. `DRY_RUN` logs a warning
+and doesn't deny. For longer text or PHI, use the server-side detector in a
+Guard policy. Don't add your own length pre-check.
 
 Pass a trusted `userId` on the rule that needs it. Pass `correlationId`
 when the decision must join another request or guard call.
@@ -116,6 +134,8 @@ Nested `metadata` is for the Console — no secrets, no PII.
 - Dry-run rules that look like they block
 - Both `allow` and `deny` on `detectBot`
 - `threshold` on `detectPromptInjection`
+- No catch-all `isDenied()` after the reason-specific arms
+- Allowing an errored decision on an AI or PII route
 - Copying `X-Forwarded-For` into `ipSrc` to hide `unverified-header`
 - Hardcoded `ARCJET_KEY`
 

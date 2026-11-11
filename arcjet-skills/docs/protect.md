@@ -117,14 +117,30 @@ differ:
 
 - `decision.reason.isRateLimit()` → 429
 - `decision.reason.isEmail()` / `isSensitiveInfo()` / `isPromptInjection()` → 400
-- everything else (bot, shield, filter) → 403
+- everything else (bot, shield, filter, remote rules) → a catch-all
+  `if (decision.isDenied())` 403 after the specific arms. Don't skip it:
+  remote-rule denials only reach the catch-all.
 
-`decision.isErrored()` means the SDK failed open. Log it and allow.
+`decision.isErrored()` means the SDK failed open. On routes that send text to
+a model or screen PII, deny with 503. Log-and-allow is acceptable for Shield,
+bots, and rate limits. `protect()` also returns an ERROR decision for a
+missing or empty `ARCJET_KEY` and for non-array `characteristics`.
 
 `detectBot` requires exactly one of `allow` or `deny`. Neither or both throws.
 
+Signed agents (Web Bot Auth) go in the same `allow` / `deny` lists, by
+catalog name (`CHATGPT_AGENT`, `BROWSERBASE`, …) or as
+`SIGNED_BOT:https://<host>/.well-known/http-message-signatures-directory`.
+An allow list such as `CATEGORY:SEARCH_ENGINE` now denies verified browser
+agents; add the signers you want. Check `isDenied()` before `isVerifiedBot`.
+Signatures covering `@path` verify only on `@arcjet/node` (Express),
+`@arcjet/fastify`, `@arcjet/nest`, and Next.js Pages API routes. A signature
+is identity, not authorization; keep rate limits on.
+
 `detectPromptInjection` takes `mode` only. Do not pass `threshold`. Do not
-read `score`; branch on `isPromptInjection()` / `injectionDetected`.
+read `score`; branch on `isPromptInjection()` / `injectionDetected`. Text
+over 128 KiB is denied in LIVE. A missing or empty
+`detectPromptInjectionMessage` is an ERROR result that fails open.
 
 Rules that need extra input at `protect()` time: `tokenBucket` needs
 `{ requested }`, `validateEmail` / `protectSignup` need `{ email }`,
@@ -153,6 +169,13 @@ const routeAj = aj.withRule(
   }),
 );
 ```
+
+Rampart denies input longer than `maxInputChars` (default `100_000` UTF-16
+code units) without scanning any of it. The decision is `isDenied()` with an
+ERROR reason (`reason.isError()` true, `isSensitiveInfo()` false), so keep
+the catch-all `isDenied()`; optionally answer 413. `DRY_RUN` logs a warning
+and doesn't deny. For longer text or PHI, use the server-side detector in a
+Guard policy. Don't add your own length pre-check.
 
 Pass `correlationId` when the decision must join another request, guard
 call, or agent trace. It does not affect fingerprinting.
@@ -199,6 +222,11 @@ before reading.
 - Leaving rules in `DRY_RUN` and expecting them to block
 - Passing both `allow` and `deny` to `detectBot`
 - Passing `threshold` to `detectPromptInjection`
+- Checking only `reason.isBot()` / `isShield()` with no catch-all
+  `isDenied()` (remote-rule denials pass)
+- Allowing an errored decision on an AI or PII route
+- Checking only `reason.isSensitiveInfo()`: an over-limit input is a DENY
+  with an ERROR reason
 - Copying `X-Forwarded-For` into `ipSrc` to hide an unverified-header warning
 - Hardcoding `ARCJET_KEY`
 
