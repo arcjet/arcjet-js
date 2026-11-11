@@ -1580,9 +1580,9 @@ export interface SensitiveInfoBackend {
    *
    * When set, the `sensitiveInfo` rule denies a longer value without calling
    * {@linkcode SensitiveInfoBackend.detect}, so no part of it is scanned. The
-   * rule result is a `DENY` with an `ArcjetErrorReason` (enforced in `LIVE`
-   * mode, reported only in `DRY_RUN`). Leave it unset to scan input of any
-   * length.
+   * rule result is a `DENY` with an `ArcjetErrorReason`, enforced in `LIVE`
+   * mode. In `DRY_RUN` mode the rule logs a warning and doesn't deny. Leave it
+   * unset to scan input of any length.
    */
   readonly maxInputChars?: number | undefined;
   /**
@@ -2822,7 +2822,13 @@ export function sensitiveInfo<
         const maxInputChars = backend.maxInputChars;
         if (typeof maxInputChars === "number" && value.length > maxInputChars) {
           const message = `sensitive info input of ${value.length} characters exceeds the backend limit of ${maxInputChars}`;
-          context.log.warn("%s; denying without scanning", message);
+          // A logger that throws must not undo the denial, so the warning is
+          // best effort.
+          try {
+            context.log.warn("%s; denying without scanning", message);
+          } catch {
+            // Ignore: the denial below is what matters.
+          }
 
           return new ArcjetRuleResult({
             ruleId,

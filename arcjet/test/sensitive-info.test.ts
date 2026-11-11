@@ -1221,6 +1221,49 @@ describe("Primitive > sensitiveInfo", () => {
       assert.equal(JSON.stringify(log.warn.mock.calls).includes(secret), false);
     });
 
+    test("`protect()` still denies in LIVE mode when the logger's `warn` throws", async () => {
+      const key = "test-key";
+      const log = {
+        ...createMockLogger(),
+        warn: mock.fn(() => {
+          throw new Error("logger failed");
+        }),
+      };
+      const backend = limitedBackend(5);
+      const report = mock.fn();
+      const decide = mock.fn(async () => {
+        throw new Error("Should not be reached");
+      });
+
+      const aj = arcjet({
+        key,
+        rules: [sensitiveInfo({ mode: "LIVE", deny: ["GIVEN_NAME"], backend })],
+        client: { decide, report },
+        log,
+      });
+
+      const decision = await aj.protect(
+        {
+          cache: new MemoryCache<ArcjetCacheEntry>(),
+          characteristics: [],
+          fingerprint: "",
+          async getBody() {
+            return "";
+          },
+          key,
+          log,
+          runtime: "",
+        },
+        { ...request, sensitiveInfoValue: secret },
+      );
+
+      assert.ok(log.warn.mock.callCount() > 0, "the warning was attempted");
+      assert.equal(backend.detect.mock.callCount(), 0);
+      assert.equal(decision.isDenied(), true);
+      assert.equal(decision.reason.isError(), true);
+      assert.equal(decide.mock.callCount(), 0);
+    });
+
     test("`protect()` does not enforce the limit in DRY_RUN mode", async () => {
       const key = "test-key";
       const log = { ...createMockLogger() };

@@ -146,7 +146,7 @@ first part and let the rest through:
 - With the `sensitiveInfo` rule, the result has conclusion `DENY` and an
   `ArcjetErrorReason` whose message gives the input length and the limit, so
   `decision.isDenied()` is `true` and `decision.reason.isSensitiveInfo()` is
-  `false`. In `DRY_RUN` mode the result is reported but not enforced.
+  `false`. In `DRY_RUN` mode the rule logs a warning and doesn't deny.
 - With `localDetectSensitiveInfo`, and with sensitive-info inputs in a remotely
   configured Guard policy, the rule reports a `DENY` with no detected entities.
   Guard enforces it when the rule is `LIVE`.
