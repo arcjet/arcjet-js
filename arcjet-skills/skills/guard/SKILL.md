@@ -23,10 +23,12 @@ For a specific vendor SDK, load the matching skill from `@arcjet/guard`
 `-strands-agents`, `-tanstack-ai`, `-cloudflare-think`,
 `-claude-agent-sdk`, `-claude-managed-agents`).
 
-Claude Code / Copilot HTTP hooks are not this package. Publish a
-coding-agent policy via `@arcjet/skills#mcp` (**Execute on**: Tool call,
-Prompt, or Model switch) and install hooks from
-https://docs.arcjet.com/coding-agents (omit `?surface=`).
+Coding-agent hooks (Claude Code, Copilot, Codex, Cursor, Muse Code) are not
+this package. Publish a coding-agent policy from a Console starter
+(**Execute on**: Tool call, Prompt, or Model switch) and install the hooks
+from the vendor's page under https://docs.arcjet.com/coding-agents. Don't add
+a `matcher`, `label`, or `?surface=`. Claude Code and Copilot HTTP hooks fail
+open on any non-2xx, including `401`.
 
 ## Client
 
@@ -65,7 +67,8 @@ async function getWeather(userId: string) {
     return { error: decision.reason };
   }
   if (decision.hasFailedOpen()) {
-    // ALLOW only because a rule could not run — deny here if the site is sensitive
+    // ALLOW only because a rule could not run — deny for content scans
+    return { error: "unavailable" };
   }
   // ... run the tool
 }
@@ -95,8 +98,25 @@ after a human yes.
 Every wrapper policy accepts optional `actor` and `inputs` (static or a
 resolver over that adapter's native call — parsed input plus trusted
 runtime/context) so a remote policy that declares those names can evaluate. Build
-each input with `policyInput`. Omit them and the remote policy has nothing
-to read — its rules do not fire.
+each input with `policyInput`.
+
+Policy callbacks (`rules`, `metadata`, `action`, `sessionId`, `actor`,
+`inputs`) must be synchronous. A callback that is async, throws, or returns an
+unusable value is treated as failed: Guard still runs without that value, a
+remote DENY stands, then `onGuardError` (`"deny"` by default) decides.
+
+A required policy input that is missing or has the wrong kind is `AJP1003`
+(actor `AJP1002`): wrappers deny, core `guard()` returns ALLOW with
+`hasFailedOpen()`. An input the policy does not declare is dropped with
+warning `AJ1060`. Copy **Generate the SDK call** from the Console policy so
+names match.
+
+Limits per call: 50 rules (`AJ1003`), 64 inputs, ~100 KB per server string,
+256 items per list. Prompt injection and moderation deny text over 128 KiB;
+moderation evaluates the first 60 KB (`AJ1142`). Empty text is allowed
+unscreened (`AJ1062`). Gate moderation and prompt injection on
+`DENY || hasFailedOpen()`. Warnings reach only the SDK, never the Console —
+log `decision.warnings`.
 
 Google ADK is `guardPlugin` (no `guardTool`). TanStack AI is
 `guardMiddleware` (do not wrap `execute`). LangChain `createAgent` is

@@ -19,11 +19,12 @@ or `@arcjet/skills#guard` to implement them.
 
 | Problem | Rule | Where |
 | --- | --- | --- |
-| Bots, scrapers, automated clients | `detectBot` (`allow` **or** `deny`, not both) | Request only |
+| Bots, scrapers, signed agents | `detectBot` (`allow` **or** `deny`, not both; `SIGNED_BOT:<directory URL>`) | Request only |
 | SQLi / XSS / common probes | `shield` (`mode: "LIVE"`) | Request only |
 | Cost / abuse quotas | `tokenBucket`, `fixedWindow`, `slidingWindow` | Request and Guard |
 | Jailbreaks, instruction overrides | `detectPromptInjection` (binary; no `threshold`) | Request and Guard |
 | PII in text (names, addresses, gov IDs, card, email, phone, IP) | `sensitiveInfo` / `localDetectSensitiveInfo` + `backend: rampart()` | Request and Guard (server runtime) |
+| PHI (medical record, health plan, VIN, plate, device IDs) | Server-side sensitive-info detector in a remote Guard policy | Guard policy only |
 | Unsafe / abusive text | `moderateContent` | Guard only |
 | Signup spam, disposable email | `validateEmail` + `protectSignup` | Request only |
 | VPN / Tor / country / IP lists | `filter` | Request only |
@@ -44,7 +45,17 @@ runtimes.
 Remote bot and filter rules can be managed with the CLI or MCP without a
 redeploy — load `@arcjet/skills#cli` or `@arcjet/skills#mcp`.
 
-Claude Code / Copilot hooks are not this table. Publish a coding-agent
-policy via `@arcjet/skills#mcp` (**Execute on**: Tool call, Prompt, or
-Model switch) and install hooks from
-https://docs.arcjet.com/coding-agents (omit `?surface=`).
+Do not:
+
+- Fail open on AI or PII routes. Deny (503) when a prompt-injection or
+  sensitive-info decision errored, and gate moderation on
+  `DENY || hasFailedOpen()`.
+- Send more than 128 KiB to prompt injection or moderation (denied in LIVE).
+  Moderation evaluates only the first 60 KB.
+- Expect on-device sensitive-info rules to find PHI types.
+- Treat a verified signed agent as authorized. Keep rate limits on, and
+  check `isDenied()` before `isVerifiedBot`.
+- Write SDK code for coding agents (Claude Code, Copilot, Codex, Cursor, Muse
+  Code) or shadow AI discovery. Coding agents use a Console policy plus the
+  hooks from https://docs.arcjet.com/coding-agents (no `matcher`, `label`, or
+  `?surface=`). Discovery is an MDM endpoint agent.

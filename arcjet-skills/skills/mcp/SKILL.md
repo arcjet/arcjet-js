@@ -38,14 +38,26 @@ write confirmations. Prefer `@arcjet/skills#cli` when a terminal is available.
 claude mcp add arcjet --transport http https://api.arcjet.com/mcp
 ```
 
-Bootstrap: `list-teams` → `list-sites` → `get-site-key` → write `ARCJET_KEY`.
-Agent identity (not human browser OAuth): follow https://arcjet.com/auth.md.
-Investigate: `analyze-traffic`, `list-requests`, `list-guards`,
-`investigate-ip`. Remote rules: `create-rule` (DRY_RUN) →
-`get-dry-run-impact` → `promote-rule`. Guard policies (MCP-only; no CLI
-commands): `list-guard-policies` → `describe-guard-policy` →
-`validate-guard-policy` → `put-guard-policy`. Application policies select by
-`label` / `action`. Coding-agent policies attach by **Execute on** (Tool call,
-Prompt, or Model switch). Install Claude Code / Copilot hooks from
-https://docs.arcjet.com/coding-agents — copy the templates. The hook URL
-must not name a policy and must omit `?surface=`.
+**Codex CLI:** `codex mcp add arcjet --url https://api.arcjet.com/mcp`
+
+Bootstrap: `list-teams` → `list-sites` → `get-site-key` → write the actor key
+(`ajkey_`) as `ARCJET_KEY`. Agent identity (not human browser OAuth): follow
+https://arcjet.com/auth.md.
+
+Investigate: `analyze-traffic`, `list-requests`, `investigate-ip`,
+`list-guards` (filter by `correlationId` for one session), `get-guard`.
+Remote rules: `create-rule` (DRY_RUN) → `get-dry-run-impact` → `promote-rule`.
+
+Guard policies (Console editor, or MCP; no CLI commands):
+`get-guard-policy` (read the input contract) → `describe-guard-policy` →
+`validate-guard-policy` → `put-guard-policy`.
+
+Do not:
+
+- Treat a save as a draft. Saving is publishing; there is no rollback.
+- Save a live expression rule without a stored test (`AJV2015`).
+- Declare coding-agent policy inputs by hand or copy the session-analysis
+  Rego. Start from a Console starter. Coding-agent policies attach by
+  **Execute on** (Tool call, Prompt, Model switch), not by label.
+- Tell a user `submit-error-report` unlocks a tainted session. Only a
+  Console **Clear taint** does.

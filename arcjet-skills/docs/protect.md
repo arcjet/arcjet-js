@@ -117,9 +117,14 @@ differ:
 
 - `decision.reason.isRateLimit()` → 429
 - `decision.reason.isEmail()` / `isSensitiveInfo()` / `isPromptInjection()` → 400
-- everything else (bot, shield, filter) → 403
+- everything else (bot, shield, filter, remote rules) → a catch-all
+  `if (decision.isDenied())` 403 after the specific arms. Don't skip it:
+  remote-rule denials only reach the catch-all.
 
-`decision.isErrored()` means the SDK failed open. Log it and allow.
+`decision.isErrored()` means the SDK failed open. On routes that send text to
+a model or screen PII, deny with 503. Log-and-allow is acceptable for Shield,
+bots, and rate limits. `protect()` also returns an ERROR decision for a
+missing or empty `ARCJET_KEY` and for non-array `characteristics`.
 
 `detectBot` requires exactly one of `allow` or `deny`. Neither or both throws.
 

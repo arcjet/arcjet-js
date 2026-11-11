@@ -79,8 +79,9 @@ Call `protect()` once per request, in the route handler. Not Express
 middleware. Not Next.js middleware.
 
 Branch only when the status differs: rate limit → 429; email / PII /
-prompt injection → 400; everything else → 403. `isErrored()` is fail-open —
-log and allow.
+prompt injection → 400; then a catch-all `isDenied()` → 403 (remote-rule
+denials only reach it). `isErrored()` fails open: on AI or PII routes deny
+with 503; log-and-allow is fine for Shield, bots, and rate limits.
 
 Configure `sensitiveInfo` with `backend: rampart()` from
 `@arcjet/sensitive-info-rampart` (on-device PII detection). It runs on
