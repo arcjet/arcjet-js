@@ -50,7 +50,17 @@ Pick the adapter the app already uses (`@arcjet/next`, `@arcjet/node`,
 hand-edit `package.json` and guess a version.
 
 Omitted `mode` is `DRY_RUN`. `detectBot` requires exactly one of `allow` or
-`deny`. `detectPromptInjection` takes `mode` only — no `threshold`.
+`deny`. `detectPromptInjection` takes `mode` only — no `threshold`; text over
+128 KiB is denied in LIVE, and a missing message fails open.
+
+Signed agents (Web Bot Auth) go in the same `allow` / `deny` lists, by
+catalog name (`CHATGPT_AGENT`, `BROWSERBASE`, …) or as
+`SIGNED_BOT:https://<host>/.well-known/http-message-signatures-directory`.
+An allow list such as `CATEGORY:SEARCH_ENGINE` now denies verified browser
+agents; add the signers you want. Check `isDenied()` before `isVerifiedBot`.
+Signatures covering `@path` verify only on `@arcjet/node` (Express),
+`@arcjet/fastify`, `@arcjet/nest`, and Next.js Pages API routes. A signature
+is identity, not authorization; keep rate limits on.
 
 One client. `withRule()` clones share the decision cache. A second
 `arcjet()` constructor does not.
@@ -117,6 +127,8 @@ Nested `metadata` is for the Console — no secrets, no PII.
 - Dry-run rules that look like they block
 - Both `allow` and `deny` on `detectBot`
 - `threshold` on `detectPromptInjection`
+- No catch-all `isDenied()` after the reason-specific arms
+- Allowing an errored decision on an AI or PII route
 - Copying `X-Forwarded-For` into `ipSrc` to hide `unverified-header`
 - Hardcoded `ARCJET_KEY`
 

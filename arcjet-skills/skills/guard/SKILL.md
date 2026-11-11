@@ -100,9 +100,10 @@ resolver over that adapter's native call — parsed input plus trusted
 runtime/context) so a remote policy that declares those names can evaluate. Build
 each input with `policyInput`.
 
-Policy callbacks (`rules`, `metadata`, `action`, `sessionId`, `actor`,
-`inputs`) must be synchronous. A callback that is async, throws, or returns an
-unusable value is treated as failed: Guard still runs without that value, a
+`rules`, `metadata`, `action`, and `sessionId` callbacks must be
+synchronous; `actor` and `inputs` may be async. A callback that throws,
+returns an unusable value, or (for the synchronous ones) returns a Promise is
+treated as failed: Guard still runs without that value, a
 remote DENY stands, then `onGuardError` (`"deny"` by default) decides.
 
 A required policy input that is missing or has the wrong kind is `AJP1003`

@@ -168,8 +168,9 @@ export class SupportAgent extends Think<Env> {
   Custom runtimes section.
 - Optional `actor` and `inputs` (static, or a resolver over this adapter's native call — parsed input plus trusted runtime/context) are forwarded on the
   guard call so a remote policy that declares those names can evaluate.
-  Build each input with `policyInput`. Omit them and the remote policy
-  has nothing to read — its rules do not fire. A resolver that throws
+  Build each input with `policyInput`. A missing required input is
+  `AJP1003` (actor `AJP1002`) and the wrapper denies; an undeclared one is
+  dropped with warning `AJ1060`. A resolver that throws
   or returns a value Guard cannot use is left out of the guard call,
   and `onGuardError` decides.
 - On DENY the original `execute` never runs. Default delivery is
