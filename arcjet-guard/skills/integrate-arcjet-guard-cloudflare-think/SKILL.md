@@ -139,25 +139,37 @@ import { Think } from "@cloudflare/think";
 import { arcjet } from "./arcjet.js";
 
 const lookupLimit = tokenBucket({
+  bucket: "lookups",
   refillRate: 10,
   intervalSeconds: 60,
   maxTokens: 10,
 });
 
-const hooks = guardHooks(arcjet, {
-  action: ({ toolName }) => `${toolName}.invoked`,
-  actor: conversationId,
-  inputs: ({ toolName }) => ({
-    tool: policyInput.server.string(toolName),
-  }),
-  rules: ({ toolName }) => [lookupLimit({ key: toolName, requested: 1 })],
-  sessionId: conversationId,
-});
-
 export class SupportAgent extends Think<Env> {
-  override beforeToolCall = hooks.beforeToolCall;
+  // Set from auth middleware or Durable Object state you already trust.
+  // Not this.ctx.id / this.name, and not a model-produced argument.
+  private userId!: string;
+  private conversationId!: string;
+
+  // Per instance: several Durable Objects can share one isolate, so
+  // module-level identity would leak across conversations.
+  private hooks = guardHooks(arcjet, {
+    action: ({ toolName }) => `${toolName}.invoked`,
+    actor: () => this.userId,
+    inputs: ({ toolName }) => ({
+      tool: policyInput.server.string(toolName),
+    }),
+    // Keyed on the authenticated caller, not the tool or a model argument.
+    rules: () => [lookupLimit({ key: this.userId, requested: 1 })],
+    sessionId: () => this.conversationId,
+  });
+
+  override beforeToolCall = this.hooks.beforeToolCall;
 }
 ```
+
+- Keep `arcjet` and the rule factories at module scope. Never capture a
+  caller or conversation id there.
 
 - Omit `rules` to submit none. The guard call still happens.
 - The example screens no PII. To add PII screening on Think, use
