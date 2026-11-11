@@ -114,6 +114,8 @@ rampart({
   device: "webgpu",
   // Minimum confidence for a model token to count (default: 0.5).
   threshold: 0.6,
+  // Longest input to scan, in UTF-16 code units (default: 100_000).
+  maxInputChars: 50_000,
   // Add or replace the deterministic recognizers. This is the extension point
   // for custom detection with this backend.
   recognizers: [
@@ -130,6 +132,48 @@ custom patterns, add a recognizer.
 > Inference runs in the request path, so its latency affects request handling.
 > The model performs best on Latin-script text; see the [model card][rampart]
 > for accuracy and language details.
+
+### Input size limit
+
+Scan time grows with input length, so the backend caps how much text it scans.
+`maxInputChars` sets the cap in UTF-16 code units, the unit of a JavaScript
+string's `length`. The default is `100_000`. It must be a positive safe
+integer; `rampart()` throws otherwise, and there is no unlimited setting.
+
+The rule denies longer input without scanning any of it. It does not scan the
+first part and let the rest through:
+
+- With the `sensitiveInfo` rule, the result has conclusion `DENY` and an
+  `ArcjetErrorReason` whose message gives the input length and the limit, so
+  `decision.isDenied()` is `true` and `decision.reason.isSensitiveInfo()` is
+  `false`. In `DRY_RUN` mode the rule logs a warning and doesn't deny.
+- With `localDetectSensitiveInfo`, and with sensitive-info inputs in a remotely
+  configured Guard policy, the rule reports a `DENY` with no detected entities.
+  Guard enforces it when the rule is `LIVE`.
+
+Each denial logs one warning with the input length and the limit. The text
+itself is never logged.
+
+### Longer text and PHI
+
+Rampart suits typical request fields. If your app accepts longer text, raise
+`maxInputChars` to fit it when the extra latency fits your budget, or send the
+text as a `SERVER` input to the server-side sensitive information detector in
+an [agent guard policy][remote-policies], which screens values up to about
+100 KB. Only the server-side detector detects the [PHI types][phi], such as
+medical record numbers, so screen PHI with a server input.
+
+The server-side detector allows up to 3 seconds to screen a value over 2 KB,
+and a live rule fails closed if the scan doesn't finish. Pass `timeoutSeconds`
+above `3` to `guard()` (the default is `2`) so the client doesn't stop waiting
+first, and deny when `decision.hasFailedOpen()` is `true`.
+
+Each `guard()` call screens up to two `SERVER` inputs longer than 2 KB, and a
+third fails a live rule closed. To screen text longer than about 100 KB, split
+it into parts and screen each part in its own call.
+
+[remote-policies]: https://docs.arcjet.com/guards/remote-policies#detectors
+[phi]: https://docs.arcjet.com/sensitive-info/phi
 
 ## Custom runtimes
 

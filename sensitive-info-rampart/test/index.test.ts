@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { ArcjetErrorReason, sensitiveInfo } from "arcjet";
+
 import { rampart } from "../dist/index.js";
 import type { DetectedSpan } from "../dist/recognizers.js";
 
@@ -204,4 +206,99 @@ test("returns a result shape compatible with the rule", async function () {
   const backend = rampart({ recognizers: [], runModel: stubModel([]) });
   const result = await backend.detect(context, "", denyEntities([]));
   assert.deepEqual(result, { allowed: [], denied: [] });
+});
+
+test("declares a default `maxInputChars` of 100_000", function () {
+  const backend = rampart({ runModel: stubModel([]) });
+  assert.equal(backend.maxInputChars, 100_000);
+});
+
+test("exposes a custom `maxInputChars`", function () {
+  const backend = rampart({ maxInputChars: 2_000, runModel: stubModel([]) });
+  assert.equal(backend.maxInputChars, 2_000);
+});
+
+test("rejects a `maxInputChars` that is not a positive safe integer", function () {
+  for (const maxInputChars of [
+    0,
+    -1,
+    1.5,
+    Infinity,
+    -Infinity,
+    NaN,
+    Number.MAX_SAFE_INTEGER + 1,
+    "100",
+  ]) {
+    assert.throws(
+      () => rampart({ maxInputChars: maxInputChars as number, runModel: stubModel([]) }),
+      /`rampart` options error: `maxInputChars` must be a positive safe integer/,
+      `expected ${String(maxInputChars)} to be rejected`,
+    );
+  }
+});
+
+test("accepts a `maxInputChars` of 1 and `Number.MAX_SAFE_INTEGER`", function () {
+  assert.equal(rampart({ maxInputChars: 1, runModel: stubModel([]) }).maxInputChars, 1);
+  assert.equal(
+    rampart({ maxInputChars: Number.MAX_SAFE_INTEGER, runModel: stubModel([]) }).maxInputChars,
+    Number.MAX_SAFE_INTEGER,
+  );
+});
+
+test("the `sensitiveInfo` rule denies input over the limit without running the model", async function () {
+  const warnCalls: unknown[][] = [];
+  let modelCalls = 0;
+  const backend = rampart({
+    maxInputChars: 10,
+    recognizers: [],
+    runModel: async () => {
+      modelCalls++;
+      return [];
+    },
+  });
+  const [rule] = sensitiveInfo({ mode: "LIVE", deny: ["GIVEN_NAME"], backend });
+  const context = {
+    key: "test-key",
+    fingerprint: "test-fingerprint",
+    runtime: "test",
+    log: {
+      debug() {},
+      info() {},
+      warn: (...args: unknown[]) => warnCalls.push(args),
+      error() {},
+    },
+    characteristics: [],
+    cache: {} as never,
+    getBody: () => Promise.reject(new Error("unused")),
+  };
+  const details = {
+    ip: "1.1.1.1",
+    method: "POST",
+    protocol: "http:",
+    host: "example.com",
+    path: "/",
+    headers: new Headers(),
+    cookies: "",
+    query: "",
+  };
+
+  const atLimit = await rule.protect(context, {
+    ...details,
+    extra: { sensitiveInfoValue: "Alex Rive." },
+  });
+  assert.equal(atLimit.conclusion, "ALLOW");
+  assert.equal(modelCalls, 1);
+
+  const secret = "Alex Rivera";
+  const over = await rule.protect(context, { ...details, extra: { sensitiveInfoValue: secret } });
+  assert.equal(modelCalls, 1);
+  assert.equal(over.conclusion, "DENY");
+  assert.equal(over.state, "RUN");
+  assert.ok(over.reason instanceof ArcjetErrorReason);
+  assert.equal(
+    over.reason.message,
+    "sensitive info input of 11 characters exceeds the backend limit of 10",
+  );
+  assert.equal(warnCalls.length, 1);
+  assert.equal(JSON.stringify(warnCalls).includes(secret), false);
 });

@@ -54,6 +54,7 @@ import {
   localDetectSensitiveInfo,
   defineCustomRule,
 } from "./rules.ts";
+import type { SensitiveInfoBackend } from "./types.ts";
 /** Build a mock transport that responds with the given handler. */
 function mockTransport(
   handler: (
@@ -2289,5 +2290,164 @@ describe("Request deadline", () => {
       remainingMs !== undefined && remainingMs > 4500 && remainingMs <= 5000,
       `expected ~5000ms remaining, got ${remainingMs}`,
     );
+  });
+});
+
+/** A backend with a scan limit that counts `detect` calls and finds nothing. */
+function limitedBackend(maxInputChars: number): SensitiveInfoBackend & { calls: number } {
+  const backend: SensitiveInfoBackend & { calls: number } = {
+    maxInputChars,
+    calls: 0,
+    detect(): ReturnType<SensitiveInfoBackend["detect"]> {
+      backend.calls++;
+      return Promise.resolve({ allowed: [], denied: [] });
+    },
+  };
+  return backend;
+}
+
+describe("sensitive-info backend `maxInputChars`", () => {
+  const secret = "Jane Doe lives at 1 Infinite Loop";
+
+  test("a remote policy LOCAL input over the limit is denied locally without scanning", async () => {
+    const backend = limitedBackend(10);
+    const warnings: unknown[][] = [];
+    let checkpoint: GuardRequest | undefined;
+    const transport = createRouterTransport(({ service }) => {
+      service(DecideService, {
+        getGuardPolicy() {
+          return create(GetGuardPolicyResponseSchema, {
+            status: GuardPolicyLookupStatus.AVAILABLE,
+            policy: create(GuardLocalPolicyProjectionSchema, {
+              policyId: "policy-1",
+              revision: "revision-1",
+              sensitiveInfoRules: [
+                create(GuardLocalSensitiveInfoRuleSchema, {
+                  ruleId: "local-pii",
+                  inputName: "pii",
+                  mode: GuardRuleMode.LIVE,
+                  entityFilter: {
+                    case: "entitiesDeny",
+                    value: create(EntityListSchema, { entities: ["GIVEN_NAME"] }),
+                  },
+                }),
+              ],
+            }),
+          });
+        },
+        guard(request) {
+          checkpoint = request;
+          return create(GuardResponseSchema, {
+            decision: create(GuardDecisionSchema, {
+              id: "gdec_oversize",
+              conclusion: GuardConclusion.DENY,
+              reason: GuardReason.SENSITIVE_INFO,
+            }),
+          });
+        },
+      });
+    });
+    const arcjet = launchArcjetWithTransport({
+      key: "ajkey_dummy",
+      transport,
+      sensitiveInfoBackend: backend,
+      logger: { warn: (...args: unknown[]) => warnings.push(args) },
+    });
+
+    const decision = await arcjet.guard({
+      label: "chat.message",
+      inputs: { pii: policyInput.local.string(secret) },
+    });
+
+    assert.equal(backend.calls, 0);
+    assert.equal(decision.conclusion, "DENY");
+    // The LIVE local denial takes the privacy-safe path: no SDK rules run.
+    assert.equal(checkpoint?.ruleSubmissions.length, 0);
+    const result = checkpoint?.localPolicyResults[0]?.result;
+    assert.equal(result?.case, "localSensitiveInfo");
+    if (result?.case === "localSensitiveInfo") {
+      assert.equal(result.value.conclusion, GuardConclusion.DENY);
+      assert.equal(result.value.detected, false);
+      assert.deepEqual(result.value.detectedEntityTypes, []);
+    }
+    assert.equal(warnings.length, 1);
+    assert.equal(JSON.stringify(warnings).includes(secret), false);
+    assert.equal(JSON.stringify(checkpoint, stringifyBigInt).includes(secret), false);
+  });
+
+  test("an SDK rule over the limit submits a computed DENY and warns on the default logger", async (t) => {
+    const warn = t.mock.method(console, "warn", () => {});
+    const backend = limitedBackend(10);
+    let submission: GuardRequest["ruleSubmissions"][number] | undefined;
+    const arcjet = guardWithMock((request) => {
+      submission = request.ruleSubmissions[0];
+      return create(GuardResponseSchema, {
+        decision: create(GuardDecisionSchema, { id: "gdec_sdk", conclusion: GuardConclusion.DENY }),
+      });
+    });
+
+    const rule = localDetectSensitiveInfo({ deny: ["GIVEN_NAME"], backend });
+    await arcjet.guard({ label: "tools.summary", rules: [rule(secret)] });
+    await arcjet.guard({ label: "tools.summary", rules: [rule(secret)] });
+
+    assert.equal(backend.calls, 0);
+    const body = submission?.rule?.rule;
+    assert.equal(body?.case, "localSensitiveInfo");
+    if (body?.case === "localSensitiveInfo") {
+      assert.equal(body.value.localResult.case, "resultComputed");
+      if (body.value.localResult.case === "resultComputed") {
+        assert.equal(body.value.localResult.value.conclusion, GuardConclusion.DENY);
+      }
+    }
+    // One warning per oversized call, never the text.
+    assert.equal(warn.mock.callCount(), 2);
+    assert.match(String(warn.mock.calls[0]?.arguments[0]), /exceeds the backend limit of 10/);
+    assert.equal(JSON.stringify(warn.mock.calls).includes(secret), false);
+  });
+
+  test("a throwing logger does not stop the computed DENY", async () => {
+    const backend = limitedBackend(10);
+    let submission: GuardRequest["ruleSubmissions"][number] | undefined;
+    const arcjet = launchArcjetWithTransport({
+      key: "ajkey_dummy",
+      transport: mockTransport((request) => {
+        submission = request.ruleSubmissions[0];
+        return create(GuardResponseSchema, {
+          decision: create(GuardDecisionSchema, {
+            id: "gdec_sdk",
+            conclusion: GuardConclusion.DENY,
+          }),
+        });
+      }),
+      logger: {
+        warn() {
+          throw new Error("logger failed");
+        },
+      },
+    });
+
+    const rule = localDetectSensitiveInfo({ deny: ["GIVEN_NAME"], backend });
+    const decision = await arcjet.guard({ label: "tools.summary", rules: [rule(secret)] });
+
+    assert.equal(decision.id, "gdec_sdk");
+    const body = submission?.rule?.rule;
+    assert.equal(body?.case, "localSensitiveInfo");
+    if (body?.case === "localSensitiveInfo") {
+      assert.equal(body.value.localResult.case, "resultComputed");
+    }
+  });
+
+  test("launch rejects a `sensitiveInfoBackend.maxInputChars` that is not a positive safe integer", () => {
+    for (const maxInputChars of [0, -1, 1.5, Infinity, NaN]) {
+      assert.throws(
+        () =>
+          launchArcjetWithTransport({
+            key: "ajkey_dummy",
+            transport: mockTransport(() => create(GuardResponseSchema, {})),
+            sensitiveInfoBackend: { ...limitedBackend(1), maxInputChars },
+          }),
+        /`sensitiveInfoBackend.maxInputChars` must be a positive safe integer/,
+      );
+    }
   });
 });

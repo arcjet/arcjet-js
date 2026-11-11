@@ -565,6 +565,16 @@ function policyEvaluationFromProto(
 }
 
 /**
+ * Sink for the warning logged when a sensitive-info input exceeds the backend's
+ * `maxInputChars`.
+ *
+ * @internal
+ */
+export type SensitiveInfoLimitLogger = {
+  warn(message: string): void;
+};
+
+/**
  * Convert a `RuleWithInput` to a proto `GuardRuleSubmission`.
  *
  * Switches on the `type` discriminant so TypeScript narrows config/input
@@ -582,11 +592,16 @@ export async function ruleToProto(
      * ride on the request envelope.
      */
     warningsOut?: LocalWarning[];
+    /**
+     * Where to warn when a sensitive-info input is denied for exceeding the
+     * backend's `maxInputChars`. The line carries lengths, never the text.
+     */
+    log?: SensitiveInfoLimitLogger;
   },
 ): Promise<GuardRuleSubmission> {
   const mode = rule.config.mode === "DRY_RUN" ? GuardRuleMode.DRY_RUN : GuardRuleMode.LIVE;
 
-  const guardRule = await ruleBodyToProto(rule, signal);
+  const guardRule = await ruleBodyToProto(rule, signal, options?.log);
 
   const { metadataJson, localWarnings } = encodeMetadata(
     ruleMetadata(rule),
@@ -628,7 +643,11 @@ function ruleMetadata(rule: RuleWithInput): ArcjetMetadata {
  *
  * @internal
  */
-async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promise<GuardRule> {
+async function ruleBodyToProto(
+  rule: RuleWithInput,
+  signal?: AbortSignal,
+  log?: SensitiveInfoLimitLogger,
+): Promise<GuardRule> {
   switch (rule.type) {
     case "TOKEN_BUCKET":
       return create(GuardRuleSchema, {
@@ -701,53 +720,76 @@ async function ruleBodyToProto(rule: RuleWithInput, signal?: AbortSignal): Promi
       // Use the configured backend (such as `@arcjet/sensitive-info-rampart`)
       // when provided; otherwise fall back to the bundled WASM engine.
       const backend = rule.config.backend ?? wasmSensitiveInfoBackend;
+      const inputLength = rule.input.inputText.length;
+      const maxInputChars = backend.maxInputChars;
 
       const evalStart = performance.now();
-      try {
-        const result = await backend.detect(analyzeContext, rule.input.inputText, entities, {
-          contextWindowSize: 1,
-        });
+      if (typeof maxInputChars === "number" && inputLength > maxInputChars) {
+        // A backend that declares a scan limit is never handed a longer value:
+        // scanning only part of it would let the rest through unchecked, and
+        // scanning all of it lets one call tie up the backend. Send a computed
+        // DENY rather than `resultError`, which the server treats as fail-open;
+        // it enforces the DENY when the rule is LIVE and ignores it in DRY_RUN.
+        log?.warn(
+          `sensitive info input of ${inputLength} characters exceeds the backend limit of ${maxInputChars}; denying without scanning`,
+        );
         resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
-
-        const deniedTypes = [
-          ...new Set(
-            result.denied
-              .map((d) => entityToString(d.identifiedType))
-              .filter((t): t is SensitiveInfoEntityType => t !== undefined),
-          ),
-        ];
         localResult = {
           case: "resultComputed" as const,
           value: create(ResultLocalSensitiveInfoSchema, {
-            conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
-            // `detected`, like the evidence below, reports only recognized
-            // denied entities. Allowed findings remain private and do not
-            // affect the projected result.
-            detected: deniedTypes.length > 0,
-            detectedEntityTypes: deniedTypes,
-            detectedEntities: result.denied
-              .map((entity) => {
-                const type = entityToString(entity.identifiedType);
-                return type === undefined
-                  ? undefined
-                  : create(GuardSensitiveInfoEntitySchema, {
-                      type,
-                      start: entity.start,
-                      end: entity.end,
-                    });
-              })
-              .filter((entity) => entity !== undefined),
+            conclusion: GuardConclusion.DENY,
+            detected: false,
+            detectedEntityTypes: [],
+            detectedEntities: [],
           }),
         };
-      } catch (err: unknown) {
-        resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
-        localResult = {
-          case: "resultError" as const,
-          value: create(ResultErrorSchema, {
-            message: err instanceof Error ? err.message : "sensitive info detection failed",
-            code: "SENSITIVE_INFO_ERROR",
-          }),
-        };
+      } else {
+        try {
+          const result = await backend.detect(analyzeContext, rule.input.inputText, entities, {
+            contextWindowSize: 1,
+          });
+          resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
+
+          const deniedTypes = [
+            ...new Set(
+              result.denied
+                .map((d) => entityToString(d.identifiedType))
+                .filter((t): t is SensitiveInfoEntityType => t !== undefined),
+            ),
+          ];
+          localResult = {
+            case: "resultComputed" as const,
+            value: create(ResultLocalSensitiveInfoSchema, {
+              conclusion: result.denied.length > 0 ? GuardConclusion.DENY : GuardConclusion.ALLOW,
+              // `detected`, like the evidence below, reports only recognized
+              // denied entities. Allowed findings remain private and do not
+              // affect the projected result.
+              detected: deniedTypes.length > 0,
+              detectedEntityTypes: deniedTypes,
+              detectedEntities: result.denied
+                .map((entity) => {
+                  const type = entityToString(entity.identifiedType);
+                  return type === undefined
+                    ? undefined
+                    : create(GuardSensitiveInfoEntitySchema, {
+                        type,
+                        start: entity.start,
+                        end: entity.end,
+                      });
+                })
+                .filter((entity) => entity !== undefined),
+            }),
+          };
+        } catch (err: unknown) {
+          resultDurationMs = BigInt(Math.round(performance.now() - evalStart));
+          localResult = {
+            case: "resultError" as const,
+            value: create(ResultErrorSchema, {
+              message: err instanceof Error ? err.message : "sensitive info detection failed",
+              code: "SENSITIVE_INFO_ERROR",
+            }),
+          };
+        }
       }
 
       return create(GuardRuleSchema, {

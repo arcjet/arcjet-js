@@ -1,6 +1,10 @@
 import { create } from "@bufbuild/protobuf";
 
-import { isSensitiveInfoEntityType, ruleToProto } from "./convert.ts";
+import {
+  isSensitiveInfoEntityType,
+  ruleToProto,
+  type SensitiveInfoLimitLogger,
+} from "./convert.ts";
 import { policyInputValue, type PolicyInput, type PolicyInputMap } from "./policy-input.ts";
 import {
   GetGuardPolicyRequestSchema,
@@ -81,17 +85,20 @@ export class RemotePolicyRuntime {
   readonly #userAgent: string;
   readonly #fetchPolicy: FetchPolicy;
   readonly #sensitiveInfoBackend: SensitiveInfoBackend | undefined;
+  readonly #log: SensitiveInfoLimitLogger | undefined;
 
   constructor(
     key: string,
     userAgent: string,
     fetchPolicy: FetchPolicy,
     sensitiveInfoBackend?: SensitiveInfoBackend,
+    log?: SensitiveInfoLimitLogger,
   ) {
     this.#key = key;
     this.#userAgent = userAgent;
     this.#fetchPolicy = fetchPolicy;
     this.#sensitiveInfoBackend = sensitiveInfoBackend;
+    this.#log = log;
   }
 
   /**
@@ -164,7 +171,13 @@ export class RemotePolicyRuntime {
         continue;
       }
       const config = sensitiveInfoConfig(rule.entityFilter, this.#sensitiveInfoBackend);
-      const submission = await ruleToProto(localDetectSensitiveInfo(config)(local.value), signal);
+      // A value over the backend's `maxInputChars` comes back as a computed
+      // DENY without being scanned, so it is a local denial like any other.
+      const submission = await ruleToProto(
+        localDetectSensitiveInfo(config)(local.value),
+        signal,
+        this.#log === undefined ? {} : { log: this.#log },
+      );
       const body = submission.rule?.rule;
       if (body?.case !== "localSensitiveInfo") continue;
       const localResult = body.value.localResult;

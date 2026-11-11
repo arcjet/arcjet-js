@@ -36,6 +36,7 @@ import type {
   ModerateContentInput,
   LocalDetectSensitiveInfoConfig,
   LocalDetectSensitiveInfoInput,
+  SensitiveInfoBackend,
   SensitiveInfoEntityType,
   LocalCustomConfig,
   LocalCustomInput,
@@ -564,6 +565,34 @@ function validateSensitiveInfoBackendSupport(config: LocalDetectSensitiveInfoCon
 }
 
 /**
+ * Throw if a backend declares a `maxInputChars` that is not a positive safe
+ * integer.
+ *
+ * Checked when the rule or client is created, so a bad limit fails loudly at
+ * startup instead of disabling the cap or failing open per request.
+ *
+ * @param backend
+ *   Backend to check, if any.
+ * @param subject
+ *   What to call the limit in the error message.
+ *
+ * @internal
+ */
+export function validateSensitiveInfoBackendLimit(
+  backend: SensitiveInfoBackend | undefined,
+  subject: string,
+): void {
+  const maxInputChars: unknown = backend?.maxInputChars;
+  if (
+    maxInputChars === undefined ||
+    (typeof maxInputChars === "number" && Number.isSafeInteger(maxInputChars) && maxInputChars > 0)
+  ) {
+    return;
+  }
+  throw new Error(`${subject} must be a positive safe integer`);
+}
+
+/**
  * Create a sensitive information detection rule.
  *
  * Use this to prevent PII (emails, phone numbers, credit card numbers)
@@ -591,6 +620,10 @@ export function localDetectSensitiveInfo(
   config: LocalDetectSensitiveInfoConfig = {},
 ): RuleWithConfigSensitiveInfo {
   validateSensitiveInfoBackendSupport(config);
+  validateSensitiveInfoBackendLimit(
+    config.backend,
+    "`localDetectSensitiveInfo` config error: `backend.maxInputChars`",
+  );
 
   const configId = randomId();
 

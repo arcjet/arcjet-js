@@ -51,6 +51,22 @@ import {
 import { symbolArcjetInternal } from "./symbol.ts";
 import type { SensitiveInfoBackend, SensitiveInfoBackendOptions } from "./types.ts";
 
+/** A backend that counts `detect` calls and denies a `GIVEN_NAME` span. */
+function limitedBackend(maxInputChars?: number): SensitiveInfoBackend & { calls: number } {
+  const backend: SensitiveInfoBackend & { calls: number } = {
+    ...(maxInputChars === undefined ? {} : { maxInputChars }),
+    calls: 0,
+    detect(): ReturnType<SensitiveInfoBackend["detect"]> {
+      backend.calls++;
+      return Promise.resolve({
+        allowed: [],
+        denied: [{ start: 0, end: 4, identifiedType: { tag: "custom", val: "GIVEN_NAME" } }],
+      });
+    },
+  };
+  return backend;
+}
+
 describe("conclusionFromProto", () => {
   test("ALLOW maps to 'ALLOW'", () => {
     assert.equal(conclusionFromProto(GuardConclusion.ALLOW), "ALLOW");
@@ -831,6 +847,99 @@ describe("ruleToProto", () => {
       }
       assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
     }
+  });
+
+  describe("backend `maxInputChars`", () => {
+    const secret = "Jane Doe, SSN 431-55-9928";
+
+    test("sends a computed DENY without calling `detect` over the limit", async () => {
+      const backend = limitedBackend(secret.length - 1);
+      const warnings: string[] = [];
+      const rule = localDetectSensitiveInfo({ deny: ["GIVEN_NAME"], backend });
+      const proto = await ruleToProto(rule(secret), undefined, {
+        log: { warn: (message) => warnings.push(message) },
+      });
+
+      assert.equal(backend.calls, 0);
+      assert.equal(proto.rule?.rule.case, "localSensitiveInfo");
+      if (proto.rule?.rule.case === "localSensitiveInfo") {
+        // Never `resultError`: the server treats that as fail-open.
+        assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+        if (proto.rule.rule.value.localResult.case === "resultComputed") {
+          const result = proto.rule.rule.value.localResult.value;
+          assert.equal(result.conclusion, GuardConclusion.DENY);
+          assert.equal(result.detected, false);
+          assert.deepEqual(result.detectedEntityTypes, []);
+          assert.deepEqual(result.detectedEntities, []);
+        }
+        assert.ok(proto.rule.rule.value.resultDurationMs !== undefined);
+      }
+      assert.deepEqual(warnings, [
+        `sensitive info input of ${secret.length} characters exceeds the backend limit of ${secret.length - 1}; denying without scanning`,
+      ]);
+      assert.equal(
+        JSON.stringify(proto, (_k, v: unknown) => (typeof v === "bigint" ? String(v) : v)).includes(
+          secret,
+        ),
+        false,
+      );
+    });
+
+    test("sends the same DENY in DRY_RUN, leaving enforcement to the server", async () => {
+      const backend = limitedBackend(5);
+      const rule = localDetectSensitiveInfo({ mode: "DRY_RUN", deny: ["GIVEN_NAME"], backend });
+      const proto = await ruleToProto(rule(secret));
+
+      assert.equal(backend.calls, 0);
+      assert.equal(proto.mode, GuardRuleMode.DRY_RUN);
+      if (proto.rule?.rule.case === "localSensitiveInfo") {
+        assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+        if (proto.rule.rule.value.localResult.case === "resultComputed") {
+          assert.equal(proto.rule.rule.value.localResult.value.conclusion, GuardConclusion.DENY);
+        }
+      } else {
+        assert.fail("expected a localSensitiveInfo rule");
+      }
+    });
+
+    test("scans input exactly at the limit", async () => {
+      const backend = limitedBackend(secret.length);
+      const rule = localDetectSensitiveInfo({ deny: ["GIVEN_NAME"], backend });
+      const proto = await ruleToProto(rule(secret));
+
+      assert.equal(backend.calls, 1);
+      if (proto.rule?.rule.case === "localSensitiveInfo") {
+        assert.equal(proto.rule.rule.value.localResult.case, "resultComputed");
+        if (proto.rule.rule.value.localResult.case === "resultComputed") {
+          assert.equal(proto.rule.rule.value.localResult.value.detected, true);
+        }
+      } else {
+        assert.fail("expected a localSensitiveInfo rule");
+      }
+    });
+
+    test("scans input of any length when the backend declares no limit", async () => {
+      const backend = limitedBackend();
+      const rule = localDetectSensitiveInfo({ deny: ["GIVEN_NAME"], backend });
+      await ruleToProto(rule("Jane " + "x".repeat(200_000)));
+
+      assert.equal(backend.calls, 1);
+    });
+
+    test("rejects a `maxInputChars` that is not a positive safe integer", () => {
+      for (const maxInputChars of [0, -1, 1.5, Infinity, NaN, Number.MAX_SAFE_INTEGER + 1, "10"]) {
+        assert.throws(
+          () =>
+            localDetectSensitiveInfo({
+              deny: ["GIVEN_NAME"],
+              // Assigned at runtime: the type only admits numbers.
+              backend: Object.assign(limitedBackend(), { maxInputChars }),
+            }),
+          /`localDetectSensitiveInfo` config error: `backend.maxInputChars` must be a positive safe integer/,
+          `expected ${String(maxInputChars)} to be rejected`,
+        );
+      }
+    });
   });
 
   test("drops backend custom entities outside the known type union", async () => {

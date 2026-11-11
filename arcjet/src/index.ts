@@ -969,6 +969,25 @@ function validateSensitiveInfoBackend(
   ) {
     throw new Error(`invalid type for \`${path}\` - expected an object with a \`detect\` function`);
   }
+
+  const maxInputChars = (value as { maxInputChars?: unknown }).maxInputChars;
+  if (typeof maxInputChars !== "undefined" && !isPositiveSafeInteger(maxInputChars)) {
+    throw new Error(
+      `invalid value for \`${path}.maxInputChars\` - expected a positive safe integer`,
+    );
+  }
+}
+
+/**
+ * Check whether a value is a positive safe integer.
+ *
+ * @param value
+ *   Value to check.
+ * @returns
+ *   Whether `value` is a positive safe integer.
+ */
+function isPositiveSafeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
 /**
@@ -1556,6 +1575,17 @@ export interface SensitiveInfoBackendOptions {
  */
 export interface SensitiveInfoBackend {
   /**
+   * Largest input, in UTF-16 code units (`value.length`), the backend scans
+   * (optional).
+   *
+   * When set, the `sensitiveInfo` rule denies a longer value without calling
+   * {@linkcode SensitiveInfoBackend.detect}, so no part of it is scanned. The
+   * rule result is a `DENY` with an `ArcjetErrorReason`, enforced in `LIVE`
+   * mode. In `DRY_RUN` mode the rule logs a warning and doesn't deny. Leave it
+   * unset to scan input of any length.
+   */
+  readonly maxInputChars?: number | undefined;
+  /**
    * Detect sensitive information in `value`.
    *
    * @param context
@@ -1678,8 +1708,9 @@ export type SensitiveInfoOptionsAllow<
    * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
    * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
    * that supports them is configured (or a custom `detect` function is
-   * provided) — listing one in `allow`/`deny` without either throws. See
-   * {@linkcode SensitiveInfoBackend}.
+   * provided) — listing one in `allow`/`deny` without either throws. A backend
+   * that declares `maxInputChars` (Rampart does) denies longer input without
+   * scanning it. See {@linkcode SensitiveInfoBackend}.
    */
   backend?: SensitiveInfoBackend;
 };
@@ -1786,8 +1817,9 @@ export type SensitiveInfoOptionsDeny<
    * built-in pattern matching. Types beyond `"EMAIL"`, `"PHONE_NUMBER"`,
    * `"IP_ADDRESS"`, and `"CREDIT_CARD_NUMBER"` are only detected when a backend
    * that supports them is configured (or a custom `detect` function is
-   * provided) — listing one in `allow`/`deny` without either throws. See
-   * {@linkcode SensitiveInfoBackend}.
+   * provided) — listing one in `allow`/`deny` without either throws. A backend
+   * that declares `maxInputChars` (Rampart does) denies longer input without
+   * scanning it. See {@linkcode SensitiveInfoBackend}.
    */
   backend?: SensitiveInfoBackend;
 };
@@ -2779,6 +2811,35 @@ export function sensitiveInfo<
           }
         }
 
+        const backend = options.backend || wasmSensitiveInfoBackend;
+        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
+
+        // A backend that declares a scan limit is never handed a longer value:
+        // scanning only part of it would let the rest through unchecked, and
+        // scanning all of it lets one request tie up the backend. Deny instead,
+        // without calling `detect`. The message carries lengths only, never the
+        // text.
+        const maxInputChars = backend.maxInputChars;
+        if (typeof maxInputChars === "number" && value.length > maxInputChars) {
+          const message = `sensitive info input of ${value.length} characters exceeds the backend limit of ${maxInputChars}`;
+          // A logger that throws must not undo the denial, so the warning is
+          // best effort.
+          try {
+            context.log.warn("%s; denying without scanning", message);
+          } catch {
+            // Ignore: the denial below is what matters.
+          }
+
+          return new ArcjetRuleResult({
+            ruleId,
+            fingerprint,
+            ttl: 0,
+            state,
+            conclusion: "DENY",
+            reason: new ArcjetErrorReason(message),
+          });
+        }
+
         let convertedDetect = undefined;
         if (typeof options.detect !== "undefined") {
           const detect = options.detect;
@@ -2811,13 +2872,10 @@ export function sensitiveInfo<
           val: entitiesVal,
         };
 
-        const backend = options.backend || wasmSensitiveInfoBackend;
         const result = await backend.detect(context, value, entities, {
           contextWindowSize: options.contextWindowSize || 1,
           detect: convertedDetect,
         });
-
-        const state = mode === "LIVE" ? "RUN" : "DRY_RUN";
 
         const reason = new ArcjetSensitiveInfoReason({
           denied: convertAnalyzeDetectedSensitiveInfoEntity(result.denied),
