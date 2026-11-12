@@ -99,6 +99,83 @@ test("detectBot", async function (t) {
       verified: false,
     });
   });
+
+  const claudeCode = "Claude-User (claude-code/2.1.308; +https://support.anthropic.com/)";
+
+  await t.test("should identify Claude Code separately from Claude-User", async function () {
+    const result = await detectBot(
+      exampleContext,
+      { ip: "127.0.0.1", headers: { "user-agent": claudeCode } },
+      {
+        tag: "allowed-bot-config",
+        val: { entities: [], skipCustomDetect: false },
+      },
+    );
+
+    assert.deepEqual(result, {
+      allowed: [],
+      denied: ["ANTHROPIC_CLAUDE_CODE"],
+      spoofed: false,
+      verified: false,
+    });
+  });
+
+  await t.test("should allow an AI agent through `CATEGORY:AI_AGENT`", async function () {
+    const result = await detectBot(
+      exampleContext,
+      { ip: "127.0.0.1", headers: { "user-agent": claudeCode } },
+      {
+        tag: "allowed-bot-config",
+        val: { entities: ["CATEGORY:AI_AGENT"], skipCustomDetect: false },
+      },
+    );
+
+    assert.deepEqual(result.denied, []);
+    assert.ok(result.allowed.includes("ANTHROPIC_CLAUDE_CODE"));
+  });
+
+  await t.test(
+    "should deny an AI crawler under a `CATEGORY:AI_AGENT` allow list",
+    async function () {
+      const result = await detectBot(
+        exampleContext,
+        {
+          ip: "127.0.0.1",
+          headers: {
+            "user-agent":
+              "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.4; +https://openai.com/gptbot",
+          },
+        },
+        {
+          tag: "allowed-bot-config",
+          val: { entities: ["CATEGORY:AI_AGENT"], skipCustomDetect: false },
+        },
+      );
+
+      assert.deepEqual(result.allowed, []);
+      assert.ok(result.denied.includes("OPENAI_CRAWLER"));
+    },
+  );
+
+  await t.test("should not detect the Pinterest in-app browser as a bot", async function () {
+    const result = await detectBot(
+      exampleContext,
+      {
+        ip: "127.0.0.1",
+        headers: {
+          "user-agent":
+            "Mozilla/5.0 (iPad; CPU OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Pinterest/iOS",
+        },
+      },
+      {
+        tag: "allowed-bot-config",
+        val: { entities: [], skipCustomDetect: false },
+      },
+    );
+
+    assert.deepEqual(result.allowed, []);
+    assert.deepEqual(result.denied, []);
+  });
 });
 
 test("detectSensitiveInfo", async function (t) {

@@ -116,3 +116,18 @@ test("protocol", async (t) => {
     });
   });
 });
+
+test("botCategories", async function (t) {
+  await t.test("should keep every `CATEGORY:AI_AGENT` bot in `CATEGORY:AI`", async function () {
+    const { botCategories } = await import("../dist/index.js");
+    const ai = new Set(botCategories["CATEGORY:AI"]);
+    const agents = botCategories["CATEGORY:AI_AGENT"];
+
+    assert.ok(agents.length > 0);
+    for (const id of agents) {
+      assert.ok(ai.has(id), `${id} is in CATEGORY:AI_AGENT but not CATEGORY:AI`);
+    }
+    assert.ok(agents.includes("ANTHROPIC_CLAUDE_CODE"));
+    assert.ok(!agents.includes("OPENAI_CRAWLER"));
+  });
+});
