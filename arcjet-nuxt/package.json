@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@nuxt/kit": "4.6.2",
-    "@nuxt/schema": "4.6.2",
+    "@nuxt/schema": "4.6.4",
     "tsdown": "0.23.1",
     "typescript": "7.0.2"
   },
