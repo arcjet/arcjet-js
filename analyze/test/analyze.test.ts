@@ -157,6 +157,30 @@ test("detectBot", async function (t) {
     },
   );
 
+  await t.test(
+    "should deny both an AI agent and an AI crawler under a `CATEGORY:AI` deny list",
+    async function () {
+      for (const [userAgent, id] of [
+        [claudeCode, "ANTHROPIC_CLAUDE_CODE"],
+        [
+          "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.4; +https://openai.com/gptbot",
+          "OPENAI_CRAWLER",
+        ],
+      ]) {
+        const result = await detectBot(
+          exampleContext,
+          { ip: "127.0.0.1", headers: { "user-agent": userAgent } },
+          {
+            tag: "denied-bot-config",
+            val: { entities: ["CATEGORY:AI"], skipCustomDetect: false },
+          },
+        );
+
+        assert.ok(result.denied.includes(id), `${id} should be denied`);
+      }
+    },
+  );
+
   await t.test("should not detect the Pinterest in-app browser as a bot", async function () {
     const result = await detectBot(
       exampleContext,
