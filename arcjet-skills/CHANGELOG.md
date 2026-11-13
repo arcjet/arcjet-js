@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/skills-v1.15.1) (2026-11-13)
+
+
+### 📝 Documentation
+
+* **skills:** sync @arcjet/skills with arcjet/skills[#74](https://github.com/arcjet/arcjet-js/issues/74) ([#6358](https://github.com/arcjet/arcjet-js/issues/6358)) ([353fcf6](https://github.com/arcjet/arcjet-js/commit/353fcf69b6d243830028cdb9393d96d58dc77287))
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/skills-v1.15.0) (2026-10-28)
 
 

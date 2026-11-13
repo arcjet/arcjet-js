@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.15.1](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/sensitive-info-rampart-v1.15.1) (2026-11-13)
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** deny input over the backend's scan limit ([#6357](https://github.com/arcjet/arcjet-js/issues/6357)) ([3d8fdb7](https://github.com/arcjet/arcjet-js/commit/3d8fdb771f56de8ad18c36d14ede6f990f0bd188))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @arcjet/analyze bumped from 1.15.0 to 1.15.1
+    * arcjet bumped from 1.15.0 to 1.15.1
+  * peerDependencies
+    * @arcjet/analyze bumped from 1.15.0 to 1.15.1
+    * arcjet bumped from 1.15.0 to 1.15.1
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/sensitive-info-rampart-v1.15.0) (2026-10-28)
 
 

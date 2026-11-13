@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/redact-wasm-v1.15.1) (2026-11-13)
+
+
+### 🧹 Miscellaneous Chores
+
+* **wasm:** regenerate wasm and add RiverBot to the bot catalog ([#6356](https://github.com/arcjet/arcjet-js/issues/6356)) ([81b627a](https://github.com/arcjet/arcjet-js/commit/81b627a95cc65f001edfce9e20d889b94a9081f2))
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/redact-wasm-v1.15.0) (2026-10-28)
 
 
