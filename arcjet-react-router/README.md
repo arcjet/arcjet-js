@@ -222,14 +222,19 @@ Arcjet allows you to configure a list of bots to allow or deny. Specifying
 `allow` means all other bots are denied. An empty allow list blocks all bots.
 
 Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
-`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
-`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
-`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:AI`, `CATEGORY:AI_AGENT`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`,
+`CATEGORY:ARCHIVE`, `CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`,
+`CATEGORY:GOOGLE`, `CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
 `CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
 `CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
 `CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
 `CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`. You can also allow or deny
 [specific bots by name][bot-list].
+
+`CATEGORY:AI_AGENT` is the part of `CATEGORY:AI` that fetches a page on demand
+for a person, such as ChatGPT-User, Claude-User, or a coding agent. To block AI
+crawlers but let AI agents through, allow `CATEGORY:AI_AGENT` instead of
+denying `CATEGORY:AI`, because denying `CATEGORY:AI` also blocks agents.
 
 ```tsx
 import arcjet, { detectBot } from "@arcjet/react-router";

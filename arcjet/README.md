@@ -61,13 +61,18 @@ Detects and blocks automated clients and bots. Configure `allow` to permit
 specific bot categories or named bots; all others are denied.
 
 Available categories: `CATEGORY:ACADEMIC`, `CATEGORY:ADVERTISING`,
-`CATEGORY:AI`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`, `CATEGORY:ARCHIVE`,
-`CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`, `CATEGORY:GOOGLE`,
-`CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
+`CATEGORY:AI`, `CATEGORY:AI_AGENT`, `CATEGORY:AMAZON`, `CATEGORY:APPLE`,
+`CATEGORY:ARCHIVE`, `CATEGORY:BOTNET`, `CATEGORY:FEEDFETCHER`,
+`CATEGORY:GOOGLE`, `CATEGORY:META`, `CATEGORY:MICROSOFT`, `CATEGORY:MONITOR`,
 `CATEGORY:OPTIMIZER`, `CATEGORY:PREVIEW`, `CATEGORY:PROGRAMMATIC`,
 `CATEGORY:SEARCH_ENGINE`, `CATEGORY:SLACK`, `CATEGORY:SOCIAL`,
 `CATEGORY:TOOL`, `CATEGORY:UNKNOWN`, `CATEGORY:VERCEL`,
 `CATEGORY:WEBHOOK`, `CATEGORY:YAHOO`.
+
+`CATEGORY:AI_AGENT` is the part of `CATEGORY:AI` that fetches a page on demand
+for a person, such as ChatGPT-User, Claude-User, or a coding agent. To block AI
+crawlers but let AI agents through, allow `CATEGORY:AI_AGENT` instead of
+denying `CATEGORY:AI`, because denying `CATEGORY:AI` also blocks agents.
 
 ```ts
 import arcjet, { detectBot } from "arcjet";
