@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.15.1](https://github.com/arcjet/arcjet-js/compare/v1.15.0...v1.15.1) (2026-11-13)
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** deny input over the backend's scan limit ([#6357](https://github.com/arcjet/arcjet-js/issues/6357)) ([3d8fdb7](https://github.com/arcjet/arcjet-js/commit/3d8fdb771f56de8ad18c36d14ede6f990f0bd188))
+
+
+### 📝 Documentation
+
+* **skills:** sync @arcjet/skills with arcjet/skills[#74](https://github.com/arcjet/arcjet-js/issues/74) ([#6358](https://github.com/arcjet/arcjet-js/issues/6358)) ([353fcf6](https://github.com/arcjet/arcjet-js/commit/353fcf69b6d243830028cdb9393d96d58dc77287))
+
+
+### 🧹 Miscellaneous Chores
+
+* **wasm:** regenerate wasm and add RiverBot to the bot catalog ([#6356](https://github.com/arcjet/arcjet-js/issues/6356)) ([81b627a](https://github.com/arcjet/arcjet-js/commit/81b627a95cc65f001edfce9e20d889b94a9081f2))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump @hono/node-server from 2.1.1 to 2.1.6 ([#6353](https://github.com/arcjet/arcjet-js/issues/6353)) ([5b90fb8](https://github.com/arcjet/arcjet-js/commit/5b90fb8be75128913092e663167c2cd8a208a743))
+* **deps-dev:** bump fast-xml-parser from 5.11.1 to 5.12.0 ([#6360](https://github.com/arcjet/arcjet-js/issues/6360)) ([8d50f9b](https://github.com/arcjet/arcjet-js/commit/8d50f9b70da42e8c5e850487fa19dc5d2d0af169))
+* **deps-dev:** bump hono from 4.13.13 to 4.13.18 ([#6361](https://github.com/arcjet/arcjet-js/issues/6361)) ([a402c1c](https://github.com/arcjet/arcjet-js/commit/a402c1c13564c4feeb08a1b66aec67aa0987973f))
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...v1.15.0) (2026-10-28)
 
 
