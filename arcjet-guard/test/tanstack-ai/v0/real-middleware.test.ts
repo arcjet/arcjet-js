@@ -11,13 +11,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import type { BeforeToolCallDecision, ChatMiddleware, ToolCallHookContext } from "@tanstack/ai";
-import { toolCacheMiddleware } from "@tanstack/ai/middlewares";
+import type { BeforeToolCallDecision, ChatMiddleware, ToolCallHookContext } from "@tanstack/ai-v0";
+import { toolCacheMiddleware } from "@tanstack/ai-v0/middlewares";
 
-import type { ArcjetDenialResult } from "../../src/agents/denial.ts";
-import { guardMiddleware } from "../../src/tanstack-ai/v0/guard-middleware.ts";
-import { asDenial } from "../_shared/source-scan.ts";
-import { decisionDenyPromptInjection, stubClient } from "../_shared/stub-client.ts";
+import type { ArcjetDenialResult } from "../../../src/agents/denial.ts";
+import { guardMiddleware } from "../../../src/tanstack-ai/v0/guard-middleware.ts";
+import { asDenial } from "../../_shared/source-scan.ts";
+import { decisionDenyPromptInjection, stubClient } from "../../_shared/stub-client.ts";
 
 function middlewareCtx(context?: unknown): {
   requestId: string;

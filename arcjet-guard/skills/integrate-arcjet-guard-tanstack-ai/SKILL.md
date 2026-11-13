@@ -1,8 +1,8 @@
 ---
 name: integrate-arcjet-guard-tanstack-ai
-description: Integrate Arcjet security into a TanStack AI chat() app using @arcjet/guard — put guardMiddleware first on chat({ middleware }) so onBeforeToolCall gates tools, and read a caller-owned id from chat({ context }). Use when asked to add Arcjet to TanStack AI, rate limit its tools, screen inbound messages, or block prompt injection / PII. This is TanStack AI, not the Vercel AI SDK.
+description: Integrate Arcjet security into a TanStack AI chat() app using @arcjet/guard — add guardMiddleware to chat({ middleware }) so onGuardToolCall (1.x, @arcjet/guard/tanstack-ai/v1) or onBeforeToolCall (0.x, /v0) gates tools, and read a caller-owned id from chat({ context }). Use when asked to add Arcjet to TanStack AI, rate limit its tools, screen inbound messages, or block prompt injection / PII. This is TanStack AI, not the Vercel AI SDK.
 license: Apache-2.0
-compatibility: Requires the target app to use TanStack AI (@tanstack/ai >=0.8.0 <1) on Node.js >= 22. This is chat() + ChatMiddleware.onBeforeToolCall. There is no /v1 until TanStack AI ships 1.x. Do not use @arcjet/guard/vercel-ai/v7.
+compatibility: Requires the target app to use TanStack AI on Node.js >= 22. @tanstack/ai 1.x uses @arcjet/guard/tanstack-ai/v1 (chat() + ChatMiddleware.onGuardToolCall); @tanstack/ai >=0.8.0 <1 uses @arcjet/guard/tanstack-ai/v0 (onBeforeToolCall). Do not use @arcjet/guard/vercel-ai/v7.
 metadata:
   author: arcjet
   type: core
@@ -14,12 +14,25 @@ sources:
 
 # Integrate Arcjet Guard into TanStack AI
 
-`@arcjet/guard`'s TanStack AI v0 namespace wraps the agent's existing Arcjet
-client. It never talks to the Arcjet API itself. Two surfaces, one
-decision rule:
+`@arcjet/guard`'s TanStack AI namespace wraps the agent's existing Arcjet
+client. It never talks to the Arcjet API itself. Pick the path from the
+app's `@tanstack/ai` major:
+
+- `@tanstack/ai` 1.x → `@arcjet/guard/tanstack-ai/v1`. This skill
+  documents it.
+- `@tanstack/ai` 0.x → `@arcjet/guard/tanstack-ai/v0`. See
+  [TanStack AI 0.x](#tanstack-ai-0x) for what differs.
+
+Check the installed major before you pick. The peer range `>=0.8.0 <2`
+admits both, so the package manager won't catch `/v1` on 0.x. TanStack AI
+0.x never calls `onGuardToolCall`: on a 0.x run the v1 middleware warns
+and aborts the run, or with `onGuardError: "allow"` only warns while tools
+run without Guard.
+
+Two surfaces, one decision rule:
 
 - **Tool calls** → `guardMiddleware()`. A `chat({ middleware })`
-  middleware whose `onBeforeToolCall` is the chat()-wide gate. Default
+  middleware whose `onGuardToolCall` is the chat()-wide gate. Default
   DENY is `{ type: "skip", result: ArcjetDenialResult }` so the tool
   never runs and the model sees the payload. Optional `onDeny: "abort"`
   returns `{ type: "abort", reason }` and stops the run — the model
@@ -28,9 +41,9 @@ decision rule:
   Guard is not double-called. Inbound `guard()` before `chat()`
   does not brand tools and does not skip this gate.
 - **Correlation** → `tanstackAiContext()` reads a caller-owned id from
-  the helper options or `chat({ context })`. It never mints a new id.
-  It never reads `ctx.threadId` (TanStack auto-generates it). It never
-  reads `traceId` / `requestId` / `streamId`.
+  the helper options or `chat({ context })`, and then the caller's
+  `chat({ threadId })`, which TanStack AI 1.x requires. It never mints
+  a new id. It never reads `traceId` / `requestId` / `streamId`.
 
 There is **no `guardTool`**. A throw from `execute` is swallowed into
 `{ error }` and is not a usable deny envelope. There is no
@@ -38,18 +51,22 @@ There is **no `guardTool`**. A throw from `execute` is swallowed into
 `contentGuardMiddleware` (TanStack already has that name).
 
 This namespace is TanStack AI **`chat({ middleware })` +
-`onBeforeToolCall`**. Not the Vercel AI SDK. Do not also wrap with
+`onGuardToolCall`**. Not the Vercel AI SDK. Do not also wrap with
 `@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
-Client tools and provider-native tools with no local `execute` are out
-of scope.
+Client tools with no local `execute` are gated before TanStack AI sends
+them to the client. Provider-native tools are out of scope.
 
 Docs live at
 [docs.arcjet.com/guards/tanstack-ai/](https://docs.arcjet.com/guards/tanstack-ai/).
 Do **not** overwrite any other `/guards/...` slug.
 
-Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
-first-win; if `toolCacheMiddleware` (or anything else) skips first,
-Guard never runs.
+`onGuardToolCall` is TanStack AI 1.x's guard tier. It runs after every
+`onBeforeToolCall` hook and after the tool's `inputSchema` check, so
+Guard sees the args the tool runs with, and another middleware's
+`transformArgs` can't change them after Guard allows the call. An
+`onBeforeToolCall` skip, such as a `toolCacheMiddleware` hit, answers the
+call without running the tool, and no guard runs for it. Only cache tools
+whose cached result is safe to return without a Guard decision.
 
 ## Screen inbound before `chat()` — there is no inbound hook.
 
@@ -74,15 +91,17 @@ LangGraph `interrupt()`, Genkit `toolApproval`, OpenAI Agents
 
 Ask only what you cannot infer from the code; suggest defaults.
 
-1. Which tools are **risky** (external side effects, irreversible, spends
+1. Which `@tanstack/ai` major does the app use? 1.x →
+   `@arcjet/guard/tanstack-ai/v1`. 0.x → `@arcjet/guard/tanstack-ai/v0`.
+2. Which tools are **risky** (external side effects, irreversible, spends
    money, sends messages)? Those are gated by `guardMiddleware`.
-2. What **limits**? (e.g. "10 lookups/min per order" → `tokenBucket`.)
-3. Who is the **user** for metadata — an opaque user/tenant ID (never PII)?
+3. What **limits**? (e.g. "10 lookups/min per order" → `tokenBucket`.)
+4. Who is the **user** for metadata — an opaque user/tenant ID (never PII)?
    Default: none. Pass it via `metadata` on the policy. Put the
    conversation / session id you already have on
    `chat({ context: { sessionId } })`. That id is the correlation id.
-   Do not use `ctx.threadId`.
-4. Is an Arcjet outage unacceptable? Every helper defaults to
+   Without one, the caller's `chat({ threadId })` is.
+5. Is an Arcjet outage unacceptable? Every helper defaults to
    `onGuardError: "deny"`. Ask explicitly about inbound screening before
    `chat()`: failing closed there means the chat does not run for the
    duration of the outage, so `"allow"` is a routine and legitimate
@@ -97,16 +116,16 @@ Ask only what you cannot infer from the code; suggest defaults.
 2. **`needsApproval` / `defineInterrupt` / `onInterruptBoundary` is not
    a policy gate.** It is HITL. After a human yes, Guard still runs.
 3. **The import path is versioned and there is no alias.**
-   `@arcjet/guard/tanstack-ai/v0`. `@arcjet/guard/tanstack-ai` does
-   not resolve. There is no `/v1` until TanStack AI ships 1.x. Docs
-   are `/guards/tanstack-ai/`.
+   `@arcjet/guard/tanstack-ai/v1` for TanStack AI 1.x and
+   `@arcjet/guard/tanstack-ai/v0` for 0.x. `@arcjet/guard/tanstack-ai`
+   does not resolve. Docs are `/guards/tanstack-ai/`.
 4. **Correlation is read, never minted.** Do not call
    `createAgentContext` inside a middleware callback — that generates
    a second id and splits the Sequence. Put the id you already chose
-   on `chat({ context })`. Do not read `ctx.threadId`, `traceId`,
-   `requestId`, or `streamId`.
-5. **Put Arcjet first.** `onBeforeToolCall` is first-win. If
-   `toolCacheMiddleware` skips first, Guard never runs.
+   on `chat({ context })`. Do not read `traceId`, `requestId`, or
+   `streamId`.
+5. **A cache hit skips Guard.** An `onBeforeToolCall` skip, such as
+   `toolCacheMiddleware`, answers the call before the guard tier runs.
 6. **Do not add `guardTool` and do not double-wrap with
    `@arcjet/guard/vercel-ai/v7`.** TanStack AI is not the Vercel AI
    SDK. A throw from `execute` becomes `{ error }`.
@@ -114,11 +133,11 @@ Ask only what you cannot infer from the code; suggest defaults.
 ## Step 1: Install and find the guard client
 
 Install `@arcjet/guard` (required), plus `@tanstack/ai` (optional
-peer, needed for `@arcjet/guard/tanstack-ai/v0`). Always use the
-versioned path: `@arcjet/guard/tanstack-ai/v0` resolves;
+peer, needed for `@arcjet/guard/tanstack-ai/v1`). Always use the
+versioned path: `@arcjet/guard/tanstack-ai/v1` resolves;
 `@arcjet/guard/tanstack-ai` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`.
-The peer range is `>=0.8.0 <1`. Node 22+ — do not bump Node for this
-adapter.
+The peer range is `>=0.8.0 <2`; `/v1` is for 1.x. Node 22+ — do not
+bump Node for this adapter.
 
 ```sh
 npm install @arcjet/guard @arcjet/sensitive-info-rampart @tanstack/ai
@@ -132,14 +151,13 @@ import { launchArcjet } from "@arcjet/guard";
 export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 ```
 
-## Step 2: Gate tool calls — Arcjet first
+## Step 2: Gate tool calls
 
 ```ts
 import { tokenBucket, localDetectSensitiveInfo, policyInput } from "@arcjet/guard";
-import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
+import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v1";
 import { rampart } from "@arcjet/sensitive-info-rampart";
 import { chat } from "@tanstack/ai";
-import { toolCacheMiddleware } from "@tanstack/ai/middlewares";
 
 import { arcjet } from "./arcjet.js";
 
@@ -153,6 +171,7 @@ const detectPii = localDetectSensitiveInfo({ backend: rampart() });
 const stream = chat({
   adapter,
   messages,
+  threadId,
   tools: [lookupOrder, ...mcpTools],
   context: { sessionId: conversationId },
   middleware: [
@@ -172,9 +191,7 @@ const stream = chat({
           ...(note.length > 0 ? [detectPii(note)] : []),
         ];
       },
-      sessionId: conversationId,
     }),
-    toolCacheMiddleware(),
   ],
 });
 ```
@@ -185,6 +202,8 @@ const stream = chat({
   Build each input with `policyInput`. A resolver that throws or returns a
   value Guard cannot use is left out of the guard call, and `onGuardError`
   decides.
+- `input` is the tool's checked args, after any `transformArgs` and the
+  `inputSchema` check — the value the tool runs with.
 - On DENY the original `execute` never runs. Default delivery is
   `{ type: "skip", result: { arcjetDenied: true, reason, message, retryable } }`.
 - `onDeny: "abort"` stops the chat run with `{ type: "abort", reason }`
@@ -199,7 +218,7 @@ const stream = chat({
   `"tool.invoked"`), so remote policy still evaluates the call and a DENY
   stands.
 - ALLOW captures `outcome: "success"` when the policy lets the tool
-  run, not when `execute` finishes. `onBeforeToolCall` cannot wrap
+  run, not when `execute` finishes. `onGuardToolCall` cannot wrap
   the tool; a later tool throw does not flip that capture.
 - Tools already branded by a sibling `guardTool` skip the middleware
   so Guard is not double-called. This namespace has no `guardTool`.
@@ -209,7 +228,7 @@ const stream = chat({
 
 ```ts
 import { detectPromptInjection } from "@arcjet/guard";
-import { tanstackAiContext } from "@arcjet/guard/tanstack-ai/v0";
+import { tanstackAiContext } from "@arcjet/guard/tanstack-ai/v1";
 
 import { arcjet } from "./arcjet.js";
 
@@ -217,7 +236,7 @@ const inbound = detectPromptInjection();
 const decision = await arcjet.guard({
   label: "message.received",
   rules: [inbound(userText)],
-  ...tanstackAiContext({ context: { sessionId: conversationId } }),
+  ...tanstackAiContext({ threadId, context: { sessionId: conversationId } }),
 });
 
 if (decision.conclusion === "DENY") {
@@ -230,8 +249,9 @@ if (decision.hasFailedOpen()) {
 await chat({
   adapter,
   messages: [{ role: "user", content: userText }],
+  threadId,
   context: { sessionId: conversationId },
-  middleware: [guardMiddleware(arcjet, { sessionId: conversationId })],
+  middleware: [guardMiddleware(arcjet)],
 });
 ```
 
@@ -246,24 +266,25 @@ Put the id you already have on `chat({ context })`:
 await chat({
   adapter,
   messages,
+  threadId,
   context: { sessionId: conversationId },
-  middleware: [guardMiddleware(arcjet, { sessionId: conversationId })],
+  middleware: [guardMiddleware(arcjet)],
 });
 ```
 
 Preference order: `context.correlationId`, then `context.sessionId`,
-then `context.conversationId`, then `init.sessionId` /
-`init.correlationId`. If none is a valid 1–256 printable-ASCII
+then `context.conversationId`, then `init.correlationId` /
+`init.sessionId` (the policy's `sessionId`), then `threadId`. If none is a valid 1–256 printable-ASCII
 string, the call is uncorrelated rather than joined to a generated
 id nobody has.
 
-Pass a caller-owned bag as `tanstackAiContext({ context: appContext })`
-or `chat({ context: appContext })`. A bare object that also has
+Pass the same `{ threadId, context: appContext }` to
+`tanstackAiContext()` before `chat()` that `chat()` gets, and the
+inbound decision shares the id of the tool decisions. A bare object that also has
 string `requestId` and `streamId` looks like TanStack's middleware
 envelope, so top-level `sessionId` on that object is ignored.
 
-Never mint a new id. Never read `ctx.threadId` (TanStack
-auto-generates it). Never read `traceId` / `requestId` / `streamId`.
+Never mint a new id. Never read `traceId` / `requestId` / `streamId`.
 `needsApproval` resumes after a human yes — Guard still runs on the
 tool call. Do not treat the interrupt or its resume value as
 correlation.
@@ -273,19 +294,52 @@ correlation.
 1. `npm run typecheck` passes.
 2. Exercise inbound PI (before `chat()`, including `hasFailedOpen()`),
    a middleware skip-deny, an abort-deny, abort+unavailable still
-   skip, first-win ordering (Arcjet before `toolCacheMiddleware`),
+   skip, a `transformArgs` middleware (Guard sees the final args),
    no-throw, never-mint, and fail-closed (an unreachable guard).
    Confirm the denial is `{ type: "skip", result }` (or abort) and
    the run is not an interrupt.
 3. Confirm in the Arcjet dashboard that decisions share the
-   caller-owned session id as their correlation id — not
-   `threadId`.
+   caller-owned session id (or `threadId`) as their correlation id.
 4. Manual E2E with a real `ARCJET_KEY` is still-to-verify until you run it.
 
 A full working demo will land in
 [`arcjet/examples` `tanstack-agent`](https://github.com/arcjet/examples/tree/main/examples/tanstack-agent)
 as a later follow-up. Do not add an example under `examples/` in the
 JS SDK repo.
+
+## TanStack AI 0.x
+
+TanStack AI 0.x has no `onGuardToolCall`. Import from
+`@arcjet/guard/tanstack-ai/v0` instead. It has the same exports, policy,
+and deny shapes, and gates tools with `onBeforeToolCall`. The following
+rules differ from v1:
+
+- Put Arcjet **first** in the middleware array. `onBeforeToolCall` is
+  first-win: if `toolCacheMiddleware` (or anything else) decides first,
+  Guard never runs, and a `transformArgs` from a middleware after Arcjet
+  changes the args after Guard allowed them.
+- `input` is the parsed args before the `inputSchema` check.
+- Correlation never reads `ctx.threadId`: TanStack AI 0.x generates one
+  when the caller doesn't pass it. Pass `sessionId` on the policy or on
+  `chat({ context })`.
+- Client tools and provider-native tools with no local `execute` are out
+  of scope.
+
+```ts
+import { guardMiddleware } from "@arcjet/guard/tanstack-ai/v0";
+import { toolCacheMiddleware } from "@tanstack/ai/middlewares";
+
+const stream = chat({
+  adapter,
+  messages,
+  tools: [lookupOrder],
+  context: { sessionId: conversationId },
+  middleware: [guardMiddleware(arcjet, { sessionId: conversationId }), toolCacheMiddleware()],
+});
+```
+
+When the app upgrades to TanStack AI 1.x, change the import to
+`@arcjet/guard/tanstack-ai/v1` and pass `threadId` to `chat()`.
 
 Note: capture events are fire-and-forget and batched, so events can lag the
 decisions they accompany by a few seconds. A dropped event is diagnosed,

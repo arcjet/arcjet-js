@@ -1,0 +1,8 @@
+{
+  // The CI floor step installs the lowest `@tanstack/ai` the peer range
+  // advertises into the `@tanstack/ai-v0` alias and type-checks v0 against it.
+  // The floor has no `./testing` export (`fakeText`), so the real `chat()`
+  // suite is checked only at the development pin.
+  "extends": "./tsconfig.tanstack-ai-v0.json",
+  "exclude": ["node_modules/", "test/tanstack-ai/v0/real-chat.test.ts"]
+}
