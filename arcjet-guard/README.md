@@ -1007,8 +1007,12 @@ Currently available:
   }
   ```
 
-- **`@arcjet/guard/claude-managed-agents/v0`** — Claude Managed Agents
-  (hosted REST+SSE, beta `managed-agents-2026-04-01`). Exports
+- **`@arcjet/guard/claude-managed-agents/v1`** (`@anthropic-ai/sdk` 1.x) and
+  **`@arcjet/guard/claude-managed-agents/v0`** (`@anthropic-ai/sdk` 0.x) —
+  Claude Managed Agents (hosted REST+SSE, beta `managed-agents-2026-04-01`).
+  Import the path that matches your SDK major. The Managed Agents event
+  types are the same in both SDK majors, so `/v1` re-exports `/v0` and
+  both paths return the same objects. Exports
   `guardEvents`, `guardCustomTool`, and `claudeManagedAgentsContext`.
   Anthropic runs the tool loop. There is **no PreToolUse**. This is
   **not** `@arcjet/guard/claude-agent-sdk/v0` — do not reuse that
@@ -1031,7 +1035,7 @@ Currently available:
     claudeManagedAgentsContext,
     guardCustomTool,
     guardEvents,
-  } from "@arcjet/guard/claude-managed-agents/v0";
+  } from "@arcjet/guard/claude-managed-agents/v1";
 
   const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
   const ctx = claudeManagedAgentsContext({ correlationId: conversationId });
@@ -1934,11 +1938,12 @@ importing only core guards are not forced to install unneeded packages:
 - **`@arcjet/guard/claude-agent-sdk/v0`** requires
   `@anthropic-ai/claude-agent-sdk` (optional peer, installed only to use
   `@arcjet/guard/claude-agent-sdk/v0`). The peer range is `>=0.1.0 <1`.
-- **`@arcjet/guard/claude-managed-agents/v0`** requires `@anthropic-ai/sdk`
-  (optional type-only peer, installed only to use
-  `@arcjet/guard/claude-managed-agents/v0`). The peer range is
-  `>=0.86.0 <1` — the first release with `client.beta.agents` /
-  `sessions` / `environments`. This is **not**
+- **`@arcjet/guard/claude-managed-agents/v1`** and
+  **`@arcjet/guard/claude-managed-agents/v0`** require `@anthropic-ai/sdk`
+  (optional type-only peer, installed only to use those paths). The peer
+  range is `>=0.86.0 <2`: use `/v1` with SDK 1.x and `/v0` with SDK 0.x.
+  0.86.0 is the first release with `client.beta.agents` / `sessions` /
+  `environments`. This is **not**
   `@anthropic-ai/claude-agent-sdk`. Node stays Guard's existing floor.
 - **`@arcjet/guard/langgraph/v1`** requires `@langchain/langgraph` and
   `@langchain/core` (optional peers, installed only to use
@@ -2011,7 +2016,7 @@ pnpm install @anthropic-ai/claude-agent-sdk
 ```
 
 ```sh
-# @arcjet/guard/claude-managed-agents/v0
+# @arcjet/guard/claude-managed-agents/v1
 pnpm install @anthropic-ai/sdk
 ```
 
@@ -2069,7 +2074,7 @@ is one path to learn and no layering to reason about.
 
 `@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`,
 `@arcjet/guard/mastra/v1`, `@arcjet/guard/claude-agent-sdk/v0`,
-`@arcjet/guard/claude-managed-agents/v0`,
+`@arcjet/guard/claude-managed-agents/v0` and `/v1`,
 `@arcjet/guard/langchain/v1`, `@arcjet/guard/langgraph/v1`,
 `@arcjet/guard/openai-agents/v0`,
 `@arcjet/guard/genkit/v1`,

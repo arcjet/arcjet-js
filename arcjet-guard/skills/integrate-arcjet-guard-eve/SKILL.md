@@ -9,6 +9,7 @@ metadata:
   library: "@arcjet/guard"
   library_version: "1.15.0" # x-release-please-version
 sources:
+  # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
   - README.md
 ---
 
@@ -35,7 +36,7 @@ on one Sequence. `guardInbound` runs before the session exists and correlates
 by whatever identity the channel has, so its decision lands on a _second_
 Sequence. `arcjetHooks` emits an `eve.session-started` record carrying both, which
 is what lets you pivot from one to the other. This is not hosted Claude
-Managed Agents (`@arcjet/guard/claude-managed-agents/v0`).
+Managed Agents (`@arcjet/guard/claude-managed-agents/v1`).
 
 ## Questions to ask the human first
 

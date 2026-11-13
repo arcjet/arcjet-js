@@ -31,7 +31,7 @@
       }
     },
     "@strands-agents/sdk": {
-      "@anthropic-ai/sdk": "0.135.0"
+      "@anthropic-ai/sdk": "1.1.0"
     },
     "adm-zip": "0.6.1",
     "eve": {
