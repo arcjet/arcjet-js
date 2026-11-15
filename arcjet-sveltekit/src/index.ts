@@ -27,7 +27,7 @@ import { type Env, baseUrl, isDevelopment, logLevel, platform } from "@arcjet/en
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
-import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
+import { rawPathForUrl } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
@@ -239,22 +239,9 @@ function rawPathFromPlatform(event: ArcjetSvelteKitRequestEvent): string | undef
   const { originalUrl, url } = req as { originalUrl?: unknown; url?: unknown };
   const target =
     typeof originalUrl === "string" ? originalUrl : typeof url === "string" ? url : undefined;
-  const rawPath = rawPathFromOriginFormTarget(target);
-  if (!rawPath) {
-    return undefined;
-  }
   // Internal `event.fetch` subrequests reuse the platform of the outer
   // request, so only use the target when it resolves to this request's URL.
-  try {
-    const requestUrl = new URL(event.request.url);
-    const targetUrl = new URL(requestUrl.origin + target);
-    if (targetUrl.pathname !== requestUrl.pathname || targetUrl.search !== requestUrl.search) {
-      return undefined;
-    }
-  } catch {
-    return undefined;
-  }
-  return rawPath;
+  return rawPathForUrl(target, event.request.url);
 }
 
 function cookiesToString(cookies: Array<{ name: string; value: string }> = []): string {
