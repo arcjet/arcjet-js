@@ -1401,6 +1401,7 @@ const signedBotIds = new Set<ArcjetWellKnownBot>([
   "ISONAI_USER",
   "LINER_BOT",
   "LINER_USER",
+  "RIVER_CRAWLER",
 ]);
 
 function botPolicyMayVerifySignature(rule: ArcjetRule): boolean {

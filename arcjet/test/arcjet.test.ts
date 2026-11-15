@@ -363,6 +363,7 @@ test("`arcjet`", async function (t) {
           "ISONAI_USER",
           "LINER_BOT",
           "LINER_USER",
+          "RIVER_CRAWLER",
           "CATEGORY:MONITOR",
           "SIGNED_BOT:https://signed.example.com/.well-known/http-message-signatures-directory",
         ] as const) {
