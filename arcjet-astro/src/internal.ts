@@ -309,9 +309,7 @@ export function createArcjetClient<
       protocol: url.protocol,
       host: url.host,
       path: url.pathname,
-      // `rawPath` is not set: Astro only exposes a `Request`, whose URL is parsed and normalized
-      // (dot segments and escapes), so it cannot be used to verify
-      // signatures over `@path`.
+      // `rawPath` is not set: a `Request` URL is normalized (see protocol/src/request-target.ts).
       headers,
       cookies,
       query: url.search,
