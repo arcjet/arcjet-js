@@ -12,6 +12,7 @@ import {
 } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
   type ArcjetAdapterContext,
@@ -113,6 +114,13 @@ interface ArcjetH3NodeRequest {
    * See <https://nodejs.org/api/stream.html#readablereadable>.
    */
   readable?: boolean | null | undefined;
+
+  /**
+   * Request target before h3 rewrote `url` for a mounted handler.
+   *
+   * h3 sets this field.
+   */
+  originalUrl?: string | null | undefined;
 
   /**
    * Remove event handlers.
@@ -462,6 +470,15 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   }
 
   const host = headers.get("host") ?? "";
+  // On the Node.js server, `originalUrl` (set by h3) or `url` is the request
+  // target exactly as the client sent it. Other Nitro presets (such as
+  // Cloudflare, Bun, Deno) and internal `$fetch` calls pass a mock request,
+  // marked with `__unenv__`, whose `url` is rebuilt from a parsed and
+  // normalized URL, so it cannot be used to verify signatures over `@path`.
+  const rawPath =
+    "__unenv__" in event.node.req
+      ? undefined
+      : rawPathFromOriginFormTarget(event.node.req.originalUrl ?? event.node.req.url ?? undefined);
   let path = "";
   let query = "";
   let protocol = "";
@@ -497,6 +514,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
     ip,
     method: event.node.req.method || "",
     path,
+    ...(rawPath ? { rawPath } : {}),
     protocol,
     query,
   };
