@@ -49,6 +49,8 @@ import {
   ArcjetShieldReason,
 } from "../dist/index.js";
 import {
+  BotEvidence,
+  BotKind,
   Conclusion,
   DecisionSchema,
   EmailType,
@@ -383,6 +385,131 @@ test("convert", async (t) => {
       assert.equal(reason.verified, true);
     });
 
+    await t.test("should create a bot reason without an identity", () => {
+      const reason = ArcjetReasonFromProtocol(
+        create(ReasonSchema, {
+          reason: { case: "botV2", value: { allowed: [], denied: [] } },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetBotReason);
+      assert.equal(reason.identity, undefined);
+    });
+
+    await t.test("should create a bot reason with an identity", () => {
+      const reason = ArcjetReasonFromProtocol(
+        create(ReasonSchema, {
+          reason: {
+            case: "botV2",
+            value: {
+              allowed: [],
+              denied: ["SIGNED_BOT:chatgpt.com"],
+              verified: true,
+              identity: {
+                kind: BotKind.AI_AGENT,
+                botId: "SIGNED_BOT:chatgpt.com",
+                operator: "chatgpt.com",
+                evidence: BotEvidence.SIGNATURE,
+              },
+            },
+          },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetBotReason);
+      assert.deepEqual(reason.identity, {
+        kind: "AI_AGENT",
+        botId: "SIGNED_BOT:chatgpt.com",
+        operator: "chatgpt.com",
+        evidence: "SIGNATURE",
+      });
+    });
+
+    await t.test("should map every bot identity kind and evidence", () => {
+      const kinds = [
+        [BotKind.AI_AGENT, "AI_AGENT"],
+        [BotKind.AI_CRAWLER, "AI_CRAWLER"],
+        [BotKind.AUTOMATION, "AUTOMATION"],
+        [BotKind.OTHER, "OTHER"],
+      ] as const;
+      const evidences = [
+        [BotEvidence.UNVERIFIED, "UNVERIFIED"],
+        [BotEvidence.FINGERPRINT, "FINGERPRINT"],
+        [BotEvidence.IP, "IP"],
+        [BotEvidence.SIGNATURE, "SIGNATURE"],
+      ] as const;
+
+      for (const [protoKind, kind] of kinds) {
+        for (const [protoEvidence, evidence] of evidences) {
+          const reason = ArcjetReasonFromProtocol(
+            create(ReasonSchema, {
+              reason: {
+                case: "botV2",
+                value: {
+                  allowed: [],
+                  denied: [],
+                  identity: { kind: protoKind, botId: "", operator: "", evidence: protoEvidence },
+                },
+              },
+            }),
+          );
+
+          assert.ok(reason instanceof ArcjetBotReason);
+          assert.deepEqual(reason.identity, { kind, botId: "", operator: "", evidence });
+        }
+      }
+    });
+
+    await t.test("should drop a bot identity with an unspecified or unknown kind", () => {
+      for (const kind of [BotKind.UNSPECIFIED, 99 as BotKind]) {
+        const reason = ArcjetReasonFromProtocol(
+          create(ReasonSchema, {
+            reason: {
+              case: "botV2",
+              value: {
+                allowed: [],
+                denied: [],
+                identity: {
+                  kind,
+                  botId: "OPENAI_CRAWLER_USER",
+                  operator: "",
+                  evidence: BotEvidence.IP,
+                },
+              },
+            },
+          }),
+        );
+
+        assert.ok(reason instanceof ArcjetBotReason);
+        assert.equal(reason.identity, undefined);
+      }
+    });
+
+    await t.test("should drop a bot identity with an unspecified or unknown evidence", () => {
+      for (const evidence of [BotEvidence.UNSPECIFIED, 99 as BotEvidence]) {
+        const reason = ArcjetReasonFromProtocol(
+          create(ReasonSchema, {
+            reason: {
+              case: "botV2",
+              value: {
+                allowed: [],
+                denied: [],
+                identity: {
+                  kind: BotKind.AI_AGENT,
+                  botId: "OPENAI_CRAWLER_USER",
+                  operator: "",
+                  evidence,
+                },
+              },
+            },
+          }),
+        );
+
+        assert.ok(reason instanceof ArcjetBotReason);
+        assert.equal(reason.identity, undefined);
+      }
+    });
+
     await t.test("should create an edge rule reason", () => {
       const reason = ArcjetReasonFromProtocol(
         create(ReasonSchema, { reason: { case: "edgeRule", value: {} } }),
@@ -706,6 +833,75 @@ test("convert", async (t) => {
           },
         }),
       );
+    });
+
+    await t.test("should create a protocol reason from an arcjet bot reason w/ identity", () => {
+      assert.deepEqual(
+        ArcjetReasonToProtocol(
+          new ArcjetBotReason({
+            allowed: [],
+            denied: ["OPENAI_CRAWLER_USER"],
+            spoofed: false,
+            verified: true,
+            identity: {
+              kind: "AI_AGENT",
+              botId: "OPENAI_CRAWLER_USER",
+              operator: "",
+              evidence: "IP",
+            },
+          }),
+        ),
+        create(ReasonSchema, {
+          reason: {
+            case: "botV2",
+            value: {
+              allowed: [],
+              denied: ["OPENAI_CRAWLER_USER"],
+              spoofed: false,
+              verified: true,
+              identity: {
+                kind: BotKind.AI_AGENT,
+                botId: "OPENAI_CRAWLER_USER",
+                operator: "",
+                evidence: BotEvidence.IP,
+              },
+            },
+          },
+        }),
+      );
+    });
+
+    await t.test("should round-trip an arcjet bot reason w/ identity", () => {
+      const kinds = ["AI_AGENT", "AI_CRAWLER", "AUTOMATION", "OTHER"] as const;
+      const evidences = ["UNVERIFIED", "FINGERPRINT", "IP", "SIGNATURE"] as const;
+
+      for (const kind of kinds) {
+        for (const evidence of evidences) {
+          const original = new ArcjetBotReason({
+            allowed: [],
+            denied: ["SIGNED_BOT:example.com"],
+            spoofed: false,
+            verified: true,
+            identity: { kind, botId: "SIGNED_BOT:example.com", operator: "example.com", evidence },
+          });
+
+          assert.deepEqual(ArcjetReasonFromProtocol(ArcjetReasonToProtocol(original)), original);
+        }
+      }
+    });
+
+    await t.test("should round-trip an arcjet bot reason w/o identity", () => {
+      const original = new ArcjetBotReason({
+        allowed: [],
+        denied: [],
+        spoofed: false,
+        verified: false,
+      });
+      const proto = ArcjetReasonToProtocol(original);
+
+      assert.equal(proto.reason.case, "botV2");
+      assert.equal(proto.reason.case === "botV2" ? proto.reason.value.identity : null, undefined);
+      assert.deepEqual(ArcjetReasonFromProtocol(proto), original);
     });
 
     await t.test("should create a protocol reason from an arcjet filter reason", () => {

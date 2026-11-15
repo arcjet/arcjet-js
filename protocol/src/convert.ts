@@ -2,6 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 
 import {
+  type ArcjetBotIdentity,
   type ArcjetBotRule,
   type ArcjetConclusion,
   type ArcjetEmailRule,
@@ -38,11 +39,15 @@ import {
   ArcjetThreatIntelligence,
 } from "./index.js";
 import {
+  type BotIdentity,
   type Decision,
   type IpDetails,
   type Reason,
   type Rule,
   type RuleResult,
+  BotEvidence,
+  BotIdentitySchema,
+  BotKind,
   BotV2ReasonSchema,
   Conclusion,
   DecisionSchema,
@@ -114,6 +119,108 @@ export function ArcjetEmailTypeFromProtocol(emailType: EmailType): ArcjetEmailTy
       throw new Error("Invalid EmailType");
     }
   }
+}
+
+function ArcjetBotKindToProtocol(kind: ArcjetBotIdentity["kind"]): BotKind {
+  switch (kind) {
+    case "AI_AGENT":
+      return BotKind.AI_AGENT;
+    case "AI_CRAWLER":
+      return BotKind.AI_CRAWLER;
+    case "AUTOMATION":
+      return BotKind.AUTOMATION;
+    case "OTHER":
+      return BotKind.OTHER;
+    default: {
+      const _exhaustive: never = kind;
+      return BotKind.UNSPECIFIED;
+    }
+  }
+}
+
+function ArcjetBotKindFromProtocol(kind: BotKind): ArcjetBotIdentity["kind"] | undefined {
+  switch (kind) {
+    case BotKind.UNSPECIFIED:
+      return undefined;
+    case BotKind.AI_AGENT:
+      return "AI_AGENT";
+    case BotKind.AI_CRAWLER:
+      return "AI_CRAWLER";
+    case BotKind.AUTOMATION:
+      return "AUTOMATION";
+    case BotKind.OTHER:
+      return "OTHER";
+    default: {
+      // Unknown values from a newer server are dropped, not guessed at.
+      const _exhaustive: never = kind;
+      return undefined;
+    }
+  }
+}
+
+function ArcjetBotEvidenceToProtocol(evidence: ArcjetBotIdentity["evidence"]): BotEvidence {
+  switch (evidence) {
+    case "UNVERIFIED":
+      return BotEvidence.UNVERIFIED;
+    case "FINGERPRINT":
+      return BotEvidence.FINGERPRINT;
+    case "IP":
+      return BotEvidence.IP;
+    case "SIGNATURE":
+      return BotEvidence.SIGNATURE;
+    default: {
+      const _exhaustive: never = evidence;
+      return BotEvidence.UNSPECIFIED;
+    }
+  }
+}
+
+function ArcjetBotEvidenceFromProtocol(
+  evidence: BotEvidence,
+): ArcjetBotIdentity["evidence"] | undefined {
+  switch (evidence) {
+    case BotEvidence.UNSPECIFIED:
+      return undefined;
+    case BotEvidence.UNVERIFIED:
+      return "UNVERIFIED";
+    case BotEvidence.FINGERPRINT:
+      return "FINGERPRINT";
+    case BotEvidence.IP:
+      return "IP";
+    case BotEvidence.SIGNATURE:
+      return "SIGNATURE";
+    default: {
+      // Unknown values from a newer server are dropped, not guessed at.
+      const _exhaustive: never = evidence;
+      return undefined;
+    }
+  }
+}
+
+/**
+ * Convert a protocol bot identity to an Arcjet bot identity.
+ *
+ * An identity with an unspecified or unknown `kind` or `evidence` is dropped
+ * entirely rather than reported with an invented value.
+ */
+function ArcjetBotIdentityFromProtocol(identity?: BotIdentity): ArcjetBotIdentity | undefined {
+  if (typeof identity !== "object" || identity === null) {
+    return undefined;
+  }
+
+  const kind = ArcjetBotKindFromProtocol(identity.kind);
+  const evidence = ArcjetBotEvidenceFromProtocol(identity.evidence);
+
+  if (kind === undefined || evidence === undefined) {
+    return undefined;
+  }
+
+  return {
+    kind,
+    botId: identity.botId,
+    operator: identity.operator,
+    evidence,
+  };
 }
 
 export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
@@ -246,6 +353,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason): ArcjetReason {
         denied: reason.denied,
         verified: reason.verified,
         spoofed: reason.spoofed,
+        identity: ArcjetBotIdentityFromProtocol(reason.identity),
       });
     }
     case "edgeRule": {
@@ -336,6 +444,17 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
           denied: reason.denied,
           verified: reason.verified,
           spoofed: reason.spoofed,
+          // `identity` is an optional field but not allowed to be `undefined`.
+          ...(reason.identity
+            ? {
+                identity: create(BotIdentitySchema, {
+                  kind: ArcjetBotKindToProtocol(reason.identity.kind),
+                  botId: reason.identity.botId,
+                  operator: reason.identity.operator,
+                  evidence: ArcjetBotEvidenceToProtocol(reason.identity.evidence),
+                }),
+              }
+            : {}),
         }),
       },
     });

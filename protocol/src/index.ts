@@ -450,6 +450,61 @@ export class ArcjetRateLimitReason extends ArcjetReason {
 }
 
 /**
+ * Primary bot identity reported by Arcjet Cloud for a bot rule.
+ *
+ * A request can match several bots; this is the one with the strongest
+ * evidence.
+ * It is only produced by Arcjet Cloud: bot detection that runs locally never
+ * sets it.
+ */
+export type ArcjetBotIdentity = {
+  /**
+   * What kind of client the bot is.
+   *
+   * * `AI_AGENT`
+   *   — an AI product fetching on demand for a person who is waiting on the
+   *   answer (`CATEGORY:AI_AGENT`)
+   * * `AI_CRAWLER`
+   *   — scheduled AI crawling for training or an AI index (`CATEGORY:AI` and
+   *   not `CATEGORY:AI_AGENT`)
+   * * `AUTOMATION`
+   *   — browser automation found by Arcjet Signals with no named bot
+   * * `OTHER`
+   *   — any other detected bot
+   */
+  kind: "AI_AGENT" | "AI_CRAWLER" | "AUTOMATION" | "OTHER";
+
+  /**
+   * Bot identifier, such as `OPENAI_CRAWLER_USER` or a `SIGNED_BOT:`
+   * directory.
+   * Empty for `AUTOMATION`.
+   */
+  botId: string;
+
+  /**
+   * Hostname that operates the bot, such as `chatgpt.com`.
+   * Set only when `evidence` is `SIGNATURE`; empty otherwise.
+   */
+  operator: string;
+
+  /**
+   * How the identity was established, from weakest to strongest.
+   *
+   * * `UNVERIFIED`
+   *   — matched by `User-Agent` or IP reputation, and not verified
+   * * `FINGERPRINT`
+   *   — Arcjet Signals browser checks failed
+   * * `IP`
+   *   — the IP address is in the operator's published ranges, or reverse DNS
+   *   confirmed it
+   * * `SIGNATURE`
+   *   — a Web Bot Auth signature verified against the operator's key
+   *   directory
+   */
+  evidence: "UNVERIFIED" | "FINGERPRINT" | "IP" | "SIGNATURE";
+};
+
+/**
  * Configuration for `ArcjetBotReason`.
  */
 interface ArcjetBotReasonInit {
@@ -472,6 +527,11 @@ interface ArcjetBotReasonInit {
    * Whether the bot is spoofed.
    */
   spoofed: boolean;
+
+  /**
+   * Primary bot identity reported by Arcjet Cloud, if any.
+   */
+  identity?: ArcjetBotIdentity | undefined;
 }
 
 /**
@@ -504,6 +564,14 @@ export class ArcjetBotReason extends ArcjetReason {
   spoofed: boolean;
 
   /**
+   * Primary bot identity reported by Arcjet Cloud.
+   *
+   * Unset when no bot was detected, and always unset for decisions computed
+   * locally.
+   */
+  identity?: ArcjetBotIdentity | undefined;
+
+  /**
    * Create an `ArcjetBotReason`.
    *
    * @param init
@@ -518,6 +586,7 @@ export class ArcjetBotReason extends ArcjetReason {
     this.denied = init.denied;
     this.verified = init.verified;
     this.spoofed = init.spoofed;
+    this.identity = init.identity;
   }
 
   /**
