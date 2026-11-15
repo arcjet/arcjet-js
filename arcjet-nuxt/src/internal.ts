@@ -12,7 +12,7 @@ import {
 } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
-import { rawPathForUrl } from "@arcjet/protocol/request-target.js";
+import { rawPathForUrl, rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
   type ArcjetAdapterContext,
@@ -440,6 +440,69 @@ export function createRemoteClient(options?: RemoteClientOptions | null): Client
  * @returns
  *   Arcjet request.
  */
+/**
+ * Get the raw path from the request target of a Node.js request.
+ *
+ * `originalUrl` is used when it resolves to `url`, or when it is exactly
+ * `url` with a mount prefix that h3 stripped (a custom Nitro `app.baseURL` or
+ * a mounted handler). Arcjet Cloud verifies `@path` against the raw path
+ * only, so the unstripped target is the one the client signed.
+ *
+ * @param originalUrl
+ *   Request target before h3 stripped a mount prefix.
+ * @param target
+ *   Request target as `url`.
+ * @param url
+ *   Parsed URL of `target`.
+ * @returns
+ *   Raw path, or `undefined` when not available.
+ */
+function rawPathFromNodeRequest(
+  originalUrl: string | null | undefined,
+  target: string | null | undefined,
+  url: URL,
+): string | undefined {
+  if (typeof originalUrl !== "string" || originalUrl === target) {
+    return rawPathForUrl(target ?? undefined, url);
+  }
+
+  const resolved = rawPathForUrl(originalUrl, url);
+  if (resolved !== undefined) {
+    return resolved;
+  }
+
+  // Mount prefix: raw strings only, without normalization.
+  const originalPath = rawPathFromOriginFormTarget(originalUrl);
+  if (originalPath === undefined || typeof target !== "string") {
+    return undefined;
+  }
+  // h3 slices the raw target, so `/api?x` becomes `?x`.
+  const path = target.startsWith("?")
+    ? rawPathFromOriginFormTarget("/" + target) === "/"
+      ? ""
+      : undefined
+    : rawPathFromOriginFormTarget(target);
+  if (path === undefined) {
+    return undefined;
+  }
+  if (originalUrl.slice(originalPath.length) !== target.slice(path.length)) {
+    return undefined;
+  }
+  // `path` starts with `/`, so a prefix always ends at a segment boundary.
+  // h3 turns an empty remainder into `/`.
+  let prefix: string | undefined;
+  if (originalPath.endsWith(path)) {
+    prefix = originalPath.slice(0, originalPath.length - path.length);
+  }
+  if ((path === "/" || path === "") && (prefix === undefined || prefix === "")) {
+    prefix = originalPath;
+  }
+  if (prefix === undefined || prefix === "" || !prefix.startsWith("/") || prefix.endsWith("/")) {
+    return undefined;
+  }
+  return originalPath;
+}
+
 function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   state: State,
   event: ArcjetH3Event,
@@ -489,16 +552,15 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
       query = url.search;
       protocol = url.protocol;
       // On the Node.js server, `originalUrl` (set by h3) or `url` is the
-      // request target exactly as the client sent it. It is only used when it
-      // resolves to the `path` and `query` above, which is not the case when h3
-      // strips a mount prefix from `url`. Other Nitro presets (such as
-      // Cloudflare, Bun, Deno) and internal `$fetch` calls pass a mock request,
-      // marked with `__unenv__`, whose `url` is rebuilt from a parsed and
-      // normalized URL, so it cannot be used to verify signatures over `@path`.
+      // request target exactly as the client sent it. Other Nitro presets
+      // (such as Cloudflare, Bun, Deno) and internal `$fetch` calls pass a
+      // mock request, marked with `__unenv__`, whose `url` is rebuilt from a
+      // parsed and normalized URL, so it cannot be used to verify signatures
+      // over `@path`.
       rawPath =
         "__unenv__" in event.node.req
           ? undefined
-          : rawPathForUrl(event.node.req.originalUrl ?? event.node.req.url ?? undefined, url);
+          : rawPathFromNodeRequest(event.node.req.originalUrl, event.node.req.url, url);
     } catch {
       // If the parsing above fails, just set the path as whatever url we
       // received.

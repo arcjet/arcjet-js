@@ -65,11 +65,56 @@ test("forwards the original request target as `rawPath`", async function (t) {
     assert.equal(details.rawPath, "/a/%2E%2e/../b");
   });
 
-  await t.test("not from `originalUrl` when h3 stripped a prefix from `url`", async function () {
+  await t.test("from `originalUrl` when h3 rewrote `url`", async function () {
     await client.protect(event({ originalUrl: "/api/signed/%2F?x=1", url: "/signed/%2F?x=1" }), {
       ipSrc: "203.0.113.10",
     });
     assert.equal(details.path, "/signed/%2F");
+    assert.equal(details.rawPath, "/api/signed/%2F");
+  });
+
+  await t.test("from `originalUrl` for the root of a mounted app", async function () {
+    for (const originalUrl of ["/api", "/api/"]) {
+      await client.protect(event({ originalUrl, url: "/" }), { ipSrc: "203.0.113.10" });
+      assert.equal(details.rawPath, originalUrl);
+    }
+    await client.protect(event({ originalUrl: "/api?x=1", url: "?x=1" }), {
+      ipSrc: "203.0.113.10",
+    });
+    assert.equal(details.rawPath, "/api");
+  });
+
+  await t.test("from `originalUrl` with a prefix that ends at a segment", async function () {
+    // `url` starts with `/`, so the prefix (`/apix`) always ends at a segment.
+    await client.protect(event({ originalUrl: "/apix/signed", url: "/signed" }), {
+      ipSrc: "203.0.113.10",
+    });
+    assert.equal(details.rawPath, "/apix/signed");
+    await client.protect(event({ originalUrl: "/apixsigned", url: "/signed" }), {
+      ipSrc: "203.0.113.10",
+    });
+    assert.equal(details.rawPath, undefined);
+  });
+
+  await t.test("not from `originalUrl` that is not `url` with a prefix", async function () {
+    for (const [originalUrl, url] of [
+      ["/api/other", "/signed"],
+      ["/api/signed/%2f", "/signed/%2F"],
+      ["//signed", "/signed"],
+      ["/api/signed?a", "/signed?b"],
+      ["/api/signed", "/signed?b"],
+      ["/api#x", "/"],
+      ["https://example.com/api/signed", "/signed"],
+    ]) {
+      await client.protect(event({ originalUrl, url }), { ipSrc: "203.0.113.10" });
+      assert.equal(details.rawPath, undefined, `${originalUrl} for ${url}`);
+    }
+  });
+
+  await t.test("not from `originalUrl` of an unenv mock request", async function () {
+    await client.protect(event({ __unenv__: undefined, originalUrl: "/api/b", url: "/b" }), {
+      ipSrc: "203.0.113.10",
+    });
     assert.equal(details.rawPath, undefined);
   });
 
