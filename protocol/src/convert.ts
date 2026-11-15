@@ -46,7 +46,6 @@ import {
   type Rule,
   type RuleResult,
   BotEvidence,
-  BotIdentitySchema,
   BotKind,
   BotV2ReasonSchema,
   Conclusion,
@@ -121,23 +120,6 @@ export function ArcjetEmailTypeFromProtocol(emailType: EmailType): ArcjetEmailTy
   }
 }
 
-function ArcjetBotKindToProtocol(kind: ArcjetBotIdentity["kind"]): BotKind {
-  switch (kind) {
-    case "AI_AGENT":
-      return BotKind.AI_AGENT;
-    case "AI_CRAWLER":
-      return BotKind.AI_CRAWLER;
-    case "AUTOMATION":
-      return BotKind.AUTOMATION;
-    case "OTHER":
-      return BotKind.OTHER;
-    default: {
-      const _exhaustive: never = kind;
-      return BotKind.UNSPECIFIED;
-    }
-  }
-}
-
 function ArcjetBotKindFromProtocol(kind: BotKind): ArcjetBotIdentity["kind"] | undefined {
   switch (kind) {
     case BotKind.UNSPECIFIED:
@@ -154,23 +136,6 @@ function ArcjetBotKindFromProtocol(kind: BotKind): ArcjetBotIdentity["kind"] | u
       // Unknown values from a newer server are dropped, not guessed at.
       const _exhaustive: never = kind;
       return undefined;
-    }
-  }
-}
-
-function ArcjetBotEvidenceToProtocol(evidence: ArcjetBotIdentity["evidence"]): BotEvidence {
-  switch (evidence) {
-    case "UNVERIFIED":
-      return BotEvidence.UNVERIFIED;
-    case "FINGERPRINT":
-      return BotEvidence.FINGERPRINT;
-    case "IP":
-      return BotEvidence.IP;
-    case "SIGNATURE":
-      return BotEvidence.SIGNATURE;
-    default: {
-      const _exhaustive: never = evidence;
-      return BotEvidence.UNSPECIFIED;
     }
   }
 }
@@ -444,17 +409,8 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
           denied: reason.denied,
           verified: reason.verified,
           spoofed: reason.spoofed,
-          // `identity` is an optional field but not allowed to be `undefined`.
-          ...(reason.identity
-            ? {
-                identity: create(BotIdentitySchema, {
-                  kind: ArcjetBotKindToProtocol(reason.identity.kind),
-                  botId: reason.identity.botId,
-                  operator: reason.identity.operator,
-                  evidence: ArcjetBotEvidenceToProtocol(reason.identity.evidence),
-                }),
-              }
-            : {}),
+          // `identity` is not sent: Arcjet Cloud computes it and ignores it
+          // on reports.
         }),
       },
     });

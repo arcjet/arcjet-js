@@ -835,7 +835,7 @@ test("convert", async (t) => {
       );
     });
 
-    await t.test("should create a protocol reason from an arcjet bot reason w/ identity", () => {
+    await t.test("should not send the identity of an arcjet bot reason", () => {
       assert.deepEqual(
         ArcjetReasonToProtocol(
           new ArcjetBotReason({
@@ -859,35 +859,10 @@ test("convert", async (t) => {
               denied: ["OPENAI_CRAWLER_USER"],
               spoofed: false,
               verified: true,
-              identity: {
-                kind: BotKind.AI_AGENT,
-                botId: "OPENAI_CRAWLER_USER",
-                operator: "",
-                evidence: BotEvidence.IP,
-              },
             },
           },
         }),
       );
-    });
-
-    await t.test("should round-trip an arcjet bot reason w/ identity", () => {
-      const kinds = ["AI_AGENT", "AI_CRAWLER", "AUTOMATION", "OTHER"] as const;
-      const evidences = ["UNVERIFIED", "FINGERPRINT", "IP", "SIGNATURE"] as const;
-
-      for (const kind of kinds) {
-        for (const evidence of evidences) {
-          const original = new ArcjetBotReason({
-            allowed: [],
-            denied: ["SIGNED_BOT:example.com"],
-            spoofed: false,
-            verified: true,
-            identity: { kind, botId: "SIGNED_BOT:example.com", operator: "example.com", evidence },
-          });
-
-          assert.deepEqual(ArcjetReasonFromProtocol(ArcjetReasonToProtocol(original)), original);
-        }
-      }
     });
 
     await t.test("should round-trip an arcjet bot reason w/o identity", () => {
