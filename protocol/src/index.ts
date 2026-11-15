@@ -456,6 +456,13 @@ export class ArcjetRateLimitReason extends ArcjetReason {
  * evidence.
  * It is only produced by Arcjet Cloud: bot detection that runs locally never
  * sets it.
+ *
+ * A bot identity says who sent the request, not whether to allow it.
+ * `UNVERIFIED` is only a `User-Agent` claim.
+ * `SIGNATURE` identifies the operator of the signing directory, such as a
+ * hosted-browser platform like Browserbase, not the end user or their intent.
+ * `IP` evidence is only as reliable as the client IP address the SDK
+ * resolves, so configure trusted proxies.
  */
 export type ArcjetBotIdentity = {
   /**

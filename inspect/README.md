@@ -107,14 +107,20 @@ This package exports no [TypeScript][] types.
 
 Determines if a bot rule result identified an AI agent: an AI product fetching
 on demand for a person who is waiting on the answer (`CATEGORY:AI_AGENT`),
-as opposed to scheduled AI crawling. You may want to treat such requests
-differently from AI crawlers.
+as opposed to scheduled AI crawling.
 
 This checks the bot identity that Arcjet Cloud reports with the result
 (`result.reason.identity`). It does not say how that identity was
 established; check `result.reason.identity.evidence` if that matters to you.
 It returns `false` when the identity is spoofed: the request claimed to be an
 AI agent, but did not come from its operator.
+
+The identity says who sent the request, not whether to allow it.
+`UNVERIFIED` is only a `User-Agent` claim.
+`SIGNATURE` identifies the operator of the signing directory, such as a
+hosted-browser platform like Browserbase, not the end user or their intent.
+`IP` evidence is only as reliable as the client IP address the SDK resolves,
+so configure trusted proxies.
 
 ###### Parameters
 
