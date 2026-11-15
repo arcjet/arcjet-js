@@ -2022,3 +2022,26 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "YAHOO_PREVIEW",
   ]),
 });
+
+/** Bots that sign requests with Web Bot Auth, verified by Arcjet Cloud */
+export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
+  "BROWSERBASE",
+  "CHATGPT_AGENT",
+  "CLOUDFLARE_BROWSER_RUN",
+  "CONTEXT7_CRAWLER",
+  "DUCKASSIST_BOT",
+  "EXA_SEARCHBOT",
+  "GOOGLE_AGENT",
+  "ISONAI_USER",
+  "ISONSEARCH_CRAWLER",
+  "KERNEL_AGENT",
+  "KERNEL_SEARCH",
+  "LANE_AGENT",
+  "LINER_BOT",
+  "LINER_USER",
+  "MANUS_BOT",
+  "OSANO_BOT",
+  "RIVER_CRAWLER",
+  "SHOPIFY_CLOUDSURF",
+  "YOU_CRAWLER",
+]);

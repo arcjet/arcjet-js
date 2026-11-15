@@ -581,6 +581,14 @@ export declare type BotIdentity = Message<"proto.decide.v1alpha1.BotIdentity"> &
    * @generated from field: proto.decide.v1alpha1.BotEvidence evidence = 4;
    */
   evidence: BotEvidence;
+
+  /**
+   * The identity was claimed, but IP or reverse DNS verification showed the
+   * request did not come from its operator. Evidence is then `UNVERIFIED`.
+   *
+   * @generated from field: bool spoofed = 5;
+   */
+  spoofed: boolean;
 };
 
 /**
