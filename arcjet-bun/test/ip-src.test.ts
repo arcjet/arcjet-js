@@ -51,5 +51,6 @@ test("explicit ipSrc takes precedence over the cached Bun address and is strippe
   await handler.call(server as any, request, server as any);
 
   assert.equal(details.ip, "8.8.8.8");
+  assert.equal(details.rawPath, undefined);
   assert.deepEqual(details.extra, {});
 });

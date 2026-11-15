@@ -382,6 +382,9 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
     ip,
     method: details.request.method,
     path: url.pathname,
+    // `rawPath` is not set: React Router only exposes a `Request`, whose URL is
+    // parsed and normalized (dot segments and escapes), so it cannot be used to
+    // verify signatures over `@path`.
     protocol: url.protocol,
     query: url.search,
   };

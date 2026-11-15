@@ -587,6 +587,9 @@ export default function arcjet<
     }
     const method = request.method ?? "";
     const host = headers.get("host") ?? "";
+    // Pages Router passes a Node.js request whose `url` is the original
+    // request target. App Router and middleware pass a `NextRequest`, whose
+    // `url` is absolute, parsed and normalized, so `rawPath` stays unset.
     const rawPath = rawPathFromOriginFormTarget(request.url);
     let path = "";
     let query = "";
