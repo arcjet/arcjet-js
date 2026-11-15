@@ -27,6 +27,7 @@ import { type Env, baseUrl, isDevelopment, logLevel, platform } from "@arcjet/en
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
@@ -202,6 +203,12 @@ export interface ArcjetSvelteKitRequestEvent {
    */
   getClientAddress(): string;
   /**
+   * Platform-specific context set by the adapter.
+   *
+   * `@sveltejs/adapter-node` sets `platform.req` to the Node.js request.
+   */
+  platform?: unknown;
+  /**
    * Original request object.
    */
   request: Request;
@@ -209,6 +216,45 @@ export interface ArcjetSvelteKitRequestEvent {
    * Requested URL.
    */
   url: URL;
+}
+
+/**
+ * Get the original path of the request target from the Node.js request that
+ * `@sveltejs/adapter-node` exposes as `platform.req`.
+ *
+ * `event.request` and `event.url` are parsed URLs, which normalize dot segments
+ * and escapes, so they cannot be used to verify signatures over `@path`.
+ * Other adapters expose no raw request target.
+ *
+ * @param event
+ *   Request event.
+ * @returns
+ *   Original path, or `undefined` when not available.
+ */
+function rawPathFromPlatform(event: ArcjetSvelteKitRequestEvent): string | undefined {
+  const req = (event.platform as { req?: unknown } | null | undefined)?.req;
+  if (typeof req !== "object" || req === null) {
+    return undefined;
+  }
+  const { originalUrl, url } = req as { originalUrl?: unknown; url?: unknown };
+  const target =
+    typeof originalUrl === "string" ? originalUrl : typeof url === "string" ? url : undefined;
+  const rawPath = rawPathFromOriginFormTarget(target);
+  if (!rawPath) {
+    return undefined;
+  }
+  // Internal `event.fetch` subrequests reuse the platform of the outer
+  // request, so only use the target when it resolves to this request's URL.
+  try {
+    const requestUrl = new URL(event.request.url);
+    const targetUrl = new URL(requestUrl.origin + target);
+    if (targetUrl.pathname !== requestUrl.pathname || targetUrl.search !== requestUrl.search) {
+      return undefined;
+    }
+  } catch {
+    return undefined;
+  }
+  return rawPath;
 }
 
 function cookiesToString(cookies: Array<{ name: string; value: string }> = []): string {
@@ -379,6 +425,7 @@ export default function arcjet<
     const path = event.url.pathname;
     const query = event.url.search;
     const protocol = event.url.protocol;
+    const rawPath = rawPathFromPlatform(event);
 
     return {
       ...props,
@@ -387,6 +434,7 @@ export default function arcjet<
       protocol,
       host,
       path,
+      ...(rawPath ? { rawPath } : {}),
       headers,
       cookies,
       query,
