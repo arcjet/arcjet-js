@@ -113,6 +113,8 @@ differently from AI crawlers.
 This checks the bot identity that Arcjet Cloud reports with the result
 (`result.reason.identity`). It does not say how that identity was
 established; check `result.reason.identity.evidence` if that matters to you.
+It returns `false` when the identity is spoofed: the request claimed to be an
+AI agent, but did not come from its operator.
 
 ###### Parameters
 
@@ -123,7 +125,8 @@ established; check `result.reason.identity.evidence` if that matters to you.
 
 This function returns `true` if the bot rule result was `LIVE` and Arcjet
 Cloud identified an AI agent, `false` if the bot rule result was `LIVE` and
-no AI agent was identified (including when there is no bot identity), or
+no AI agent was identified (including when there is no bot identity or it is
+spoofed), or
 `undefined` if the rule result was non-bot or `DRY_RUN`
 (`boolean | undefined`).
 

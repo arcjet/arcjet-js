@@ -302,6 +302,7 @@ describe("isAiAgent", () => {
               botId: "OPENAI_CRAWLER_USER",
               operator: "",
               evidence,
+              spoofed: false,
             }),
           ),
           true,
@@ -320,11 +321,29 @@ describe("isAiAgent", () => {
               botId: kind === "AUTOMATION" ? "" : "EXAMPLE_BOT",
               operator: "",
               evidence: kind === "AUTOMATION" ? "FINGERPRINT" : "UNVERIFIED",
+              spoofed: false,
             }),
           ),
           false,
         );
       }
+    }
+  });
+
+  test("returns false for active bots with a spoofed AI agent identity", () => {
+    for (const state of activeStates) {
+      assert.equal(
+        isAiAgent(
+          botResult(state, {
+            kind: "AI_AGENT",
+            botId: "OPENAI_CRAWLER_USER",
+            operator: "",
+            evidence: "UNVERIFIED",
+            spoofed: true,
+          }),
+        ),
+        false,
+      );
     }
   });
 
@@ -339,9 +358,10 @@ describe("isAiAgent", () => {
       botResult("RUN"),
       botResult("RUN", {
         kind: "AI_AGENT",
-        botId: "SIGNED_BOT:chatgpt.com",
+        botId: "CHATGPT_AGENT",
         operator: "chatgpt.com",
         evidence: "SIGNATURE",
+        spoofed: false,
       }),
     ];
 
@@ -357,6 +377,7 @@ describe("isAiAgent", () => {
           botId: "OPENAI_CRAWLER_USER",
           operator: "",
           evidence: "IP",
+          spoofed: false,
         }),
       ),
       undefined,

@@ -273,6 +273,8 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean | undefined {
  * result.
  * It does not say how that identity was established: check
  * `result.reason.identity.evidence` if that matters to you.
+ * It returns `false` when the identity is spoofed: the request claimed to be
+ * an AI agent, but did not come from its operator.
  *
  * ###### Availability
  *
@@ -325,7 +327,7 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean | undefined {
  *   `true` if the bot rule result was `LIVE` and Arcjet Cloud identified an
  *   AI agent,
  *   `false` if the bot rule result was `LIVE` and no AI agent was identified
- *   (including when there is no bot identity),
+ *   (including when there is no bot identity or it is spoofed),
  *   `undefined` if the rule result was non-bot or `DRY_RUN`.
  */
 export function isAiAgent(result: ArcjetRuleResult): boolean | undefined {
@@ -336,7 +338,9 @@ export function isAiAgent(result: ArcjetRuleResult): boolean | undefined {
       typeof identity === "object" &&
       identity !== null &&
       "kind" in identity &&
-      identity.kind === "AI_AGENT"
+      identity.kind === "AI_AGENT" &&
+      // A forged `User-Agent` claim is not an AI agent.
+      !("spoofed" in identity && identity.spoofed === true)
     );
   }
 
