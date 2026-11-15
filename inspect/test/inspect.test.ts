@@ -2,17 +2,19 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
 import {
+  type ArcjetBotIdentity,
   type ArcjetRuleState,
   ArcjetBotReason,
   ArcjetErrorReason,
   ArcjetRuleResult,
 } from "@arcjet/protocol";
 
-import { isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../dist/index.js";
+import { isAiAgent, isSpoofedBot, isVerifiedBot, isMissingUserAgent } from "../dist/index.js";
 
 test("@arcjet/inspect", async function (t) {
   await t.test("should expose the public api", async function () {
     assert.deepEqual(Object.keys(await import("../dist/index.js")).sort(), [
+      "isAiAgent",
       "isMissingUserAgent",
       "isSpoofedBot",
       "isVerifiedBot",
@@ -262,6 +264,129 @@ describe("isVerifiedBot", () => {
     );
     assert.equal(
       isVerifiedBot(
+        // @ts-expect-error
+        {},
+      ),
+      undefined,
+    );
+  });
+});
+
+function botResult(state: ArcjetRuleState, identity?: ArcjetBotIdentity) {
+  return new ArcjetRuleResult({
+    ruleId: "test-rule-id",
+    fingerprint: "test-fingerprint",
+    ttl: 0,
+    state,
+    conclusion: "ALLOW",
+    reason: new ArcjetBotReason({
+      allowed: ["OPENAI_CRAWLER_USER"],
+      denied: [],
+      spoofed: false,
+      verified: false,
+      identity,
+    }),
+  });
+}
+
+describe("isAiAgent", () => {
+  const activeStates: Exclude<ArcjetRuleState[], "DRY_RUN"> = ["RUN", "NOT_RUN", "CACHED"];
+
+  test("returns true for active bots identified as AI agents", () => {
+    for (const state of activeStates) {
+      for (const evidence of ["UNVERIFIED", "FINGERPRINT", "IP", "SIGNATURE"] as const) {
+        assert.equal(
+          isAiAgent(
+            botResult(state, {
+              kind: "AI_AGENT",
+              botId: "OPENAI_CRAWLER_USER",
+              operator: "",
+              evidence,
+            }),
+          ),
+          true,
+        );
+      }
+    }
+  });
+
+  test("returns false for active bots identified as another kind", () => {
+    for (const state of activeStates) {
+      for (const kind of ["AI_CRAWLER", "AUTOMATION", "OTHER"] as const) {
+        assert.equal(
+          isAiAgent(
+            botResult(state, {
+              kind,
+              botId: kind === "AUTOMATION" ? "" : "EXAMPLE_BOT",
+              operator: "",
+              evidence: kind === "AUTOMATION" ? "FINGERPRINT" : "UNVERIFIED",
+            }),
+          ),
+          false,
+        );
+      }
+    }
+  });
+
+  test("returns false for active bots without an identity", () => {
+    for (const state of activeStates) {
+      assert.equal(isAiAgent(botResult(state)), false);
+    }
+  });
+
+  test("works with array methods", () => {
+    const results = [
+      botResult("RUN"),
+      botResult("RUN", {
+        kind: "AI_AGENT",
+        botId: "SIGNED_BOT:chatgpt.com",
+        operator: "chatgpt.com",
+        evidence: "SIGNATURE",
+      }),
+    ];
+
+    assert.equal(results.some(isAiAgent), true);
+    assert.equal(results.find(isAiAgent), results[1]);
+  });
+
+  test("returns undefined for dry run bots identified as AI agents", () => {
+    assert.equal(
+      isAiAgent(
+        botResult("DRY_RUN", {
+          kind: "AI_AGENT",
+          botId: "OPENAI_CRAWLER_USER",
+          operator: "",
+          evidence: "IP",
+        }),
+      ),
+      undefined,
+    );
+  });
+
+  test("returns undefined for non-bot values", () => {
+    assert.equal(
+      isAiAgent(
+        // @ts-expect-error
+        1,
+      ),
+      undefined,
+    );
+    assert.equal(
+      isAiAgent(
+        // @ts-expect-error
+        "",
+      ),
+      undefined,
+    );
+    assert.equal(
+      isAiAgent(
+        // @ts-expect-error
+        [],
+      ),
+      undefined,
+    );
+    assert.equal(
+      isAiAgent(
         // @ts-expect-error
         {},
       ),
