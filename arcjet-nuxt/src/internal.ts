@@ -12,7 +12,7 @@ import {
 } from "@arcjet/ip";
 import { Logger } from "@arcjet/logger";
 import { type Client, createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
-import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
+import { rawPathForUrl } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 import arcjetCore, {
   type ArcjetAdapterContext,
@@ -470,15 +470,7 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
   }
 
   const host = headers.get("host") ?? "";
-  // On the Node.js server, `originalUrl` (set by h3) or `url` is the request
-  // target exactly as the client sent it. Other Nitro presets (such as
-  // Cloudflare, Bun, Deno) and internal `$fetch` calls pass a mock request,
-  // marked with `__unenv__`, whose `url` is rebuilt from a parsed and
-  // normalized URL, so it cannot be used to verify signatures over `@path`.
-  const rawPath =
-    "__unenv__" in event.node.req
-      ? undefined
-      : rawPathFromOriginFormTarget(event.node.req.originalUrl ?? event.node.req.url ?? undefined);
+  let rawPath: string | undefined;
   let path = "";
   let query = "";
   let protocol = "";
@@ -496,6 +488,17 @@ function toArcjetRequest<Properties extends Record<PropertyKey, unknown>>(
       path = url.pathname;
       query = url.search;
       protocol = url.protocol;
+      // On the Node.js server, `originalUrl` (set by h3) or `url` is the
+      // request target exactly as the client sent it. It is only used when it
+      // resolves to the `path` and `query` above, which is not the case when h3
+      // strips a mount prefix from `url`. Other Nitro presets (such as
+      // Cloudflare, Bun, Deno) and internal `$fetch` calls pass a mock request,
+      // marked with `__unenv__`, whose `url` is rebuilt from a parsed and
+      // normalized URL, so it cannot be used to verify signatures over `@path`.
+      rawPath =
+        "__unenv__" in event.node.req
+          ? undefined
+          : rawPathForUrl(event.node.req.originalUrl ?? event.node.req.url ?? undefined, url);
     } catch {
       // If the parsing above fails, just set the path as whatever url we
       // received.

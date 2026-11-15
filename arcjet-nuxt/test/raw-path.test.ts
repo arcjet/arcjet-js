@@ -57,11 +57,33 @@ test("forwards the original request target as `rawPath`", async function (t) {
     assert.equal(details.rawPath, "/a/%2E%2e/../b");
   });
 
-  await t.test("from `originalUrl` when h3 rewrote `url`", async function () {
+  await t.test("from `originalUrl` when it resolves to `url`", async function () {
+    await client.protect(event({ originalUrl: "/a/%2E%2e/../b?x=1", url: "/b?x=1" }), {
+      ipSrc: "203.0.113.10",
+    });
+    assert.equal(details.path, "/b");
+    assert.equal(details.rawPath, "/a/%2E%2e/../b");
+  });
+
+  await t.test("not from `originalUrl` when h3 stripped a prefix from `url`", async function () {
     await client.protect(event({ originalUrl: "/api/signed/%2F?x=1", url: "/signed/%2F?x=1" }), {
       ipSrc: "203.0.113.10",
     });
-    assert.equal(details.rawPath, "/api/signed/%2F");
+    assert.equal(details.path, "/signed/%2F");
+    assert.equal(details.rawPath, undefined);
+  });
+
+  await t.test("not when the query differs", async function () {
+    await client.protect(event({ originalUrl: "/b?a", url: "/b?b" }), { ipSrc: "203.0.113.10" });
+    assert.equal(details.rawPath, undefined);
+  });
+
+  await t.test("not without a `host` header", async function () {
+    await client.protect(
+      { node: { req: { headers: {}, method: "GET", url: "/b" } } },
+      { ipSrc: "203.0.113.10" },
+    );
+    assert.equal(details.rawPath, undefined);
   });
 
   await t.test("not from an unenv mock request", async function () {
