@@ -185,6 +185,7 @@ function ArcjetBotIdentityFromProtocol(identity?: BotIdentity): ArcjetBotIdentit
     botId: identity.botId,
     operator: identity.operator,
     evidence,
+    spoofed: identity.spoofed,
   };
 }
 

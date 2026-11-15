@@ -502,6 +502,13 @@ export type ArcjetBotIdentity = {
    *   directory
    */
   evidence: "UNVERIFIED" | "FINGERPRINT" | "IP" | "SIGNATURE";
+
+  /**
+   * Whether the identity was claimed, but IP address or reverse DNS
+   * verification showed the request did not come from its operator.
+   * `evidence` is then `UNVERIFIED`.
+   */
+  spoofed: boolean;
 };
 
 /**

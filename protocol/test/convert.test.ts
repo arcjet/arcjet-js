@@ -397,18 +397,19 @@ test("convert", async (t) => {
     });
 
     await t.test("should create a bot reason with an identity", () => {
+      const botId = "SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory";
       const reason = ArcjetReasonFromProtocol(
         create(ReasonSchema, {
           reason: {
             case: "botV2",
             value: {
               allowed: [],
-              denied: ["SIGNED_BOT:chatgpt.com"],
+              denied: [botId],
               verified: true,
               identity: {
-                kind: BotKind.AI_AGENT,
-                botId: "SIGNED_BOT:chatgpt.com",
-                operator: "chatgpt.com",
+                kind: BotKind.OTHER,
+                botId,
+                operator: "bot.example",
                 evidence: BotEvidence.SIGNATURE,
               },
             },
@@ -418,10 +419,42 @@ test("convert", async (t) => {
 
       assert.ok(reason instanceof ArcjetBotReason);
       assert.deepEqual(reason.identity, {
-        kind: "AI_AGENT",
-        botId: "SIGNED_BOT:chatgpt.com",
-        operator: "chatgpt.com",
+        kind: "OTHER",
+        botId,
+        operator: "bot.example",
         evidence: "SIGNATURE",
+        spoofed: false,
+      });
+    });
+
+    await t.test("should create a bot reason with a spoofed identity", () => {
+      const reason = ArcjetReasonFromProtocol(
+        create(ReasonSchema, {
+          reason: {
+            case: "botV2",
+            value: {
+              allowed: [],
+              denied: ["OPENAI_CRAWLER_USER"],
+              spoofed: true,
+              identity: {
+                kind: BotKind.AI_AGENT,
+                botId: "OPENAI_CRAWLER_USER",
+                operator: "",
+                evidence: BotEvidence.UNVERIFIED,
+                spoofed: true,
+              },
+            },
+          },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetBotReason);
+      assert.deepEqual(reason.identity, {
+        kind: "AI_AGENT",
+        botId: "OPENAI_CRAWLER_USER",
+        operator: "",
+        evidence: "UNVERIFIED",
+        spoofed: true,
       });
     });
 
@@ -455,7 +488,13 @@ test("convert", async (t) => {
           );
 
           assert.ok(reason instanceof ArcjetBotReason);
-          assert.deepEqual(reason.identity, { kind, botId: "", operator: "", evidence });
+          assert.deepEqual(reason.identity, {
+            kind,
+            botId: "",
+            operator: "",
+            evidence,
+            spoofed: false,
+          });
         }
       }
     });
@@ -848,6 +887,7 @@ test("convert", async (t) => {
               botId: "OPENAI_CRAWLER_USER",
               operator: "",
               evidence: "IP",
+              spoofed: false,
             },
           }),
         ),
