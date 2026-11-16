@@ -710,7 +710,9 @@ test("`arcjetDeno`", async function (t) {
     await server.shutdown();
     restore();
 
-    assert.equal(response.status, 200);
+    // LIVE local ERROR is merged into the decision as fail-open ERROR
+    // (`isErrored()`); the test server maps that to 500 before `isAllowed()`.
+    assert.equal(response.status, 500);
     assert.deepEqual(parameters, [
       "failed to get request body: %s",
       "Cannot read body: body is missing",
@@ -756,7 +758,9 @@ test("`arcjetDeno`", async function (t) {
       restore();
 
       assert.equal(body, "My email is alice@arcjet.com");
-      assert.equal(response.status, 200);
+      // LIVE local ERROR is merged into the decision as fail-open ERROR
+      // (`isErrored()`); the test server maps that to 500 before `isAllowed()`.
+      assert.equal(response.status, 500);
       assert.deepEqual(parameters, ["failed to get request body: %s", "Body is unusable"]);
     },
   );
@@ -987,7 +991,9 @@ test("`arcjetDeno`", async function (t) {
     await server.shutdown();
     restore();
 
-    assert.equal(response.status, 200);
+    // LIVE local ERROR is merged into the decision as fail-open ERROR
+    // (`isErrored()`); the test server maps that to 500 before `isAllowed()`.
+    assert.equal(response.status, 500);
     assert.deepEqual(parameters, [
       "failed to get request body: %s",
       "Cannot read stream whose expected length exceeds limit",
