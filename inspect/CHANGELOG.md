@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/inspect-v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* expose bot identity and forward raw paths for Web Bot Auth ([#6366](https://github.com/arcjet/arcjet-js/issues/6366)) ([4743406](https://github.com/arcjet/arcjet-js/commit/47434062a6e37582b12bec6f693a4e9305c1ebff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/protocol bumped from 1.15.0 to 1.16.0
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/inspect-v1.15.0) (2026-10-28)
 
 

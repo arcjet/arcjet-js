@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/sprintf-v1.16.0) (2026-11-16)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/sprintf:** Synchronize arcjet-js versions
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/sprintf-v1.15.0) (2026-10-28)
 
 

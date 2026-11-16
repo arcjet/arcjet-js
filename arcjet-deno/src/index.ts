@@ -31,7 +31,7 @@ import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js"
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
-const VERSION = "1.15.0"; // x-release-please-version
+const VERSION = "1.16.0"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
