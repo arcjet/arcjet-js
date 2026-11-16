@@ -364,7 +364,17 @@ test("`arcjet`", async function (t) {
           "LINER_BOT",
           "LINER_USER",
           "RIVER_CRAWLER",
+          "ENFILADE_CRAWLER",
+          "META_MUSE",
+          "AHREFS_CRAWLER",
+          "EXA_USER",
+          "SHAPBOT",
+          "SHAP_USER",
+          "DUCKDUCKGO_CRAWLER",
+          "AI_MANAGED_AGENTS_AGENT",
           "CATEGORY:MONITOR",
+          "CATEGORY:META",
+          "CATEGORY:UNKNOWN",
           "SIGNED_BOT:https://signed.example.com/.well-known/http-message-signatures-directory",
         ] as const) {
           let remoteCalls = 0;

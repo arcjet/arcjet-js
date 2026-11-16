@@ -120,6 +120,28 @@ test("detectBot", async function (t) {
     });
   });
 
+  await t.test(
+    "should detect bots whose patterns are plain strings, not anchored regexes",
+    async function () {
+      for (const [userAgent, id] of [
+        ["EnfiladeBot/1.0 (+https://enfilade.guide/en/about-our-crawler)", "ENFILADE_CRAWLER"],
+        ["SpaceCowboys Android RSS Reader / 2.21.2(4040)", "FEEDER_ANDROID_FEEDFETCHER"],
+        ["ReadYou/0.16.2(47)", "READ_YOU_FEEDFETCHER"],
+      ] as const) {
+        const result = await detectBot(
+          exampleContext,
+          { ip: "127.0.0.1", headers: { "user-agent": userAgent } },
+          {
+            tag: "denied-bot-config",
+            val: { entities: [id], skipCustomDetect: false },
+          },
+        );
+
+        assert.deepEqual(result.denied, [id], userAgent);
+      }
+    },
+  );
+
   await t.test("should allow an AI agent through `CATEGORY:AI_AGENT`", async function () {
     const result = await detectBot(
       exampleContext,

@@ -23,6 +23,7 @@ export type ArcjetWellKnownBot =
   | "AGENTTESLA_BOTNET"
   | "AHREFS_CRAWLER"
   | "AHREFS_SITE_AUDIT"
+  | "AI_MANAGED_AGENTS_AGENT"
   | "AI_SEARCH_BOT"
   | "AI2_CRAWLER"
   | "AI2_CRAWLER_DOLMA"
@@ -235,6 +236,7 @@ export type ArcjetWellKnownBot =
   | "ELEVENLABS_CRAWLER"
   | "ELISABOT"
   | "EMBEDLY_CRAWLER"
+  | "ENFILADE_CRAWLER"
   | "ENTIREWEB_CRAWLER"
   | "EPFL_CRAWLER"
   | "EPICTIONS_CRAWLER"
@@ -266,6 +268,7 @@ export type ArcjetWellKnownBot =
   | "FEEDAFEVER_CRAWLER"
   | "FEEDBIN_CRAWLER"
   | "FEEDBURNER"
+  | "FEEDER_ANDROID_FEEDFETCHER"
   | "FEEDER_CO"
   | "FEEDLY_FEEDFETCHER"
   | "FEEDSPOT_FEEDFETCHER"
@@ -507,6 +510,7 @@ export type ArcjetWellKnownBot =
   | "META_CRAWLER_USER"
   | "META_EXTERNALADS"
   | "META_EXTERNALHIT"
+  | "META_MUSE"
   | "META_WEBINDEXER"
   | "METADATALABS_CRAWLER"
   | "METAJOB_CRAWLER"
@@ -653,6 +657,7 @@ export type ArcjetWellKnownBot =
   | "QWEN_CODE"
   | "RAKUTEN_USA_IMAGE_BOT"
   | "RANKACTIVE_CRAWLER"
+  | "READ_YOU_FEEDFETCHER"
   | "REDDIT_CRAWLER"
   | "REFIND_CRAWLER"
   | "REFLECTIONBOT"
@@ -1043,6 +1048,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "MEDIATOOLKIT_CRAWLER",
     "META_CRAWLER",
     "META_CRAWLER_USER",
+    "META_MUSE",
     "MINIMAX_AGENT",
     "MISTRAL_AI_INDEX",
     "MISTRAL_AI_TRAINING",
@@ -1113,6 +1119,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "LINER_USER",
     "MANUS_BOT",
     "META_CRAWLER_USER",
+    "META_MUSE",
     "MINIMAX_AGENT",
     "MISTRAL_AI_USER",
     "MOZILLA_TABSTACK",
@@ -1189,6 +1196,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "BLOGTRAFFIC_FEEDFETCHER",
     "FEEDBIN_CRAWLER",
     "FEEDBURNER",
+    "FEEDER_ANDROID_FEEDFETCHER",
     "FEEDER_CO",
     "FEEDLY_FEEDFETCHER",
     "FEEDSPOT_FEEDFETCHER",
@@ -1203,6 +1211,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "NEWSAI",
     "NEWSBLUR_AGGREGATOR",
     "POCKET_CRAWLER",
+    "READ_YOU_FEEDFETCHER",
     "REFIND_CRAWLER",
     "RSSBOT_FEEDFETCHER",
     "RSSING_CRAWLER",
@@ -1270,6 +1279,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "META_CRAWLER_USER",
     "META_EXTERNALADS",
     "META_EXTERNALHIT",
+    "META_MUSE",
     "META_WEBINDEXER",
     "WHATSAPP_CRAWLER",
   ]),
@@ -1288,6 +1298,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
   "CATEGORY:MONITOR": Object.freeze<ArcjetWellKnownBot[]>([
     "ABEVAL_BOT",
     "ACCESSIBLEWEB_BOT",
+    "AI_MANAGED_AGENTS_AGENT",
     "ALERTSITE_MONITOR",
     "AMAZON_ROUTE53_HEALTH_CHECK",
     "AZURE_APP_INSIGHTS",
@@ -1767,6 +1778,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "EC2LINKFINDER",
     "EDISTER_CRAWLER",
     "ELISABOT",
+    "ENFILADE_CRAWLER",
     "EPICTIONS_CRAWLER",
     "ERIGHT_CRAWLER",
     "EUROPARCHIVE_CRAWLER",
@@ -2024,16 +2036,21 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
 });
 
 /** The well-known-bots commit this file was generated from */
-export const catalogSha = "f3c4f7d9d42098fd9bd06983b0cf6aefc80f2aa9";
+export const catalogSha = "83616dc545abd6cf73c0fc9ead542c8a98b6eaed";
 
-/** Bots that sign requests with Web Bot Auth, verified by Arcjet Cloud */
+/** Bots that sign requests with Web Bot Auth or Poppy, verified by Arcjet Cloud */
 export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
+  "AHREFS_CRAWLER",
+  "AI_MANAGED_AGENTS_AGENT",
   "BROWSERBASE",
   "CHATGPT_AGENT",
   "CLOUDFLARE_BROWSER_RUN",
   "CONTEXT7_CRAWLER",
   "DUCKASSIST_BOT",
+  "DUCKDUCKGO_CRAWLER",
+  "ENFILADE_CRAWLER",
   "EXA_SEARCHBOT",
+  "EXA_USER",
   "GOOGLE_AGENT",
   "ISONAI_USER",
   "ISONSEARCH_CRAWLER",
@@ -2043,8 +2060,11 @@ export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
   "LINER_BOT",
   "LINER_USER",
   "MANUS_BOT",
+  "META_MUSE",
   "OSANO_BOT",
   "RIVER_CRAWLER",
+  "SHAP_USER",
+  "SHAPBOT",
   "SHOPIFY_CLOUDSURF",
   "YOU_CRAWLER",
 ]);
