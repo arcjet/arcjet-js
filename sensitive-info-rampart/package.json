@@ -52,13 +52,13 @@
     "test": "npm run build && npm run test-coverage"
   },
   "dependencies": {
-    "@huggingface/transformers": "4.3.1"
+    "@huggingface/transformers": "4.3.2"
   },
   "devDependencies": {
     "@arcjet/analyze": "1.15.0",
     "@types/node": "22.20.5",
     "arcjet": "1.15.0",
-    "tsdown": "0.23.1",
+    "tsdown": "0.23.7",
     "typescript": "7.0.2"
   },
   "peerDependencies": {

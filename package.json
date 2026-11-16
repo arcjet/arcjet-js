@@ -16,26 +16,28 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "oxfmt": "0.74.0",
+    "oxfmt": "0.78.0",
     "oxlint": "1.88.0",
     "oxlint-tsgolint": "7.0.2004",
     "turbo": "2.11.10"
   },
   "overrides": {
-    "@ai-sdk/anthropic": "4.0.81",
-    "@ai-sdk/openai": "4.0.95",
-    "@ai-sdk/provider-utils": "5.0.61",
     "@nosecone/sveltekit": {
       "@sveltejs/kit": {
-        "cookie": ">=0.7.2"
+        "cookie": "^1.1.1"
       }
     },
     "@strands-agents/sdk": {
       "@anthropic-ai/sdk": "1.1.0"
     },
-    "adm-zip": "0.6.1",
     "eve": {
-      "undici": "^8.11.2"
+      "undici@^8.0.0": "^8.11.2"
+    },
+    "gaxios@6.7.1": {
+      "uuid": "11.1.1"
+    },
+    "gcp-metadata@8.1.4": {
+      "gaxios": "7.1.4"
     },
     "miniflare": {
       "sharp": ">=0.35.5",

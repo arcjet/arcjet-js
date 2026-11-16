@@ -70,11 +70,11 @@
     "arcjet": "1.15.0"
   },
   "devDependencies": {
-    "@nestjs/common": "11.2.7",
+    "@nestjs/common": "11.2.9",
     "@types/node": "22.20.5",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
-    "tsdown": "0.23.1",
+    "tsdown": "0.23.7",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
