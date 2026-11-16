@@ -40,8 +40,8 @@ test("@cloudflare/think is an optional peer and not a dependency", () => {
   assert.ok(devDependencies);
   assert.equal(
     devDependencies["@cloudflare/think"],
-    "0.20.2",
-    'devDependencies["@cloudflare/think"] must be pinned to "0.20.2"',
+    "0.23.0",
+    'devDependencies["@cloudflare/think"] must be pinned to "0.23.0"',
   );
 
   const engines = objectField(packageJson, "engines");
