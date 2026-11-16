@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/remix-v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* expose bot identity and forward raw paths for Web Bot Auth ([#6366](https://github.com/arcjet/arcjet-js/issues/6366)) ([4743406](https://github.com/arcjet/arcjet-js/commit/47434062a6e37582b12bec6f693a4e9305c1ebff))
+* **protocol:** add CATEGORY:AI_AGENT and sync well-known-bots ([#6359](https://github.com/arcjet/arcjet-js/issues/6359)) ([fbb81d1](https://github.com/arcjet/arcjet-js/commit/fbb81d1633ff9268a5775e289545d42262fe1567))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.15.0 to 1.16.0
+    * @arcjet/env bumped from 1.15.0 to 1.16.0
+    * @arcjet/headers bumped from 1.15.0 to 1.16.0
+    * @arcjet/ip bumped from 1.15.0 to 1.16.0
+    * @arcjet/logger bumped from 1.15.0 to 1.16.0
+    * @arcjet/protocol bumped from 1.15.0 to 1.16.0
+    * @arcjet/transport bumped from 1.15.0 to 1.16.0
+    * arcjet bumped from 1.15.0 to 1.16.0
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/remix-v1.15.0) (2026-10-28)
 
 

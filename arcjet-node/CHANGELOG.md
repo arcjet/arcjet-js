@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/node-v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* **protocol:** add CATEGORY:AI_AGENT and sync well-known-bots ([#6359](https://github.com/arcjet/arcjet-js/issues/6359)) ([fbb81d1](https://github.com/arcjet/arcjet-js/commit/fbb81d1633ff9268a5775e289545d42262fe1567))
+
+
+### 🪲 Bug Fixes
+
+* stop soft-allowing when Wasm is unavailable ([#6355](https://github.com/arcjet/arcjet-js/issues/6355)) ([f9e2c5e](https://github.com/arcjet/arcjet-js/commit/f9e2c5e6847d852df6df7c62466ecf3b5dedbc65))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.15.0 to 1.16.0
+    * @arcjet/env bumped from 1.15.0 to 1.16.0
+    * @arcjet/headers bumped from 1.15.0 to 1.16.0
+    * @arcjet/ip bumped from 1.15.0 to 1.16.0
+    * @arcjet/logger bumped from 1.15.0 to 1.16.0
+    * @arcjet/protocol bumped from 1.15.0 to 1.16.0
+    * @arcjet/transport bumped from 1.15.0 to 1.16.0
+    * arcjet bumped from 1.15.0 to 1.16.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.15.0 to 1.16.0
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/node-v1.15.0) (2026-10-28)
 
 

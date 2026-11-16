@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...arcjet-v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* expose bot identity and forward raw paths for Web Bot Auth ([#6366](https://github.com/arcjet/arcjet-js/issues/6366)) ([4743406](https://github.com/arcjet/arcjet-js/commit/47434062a6e37582b12bec6f693a4e9305c1ebff))
+* **protocol:** add CATEGORY:AI_AGENT and sync well-known-bots ([#6359](https://github.com/arcjet/arcjet-js/issues/6359)) ([fbb81d1](https://github.com/arcjet/arcjet-js/commit/fbb81d1633ff9268a5775e289545d42262fe1567))
+* sync well-known-bots 83616dc ([#6369](https://github.com/arcjet/arcjet-js/issues/6369)) ([4e8396c](https://github.com/arcjet/arcjet-js/commit/4e8396c664871bd3205be29b65b6e71e72fd9ac2))
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** deny input over the backend's scan limit ([#6357](https://github.com/arcjet/arcjet-js/issues/6357)) ([3d8fdb7](https://github.com/arcjet/arcjet-js/commit/3d8fdb771f56de8ad18c36d14ede6f990f0bd188))
+* stop soft-allowing when Wasm is unavailable ([#6355](https://github.com/arcjet/arcjet-js/issues/6355)) ([f9e2c5e](https://github.com/arcjet/arcjet-js/commit/f9e2c5e6847d852df6df7c62466ecf3b5dedbc65))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.15.0 to 1.16.0
+    * @arcjet/cache bumped from 1.15.0 to 1.16.0
+    * @arcjet/duration bumped from 1.15.0 to 1.16.0
+    * @arcjet/headers bumped from 1.15.0 to 1.16.0
+    * @arcjet/protocol bumped from 1.15.0 to 1.16.0
+    * @arcjet/runtime bumped from 1.15.0 to 1.16.0
+    * @arcjet/skills bumped from 1.15.0 to 1.16.0
+    * @arcjet/stable-hash bumped from 1.15.0 to 1.16.0
+  * devDependencies
+    * @arcjet/transport bumped from 1.15.0 to 1.16.0
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...arcjet-v1.15.0) (2026-10-28)
 
 

@@ -1,5 +1,42 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* expose bot identity and forward raw paths for Web Bot Auth ([#6366](https://github.com/arcjet/arcjet-js/issues/6366)) ([4743406](https://github.com/arcjet/arcjet-js/commit/47434062a6e37582b12bec6f693a4e9305c1ebff))
+* **guard:** add @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x ([#6352](https://github.com/arcjet/arcjet-js/issues/6352)) ([bed6e9f](https://github.com/arcjet/arcjet-js/commit/bed6e9f5e8ade62cb2466a38a0b82732a538fc50))
+* **guard:** add claude-managed-agents/v1 for @anthropic-ai/sdk 1.x ([#6351](https://github.com/arcjet/arcjet-js/issues/6351)) ([d8977b5](https://github.com/arcjet/arcjet-js/commit/d8977b5072606a52d47721ca7b5d38d65f827f6d))
+* **protocol:** add CATEGORY:AI_AGENT and sync well-known-bots ([#6359](https://github.com/arcjet/arcjet-js/issues/6359)) ([fbb81d1](https://github.com/arcjet/arcjet-js/commit/fbb81d1633ff9268a5775e289545d42262fe1567))
+* sync well-known-bots 83616dc ([#6369](https://github.com/arcjet/arcjet-js/issues/6369)) ([4e8396c](https://github.com/arcjet/arcjet-js/commit/4e8396c664871bd3205be29b65b6e71e72fd9ac2))
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** deny input over the backend's scan limit ([#6357](https://github.com/arcjet/arcjet-js/issues/6357)) ([3d8fdb7](https://github.com/arcjet/arcjet-js/commit/3d8fdb771f56de8ad18c36d14ede6f990f0bd188))
+* stop soft-allowing when Wasm is unavailable ([#6355](https://github.com/arcjet/arcjet-js/issues/6355)) ([f9e2c5e](https://github.com/arcjet/arcjet-js/commit/f9e2c5e6847d852df6df7c62466ecf3b5dedbc65))
+
+
+### 📝 Documentation
+
+* **guard:** adjust proto types comments ([#6370](https://github.com/arcjet/arcjet-js/issues/6370)) ([1044c94](https://github.com/arcjet/arcjet-js/commit/1044c94a725335f9d64dddf561a29145d547d9bf))
+* **skills:** sync @arcjet/skills with arcjet/skills[#74](https://github.com/arcjet/arcjet-js/issues/74) ([#6358](https://github.com/arcjet/arcjet-js/issues/6358)) ([353fcf6](https://github.com/arcjet/arcjet-js/commit/353fcf69b6d243830028cdb9393d96d58dc77287))
+
+
+### 🧹 Miscellaneous Chores
+
+* **wasm:** regenerate wasm and add RiverBot to the bot catalog ([#6356](https://github.com/arcjet/arcjet-js/issues/6356)) ([81b627a](https://github.com/arcjet/arcjet-js/commit/81b627a95cc65f001edfce9e20d889b94a9081f2))
+
+
+### 🔨 Build System
+
+* **deps-dev:** bump @hono/node-server from 2.1.1 to 2.1.6 ([#6353](https://github.com/arcjet/arcjet-js/issues/6353)) ([5b90fb8](https://github.com/arcjet/arcjet-js/commit/5b90fb8be75128913092e663167c2cd8a208a743))
+* **deps-dev:** bump @nuxt/schema from 4.6.2 to 4.6.4 ([#6364](https://github.com/arcjet/arcjet-js/issues/6364)) ([217540d](https://github.com/arcjet/arcjet-js/commit/217540dee6301b9d2c5112f31d17266876729686))
+* **deps-dev:** bump astro from 7.4.2 to 7.4.7 ([#6365](https://github.com/arcjet/arcjet-js/issues/6365)) ([2870bf0](https://github.com/arcjet/arcjet-js/commit/2870bf087a58ccde898a53321d391fba37f7472b))
+* **deps-dev:** bump fast-xml-parser from 5.11.1 to 5.12.0 ([#6360](https://github.com/arcjet/arcjet-js/issues/6360)) ([8d50f9b](https://github.com/arcjet/arcjet-js/commit/8d50f9b70da42e8c5e850487fa19dc5d2d0af169))
+* **deps-dev:** bump hono from 4.13.13 to 4.13.18 ([#6361](https://github.com/arcjet/arcjet-js/issues/6361)) ([a402c1c](https://github.com/arcjet/arcjet-js/commit/a402c1c13564c4feeb08a1b66aec67aa0987973f))
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...v1.15.0) (2026-10-28)
 
 

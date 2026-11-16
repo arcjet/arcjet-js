@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/guard-v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* **guard:** add @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x ([#6352](https://github.com/arcjet/arcjet-js/issues/6352)) ([bed6e9f](https://github.com/arcjet/arcjet-js/commit/bed6e9f5e8ade62cb2466a38a0b82732a538fc50))
+* **guard:** add claude-managed-agents/v1 for @anthropic-ai/sdk 1.x ([#6351](https://github.com/arcjet/arcjet-js/issues/6351)) ([d8977b5](https://github.com/arcjet/arcjet-js/commit/d8977b5072606a52d47721ca7b5d38d65f827f6d))
+
+
+### 🪲 Bug Fixes
+
+* **sensitive-info-rampart:** deny input over the backend's scan limit ([#6357](https://github.com/arcjet/arcjet-js/issues/6357)) ([3d8fdb7](https://github.com/arcjet/arcjet-js/commit/3d8fdb771f56de8ad18c36d14ede6f990f0bd188))
+
+
+### 📝 Documentation
+
+* **guard:** adjust proto types comments ([#6370](https://github.com/arcjet/arcjet-js/issues/6370)) ([1044c94](https://github.com/arcjet/arcjet-js/commit/1044c94a725335f9d64dddf561a29145d547d9bf))
+* **skills:** sync @arcjet/skills with arcjet/skills[#74](https://github.com/arcjet/arcjet-js/issues/74) ([#6358](https://github.com/arcjet/arcjet-js/issues/6358)) ([353fcf6](https://github.com/arcjet/arcjet-js/commit/353fcf69b6d243830028cdb9393d96d58dc77287))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.15.0 to 1.16.0
+    * @arcjet/logger bumped from 1.15.0 to 1.16.0
+    * @arcjet/transport bumped from 1.15.0 to 1.16.0
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/guard-v1.15.0) (2026-10-28)
 
 

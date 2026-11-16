@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/analyze-wasm-v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* **protocol:** add CATEGORY:AI_AGENT and sync well-known-bots ([#6359](https://github.com/arcjet/arcjet-js/issues/6359)) ([fbb81d1](https://github.com/arcjet/arcjet-js/commit/fbb81d1633ff9268a5775e289545d42262fe1567))
+* sync well-known-bots 83616dc ([#6369](https://github.com/arcjet/arcjet-js/issues/6369)) ([4e8396c](https://github.com/arcjet/arcjet-js/commit/4e8396c664871bd3205be29b65b6e71e72fd9ac2))
+
+
+### 🧹 Miscellaneous Chores
+
+* **wasm:** regenerate wasm and add RiverBot to the bot catalog ([#6356](https://github.com/arcjet/arcjet-js/issues/6356)) ([81b627a](https://github.com/arcjet/arcjet-js/commit/81b627a95cc65f001edfce9e20d889b94a9081f2))
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/analyze-wasm-v1.15.0) (2026-10-28)
 
 

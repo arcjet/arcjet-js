@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/skills-v1.16.0) (2026-11-16)
+
+
+### 🚀 New Features
+
+* **guard:** add @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x ([#6352](https://github.com/arcjet/arcjet-js/issues/6352)) ([bed6e9f](https://github.com/arcjet/arcjet-js/commit/bed6e9f5e8ade62cb2466a38a0b82732a538fc50))
+* **guard:** add claude-managed-agents/v1 for @anthropic-ai/sdk 1.x ([#6351](https://github.com/arcjet/arcjet-js/issues/6351)) ([d8977b5](https://github.com/arcjet/arcjet-js/commit/d8977b5072606a52d47721ca7b5d38d65f827f6d))
+
+
+### 📝 Documentation
+
+* **skills:** sync @arcjet/skills with arcjet/skills[#74](https://github.com/arcjet/arcjet-js/issues/74) ([#6358](https://github.com/arcjet/arcjet-js/issues/6358)) ([353fcf6](https://github.com/arcjet/arcjet-js/commit/353fcf69b6d243830028cdb9393d96d58dc77287))
+
 ## [1.15.0](https://github.com/arcjet/arcjet-js/compare/v1.14.1...@arcjet/skills-v1.15.0) (2026-10-28)
 
 
