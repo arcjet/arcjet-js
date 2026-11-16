@@ -2023,6 +2023,9 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
   ]),
 });
 
+/** The well-known-bots commit this file was generated from */
+export const catalogSha = "f3c4f7d9d42098fd9bd06983b0cf6aefc80f2aa9";
+
 /** Bots that sign requests with Web Bot Auth, verified by Arcjet Cloud */
 export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
   "BROWSERBASE",
