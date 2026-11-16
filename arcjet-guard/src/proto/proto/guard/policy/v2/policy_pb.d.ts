@@ -904,7 +904,7 @@ export enum GuardPolicyDetectorKind {
   /**
    * Server-side IP threat assessment of destinations a call would contact.
    *
-   * The same CrowdSec and IPAPI database Protect uses for the caller of an
+   * The same Arcjet IP threat intelligence Protect uses for the caller of an
    * HTTP request, applied to the hosts a Guard call names. An IP literal is
    * looked up directly. A hostname is resolved, then each address is looked
    * up, and the verdict is the worst assessment. Rego reads it at
