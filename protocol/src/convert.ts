@@ -2,6 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import { timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 
 import {
+  type ArcjetBotIdentity,
   type ArcjetBotRule,
   type ArcjetConclusion,
   type ArcjetEmailRule,
@@ -38,11 +39,14 @@ import {
   ArcjetThreatIntelligence,
 } from "./index.js";
 import {
+  type BotIdentity,
   type Decision,
   type IpDetails,
   type Reason,
   type Rule,
   type RuleResult,
+  BotEvidence,
+  BotKind,
   BotV2ReasonSchema,
   Conclusion,
   DecisionSchema,
@@ -114,6 +118,77 @@ export function ArcjetEmailTypeFromProtocol(emailType: EmailType): ArcjetEmailTy
       throw new Error("Invalid EmailType");
     }
   }
+}
+
+function ArcjetBotKindFromProtocol(kind: BotKind): ArcjetBotIdentity["kind"] | undefined {
+  switch (kind) {
+    case BotKind.UNSPECIFIED:
+      return undefined;
+    case BotKind.AI_AGENT:
+      return "AI_AGENT";
+    case BotKind.AI_CRAWLER:
+      return "AI_CRAWLER";
+    case BotKind.AUTOMATION:
+      return "AUTOMATION";
+    case BotKind.OTHER:
+      return "OTHER";
+    default: {
+      // Unknown values from a newer server are dropped, not guessed at.
+      const _exhaustive: never = kind;
+      return undefined;
+    }
+  }
+}
+
+function ArcjetBotEvidenceFromProtocol(
+  evidence: BotEvidence,
+): ArcjetBotIdentity["evidence"] | undefined {
+  switch (evidence) {
+    case BotEvidence.UNSPECIFIED:
+      return undefined;
+    case BotEvidence.UNVERIFIED:
+      return "UNVERIFIED";
+    case BotEvidence.FINGERPRINT:
+      return "FINGERPRINT";
+    case BotEvidence.IP:
+      return "IP";
+    case BotEvidence.SIGNATURE:
+      return "SIGNATURE";
+    default: {
+      // Unknown values from a newer server are dropped, not guessed at.
+      const _exhaustive: never = evidence;
+      return undefined;
+    }
+  }
+}
+
+/**
+ * Convert a protocol bot identity to an Arcjet bot identity.
+ *
+ * An identity with an unspecified or unknown `kind` or `evidence` is dropped
+ * entirely rather than reported with an invented value.
+ */
+function ArcjetBotIdentityFromProtocol(identity?: BotIdentity): ArcjetBotIdentity | undefined {
+  if (typeof identity !== "object" || identity === null) {
+    return undefined;
+  }
+
+  const kind = ArcjetBotKindFromProtocol(identity.kind);
+  const evidence = ArcjetBotEvidenceFromProtocol(identity.evidence);
+
+  if (kind === undefined || evidence === undefined) {
+    return undefined;
+  }
+
+  return {
+    kind,
+    botId: identity.botId,
+    operator: identity.operator,
+    evidence,
+    spoofed: identity.spoofed,
+    // Delegation is only meaningful on a verified signature.
+    delegated: evidence === "SIGNATURE" && identity.delegated,
+  };
 }
 
 export function ArcjetStackToProtocol(stack: ArcjetStack): SDKStack {
@@ -246,6 +321,7 @@ export function ArcjetReasonFromProtocol(proto?: Reason): ArcjetReason {
         denied: reason.denied,
         verified: reason.verified,
         spoofed: reason.spoofed,
+        identity: ArcjetBotIdentityFromProtocol(reason.identity),
       });
     }
     case "edgeRule": {
@@ -336,6 +412,8 @@ export function ArcjetReasonToProtocol(reason: ArcjetReason): Reason {
           denied: reason.denied,
           verified: reason.verified,
           spoofed: reason.spoofed,
+          // `identity` is not sent: Arcjet Cloud computes it and ignores it
+          // on reports.
         }),
       },
     });

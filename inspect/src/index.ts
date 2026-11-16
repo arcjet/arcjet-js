@@ -262,6 +262,99 @@ export function isVerifiedBot(result: ArcjetRuleResult): boolean | undefined {
 }
 
 /**
+ * Check for an AI agent.
+ *
+ * An AI agent is an AI product fetching on demand for a person who is waiting
+ * on the answer (`CATEGORY:AI_AGENT`), as opposed to scheduled AI crawling.
+ *
+ * This checks the bot identity that Arcjet Cloud reports with a bot rule
+ * result.
+ * It does not say how that identity was established: check
+ * `result.reason.identity.evidence` if that matters to you.
+ * It returns `false` when the identity is spoofed: the request claimed to be
+ * an AI agent, but did not come from its operator.
+ *
+ * The identity says who sent the request, not whether to allow it.
+ * `UNVERIFIED` is only a `User-Agent` claim.
+ * `SIGNATURE` identifies the operator of the signing directory, such as a
+ * hosted-browser platform like Browserbase, not the end user or their intent.
+ * `IP` evidence is only as reliable as the client IP address the SDK
+ * resolves, so configure trusted proxies.
+ *
+ * ###### Availability
+ *
+ * Bot protection is available if `detectBot` is used.
+ * See [*Bot protection* on
+ * `docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
+ * for more info.
+ *
+ * The bot identity is only reported by Arcjet Cloud.
+ * Decisions computed locally never have one, so this returns `false` for them.
+ *
+ * @example
+ *   ```ts
+ *   import { isAiAgent } from "@arcjet/inspect";
+ *   import arcjet, { detectBot } from "@arcjet/next";
+ *   import type { NextApiRequest, NextApiResponse } from "next";
+ *
+ *   const aj = arcjet({
+ *     key: process.env.ARCJET_KEY!,
+ *     rules: [
+ *       detectBot({
+ *         mode: "LIVE",
+ *         allow: [
+ *           "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+ *           "CATEGORY:AI_AGENT", // AI fetching for a waiting person
+ *         ],
+ *       }),
+ *     ],
+ *   });
+ *
+ *   export async function GET(request: NextApiRequest, response: NextApiResponse) {
+ *     const decision = await aj.protect(request);
+ *
+ *     if (decision.isDenied()) {
+ *       return response.status(403).json({ message: "Forbidden" });
+ *     }
+ *
+ *     // Give AI agents a response tailored to them
+ *     if (decision.results.some(isAiAgent)) {
+ *       return response.status(200).json({ message: "Hello agent!" });
+ *     }
+ *
+ *     response.status(200).json({ message: "Hello world" });
+ *   }
+ *   ```
+ *
+ * @param result
+ *   Rule result.
+ * @returns
+ *   `true` if the bot rule result was `LIVE` and Arcjet Cloud identified an
+ *   AI agent,
+ *   `false` if the bot rule result was `LIVE` and no AI agent was identified
+ *   (including when there is no bot identity or it is spoofed),
+ *   `undefined` if the rule result was non-bot or `DRY_RUN`.
+ */
+export function isAiAgent(result: ArcjetRuleResult): boolean | undefined {
+  // Use `unknown` argument helpers to guard around the wrong data being passed
+  if (isActive(result) && isBotReason(result.reason)) {
+    const identity: unknown = result.reason.identity;
+    return (
+      typeof identity === "object" &&
+      identity !== null &&
+      "kind" in identity &&
+      identity.kind === "AI_AGENT" &&
+      // A forged `User-Agent` claim is not an AI agent.
+      !("spoofed" in identity && identity.spoofed === true)
+    );
+  }
+
+  // Explicitly return `undefined` when the rule is not a bot because it is
+  // another falsey value but more clear that the check didn't apply
+  return undefined;
+}
+
+/**
  * Check for a bot missing a `User-Agent` header.
  *
  * You may want to block such requests because a missing `User-Agent` header is

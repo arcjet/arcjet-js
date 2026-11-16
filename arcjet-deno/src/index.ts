@@ -27,6 +27,7 @@ import { baseUrl, isDevelopment, logLevel, platform } from "@arcjet/env";
 import { ArcjetHeaders } from "@arcjet/headers";
 import { Logger } from "@arcjet/logger";
 import { createClient, resolveClientTimeout } from "@arcjet/protocol/client.js";
+import { rawPathFromOriginFormTarget } from "@arcjet/protocol/request-target.js";
 import { createTransport } from "@arcjet/transport";
 
 /** SDK version. Updated by the release process. */
@@ -34,6 +35,45 @@ const VERSION = "1.15.0"; // x-release-please-version
 
 // Re-export all named exports from the generic SDK
 export * from "arcjet";
+
+/**
+ * Host and optional port, without delimiters that could hide a path.
+ */
+const plainHost = /^[\w.:[\]-]+$/;
+
+/**
+ * Get the original path of the request target of a request that `Deno.serve`
+ * passed to a handler.
+ *
+ * Deno builds `request.url` of such a request by joining the scheme, the
+ * authority, and the request target exactly as the client sent it, without
+ * parsing it. The authority is the `Host` header (or the authority of an
+ * absolute-form target) and is not validated, so the target is only taken when
+ * `Host` is a plain host and port and `request.url` starts with exactly that
+ * origin.
+ *
+ * A `Request` constructed in JavaScript has a parsed and normalized URL, which
+ * cannot be used to verify signatures over `@path`, so this must not be used
+ * for other requests.
+ *
+ * @param request
+ *   Request from `Deno.serve`.
+ * @returns
+ *   Original path, or `undefined` when not available.
+ */
+function rawPathFromServedRequest(request: Request): string | undefined {
+  const host = request.headers.get("host");
+  if (!host || !plainHost.test(host)) {
+    return undefined;
+  }
+  for (const scheme of ["http://", "https://"]) {
+    const origin = scheme + host;
+    if (request.url.startsWith(origin)) {
+      return rawPathFromOriginFormTarget(request.url.slice(origin.length));
+    }
+  }
+  return undefined;
+}
 
 let warnedForAutomaticBodyRead = false;
 
@@ -252,6 +292,9 @@ export default function arcjet<
   // WeakMap should be populated with IP addresses inspected via
   // `ServeHandlerInfo`
   const ipCache = new WeakMap<Request, string>();
+  // Requests that `Deno.serve` passed to a `handler()`, see
+  // `rawPathFromServedRequest`.
+  const servedRequests = new WeakSet<Request>();
 
   const log = options.log
     ? options.log
@@ -283,6 +326,7 @@ export default function arcjet<
     const headers = new ArcjetHeaders(request.headers);
 
     const url = new URL(request.url);
+    const rawPath = servedRequests.has(request) ? rawPathFromServedRequest(request) : undefined;
     const ipDetails = resolveClientIp(
       {
         // This attempts to lookup the IP in the `ipCache`. This is primarily a
@@ -314,6 +358,7 @@ export default function arcjet<
       protocol: url.protocol,
       host: url.host,
       path: url.pathname,
+      ...(rawPath ? { rawPath } : {}),
       headers,
       cookies,
       query: url.search,
@@ -370,6 +415,7 @@ export default function arcjet<
           if (hostname) {
             ipCache.set(request, hostname);
           }
+          servedRequests.add(request);
 
           return fn(request, info);
         };

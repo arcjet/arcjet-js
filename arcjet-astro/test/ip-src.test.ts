@@ -45,5 +45,6 @@ test("explicit ipSrc permits protect without Astro middleware address", async fu
   await client.protect(new Request("https://example.com/"), { ipSrc: "203.0.113.10" });
 
   assert.equal(details.ip, "203.0.113.10");
+  assert.equal(details.rawPath, undefined);
   assert.deepEqual(details.extra, {});
 });

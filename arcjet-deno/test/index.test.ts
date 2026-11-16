@@ -312,6 +312,7 @@ test("`arcjetDeno`", async function (t) {
         ip: "127.0.0.1",
         method: "GET",
         path: "/a",
+        rawPath: "/a",
         protocol: "http:",
         query: "?b",
       });

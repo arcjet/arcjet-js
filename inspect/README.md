@@ -95,12 +95,56 @@ server.listen(8000);
 ## API
 
 This package exports the identifiers
+[`isAiAgent`][api-is-ai-agent],
 [`isMissingUserAgent`][api-is-missing-user-agent],
 [`isSpoofedBot`][api-is-spoofed-bot], and
 [`isVerifiedBot`][api-is-verified-bot].
 There is no default export.
 
 This package exports no [TypeScript][] types.
+
+### `isAiAgent(result)`
+
+Determines if a bot rule result identified an AI agent: an AI product fetching
+on demand for a person who is waiting on the answer (`CATEGORY:AI_AGENT`),
+as opposed to scheduled AI crawling.
+
+This checks the bot identity that Arcjet Cloud reports with the result
+(`result.reason.identity`). It does not say how that identity was
+established; check `result.reason.identity.evidence` if that matters to you.
+It returns `false` when the identity is spoofed: the request claimed to be an
+AI agent, but did not come from its operator.
+
+The identity says who sent the request, not whether to allow it.
+`UNVERIFIED` is only a `User-Agent` claim.
+`SIGNATURE` identifies the operator of the signing directory, such as a
+hosted-browser platform like Browserbase, not the end user or their intent.
+`IP` evidence is only as reliable as the client IP address the SDK resolves,
+so configure trusted proxies.
+
+###### Parameters
+
+- `result` (`ArcjetRuleResult`)
+  — a rule result from the Arcjet decision
+
+###### Returns
+
+This function returns `true` if the bot rule result was `LIVE` and Arcjet
+Cloud identified an AI agent, `false` if the bot rule result was `LIVE` and
+no AI agent was identified (including when there is no bot identity or it is
+spoofed), or
+`undefined` if the rule result was non-bot or `DRY_RUN`
+(`boolean | undefined`).
+
+###### Availability
+
+Bot protection is available when you use `detectBot`.
+See [_Bot protection_ on
+`docs.arcjet.com`](https://docs.arcjet.com/bot-protection/quick-start)
+for more info.
+
+The bot identity is only reported by Arcjet Cloud. Decisions computed
+locally never have one, so this function returns `false` for them.
 
 ### `isMissingUserAgent(result)`
 
@@ -182,6 +226,7 @@ for more info.
 [Apache License, Version 2.0][apache-license] © [Arcjet Labs, Inc.][arcjet]
 
 [apache-license]: http://www.apache.org/licenses/LICENSE-2.0
+[api-is-ai-agent]: #isaiagentresult
 [api-is-missing-user-agent]: #ismissinguseragentresult
 [api-is-spoofed-bot]: #isspoofedbotresult
 [api-is-verified-bot]: #isverifiedbotresult

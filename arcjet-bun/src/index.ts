@@ -314,6 +314,7 @@ export default function arcjet<
       protocol: url.protocol,
       host: url.host,
       path: url.pathname,
+      // `rawPath` is not set: a `Request` URL is normalized (see protocol/src/request-target.ts).
       headers,
       cookies,
       query: url.search,

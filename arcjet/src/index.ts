@@ -53,6 +53,7 @@ import {
   botCategories,
 } from "@arcjet/protocol";
 import type { Client } from "@arcjet/protocol/client.js";
+import { signedBots } from "@arcjet/protocol/well-known-bots.js";
 import { runtime } from "@arcjet/runtime";
 import * as hasher from "@arcjet/stable-hash";
 
@@ -1382,26 +1383,7 @@ export type BotOptionsDeny = {
  */
 export type BotOptions = BotOptionsAllow | BotOptionsDeny;
 
-const signedBotIds = new Set<ArcjetWellKnownBot>([
-  "GOOGLE_AGENT",
-  "CHATGPT_AGENT",
-  "DUCKASSIST_BOT",
-  "BROWSERBASE",
-  "MANUS_BOT",
-  "YOU_CRAWLER",
-  "EXA_SEARCHBOT",
-  "CONTEXT7_CRAWLER",
-  "SHOPIFY_CLOUDSURF",
-  "KERNEL_AGENT",
-  "KERNEL_SEARCH",
-  "OSANO_BOT",
-  "CLOUDFLARE_BROWSER_RUN",
-  "LANE_AGENT",
-  "ISONSEARCH_CRAWLER",
-  "ISONAI_USER",
-  "LINER_BOT",
-  "LINER_USER",
-]);
+const signedBotIds: ReadonlySet<ArcjetWellKnownBot> = new Set(signedBots);
 
 function botPolicyMayVerifySignature(rule: ArcjetRule): boolean {
   if (rule.type !== "BOT") return false;

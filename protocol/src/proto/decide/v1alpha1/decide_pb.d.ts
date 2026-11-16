@@ -550,6 +550,63 @@ export declare type BotReason = Message<"proto.decide.v1alpha1.BotReason"> & {
 export declare const BotReasonSchema: GenMessage<BotReason>;
 
 /**
+ * The primary bot identity of a bot (v2) decision. A request can match
+ * several bots; this is the one with the strongest evidence.
+ *
+ * @generated from message proto.decide.v1alpha1.BotIdentity
+ */
+export declare type BotIdentity = Message<"proto.decide.v1alpha1.BotIdentity"> & {
+  /**
+   * @generated from field: proto.decide.v1alpha1.BotKind kind = 1;
+   */
+  kind: BotKind;
+
+  /**
+   * Bot ID, such as `OPENAI_CRAWLER_USER` or a `SIGNED_BOT:` directory. Empty
+   * for `BOT_KIND_AUTOMATION`.
+   *
+   * @generated from field: string bot_id = 2;
+   */
+  botId: string;
+
+  /**
+   * Hostname that operates the bot, such as `chatgpt.com`. Set only when a
+   * verified signature proves it; empty otherwise.
+   *
+   * @generated from field: string operator = 3;
+   */
+  operator: string;
+
+  /**
+   * @generated from field: proto.decide.v1alpha1.BotEvidence evidence = 4;
+   */
+  evidence: BotEvidence;
+
+  /**
+   * The identity was claimed, but IP or reverse DNS verification showed the
+   * request did not come from its operator. Evidence is then `UNVERIFIED`.
+   *
+   * @generated from field: bool spoofed = 5;
+   */
+  spoofed: boolean;
+
+  /**
+   * The agent presented a verified Personal Agent Protocol session: it acts
+   * for a user who delegated access to it. Set only with
+   * `BOT_EVIDENCE_SIGNATURE`; the user is never identified.
+   *
+   * @generated from field: bool delegated = 6;
+   */
+  delegated: boolean;
+};
+
+/**
+ * Describes the message proto.decide.v1alpha1.BotIdentity.
+ * Use `create(BotIdentitySchema)` to create a new message.
+ */
+export declare const BotIdentitySchema: GenMessage<BotIdentity>;
+
+/**
  * Details of a bot (v2) decision.
  *
  * @generated from message proto.decide.v1alpha1.BotV2Reason
@@ -574,6 +631,13 @@ export declare type BotV2Reason = Message<"proto.decide.v1alpha1.BotV2Reason"> &
    * @generated from field: bool spoofed = 4;
    */
   spoofed: boolean;
+
+  /**
+   * Unset when no bot was detected.
+   *
+   * @generated from field: proto.decide.v1alpha1.BotIdentity identity = 5;
+   */
+  identity?: BotIdentity;
 };
 
 /**
@@ -1962,6 +2026,99 @@ export enum Conclusion {
  * Describes the enum proto.decide.v1alpha1.Conclusion.
  */
 export declare const ConclusionSchema: GenEnum<Conclusion>;
+
+/**
+ * What kind of client a detected bot identity is.
+ *
+ * @generated from enum proto.decide.v1alpha1.BotKind
+ */
+export enum BotKind {
+  /**
+   * @generated from enum value: BOT_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * An AI product fetching on demand for a person who is waiting on the
+   * answer (`CATEGORY:AI_AGENT`).
+   *
+   * @generated from enum value: BOT_KIND_AI_AGENT = 1;
+   */
+  AI_AGENT = 1,
+
+  /**
+   * Scheduled AI crawling for training or an AI index (`CATEGORY:AI` and not
+   * `CATEGORY:AI_AGENT`).
+   *
+   * @generated from enum value: BOT_KIND_AI_CRAWLER = 2;
+   */
+  AI_CRAWLER = 2,
+
+  /**
+   * Browser automation found by Arcjet Signals with no named bot.
+   *
+   * @generated from enum value: BOT_KIND_AUTOMATION = 3;
+   */
+  AUTOMATION = 3,
+
+  /**
+   * Any other detected bot.
+   *
+   * @generated from enum value: BOT_KIND_OTHER = 4;
+   */
+  OTHER = 4,
+}
+
+/**
+ * Describes the enum proto.decide.v1alpha1.BotKind.
+ */
+export declare const BotKindSchema: GenEnum<BotKind>;
+
+/**
+ * How a detected bot identity was established, from weakest to strongest.
+ *
+ * @generated from enum proto.decide.v1alpha1.BotEvidence
+ */
+export enum BotEvidence {
+  /**
+   * @generated from enum value: BOT_EVIDENCE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Matched by User-Agent or IP reputation, and not verified.
+   *
+   * @generated from enum value: BOT_EVIDENCE_UNVERIFIED = 1;
+   */
+  UNVERIFIED = 1,
+
+  /**
+   * Arcjet Signals browser checks failed.
+   *
+   * @generated from enum value: BOT_EVIDENCE_FINGERPRINT = 2;
+   */
+  FINGERPRINT = 2,
+
+  /**
+   * The IP address is in the operator's published ranges, or reverse DNS
+   * confirmed it.
+   *
+   * @generated from enum value: BOT_EVIDENCE_IP = 3;
+   */
+  IP = 3,
+
+  /**
+   * A Web Bot Auth signature verified against the operator's key directory.
+   *
+   * @generated from enum value: BOT_EVIDENCE_SIGNATURE = 4;
+   */
+  SIGNATURE = 4,
+}
+
+/**
+ * Describes the enum proto.decide.v1alpha1.BotEvidence.
+ */
+export declare const BotEvidenceSchema: GenEnum<BotEvidence>;
 
 /**
  * The SDK used to make the request. Used for analytics and to help us improve.
