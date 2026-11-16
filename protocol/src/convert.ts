@@ -186,6 +186,8 @@ function ArcjetBotIdentityFromProtocol(identity?: BotIdentity): ArcjetBotIdentit
     operator: identity.operator,
     evidence,
     spoofed: identity.spoofed,
+    // Delegation is only meaningful on a verified signature.
+    delegated: evidence === "SIGNATURE" && identity.delegated,
   };
 }
 

@@ -516,6 +516,14 @@ export type ArcjetBotIdentity = {
    * `evidence` is then `UNVERIFIED`.
    */
   spoofed: boolean;
+
+  /**
+   * The agent presented a verified Personal Agent Protocol session, so it
+   * acts for a user who delegated access to it.
+   * The user is never identified.
+   * Only `true` when `evidence` is `SIGNATURE`.
+   */
+  delegated: boolean;
 };
 
 /**

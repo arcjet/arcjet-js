@@ -589,6 +589,15 @@ export declare type BotIdentity = Message<"proto.decide.v1alpha1.BotIdentity"> &
    * @generated from field: bool spoofed = 5;
    */
   spoofed: boolean;
+
+  /**
+   * The agent presented a verified Personal Agent Protocol session: it acts
+   * for a user who delegated access to it. Set only with
+   * `BOT_EVIDENCE_SIGNATURE`; the user is never identified.
+   *
+   * @generated from field: bool delegated = 6;
+   */
+  delegated: boolean;
 };
 
 /**

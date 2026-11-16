@@ -424,6 +424,7 @@ test("convert", async (t) => {
         operator: "bot.example",
         evidence: "SIGNATURE",
         spoofed: false,
+        delegated: false,
       });
     });
 
@@ -455,7 +456,92 @@ test("convert", async (t) => {
         operator: "",
         evidence: "UNVERIFIED",
         spoofed: true,
+        delegated: false,
       });
+    });
+
+    await t.test("should create a bot reason with a delegated identity", () => {
+      const botId = "SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory";
+      const reason = ArcjetReasonFromProtocol(
+        create(ReasonSchema, {
+          reason: {
+            case: "botV2",
+            value: {
+              allowed: [],
+              denied: [botId],
+              verified: true,
+              identity: {
+                kind: BotKind.AI_AGENT,
+                botId,
+                operator: "bot.example",
+                evidence: BotEvidence.SIGNATURE,
+                delegated: true,
+              },
+            },
+          },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetBotReason);
+      assert.deepEqual(reason.identity, {
+        kind: "AI_AGENT",
+        botId,
+        operator: "bot.example",
+        evidence: "SIGNATURE",
+        spoofed: false,
+        delegated: true,
+      });
+    });
+
+    await t.test("should not report a delegated identity without a signature", () => {
+      for (const evidence of [BotEvidence.UNVERIFIED, BotEvidence.FINGERPRINT, BotEvidence.IP]) {
+        const reason = ArcjetReasonFromProtocol(
+          create(ReasonSchema, {
+            reason: {
+              case: "botV2",
+              value: {
+                allowed: [],
+                denied: ["OPENAI_CRAWLER_USER"],
+                identity: {
+                  kind: BotKind.AI_AGENT,
+                  botId: "OPENAI_CRAWLER_USER",
+                  operator: "",
+                  evidence,
+                  delegated: true,
+                },
+              },
+            },
+          }),
+        );
+
+        assert.ok(reason instanceof ArcjetBotReason);
+        assert.equal(reason.identity?.delegated, false);
+      }
+    });
+
+    await t.test("should default delegated to false when it is missing", () => {
+      const botId = "SIGNED_BOT:https://bot.example/.well-known/http-message-signatures-directory";
+      const reason = ArcjetReasonFromProtocol(
+        create(ReasonSchema, {
+          reason: {
+            case: "botV2",
+            value: {
+              allowed: [],
+              denied: [botId],
+              verified: true,
+              identity: {
+                kind: BotKind.AI_AGENT,
+                botId,
+                operator: "bot.example",
+                evidence: BotEvidence.SIGNATURE,
+              },
+            },
+          },
+        }),
+      );
+
+      assert.ok(reason instanceof ArcjetBotReason);
+      assert.equal(reason.identity?.delegated, false);
     });
 
     await t.test("should map every bot identity kind and evidence", () => {
@@ -494,6 +580,7 @@ test("convert", async (t) => {
             operator: "",
             evidence,
             spoofed: false,
+            delegated: false,
           });
         }
       }
@@ -888,6 +975,7 @@ test("convert", async (t) => {
               operator: "",
               evidence: "IP",
               spoofed: false,
+              delegated: false,
             },
           }),
         ),
