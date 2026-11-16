@@ -119,7 +119,8 @@ Prefer the versioned Guard namespaces over hand-wrapping every tool:
 | Vercel Eve | `@arcjet/guard/vercel-eve/v0` |
 | Mastra | `@arcjet/guard/mastra/v1` |
 | Claude Agent SDK | `@arcjet/guard/claude-agent-sdk/v0` |
-| Claude Managed Agents | `@arcjet/guard/claude-managed-agents/v0` |
+| Claude Managed Agents (`@anthropic-ai/sdk` 1.x) | `@arcjet/guard/claude-managed-agents/v1` |
+| Claude Managed Agents (`@anthropic-ai/sdk` 0.x) | `@arcjet/guard/claude-managed-agents/v0` |
 | LangGraph JS | `@arcjet/guard/langgraph/v1` |
 | LangChain JS `createAgent` | `@arcjet/guard/langchain/v1` |
 | OpenAI Agents | `@arcjet/guard/openai-agents/v0` |

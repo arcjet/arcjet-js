@@ -25,7 +25,7 @@ test("@anthropic-ai/sdk is an optional peer and not a dependency", () => {
 
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies);
-  assert.equal(peerDependencies["@anthropic-ai/sdk"], ">=0.86.0 <1");
+  assert.equal(peerDependencies["@anthropic-ai/sdk"], ">=0.86.0 <2");
 
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
   assert.ok(peerDependenciesMeta);

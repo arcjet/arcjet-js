@@ -10,6 +10,7 @@ metadata:
   library_version: "1.15.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-05: the README adds @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x and scopes /v0 to 0.x; this skill is unaffected.
+  # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
   - README.md
 ---
 
@@ -37,7 +38,7 @@ decision rule:
 
 This namespace is JS **`genkit()` + `ai.defineTool` + `ai.generate`**.
 Not Go / Python Genkit. Do not also wrap the same tool with
-`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v0`.
+`@arcjet/guard/vercel-ai/v7` or `@arcjet/guard/claude-managed-agents/v1`.
 Zod is Genkit's, not ours.
 
 ## Screen user text before `generate()` — there is no inbound hook. Middleware `model` is not Guard.

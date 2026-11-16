@@ -8,6 +8,7 @@
  * users re-exported from a vendor namespace — `@arcjet/guard/vercel-ai/v7`,
  * `@arcjet/guard/vercel-eve/v0`, `@arcjet/guard/mastra/v1`,
  * `@arcjet/guard/claude-agent-sdk/v0`, `@arcjet/guard/claude-managed-agents/v0`,
+ * `@arcjet/guard/claude-managed-agents/v1`,
  * `@arcjet/guard/langchain/v1`,
  * `@arcjet/guard/langgraph/v1`, `@arcjet/guard/openai-agents/v0`,
  * `@arcjet/guard/genkit/v1`, `@arcjet/guard/google-adk/v2`,
