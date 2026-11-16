@@ -36,6 +36,9 @@
     "gaxios@6.7.1": {
       "uuid": "11.1.1"
     },
+    "gcp-metadata@8.1.4": {
+      "gaxios": "7.1.4"
+    },
     "miniflare": {
       "sharp": ">=0.35.5",
       "undici": ">=7.29.1"
