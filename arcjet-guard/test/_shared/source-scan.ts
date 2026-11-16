@@ -304,6 +304,7 @@ export const EXPECTED_ROOT_KEYS = [
   "./package.json",
   "./strands-agents/v1",
   "./tanstack-ai/v0",
+  "./tanstack-ai/v1",
   // The in-memory client for application tests. Deliberately a single entry
   // rather than a runtime-conditional one: it has no transport, so there is
   // nothing for a condition to select.

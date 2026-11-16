@@ -4,7 +4,7 @@
  * `import type`; this proves the consequence, catching a build step that
  * re-emits one as a value import.
  *
- * Only `src/<namespace>` is globbed. Suites that exercise the real SDK
+ * Only `src/<namespace>/<version>` is globbed. Suites that exercise the real SDK
  * value-import the peer, so they live under `test/<namespace>` and run in
  * `npm run test-unit`, where the peer is installed.
  *
@@ -35,8 +35,8 @@ const SRC_ROOT = join(PACKAGE_ROOT, "src");
 const MIN_TEST_FILES = 5;
 
 /**
- * One check per namespace that imports its SDK for types only.
- * `dir` is the folder under `src/`. `remove` may include a scope
+ * One check per namespace version that imports its SDK for types only.
+ * `dir` is the folder under `src/` and `version` the folder under it. `remove` may include a scope
  * (`@genkit-ai`) so nested copies of the peer disappear too.
  */
 const CHECKS = [
@@ -104,11 +104,18 @@ const CHECKS = [
     resolve: ["@strands-agents/sdk"],
   },
   {
-    name: "tanstack-ai",
+    name: "tanstack-ai-v0",
     dir: "tanstack-ai",
     version: "v0",
-    remove: ["@tanstack/ai"],
-    resolve: ["@tanstack/ai"],
+    remove: ["@tanstack/ai", "@tanstack/ai-v0"],
+    resolve: ["@tanstack/ai", "@tanstack/ai-v0"],
+  },
+  {
+    name: "tanstack-ai-v1",
+    dir: "tanstack-ai",
+    version: "v1",
+    remove: ["@tanstack/ai", "@tanstack/ai-v0"],
+    resolve: ["@tanstack/ai", "@tanstack/ai-v0"],
   },
   {
     name: "google-adk",
@@ -240,7 +247,7 @@ function runCheck(check) {
       assertUnresolved(specifier, resolveFrom);
     }
 
-    const testDir = join(PACKAGE_ROOT, "src", check.dir);
+    const testDir = join(PACKAGE_ROOT, "src", check.dir, check.version);
     const count = countTestFiles(testDir);
     if (count < MIN_TEST_FILES) {
       throw new Error(`only ${count} ${check.name} test files matched; the glob has gone stale`);
@@ -248,9 +255,9 @@ function runCheck(check) {
 
     // Node expands the glob itself; `spawnSync` without a shell passes it through
     // literally, which is what the quoting did in the YAML this replaced.
-    // Stay under `src/<dir>` — `test/<dir>` value-imports the peer
+    // Stay under `src/<dir>/<version>` — `test/<dir>` value-imports the peer
     // (e.g. test/google-adk/real-plugin.test.ts) and runs in test-unit.
-    const glob = `src/${check.dir}/**/*.test.ts`;
+    const glob = `src/${check.dir}/${check.version}/**/*.test.ts`;
     if (!glob.startsWith(`src/${check.dir}/`)) {
       throw new Error(`peer-absent glob must stay under src/${check.dir}/; got ${glob}`);
     }

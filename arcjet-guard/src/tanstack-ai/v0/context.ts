@@ -37,7 +37,12 @@ export interface TanStackAiAgentContext {
   metadata?: ArcjetMetadata;
 }
 
-function asContextSource(source: unknown): TanStackAiContextSource | undefined {
+/**
+ * The source as an object, or `undefined`.
+ *
+ * @internal Shared with `tanstack-ai/v1`; not exported from `@arcjet/guard/tanstack-ai/v0`.
+ */
+export function asContextSource(source: unknown): TanStackAiContextSource | undefined {
   if (source === undefined || source === null || typeof source !== "object") {
     return undefined;
   }
@@ -56,8 +61,10 @@ function asAppContext(value: unknown): TanStackAiContextSource | undefined {
  * `streamId` (both 0.8.0 and 0.69.x). Those fields are SDK-minted, so
  * an envelope that looks like one must not be mined for correlation —
  * including the 0.69 `threadId` / deprecated `conversationId` alias.
+ *
+ * @internal Shared with `tanstack-ai/v1`; not exported from `@arcjet/guard/tanstack-ai/v0`.
  */
-function isMiddlewareEnvelope(source: TanStackAiContextSource): boolean {
+export function isMiddlewareEnvelope(source: TanStackAiContextSource): boolean {
   return typeof source.requestId === "string" && typeof source.streamId === "string";
 }
 
@@ -65,8 +72,10 @@ function isMiddlewareEnvelope(source: TanStackAiContextSource): boolean {
  * The integrator-owned app object. On a `chat({ context })` /
  * `ChatMiddlewareContext` envelope that is `source.context`. On a bare
  * app object it is the source itself.
+ *
+ * @internal Shared with `tanstack-ai/v1`; not exported from `@arcjet/guard/tanstack-ai/v0`.
  */
-function readAppContext(
+export function readAppContext(
   source: TanStackAiContextSource | undefined,
 ): TanStackAiContextSource | undefined {
   if (source === undefined) {
@@ -82,7 +91,13 @@ function readAppContext(
   return source;
 }
 
-function firstValidId(candidates: ReadonlyArray<{ value: unknown; label: string }>): {
+/**
+ * The first candidate that is a valid correlation id, and the last
+ * rejected one for the warning.
+ *
+ * @internal Shared with `tanstack-ai/v1`; not exported from `@arcjet/guard/tanstack-ai/v0`.
+ */
+export function firstValidId(candidates: ReadonlyArray<{ value: unknown; label: string }>): {
   id: string | undefined;
   rejected: string | undefined;
 } {
@@ -100,7 +115,12 @@ function firstValidId(candidates: ReadonlyArray<{ value: unknown; label: string 
   return { id: undefined, rejected };
 }
 
-function validMetadataString(values: unknown[]): string | undefined {
+/**
+ * The first value that is a non-empty, valid correlation-id string.
+ *
+ * @internal Shared with `tanstack-ai/v1`; not exported from `@arcjet/guard/tanstack-ai/v0`.
+ */
+export function validMetadataString(values: unknown[]): string | undefined {
   for (const value of values) {
     if (typeof value !== "string" || value.length === 0) {
       continue;
