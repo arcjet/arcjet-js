@@ -73,7 +73,7 @@
   "devDependencies": {
     "@arcjet/cache": "1.15.0",
     "react-router": "8.5.0",
-    "tsdown": "0.23.1",
+    "tsdown": "0.23.7",
     "typescript": "7.0.2"
   },
   "peerDependencies": {

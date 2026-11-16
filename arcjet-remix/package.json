@@ -69,7 +69,7 @@
     "arcjet": "1.15.0"
   },
   "devDependencies": {
-    "tsdown": "0.23.1",
+    "tsdown": "0.23.7",
     "typescript": "7.0.2"
   },
   "engines": {}
