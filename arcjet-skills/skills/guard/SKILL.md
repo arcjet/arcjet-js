@@ -10,7 +10,8 @@ metadata:
   library_version: "1.16.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-05: docs/guard.md adds the claude-managed-agents/v1 row; this skill has no per-SDK import table.
-  # Reviewed 2026-11-19: docs/guard.md adds the vercel-eve/v1 row for Eve 1.x; this skill has no per-SDK import table.
+  # Reviewed 2026-11-19: docs/guard.md notes vercel-eve/v1 is not in npm 1.16.0; this skill has no per-SDK import table.
+  # Reviewed 2026-11-19: docs/choose-protections.md / protect.md add CATEGORY:AI_AGENT; this skill is unaffected.
   - docs/guard.md
 ---
 

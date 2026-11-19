@@ -9,6 +9,7 @@ metadata:
   library: "@arcjet/skills"
   library_version: "1.16.0" # x-release-please-version
 sources:
+  # Reviewed 2026-11-19: docs/protect.md adds CATEGORY:AI_AGENT + isAiAgent.
   - docs/protect.md
 ---
 
@@ -50,8 +51,11 @@ Pick the adapter the app already uses (`@arcjet/next`, `@arcjet/node`,
 hand-edit `package.json` and guess a version.
 
 Omitted `mode` is `DRY_RUN`. `detectBot` requires exactly one of `allow` or
-`deny`. `detectPromptInjection` takes `mode` only — no `threshold`; text over
-128 KiB is denied in LIVE, and a missing message fails open.
+`deny`. `CATEGORY:AI_AGENT` (1.16.0+) is the on-demand AI-agent slice of
+`CATEGORY:AI` — denying `CATEGORY:AI` also blocks agents; check a LIVE result
+with `isAiAgent` from `@arcjet/inspect`. `detectPromptInjection` takes `mode`
+only — no `threshold`; text over 128 KiB is denied in LIVE, and a missing
+message fails open.
 
 Signed agents (Web Bot Auth) go in the same `allow` / `deny` lists, by
 catalog name (`CHATGPT_AGENT`, `BROWSERBASE`, …) or as
