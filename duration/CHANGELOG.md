@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...@arcjet/duration-v1.17.0) (2026-11-19)
+
+
+### 🧹 Miscellaneous Chores
+
+* **@arcjet/duration:** Synchronize arcjet-js versions
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/duration-v1.16.0) (2026-11-16)
 
 

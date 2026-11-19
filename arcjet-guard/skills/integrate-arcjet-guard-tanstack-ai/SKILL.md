@@ -7,7 +7,7 @@ metadata:
   author: arcjet
   type: core
   library: "@arcjet/guard"
-  library_version: "1.16.0" # x-release-please-version
+  library_version: "1.17.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
   # Reviewed 2026-11-19: the README adds @arcjet/guard/vercel-eve/v1 for Eve 1.x and scopes /v0 to Eve 0.x; this skill is unaffected.

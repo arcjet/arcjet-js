@@ -7,7 +7,7 @@ metadata:
   author: arcjet
   type: core
   library: "@arcjet/skills"
-  library_version: "1.16.0" # x-release-please-version
+  library_version: "1.17.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-19: docs/choose-protections.md adds CATEGORY:AI_AGENT + isAiAgent.
   - docs/choose-protections.md
