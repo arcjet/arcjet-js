@@ -7,7 +7,7 @@ metadata:
   author: arcjet
   type: core
   library: "@arcjet/guard"
-  library_version: "1.16.0" # x-release-please-version
+  library_version: "1.17.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-05: the README adds @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x and scopes /v0 to 0.x; this skill is unaffected.
   # Reviewed 2026-10-28: the oxfmt 0.74 reformat of README examples does not affect this skill.
