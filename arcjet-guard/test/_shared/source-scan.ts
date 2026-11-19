@@ -312,6 +312,7 @@ export const EXPECTED_ROOT_KEYS = [
   "./testing",
   "./vercel-ai/v7",
   "./vercel-eve/v0",
+  "./vercel-eve/v1",
 ] as const;
 
 /**

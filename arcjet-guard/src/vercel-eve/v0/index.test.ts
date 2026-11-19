@@ -193,7 +193,7 @@ test("Eve namespace is a strict superset of the agents barrel with same identity
 });
 
 // AC1.3: Ensure no unversioned or other-versioned vercel-eve keys exist
-test("AC1.3: export map has no unversioned ./vercel-eve or unsupported ./vercel-eve/v1", () => {
+test("AC1.3: export map has no unversioned ./vercel-eve and only the v0 and v1 paths", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
   const exportsMap = objectField(packageJson, "exports");
   assert.ok(exportsMap, "package.json must have an exports field");
@@ -206,19 +206,13 @@ test("AC1.3: export map has no unversioned ./vercel-eve or unsupported ./vercel-
     'export map must not have "./vercel-eve" (unversioned alias prohibited)',
   );
 
-  // AC1.3: ./vercel-eve/v1 must NOT exist (Eve is pre-1.0)
-  assert.ok(
-    !exportKeys.includes("./vercel-eve/v1"),
-    'export map must not have "./vercel-eve/v1" (Eve has not reached 1.0)',
-  );
-
-  // AC1.3: No wildcard keys starting with ./vercel-eve/ except v0 literal
+  // AC1.3: No wildcard or other-versioned keys under ./vercel-eve/: v0 for
+  // Eve 0.x, v1 for Eve 1.x, and a v2 only when Eve ships 2.0.
   for (const key of exportKeys) {
     if (key.startsWith("./vercel-eve/")) {
-      assert.equal(
-        key,
-        "./vercel-eve/v0",
-        `export map must not have wildcard vercel-eve subpaths; found "${key}"`,
+      assert.ok(
+        key === "./vercel-eve/v0" || key === "./vercel-eve/v1",
+        `export map must not have wildcard or unsupported vercel-eve subpaths; found "${key}"`,
       );
     }
   }

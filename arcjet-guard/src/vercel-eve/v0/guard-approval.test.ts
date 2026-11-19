@@ -1066,17 +1066,56 @@ test("response empty toolName/callId/requestId omitted from metadata", async () 
     response: { action: "resource.approved" },
   });
 
-  await requireResponse(approval)(
-    createApprovalResponseContext({
-      request: { callId: "", requestId: "", toolName: "", principal: null },
-    }),
-  );
+  // `principal` is on `ApprovalRequest` in later 0.x releases and not at the
+  // 0.34.0 floor. A variable rather than a literal skips the excess-property
+  // check, so this compiles against both.
+  const request = { callId: "", requestId: "", toolName: "", principal: null };
+  await requireResponse(approval)(createApprovalResponseContext({ request }));
 
   const call = recorded(guardCalls[0]);
   const metadata = recorded(call.metadata);
   assert.equal("eve.tool" in metadata, false);
   assert.equal("eve.call" in metadata, false);
   assert.equal("eve.request" in metadata, false);
+});
+
+test("response request id is read from interactionId on eve 0.84+", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = {
+    ...createApprovalResponseContext(),
+    request: { callId: "call_abc", interactionId: "int_xyz", toolName: "test.tool" },
+  } as unknown as ApprovalResponseContext;
+
+  await requireResponse(approval)(ctx);
+
+  const metadata = recorded(recorded(guardCalls[0]).metadata);
+  assert.equal(metadata["eve.request"], "int_xyz");
+  assert.equal(metadata["eve.call"], "call_abc");
+});
+
+test("response request id prefers requestId when both fields are present", async () => {
+  const { client, guardCalls } = stubClient(decisionAllow());
+  const approval = guardApproval(client, {
+    action: "resource.read",
+    response: { action: "resource.approved" },
+  });
+
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test infrastructure
+  const ctx = {
+    ...createApprovalResponseContext(),
+    request: { callId: "call_abc", requestId: "req_xyz", interactionId: "int_xyz" },
+  } as unknown as ApprovalResponseContext;
+
+  await requireResponse(approval)(ctx);
+
+  const metadata = recorded(recorded(guardCalls[0]).metadata);
+  assert.equal(metadata["eve.request"], "req_xyz");
 });
 
 test("response missing session → guard still called, does not throw", async () => {

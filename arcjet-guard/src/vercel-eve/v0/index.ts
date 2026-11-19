@@ -12,9 +12,11 @@
  * imports `eve` at runtime: every Eve type arrives through `import type`, so
  * installing `@arcjet/guard` never pulls Eve in.
  *
- * **Note:** the version segment is `v0` because Eve is pre-1.0 and has never
- * published a 1.x. A `v1` namespace is added when Eve reaches 1.0; the segment
- * names the SDK's major, not this integration's iteration.
+ * **Note:** the version segment names the SDK's major, not this integration's
+ * iteration: use this path with Eve 0.x and `@arcjet/guard/vercel-eve/v1` with
+ * Eve 1.x. `arcjetHooks` here listens for the Eve 0.x event keys, and Eve 0.84
+ * and later reject a hook file that names them, so it loads only on Eve
+ * 0.34–0.83. The other helpers are the same functions `/v1` exports.
  *
  * @example
  * ```ts

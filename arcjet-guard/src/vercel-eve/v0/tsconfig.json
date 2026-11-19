@@ -1,0 +1,8 @@
+{
+  // Type-aware linting picks the nearest tsconfig.json for each file. The
+  // package tsconfig.json excludes this directory, so without this file v0
+  // would be linted against the Eve 1.x `eve` devDependency instead of the
+  // `eve-v0` alias it targets.
+  "extends": "../../../tsconfig.vercel-eve-v0.json",
+  "include": ["./**/*.ts"]
+}

@@ -56,10 +56,19 @@ change them:
 - **Vendor-prefixed**, naming the SDK being integrated rather than the feature.
   A feature-named namespace such as `/ai` assumes there is only ever one AI SDK
   worth integrating, and leaves nowhere to put a second vendor whose model of
-  the same feature differs. `vercel-eve/v0` bears this out: Eve is
+  the same feature differs. `vercel-eve` bears this out: Eve is
   filesystem-first, with one `defineTool` per file and no author-controlled call
   site, so its enforcement points are a channel-boundary screen and a
   connection-level approval gate that `vercel-ai/v7` has no equivalent of.
+  `vercel-eve/v1` is the same surface for Eve 1.x. Eve 1.0 keys hooks on
+  session stream version 27 facts and its hook loader rejects the removed
+  event keys `vercel-eve/v0`'s `arcjetHooks` registers (from Eve 0.84), so
+  v1 has its own `arcjetHooks` and re-exports v0's `guardTool`,
+  `guardApproval`, `guardInbound`, and `eveAgentContext`. Those modules must
+  type-check against both majors: the default project checks them against
+  the `eve` devDependency (1.x), and `tsconfig.vercel-eve-v0.json` checks all
+  of v0 against the `eve-v0` alias (0.x). v1 must not import v0's `index.ts`
+  or `hooks.ts`.
   `mastra/v1` is the same idea on a different SDK: Mastra already runs
   channels through `processInput` and treats `requireApproval` as human HITL,
   so its helpers are `guardTool`, `guardProcessor`, and `guardHooks`.
@@ -265,8 +274,9 @@ who never touch an AI SDK are unaffected.
 
 1. Create `arcjet-guard/src/<vendor-sdk>/v<major>/` (e.g. `src/acme-sdk/v2/`).
    The version segment names the SDK's own major, so an SDK that has not
-   reached 1.0 gets `v0` — that is why the Eve namespace is `vercel-eve/v0`,
-   and why `v1` is added additively at its GA rather than assumed now.
+   reached 1.0 gets `v0` — that is why the Eve namespace started as
+   `vercel-eve/v0`, and why `vercel-eve/v1` was added alongside it at Eve's GA
+   rather than assumed earlier.
 2. Export the integration helpers — at minimum a wrapper equivalent to
    `guardTool` and a way to get context to it.
 3. Re-export the shared layer with `export * from "../../agents/index.ts"`.

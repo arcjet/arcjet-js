@@ -1,0 +1,22 @@
+{
+  // `@arcjet/guard/vercel-eve/v0` targets Eve 0.x, while the `eve`
+  // devDependency is the 1.x that `vercel-eve/v1` targets. This project
+  // type-checks the v0 namespace and its tests against the 0.x development
+  // alias `eve-v0` instead.
+  "extends": "./tsconfig.lint.json",
+  "compilerOptions": {
+    "paths": {
+      // Every subpath v0 imports (`eve/tools`, `eve/tools/approval`,
+      // `eve/context`, `eve/hooks`, `eve/connections`) maps to
+      // `dist/src/public/<subpath>/index.d.ts` from 0.34.0 on. A subpath that
+      // fits neither fails to resolve rather than falling back to the 1.x
+      // package.
+      "eve/*": [
+        "./node_modules/eve-v0/dist/src/public/*/index.d.ts",
+        "../node_modules/eve-v0/dist/src/public/*/index.d.ts"
+      ]
+    }
+  },
+  "include": ["src/vercel-eve/v0/**/*.ts"],
+  "exclude": ["node_modules/"]
+}

@@ -32,18 +32,25 @@ function objectField(
 test("AC1.5: eve is an optional peer and not a dependency", () => {
   const packageJson = readJsonObject(resolve(import.meta.dirname, "../../../package.json"));
 
-  // Static assertion 1: peerDependencies.eve is exactly ">=0.34.0 <1"
+  // Static assertion 1: one peer entry covers both namespaces: v0 targets Eve
+  // 0.x from 0.34.0, and v1 targets 1.x.
   const peerDependencies = objectField(packageJson, "peerDependencies");
   assert.ok(peerDependencies, "package.json must have peerDependencies");
 
   const eveVersion = peerDependencies["eve"];
-  assert.equal(eveVersion, ">=0.34.0 <1", 'peerDependencies.eve must be exactly ">=0.34.0 <1"');
+  assert.equal(eveVersion, ">=0.34.0 <2", 'peerDependencies.eve must be exactly ">=0.34.0 <2"');
 
-  // The assignability tests compile against this pin. Eve 0.45 moved the
-  // Approval* types off the `eve/tools` barrel onto `eve/tools/approval`.
+  // The `eve` devDependency is the 1.x that v1 targets. v0's assignability
+  // tests compile against this 0.x alias through tsconfig.vercel-eve-v0.json.
+  // Eve 0.45 moved the Approval* types off the `eve/tools` barrel onto
+  // `eve/tools/approval`.
   const devDependencies = objectField(packageJson, "devDependencies");
   assert.ok(devDependencies, "package.json must have devDependencies");
-  assert.equal(devDependencies["eve"], "0.80.1", 'devDependencies.eve must be pinned to "0.80.1"');
+  assert.equal(
+    devDependencies["eve-v0"],
+    "npm:eve@0.80.1",
+    'devDependencies["eve-v0"] must alias eve pinned to "0.80.1"',
+  );
 
   // Static assertion 2: peerDependenciesMeta.eve.optional is true
   const peerDependenciesMeta = objectField(packageJson, "peerDependenciesMeta");
@@ -61,6 +68,7 @@ test("AC1.5: eve is an optional peer and not a dependency", () => {
     !(dependencies && "eve" in dependencies),
     "eve must not be in dependencies (it is a peer only)",
   );
+  assert.ok(!(dependencies && "eve-v0" in dependencies));
 });
 
 test("production Approval imports stay on names eve/tools/approval has exported since 0.34", () => {
@@ -80,7 +88,6 @@ test("production Approval imports stay on names eve/tools/approval has exported 
     .split(",")
     .map((name) => name.trim())
     .filter((name) => name.length > 0);
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint's type-aware checker has no signature for Array#toSorted, which unicorn/no-array-sort requires
   const sortedNames = names.toSorted();
   assert.deepEqual(
     sortedNames,

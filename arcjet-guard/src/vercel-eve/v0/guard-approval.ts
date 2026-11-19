@@ -232,16 +232,42 @@ function requestPhaseMetadata<TInput>(ctx: ApprovalContext<TInput>): ArcjetMetad
   };
 }
 
+/**
+ * Both names Eve has given the parked request's id on `ApprovalRequest`:
+ * `requestId` before 0.84, `interactionId` from 0.84. Each Eve version declares
+ * only one of them, so both are optional here and the request is widened to
+ * this type by assignment rather than asserted. `callId` is on the request in
+ * every Eve version; listing it lets either shape satisfy TypeScript's check
+ * that an all-optional type shares at least one property with the value
+ * assigned to it.
+ */
+type RequestIdSources = {
+  readonly callId?: unknown;
+  readonly interactionId?: unknown;
+  readonly requestId?: unknown;
+};
+
+/** The parked request's id, or `undefined` when Eve sent neither field. */
+function parkedRequestId<TInput>(ctx: ApprovalResponseContext<TInput>): string | undefined {
+  const sources: RequestIdSources | undefined = ctx?.request;
+  for (const id of [sources?.requestId, sources?.interactionId]) {
+    if (typeof id === "string" && id.length > 0) {
+      return id;
+    }
+  }
+  return undefined;
+}
+
 function responsePhaseMetadata<TInput>(ctx: ApprovalResponseContext<TInput>): ArcjetMetadata {
   const request = ctx?.request;
+  const requestId = parkedRequestId(ctx);
   return {
     "eve.phase": "approval-response",
     ...(typeof request?.toolName === "string" &&
       request.toolName.length > 0 && { "eve.tool": request.toolName }),
     ...(typeof request?.callId === "string" &&
       request.callId.length > 0 && { "eve.call": request.callId }),
-    ...(typeof request?.requestId === "string" &&
-      request.requestId.length > 0 && { "eve.request": request.requestId }),
+    ...(requestId !== undefined && { "eve.request": requestId }),
   };
 }
 
