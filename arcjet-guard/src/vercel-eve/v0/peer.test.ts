@@ -88,7 +88,6 @@ test("production Approval imports stay on names eve/tools/approval has exported 
     .split(",")
     .map((name) => name.trim())
     .filter((name) => name.length > 0);
-  // oxlint-disable-next-line typescript/no-unsafe-assignment, typescript/no-unsafe-call -- oxlint's type-aware checker has no signature for Array#toSorted, which unicorn/no-array-sort requires
   const sortedNames = names.toSorted();
   assert.deepEqual(
     sortedNames,

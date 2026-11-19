@@ -57,15 +57,15 @@ async function eveInternal<T>(path: string): Promise<T> {
 }
 
 type HookLoader = {
-  normalizeHookHandlers(
+  normalizeHookHandlers: (
     value: unknown,
     source: { logicalPath: string; exportName?: string },
-  ): Record<string, (event: unknown, ctx: unknown) => void>;
+  ) => Record<string, (event: unknown, ctx: unknown) => void>;
 };
 
 type ApprovalLoader = {
-  normalizeApproval(value: unknown, message: string): unknown;
-  normalizeAgentApproval(value: unknown, message: string): unknown;
+  normalizeApproval: (value: unknown, message: string) => unknown;
+  normalizeAgentApproval: (value: unknown, message: string) => unknown;
 };
 
 function hookContext(): unknown {
@@ -167,17 +167,21 @@ test(
     assert.ok(sourceDescriptor, "eve 1.x still stamps the definition-source key");
     assert.equal(sourceDescriptor.enumerable, false);
 
+    // A direct invocation has no Eve context, which guardTool documents and allows.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- see above
+    const noContext = undefined as unknown as Parameters<NonNullable<typeof tool.execute>>[1];
+
     const allow = stubClient(decisionAllow());
     const allowed = guardTool(allow.client, tool, { action: "lookup.read" });
     assert.equal(Reflect.get(allowed, brand), Reflect.get(tool, brand));
     assert.deepEqual(Object.getOwnPropertyDescriptor(allowed, sourceKey), sourceDescriptor);
-    assert.equal(await allowed.execute?.({ q: "x" }, undefined as never), "result for x");
+    assert.equal(await allowed.execute?.({ q: "x" }, noContext), "result for x");
     assert.equal(allow.guardCalls.length, 1);
 
     const deny = stubClient(decisionDenyRateLimit(Math.floor(Date.now() / 1000) + 60));
     const denied = guardTool(deny.client, tool, { action: "lookup.read" });
     await assert.rejects(
-      Promise.resolve(denied.execute?.({ q: "x" }, undefined as never)),
+      Promise.resolve(denied.execute?.({ q: "x" }, noContext)),
       ArcjetDeniedError,
     );
   },
@@ -211,6 +215,7 @@ test("guardApproval reads eve 1.x approval and response contexts", { skip }, asy
     response: { action: "thing.approved" },
   });
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a hand-built eve 1.x context
   const requestCtx = {
     abortSignal: new AbortController().signal,
     callId: "call_1",
@@ -225,6 +230,7 @@ test("guardApproval reads eve 1.x approval and response contexts", { skip }, asy
   } as unknown as ApprovalContext;
   assert.equal(await approval.request(requestCtx), "user-approval");
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a hand-built eve 1.x context
   const responseCtx = {
     auth: {},
     request: {

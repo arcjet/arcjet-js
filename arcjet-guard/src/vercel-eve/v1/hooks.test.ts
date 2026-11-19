@@ -1,4 +1,4 @@
-// oxlint-disable eslint/no-unsafe-type-assertion, eslint/no-unsafe-argument -- test infrastructure
+// oxlint-disable eslint/no-unsafe-type-assertion -- test infrastructure
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -369,9 +369,15 @@ test("handlers never throw: capture failure, missing event, missing context", ()
   const plain = arcjetHooks(createMockClient());
   for (const definition of [throwing, plain]) {
     for (const key of Object.keys(definition.events)) {
-      assert.doesNotThrow(() => fire(definition, key, { type: key, data: {} }));
-      assert.doesNotThrow(() => fire(definition, key, undefined, null));
-      assert.doesNotThrow(() => fire(definition, key, null, {}));
+      assert.doesNotThrow(() => {
+        fire(definition, key, { type: key, data: {} });
+      });
+      assert.doesNotThrow(() => {
+        fire(definition, key, undefined, null);
+      });
+      assert.doesNotThrow(() => {
+        fire(definition, key, null, {});
+      });
     }
   }
 });
