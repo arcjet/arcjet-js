@@ -903,14 +903,35 @@ Currently available:
   captureAction(arcjet, ctx, { action: "audit.logged" });
   ```
 
-- **`@arcjet/guard/vercel-eve/v0`** — Vercel Eve v0 integration. Exports
-  `guardTool`, `guardApproval`, `guardInbound`, and `arcjetHooks` for Eve's four
-  guard surfaces, alongside the `eveAgentContext` helper that derives context
-  from Eve's session:
+- **`@arcjet/guard/vercel-eve/v1`** (Eve 1.x) and
+  **`@arcjet/guard/vercel-eve/v0`** (Eve 0.x) — Vercel Eve integration. Each
+  exports `guardTool`, `guardApproval`, `guardInbound`, and `arcjetHooks` for
+  Eve's four guard surfaces, alongside the `eveAgentContext` helper that
+  derives context from Eve's session.
+
+  Eve 1.0 keys hooks on session stream version 27 facts (`turn.settled`,
+  `call.settled`, `session.ended`, `task.ended`, `child.opened`), and its hook
+  loader rejects a hook file that names an event key version 27 removed. So
+  `/v1` has its own `arcjetHooks`, and `/v0`'s `arcjetHooks` cannot load on Eve
+  1.x. That loader check arrived in Eve 0.84, so use `/v0`'s `arcjetHooks` only
+  with Eve 0.34–0.83. On Eve 0.84–0.91, upgrade to Eve 1.x and `/v1`.
+  `guardTool`, `guardApproval`, `guardInbound`, and `eveAgentContext` are the
+  same functions through both paths.
+
+  `/v1`'s `arcjetHooks` records the same actions as `/v0` where Eve 1.x still
+  has the fact (`eve.session-started`, `eve.session-failed`,
+  `eve.turn-started`, `eve.turn-completed`, `eve.turn-failed`,
+  `eve.action-result`, `eve.subagent-called`, `eve.agent-started`), adds
+  `eve.turn-cancelled`, and replaces `eve.subagent-completed` with
+  `eve.task-ended`. Eve 1.x's `call.settled` does not name the tool, so
+  `eve.action-result` carries `eve.call` but no `eve.tool`; join it to the
+  `guardTool` or `guardApproval` record for the same `eve.call`. `task.ended`
+  carries neither the task's kind nor its name, so `eve.task-ended` fires for
+  every task; join it to `eve.subagent-called` on `eve.task`.
 
   ```ts
   import { launchArcjet, tokenBucket } from "@arcjet/guard";
-  import { guardApproval, arcjetHooks } from "@arcjet/guard/vercel-eve/v0";
+  import { guardApproval, arcjetHooks } from "@arcjet/guard/vercel-eve/v1";
   import { defineOpenAPIConnection } from "eve/connections";
   import { defineHook } from "eve/hooks";
 
@@ -1961,9 +1982,11 @@ Supporting a new major is additive — a future `/v8` can ship alongside `/v7`,
 so you migrate on your own schedule.
 
 **Pre-1.0 SDKs:** when an SDK has not reached 1.0, the segment is `v0`. A `v1`
-is added when that SDK ships its first stable release. `eve` is currently 0.x
-and a 0.x minor may introduce breaking changes, so `v0` names a range this
-package supports rather than a promise the SDK makes.
+is added when that SDK ships its first stable release. A 0.x minor may
+introduce breaking changes, so `v0` names a range this package supports rather
+than a promise the SDK makes. Eve shows why: its 0.84 minor replaced the hook
+event model, and Eve 1.0 shipped with it, so `vercel-eve/v1` exists alongside
+`vercel-eve/v0`.
 
 ### Optional peer dependencies
 
@@ -1974,10 +1997,13 @@ importing only core guards are not forced to install unneeded packages:
 - **`@arcjet/guard/vercel-ai/v7`** requires `ai` and `@ai-sdk/provider-utils`
   (optional peers — the package will not be installed automatically, but the
   imports will fail clearly if the peers are missing).
-- **`@arcjet/guard/vercel-eve/v0`** requires `eve` (optional peer, installed
-  only to use `@arcjet/guard/vercel-eve/v0`). **Eve requires Node.js >= 24**,
-  which is higher than `@arcjet/guard`'s own floor of >= 22. If you are using
-  Eve, ensure your deployment environment and CI both run Node 24 or later.
+- **`@arcjet/guard/vercel-eve/v1`** and **`@arcjet/guard/vercel-eve/v0`**
+  require `eve` (optional type-only peer, installed only to use one of them).
+  The peer range is `>=0.34.0 <2`: use `/v1` with Eve 1.x and `/v0` with Eve
+  0.x. `/v0`'s `arcjetHooks` loads only on Eve 0.34–0.83. **Eve requires
+  Node.js >= 24**, which is higher than `@arcjet/guard`'s own floor of >= 22.
+  If you are using Eve, ensure your deployment environment and CI both run
+  Node 24 or later.
 - **`@arcjet/guard/mastra/v1`** requires `@mastra/core` (optional peer,
   installed only to use `@arcjet/guard/mastra/v1`). The peer range is `>=1 <2`.
 - **`@arcjet/guard/claude-agent-sdk/v0`** requires
@@ -2047,7 +2073,7 @@ pnpm install ai @ai-sdk/provider-utils
 ```
 
 ```sh
-# @arcjet/guard/vercel-eve/v0 (Node.js >= 24)
+# @arcjet/guard/vercel-eve/v1 (Node.js >= 24)
 pnpm install eve
 ```
 
@@ -2118,7 +2144,7 @@ are not tied to any AI SDK, and internally they are kept that way — nothing
 they import reaches `ai`. They are published on each vendor namespace, so there
 is one path to learn and no layering to reason about.
 
-`@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0`,
+`@arcjet/guard/vercel-ai/v7`, `@arcjet/guard/vercel-eve/v0` and `/v1`,
 `@arcjet/guard/mastra/v1`, `@arcjet/guard/claude-agent-sdk/v0`,
 `@arcjet/guard/claude-managed-agents/v0` and `/v1`,
 `@arcjet/guard/langchain/v1`, `@arcjet/guard/langgraph/v1`,
@@ -2182,7 +2208,7 @@ what happens:
     in a handler.
   - Vercel Eve (`guardTool`, `guardApproval`): `guardTool` throws
     `ArcjetGuardUnavailableError`, which Eve projects as a failed `action.result`
-    to the agent. `guardApproval` returns a `denied` status carrying a reason the
+    (`call.settled` on Eve 1.x) to the agent. `guardApproval` returns a `denied` status carrying a reason the
     model reads.
   - The capture `outcome` on that path is `"unavailable"`, not `"denied"` on both
     SDKs. The model-facing helpers return a fixed `retryAfterSeconds: 5` backoff
@@ -2434,7 +2460,7 @@ that a tool did not run:
 | LangGraph        | Return `{ arcjetDenied: true, … }`; `ToolNode` wraps it as a `ToolMessage` with `status: "success"`                                                                                                                     | Faking a `ToolMessage` to force `status: "error"` crashes the graph reducer                                                                          |
 | LangChain        | Two envelopes: `guardTool` returns `{ arcjetDenied: true, … }` and `baseHandler` wraps it as a success `ToolMessage`; `guardMiddleware`'s `wrapToolCall` returns a real `ToolMessage` carrying the payload as `content` | `wrapToolCall`'s return skips `baseHandler`, so a bare object crashes the messages reducer, and a throw bubbles out of `invoke` and drops the fields |
 | Claude Agent SDK | MCP `CallToolResult` with `isError: true` and the payload on `structuredContent`                                                                                                                                        | A throw is a raw exception; omitting `isError` looks like success                                                                                    |
-| Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                                                                                                                                         | Eve projects a throw as a failed `action.result`. A silent return can violate `outputSchema`                                                         |
+| Vercel Eve       | Throw `ArcjetDeniedError`. Opt in to a returned payload with `onDeny: "result"`                                                                                                                                         | Eve projects a throw as a failed call result. A silent return can violate `outputSchema`                                                             |
 | TanStack AI      | `{ type: "skip", result: ArcjetDenialResult }` from `onGuardToolCall` (v1) or `onBeforeToolCall` (v0). Optional `onDeny: "abort"` returns `{ type: "abort", reason }`                                                   | A throw from `execute` is swallowed into `{ error }`. A throw from the hook aborts the run as an error, not a policy denial                          |
 | Cloudflare Think | `{ action: "substitute", output: ArcjetDenialResult }` from `beforeToolCall`. Optional `onDeny: "block"` returns `{ action: "block", reason }`                                                                          | A throw from the hook is a hook error, not a policy denial. Fail-closed unavailable stays substitute                                                 |
 

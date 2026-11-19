@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-eve
 description: Integrate Arcjet security into a Vercel Eve agent using @arcjet/guard — add guard gates to tools and connections, screen inbound messages, and record agent lifecycle events correlated to the session. Use when asked to add Arcjet to an Eve agent, rate limit its tools, guard connection access, or screen inbound messages.
 license: Apache-2.0
-compatibility: Requires the target app to use Vercel Eve (eve >= 0.34.0 < 1) on Node.js >= 24.
+compatibility: Requires the target app to use Vercel Eve on Node.js >= 24. Eve 1.x uses @arcjet/guard/vercel-eve/v1; Eve 0.x (>= 0.34.0) uses @arcjet/guard/vercel-eve/v0.
 metadata:
   author: arcjet
   type: core
@@ -11,12 +11,13 @@ metadata:
 sources:
   # Reviewed 2026-11-05: the README adds @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x and scopes /v0 to 0.x; this skill is unaffected.
   # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
+  # Reviewed 2026-11-19: the README adds @arcjet/guard/vercel-eve/v1 for Eve 1.x and scopes /v0 to 0.x; import guidance updated to match.
   - README.md
 ---
 
 # Integrate Arcjet Guard into a Vercel Eve agent
 
-`@arcjet/guard`'s Vercel Eve v0 namespace wraps the agent's existing Arcjet
+`@arcjet/guard`'s Vercel Eve namespace wraps the agent's existing Arcjet
 client. It never talks to the Arcjet API itself. Four surfaces, one decision
 rule:
 
@@ -64,10 +65,13 @@ State plainly why each applies to Eve, not other frameworks:
    is "block prompt injection", the answer is `guardInbound` at the channel, not
    a hook. Hooks are for audit trails, not enforcement.
 
-2. **The import path is versioned and there is no alias.** `@arcjet/guard/vercel-eve/v0`.
-   `@arcjet/guard/vercel-eve` does not resolve, and neither does `/v1`. The segment
-   tracks Eve's major, and Eve is pre-1.0, so it gets `v0`. When Eve ships 1.0,
-   a `/v1` path will be added alongside this one.
+2. **The import path is versioned and there is no alias.** Eve 1.x →
+   `@arcjet/guard/vercel-eve/v1`. Eve 0.x → `@arcjet/guard/vercel-eve/v0`.
+   `@arcjet/guard/vercel-eve` does not resolve. The segment tracks Eve's major:
+   check the installed `eve` version before choosing. Eve 1.x rejects a hook
+   file that names an Eve 0.x event key, so `/v0`'s `arcjetHooks` fails to load
+   there (the check arrived in Eve 0.84). The other helpers are the same
+   functions through both paths.
 
 3. **Correlation is not passed; it is read from the session.** Never call
    `createAgentContext` inside an Eve callback — the session id already is the
@@ -82,9 +86,9 @@ State plainly why each applies to Eve, not other frameworks:
    `guardApproval` — the slot holds one value. `onAllow: "user-approval"` is
    how you require a human after the request-time gate. The optional `response`
    policy is how you authorize who may approve the parked request. A rejected
-   response leaves the approval pending; it does not deny the tool. HITL
-   clients answer with `cancel`, not `deny`. Request-time denials are still
-   `{ type: "denied" }`. Same trap as Google ADK `requireConfirmation`
+   response leaves the approval pending; it does not deny the tool. Eve 1.x
+   HITL clients answer `approve` or `deny` (Eve 0.69–0.83 used `cancel`).
+   Request-time denials are still `{ type: "denied" }`. Same trap as Google ADK `requireConfirmation`
    and Cloudflare Think `needsApproval`: HITL is not a policy gate.
 
 5. **`defineDynamic` tools are not covered.** Eve's compiler hoists a dynamic
@@ -92,7 +96,7 @@ State plainly why each applies to Eve, not other frameworks:
    visible to it. Gate those with `guardApproval()` instead — the approval gate
    runs at decision time.
 
-6. **A denial from `guardTool` throws** (Eve projects it as a failed `action.result`),
+6. **A denial from `guardTool` throws** (Eve 1.x projects it as a failed `call.settled`),
    whereas a denial from `guardApproval` is a `denied` status carrying a reason the
    model reads. Prefer the gate when you want the model to adapt; use `guardTool`
    when you need the outcome.
@@ -100,8 +104,8 @@ State plainly why each applies to Eve, not other frameworks:
 ## Step 1: Install and find the guard client
 
 Install `@arcjet/guard` (required), plus `eve` (optional peer, needed for
-`@arcjet/guard/vercel-eve/v0` and must be on Node 24+). Every agent helper lives
-on that one path. Always use explicit versions: `@arcjet/guard/vercel-eve/v0`
+`@arcjet/guard/vercel-eve/v1` and must be on Node 24+). Every agent helper lives
+on that one path. Always use explicit versions: `@arcjet/guard/vercel-eve/v1`
 resolves, but `@arcjet/guard/vercel-eve` does not — omitting the version is
 deliberate (it prevents silent API breaking changes when a new major version is
 supported). Attempting to import from an unversioned path throws
@@ -127,7 +131,7 @@ export const arcjet = launchArcjet({ key: process.env.ARCJET_KEY! });
 
 ```ts
 import { tokenBucket, policyInput } from "@arcjet/guard";
-import { guardTool } from "@arcjet/guard/vercel-eve/v0";
+import { guardTool } from "@arcjet/guard/vercel-eve/v1";
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
@@ -171,7 +175,7 @@ export default guardTool(
 - `rules` may be a callback over the tool's parsed input, computed from the
   data being acted on.
 - On DENY the tool's `execute` never runs; Eve projects it as a failed
-  `action.result`. The model receives details about the denial.
+  `call.settled`. The model receives details about the denial.
 - Guard policy unavailability: if the guard cannot be evaluated (e.g. Arcjet
   API unreachable), the default is `onGuardError: "deny"` — the tool is blocked
   and Eve reports the error. For read-only operations like lookups, set
@@ -192,7 +196,7 @@ add a `response` policy.
 
 ```ts
 import { tokenBucket } from "@arcjet/guard";
-import { guardApproval } from "@arcjet/guard/vercel-eve/v0";
+import { guardApproval } from "@arcjet/guard/vercel-eve/v1";
 import { defineOpenAPIConnection } from "eve/connections";
 
 import { arcjet } from "../arcjet.js";
@@ -226,22 +230,24 @@ export default defineOpenAPIConnection({
   `session.id`, so you can key limits per user/session.
 - On request-time DENY the operation is blocked; Eve returns a `denied` status
   the model can read and adapt to. Contrast `guardTool`, which throws.
-- `onAllow: "user-approval"` parks the call for a human. HITL clients answer
-  with `cancel` (not `deny`). A request-time denial is still
-  `{ type: "denied" }`.
+- `onAllow: "user-approval"` parks the call for a human, who answers
+  `approve` or `deny`. A request-time denial is still `{ type: "denied" }`.
 - The optional `response` policy authorizes the responder, which Eve passes
-  as `ctx.response.principal`; Eve releases before 0.69 pass it as
-  `ctx.responder` instead. ALLOW returns
+  as `ctx.response.principal`. Its capture carries the parked request's
+  `ctx.request.interactionId` as `eve.request`. ALLOW returns
   `{ status: "allowed" }`. DENY returns `{ status: "rejected", reason }` and
   leaves the approval pending.
 - This gate is the only way to protect connection operations — there is no
   middleware or hook alternative.
+- Eve 1.x also accepts one agent-wide `approval` in `agent.ts`, which runs
+  beside each entry's own and the stricter result wins. It takes only the
+  function form, so pass `guardApproval` without `response` there.
 
 ## Step 4: Screen inbound messages
 
 ```ts
 import { detectPromptInjection } from "@arcjet/guard";
-import { guardInbound } from "@arcjet/guard/vercel-eve/v0";
+import { guardInbound } from "@arcjet/guard/vercel-eve/v1";
 import { defineChannel, POST } from "eve/channels";
 
 import { arcjet } from "../arcjet.js";
@@ -294,12 +300,13 @@ export default defineChannel({
         );
       }
 
-      // Message passed; create a session and run the agent.
-      const session = await args.from(correlationId).send(message, {
+      // Message passed; create a session and run the agent. Eve 1.x returns a
+      // delivery receipt naming the session.
+      const delivery = await args.from(correlationId).send(message, {
         auth: null,
       });
 
-      return new Response(JSON.stringify({ success: true, sessionId: session.id }), {
+      return new Response(JSON.stringify({ success: true, sessionId: delivery.sessionId }), {
         headers: { "Content-Type": "application/json" },
       });
     }),
@@ -329,7 +336,7 @@ export default defineChannel({
 ## Step 5: Record agent lifecycle events
 
 ```ts
-import { arcjetHooks } from "@arcjet/guard/vercel-eve/v0";
+import { arcjetHooks } from "@arcjet/guard/vercel-eve/v1";
 import { defineHook } from "eve/hooks";
 
 import { arcjet } from "../arcjet.js";
@@ -337,9 +344,31 @@ import { arcjet } from "../arcjet.js";
 export default defineHook(arcjetHooks(arcjet));
 ```
 
-This hook registers for Eve's session and tool lifecycle events and emits capture
-events joined to the session's correlation ID. The hook is observe-only and cannot
-block anything.
+This hook registers for Eve 1.x session facts and emits capture events joined to
+the session's correlation ID. The hook is observe-only and cannot block anything.
+Pass `{ events: [...] }` to pick families:
+
+- `"session"` → `eve.session-started` (the join record) and `eve.session-failed`.
+- `"turn"` → `eve.turn-started`, then `eve.turn-completed`, `eve.turn-failed`, or
+  `eve.turn-cancelled`.
+- `"tool"` → `eve.action-result` per settled call. Eve 1.x's `call.settled`
+  does not name the tool, so the record has `eve.call` but no `eve.tool`; the
+  `guardTool` or `guardApproval` record for the same `eve.call` has both.
+- `"subagent"` → `eve.subagent-called`, `eve.agent-started` (child session), and
+  `eve.task-ended`. `task.ended` names neither the task's kind nor its name, so
+  `eve.task-ended` fires for every task; join it to `eve.subagent-called` on
+  `eve.task`.
+
+## Eve 0.x
+
+On Eve 0.34–0.83, import every helper from `@arcjet/guard/vercel-eve/v0`
+instead. The code above is otherwise the same, with three differences: failed
+calls surface as `action.result`, Eve 0.69–0.83 HITL clients answer `cancel`
+rather than `deny`, and releases before 0.69 pass the responder as
+`ctx.responder`. `/v0`'s `arcjetHooks` listens for the Eve 0.x event keys and
+records `eve.subagent-completed` instead of `eve.task-ended`. On Eve 0.84–0.91,
+Eve rejects those keys: upgrade to Eve 1.x and `/v1` rather than adding
+`arcjetHooks` there.
 
 ## Verify the integration
 
