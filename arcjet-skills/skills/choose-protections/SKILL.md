@@ -9,6 +9,7 @@ metadata:
   library: "@arcjet/skills"
   library_version: "1.16.0" # x-release-please-version
 sources:
+  # Reviewed 2026-11-19: docs/choose-protections.md adds CATEGORY:AI_AGENT + isAiAgent.
   - docs/choose-protections.md
 ---
 
@@ -19,7 +20,7 @@ or `@arcjet/skills#guard` to implement them.
 
 | Problem | Rule | Where |
 | --- | --- | --- |
-| Bots, scrapers, signed agents | `detectBot` (`allow` **or** `deny`, not both; `SIGNED_BOT:<directory URL>`) | Request only |
+| Bots, scrapers, signed agents, AI agents | `detectBot` (`allow` **or** `deny`, not both; `CATEGORY:AI_AGENT`; `SIGNED_BOT:<directory URL>`; `isAiAgent`) | Request only |
 | SQLi / XSS / common probes | `shield` (`mode: "LIVE"`) | Request only |
 | Cost / abuse quotas | `tokenBucket`, `fixedWindow`, `slidingWindow` | Request and Guard |
 | Jailbreaks, instruction overrides | `detectPromptInjection` (binary; no `threshold`) | Request and Guard |
@@ -55,6 +56,8 @@ Do not:
 - Expect on-device sensitive-info rules to find PHI types.
 - Treat a verified signed agent as authorized. Keep rate limits on, and
   check `isDenied()` before `isVerifiedBot`.
+- Deny `CATEGORY:AI` when you meant to keep on-demand AI agents — use
+  `CATEGORY:AI_AGENT` on an allow list instead (1.16.0+).
 - Write SDK code for coding agents (Claude Code, Copilot, Codex, Cursor, Muse
   Code) or shadow AI discovery. Coding agents use a Console policy plus the
   hooks from https://docs.arcjet.com/coding-agents (no `matcher`, `label`, or

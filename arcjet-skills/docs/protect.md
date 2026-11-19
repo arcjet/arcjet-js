@@ -127,6 +127,10 @@ bots, and rate limits. `protect()` also returns an ERROR decision for a
 missing or empty `ARCJET_KEY` and for non-array `characteristics`.
 
 `detectBot` requires exactly one of `allow` or `deny`. Neither or both throws.
+`CATEGORY:AI_AGENT` (1.16.0+) is the on-demand AI-agent slice of
+`CATEGORY:AI` — denying `CATEGORY:AI` also blocks agents. Allow
+`CATEGORY:AI_AGENT` when crawlers should be blocked but agents should pass.
+Check a LIVE result with `isAiAgent` from `@arcjet/inspect`.
 
 Signed agents (Web Bot Auth) go in the same `allow` / `deny` lists, by
 catalog name (`CHATGPT_AGENT`, `BROWSERBASE`, …) or as

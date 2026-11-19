@@ -2,7 +2,7 @@
 name: integrate-arcjet-guard-eve
 description: Integrate Arcjet security into a Vercel Eve agent using @arcjet/guard — add guard gates to tools and connections, screen inbound messages, and record agent lifecycle events correlated to the session. Use when asked to add Arcjet to an Eve agent, rate limit its tools, guard connection access, or screen inbound messages.
 license: Apache-2.0
-compatibility: Requires the target app to use Vercel Eve on Node.js >= 24. Eve 1.x uses @arcjet/guard/vercel-eve/v1; Eve 0.x (>= 0.34.0) uses @arcjet/guard/vercel-eve/v0.
+compatibility: Requires the target app to use Vercel Eve on Node.js >= 24. Eve 1.x uses @arcjet/guard/vercel-eve/v1 (available from @arcjet/guard 1.17.0; check package.json exports if pinned to ≤1.16.0). Eve 0.x (>= 0.34.0) uses @arcjet/guard/vercel-eve/v0.
 metadata:
   author: arcjet
   type: core
@@ -11,7 +11,7 @@ metadata:
 sources:
   # Reviewed 2026-11-05: the README adds @arcjet/guard/tanstack-ai/v1 for TanStack AI 1.x and scopes /v0 to 0.x; this skill is unaffected.
   # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; cross-references point at /v1.
-  # Reviewed 2026-11-19: the README adds @arcjet/guard/vercel-eve/v1 for Eve 1.x and scopes /v0 to 0.x; import guidance updated to match.
+  # Reviewed 2026-11-19: the README adds @arcjet/guard/vercel-eve/v1 for Eve 1.x and scopes /v0 to 0.x; examples stay on /v1 with a ≤1.16.0 export check.
   - README.md
 ---
 
@@ -66,12 +66,14 @@ State plainly why each applies to Eve, not other frameworks:
    a hook. Hooks are for audit trails, not enforcement.
 
 2. **The import path is versioned and there is no alias.** Eve 1.x →
-   `@arcjet/guard/vercel-eve/v1`. Eve 0.x → `@arcjet/guard/vercel-eve/v0`.
-   `@arcjet/guard/vercel-eve` does not resolve. The segment tracks Eve's major:
-   check the installed `eve` version before choosing. Eve 1.x rejects a hook
-   file that names an Eve 0.x event key, so `/v0`'s `arcjetHooks` fails to load
-   there (the check arrived in Eve 0.84). The other helpers are the same
-   functions through both paths.
+   `@arcjet/guard/vercel-eve/v1` (available from `@arcjet/guard` 1.17.0; check
+   `package.json` `exports` if pinned to ≤1.16.0). Eve 0.x →
+   `@arcjet/guard/vercel-eve/v0`. `@arcjet/guard/vercel-eve` does not resolve.
+   The segment tracks Eve's major: check the installed `eve` version before
+   choosing. Eve 1.x rejects a hook file that names an Eve 0.x event key, so
+   `/v0`'s `arcjetHooks` fails to load there (the check arrived in Eve 0.84) —
+   use `/v1` for hooks on Eve 1.x whenever that export exists. The other
+   helpers are the same functions through both paths.
 
 3. **Correlation is not passed; it is read from the session.** Never call
    `createAgentContext` inside an Eve callback — the session id already is the
@@ -104,9 +106,10 @@ State plainly why each applies to Eve, not other frameworks:
 ## Step 1: Install and find the guard client
 
 Install `@arcjet/guard` (required), plus `eve` (optional peer, needed for
-`@arcjet/guard/vercel-eve/v1` and must be on Node 24+). Every agent helper lives
-on that one path. Always use explicit versions: `@arcjet/guard/vercel-eve/v1`
-resolves, but `@arcjet/guard/vercel-eve` does not — omitting the version is
+`@arcjet/guard/vercel-eve/v1` and must be on Node 24+). Eve 1.x helpers live on
+`/v1` (available from `@arcjet/guard` 1.17.0; check `package.json` `exports` if
+pinned to ≤1.16.0 and use `/v0` only for Eve 0.x). Always use an explicit
+version: `@arcjet/guard/vercel-eve` does not resolve — omitting the version is
 deliberate (it prevents silent API breaking changes when a new major version is
 supported). Attempting to import from an unversioned path throws
 `ERR_PACKAGE_PATH_NOT_EXPORTED`.

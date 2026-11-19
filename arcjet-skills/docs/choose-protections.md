@@ -8,6 +8,13 @@ Map a product problem to Arcjet rules. JavaScript and TypeScript SDK names.
 `deny`. `allow` is a safelist. `deny` blocks listed categories. Empty
 `allow: []` blocks every detected bot. Combine with rate limiting.
 
+`CATEGORY:AI_AGENT` (1.16.0+) is the on-demand AI-agent slice of
+`CATEGORY:AI` (ChatGPT-User, Claude-User, coding agents, …). Denying
+`CATEGORY:AI` also blocks agents. To block AI crawlers but allow agents,
+include `CATEGORY:AI_AGENT` on an `allow` list instead. Check a LIVE result
+with `isAiAgent` from `@arcjet/inspect` — identity is not authorization;
+read `evidence` when strength matters.
+
 Signed agents (Web Bot Auth, 1.15.0+): list signers in the same `allow` /
 `deny` by catalog name (`CHATGPT_AGENT`, `BROWSERBASE`, …) or as
 `SIGNED_BOT:https://<host>/.well-known/http-message-signatures-directory`.
