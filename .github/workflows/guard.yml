@@ -92,16 +92,21 @@ jobs:
         run: npm run test-unit
 
       # The `eve` peer range advertises a floor, and development happens against
-      # the newest release — so nothing would notice if the namespace quietly
-      # started needing something the floor does not have. This pins the lowest
-      # version the range claims and runs the namespace against it.
+      # newer releases — so nothing would notice if a namespace quietly started
+      # needing something the floor does not have. These two steps pin the
+      # lowest version each namespace claims and run it against that.
       #
-      # The install itself is half the check: npm resolves the peer range while
-      # installing, so a floor below what package.json advertises fails here
-      # rather than in a user's project.
+      # `vercel-eve/v0` targets 0.x. The `eve` devDependency is the 1.x that
+      # `/v1` targets, so v0 is typed and tested through the `eve-v0` alias and
+      # its floor goes into the alias. `--legacy-peer-deps` because eve's own
+      # `ai` peer is resolved against the workspace's `ai` pin, which is not
+      # what this step checks; only the alias's resolution is asserted.
       #
-      # Runs before the peer-absent step because that one deletes eve outright.
-      - name: Unit tests at the lowest supported eve
+      # The step puts the alias back on the development pin when it is done,
+      # so `npm run typecheck` in a later step checks v0 at the pin.
+      #
+      # Both run before the peer-absent step because that one deletes eve outright.
+      - name: Unit tests at the lowest supported eve (vercel-eve/v0)
         run: |
           floor=$(node -e "
             const r = require('./arcjet-guard/package.json').peerDependencies.eve;
@@ -109,8 +114,48 @@ jobs:
             if (!m) { console.error('cannot read a floor from peer range: ' + r); process.exit(1) }
             process.stdout.write(m[1]);
           ")
-          echo "lowest supported eve: $floor"
-          npm install "eve@$floor" --no-save --workspace @arcjet/guard
+          echo "lowest supported eve for vercel-eve/v0: $floor"
+          npm install "eve-v0@npm:eve@$floor" --no-save --legacy-peer-deps --workspace @arcjet/guard
+          # The alias's exports map has no ./package.json, so find it the way
+          # Node does: the nearest node_modules/eve-v0 walking up from v0.
+          node -e "
+            const { dirname, join } = require('node:path');
+            const { existsSync } = require('node:fs');
+            let dir = join(process.cwd(), 'arcjet-guard/src/vercel-eve/v0');
+            let manifest;
+            for (;;) {
+              const candidate = join(dir, 'node_modules/eve-v0/package.json');
+              if (existsSync(candidate)) { manifest = candidate; break; }
+              const parent = dirname(dir);
+              if (parent === dir) { console.error('eve-v0 not found'); process.exit(1); }
+              dir = parent;
+            }
+            const found = require(manifest).version;
+            if (found !== process.argv[1]) {
+              console.error('v0 resolves eve-v0 ' + found + ', expected the floor ' + process.argv[1]);
+              process.exit(1);
+            }
+            console.log('v0 resolves eve-v0 ' + found);
+          " "$floor"
+          (cd arcjet-guard && npx tsc --project tsconfig.vercel-eve-v0.json --noEmit)
+          node --test 'arcjet-guard/src/vercel-eve/v0/**/*.test.ts'
+          pin=$(node -p "require('./arcjet-guard/package.json').devDependencies['eve-v0']")
+          npm install "eve-v0@$pin" --no-save --legacy-peer-deps --workspace @arcjet/guard
+        working-directory: ${{ github.workspace }}
+
+      # `vercel-eve/v1` targets 1.x, so its floor is 1.0.0 whatever the shared
+      # peer range's lower bound says. While the `eve` development pin is that
+      # floor, the unit-test step above already ran v1 at it and this step
+      # installs nothing; once the pin moves on, it installs the floor, checks
+      # it, and puts the pin back.
+      - name: Unit tests at the lowest supported eve (vercel-eve/v1)
+        run: |
+          floor=1.0.0
+          pin=$(node -p "require('./arcjet-guard/package.json').devDependencies.eve")
+          echo "lowest supported eve for vercel-eve/v1: $floor (development pin $pin)"
+          if [ "$pin" != "$floor" ]; then
+            npm install "eve@$floor" --no-save --legacy-peer-deps --workspace @arcjet/guard
+          fi
           # Assert what the namespace itself resolves, not merely what landed on
           # disk: npm may nest the install, and eve's exports map does not expose
           # ./package.json, so walk up from a subpath it does export.
@@ -118,7 +163,7 @@ jobs:
             const { createRequire } = require('node:module');
             const { dirname, join } = require('node:path');
             const { existsSync } = require('node:fs');
-            const resolver = createRequire(join(process.cwd(), 'arcjet-guard/src/vercel-eve/v0/index.ts'));
+            const resolver = createRequire(join(process.cwd(), 'arcjet-guard/src/vercel-eve/v1/index.ts'));
             let dir = dirname(resolver.resolve('eve/tools'));
             while (!existsSync(join(dir, 'package.json'))) dir = dirname(dir);
             const found = require(join(dir, 'package.json')).version;
@@ -128,7 +173,11 @@ jobs:
             }
             console.log('namespace resolves eve ' + found);
           " "$floor"
-          node --test 'arcjet-guard/src/vercel-eve/**/*.test.ts'
+          (cd arcjet-guard && npx tsc --project tsconfig.lint.json --noEmit)
+          node --test 'arcjet-guard/src/vercel-eve/v1/**/*.test.ts' 'arcjet-guard/test/vercel-eve/v1/**/*.test.ts'
+          if [ "$pin" != "$floor" ]; then
+            npm install "eve@$pin" --no-save --legacy-peer-deps --workspace @arcjet/guard
+          fi
         working-directory: ${{ github.workspace }}
 
       # The same check for `@arcjet/guard/tanstack-ai/v0`. The `@tanstack/ai`

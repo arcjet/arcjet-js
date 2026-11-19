@@ -126,11 +126,18 @@ const CHECKS = [
   },
   // Last: deletes a shared devDependency.
   {
-    name: "eve",
+    name: "eve-v0",
     dir: "vercel-eve",
     version: "v0",
-    remove: ["eve"],
-    resolve: ["eve"],
+    remove: ["eve", "eve-v0"],
+    resolve: ["eve", "eve-v0"],
+  },
+  {
+    name: "eve-v1",
+    dir: "vercel-eve",
+    version: "v1",
+    remove: ["eve", "eve-v0"],
+    resolve: ["eve", "eve-v0"],
   },
 ];
 

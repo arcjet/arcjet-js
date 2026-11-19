@@ -48,11 +48,18 @@
       "allowedVersions": "<=1.5.0"
     },
     {
-      "description": "Never automerge Eve. It is pre-1.0 (30 minor lines in under a year) so a minor release may break, and `@arcjet/guard/vercel-eve/v0` types against `ToolDefinition`, `ApprovalContext`, `ApprovalStatus`, `SessionContext` and `HookEventMap`. A green typecheck is necessary but not sufficient: the namespace also depends on two `Symbol.for` brands `defineTool` stamps, on the definition-source key staying non-enumerable and configurable, and on stream-event payload fields — runtime contracts a typecheck cannot see. Keep the range below 1.0; `vercel-eve/v1` is added deliberately, not by a bump. This rule is last in `packageRules` so it wins over the devDependencies and patch automerge rules above.",
+      "description": "Never automerge eve. `@arcjet/guard/vercel-eve/v1` types against ToolDefinition, ApprovalContext, ApprovalResponseContext, ApprovalStatus, SessionContext, AgentDefinition.approval, and HookEventMap. A green typecheck is necessary but not sufficient: the namespace also depends on two `Symbol.for` brands `defineTool` stamps, on the definition-source key staying non-enumerable and configurable, on eve's hook loader accepting the session stream version 27 keys `arcjetHooks` registers, and on fact payload fields — runtime contracts the test/vercel-eve/v1 suite checks against the installed eve. Keep the range on 1.x; vercel-eve/v2 is added deliberately, not by a bump. Matched by dependency name so the eve-v0 alias keeps its own rule.",
       "matchManagers": ["npm"],
-      "matchPackageNames": ["eve"],
+      "matchDepNames": ["eve"],
       "automerge": false,
-      "allowedVersions": "<1"
+      "allowedVersions": "<2"
+    },
+    {
+      "description": "Never automerge eve-v0, the npm alias of eve 0.x that `@arcjet/guard/vercel-eve/v0` is tested against. 0.x minors may break. Keep the alias below 0.84: eve 0.84 moved hooks to session stream version 27 facts and rejects the event keys v0's `arcjetHooks` registers, so v0's hooks support stops at 0.83.",
+      "matchManagers": ["npm"],
+      "matchDepNames": ["eve-v0"],
+      "automerge": false,
+      "allowedVersions": "<0.84"
     },
     {
       "description": "Never automerge @mastra/core majors. `@arcjet/guard/mastra/v1` types against Processor, createTool, ToolHooks, and RequestContext reserved keys. A green typecheck is necessary but not sufficient. Keep the range on 1.x; mastra/v2 is added deliberately, not by a bump.",

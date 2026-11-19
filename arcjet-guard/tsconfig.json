@@ -38,5 +38,12 @@
     "verbatimModuleSyntax": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules/", "test/", "src/**/*.test.ts"]
+  "exclude": [
+    "node_modules/",
+    "test/",
+    "src/**/*.test.ts",
+    // Checked against Eve 0.x by tsconfig.vercel-eve-v0.json. The v0 modules
+    // that vercel-eve/v1 re-exports are still checked here, against Eve 1.x.
+    "src/vercel-eve/v0/**"
+  ]
 }

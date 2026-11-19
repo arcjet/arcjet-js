@@ -13,6 +13,8 @@
     "node_modules/",
     "test/runtime/**",
     // Checked against @tanstack/ai 0.x by tsconfig.tanstack-ai-v0.json.
-    "test/tanstack-ai/v0/**"
+    "test/tanstack-ai/v0/**",
+    // Checked against Eve 0.x by tsconfig.vercel-eve-v0.json.
+    "src/vercel-eve/v0/**"
   ]
 }
