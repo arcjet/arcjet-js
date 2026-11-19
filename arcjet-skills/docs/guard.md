@@ -116,8 +116,8 @@ Prefer the versioned Guard namespaces over hand-wrapping every tool:
 | SDK | Import |
 | --- | ------ |
 | Vercel AI SDK v7 | `@arcjet/guard/vercel-ai/v7` |
-| Vercel Eve 0.x | `@arcjet/guard/vercel-eve/v0` (published 1.16.0) |
-| Vercel Eve 1.x | `@arcjet/guard/vercel-eve/v1` (on main after #6374; not in npm 1.16.0 — check package `exports` before importing) |
+| Vercel Eve 1.x | `@arcjet/guard/vercel-eve/v1` (available from `@arcjet/guard` 1.17.0; check `exports` if pinned to ≤1.16.0) |
+| Vercel Eve 0.x | `@arcjet/guard/vercel-eve/v0` |
 | Mastra | `@arcjet/guard/mastra/v1` |
 | Claude Agent SDK | `@arcjet/guard/claude-agent-sdk/v0` |
 | Claude Managed Agents (`@anthropic-ai/sdk` 1.x) | `@arcjet/guard/claude-managed-agents/v1` |
