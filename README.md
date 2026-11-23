@@ -114,7 +114,7 @@ versioned package when you want skills that match the SDK in `node_modules`.
 | Next.js      | `@arcjet/next`                  | `npm i @arcjet/next`         |
 | Node.js      | `@arcjet/node`                  | `npm i @arcjet/node`         |
 | Bun          | `@arcjet/bun`                   | `bun add @arcjet/bun`        |
-| Deno         | `@arcjet/deno`                  | `deno add npm:@arcjet/deno`  |
+| Deno         | `@arcjet/node`                  | `deno add npm:@arcjet/node`  |
 | Express      | `@arcjet/node`                  | `npm i @arcjet/node`         |
 | Fastify      | `@arcjet/fastify`               | `npm i @arcjet/fastify`      |
 | Hono         | `@arcjet/node` or `@arcjet/bun` | `npm i @arcjet/node`         |
@@ -173,7 +173,6 @@ below.
 ## Example apps
 
 - [Astro][github-arcjet-example-astro]
-- [Deno][github-arcjet-example-deno]
 - [Express][github-arcjet-example-express]
 - [FastAPI][github-arcjet-example-fastapi]
 - [Fastify][github-arcjet-example-fastify]
@@ -1036,7 +1035,8 @@ find a specific one through the categories and descriptions below.
 
 - [`@arcjet/astro`](./arcjet-astro/README.md): SDK for Astro.
 - [`@arcjet/bun`](./arcjet-bun/README.md): SDK for Bun.
-- [`@arcjet/deno`](./arcjet-deno/README.md): SDK for Deno.
+- [`@arcjet/deno`](./arcjet-deno/README.md): SDK for Deno. Deprecated: use
+  `@arcjet/node` with a `node:http` server.
 - [`@arcjet/fastify`](./arcjet-fastify/README.md): SDK for Fastify.
 - [`@arcjet/guard`](./arcjet-guard/README.md): Guards SDK for AI agent tool calls and background tasks.
 - [`@arcjet/nest`](./arcjet-nest/README.md): SDK for NestJS.
@@ -1122,7 +1122,6 @@ Licensed under the [Apache License, Version 2.0][apache-license].
 [arcjet-example]: https://example.arcjet.com
 [arcjet]: https://arcjet.com
 [github-arcjet-example-astro]: https://github.com/arcjet/example-astro
-[github-arcjet-example-deno]: https://github.com/arcjet/example-deno
 [github-arcjet-example-express]: https://github.com/arcjet/example-expressjs
 [github-arcjet-example-fastapi]: https://github.com/arcjet/example-fastapi
 [github-arcjet-example-fastify]: https://github.com/arcjet/example-fastify
