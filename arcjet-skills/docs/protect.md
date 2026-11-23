@@ -13,7 +13,7 @@ Use a framework adapter when the code has an HTTP request object (Next.js
 | Next.js | `@arcjet/next` |
 | Node.js (`http`, Express) | `@arcjet/node` |
 | Bun | `@arcjet/bun` |
-| Deno | `@arcjet/deno` |
+| Deno | `@arcjet/node` (preferred; `@arcjet/deno` is deprecated) |
 | Fastify | `@arcjet/fastify` |
 | NestJS | `@arcjet/nest` |
 | Nuxt | `@arcjet/nuxt` |
@@ -73,9 +73,12 @@ Install the adapter with the project's package manager. Do not hand-edit
   `nuxt.config.ts`. Import from `#arcjet`. Each `arcjet()` call is its own
   cache — share one server module.
 - **NestJS** — `ArcjetModule.forRoot()` plus `@InjectArcjet()`.
-- **Bun / Deno** — wrap the fetch handler with `aj.handler()` so Arcjet can
-  see the socket for client IP. Still call `protect()` inside. Deno imports
-  use the `npm:` prefix.
+- **Bun** — wrap the fetch handler with `aj.handler()` so Arcjet can see the
+  socket for client IP. Still call `protect()` inside.
+- **Deno** — `@arcjet/deno` is deprecated. Use `@arcjet/node` with a
+  `node:http` server (Deno's Node.js compatibility layer). Do not start new
+  Deno apps on `@arcjet/deno`. `@arcjet/redact` / `@arcjet/redact-wasm` are
+  also deprecated – do not add them.
 - **Hono on Node** — type the app with `HttpBindings` from
   `@hono/node-server` and pass `c.env.incoming` to `protect()`. Hono on Bun
   passes `c.req.raw`.
@@ -85,13 +88,14 @@ Install the adapter with the project's package manager. Do not hand-edit
 | Framework | Argument |
 | --------- | -------- |
 | Express / Node.js | `req` |
+| Deno (via `@arcjet/node`) | `req` (`IncomingMessage` from `node:http`) |
 | Next.js App Router | `req` |
 | Next.js Server Components / actions | `await request()` from `@arcjet/next` |
 | Fastify | `request` (Fastify request, not raw Node) |
 | NestJS | `req` |
 | SvelteKit / Nuxt | `event` |
 | Remix / React Router | `args` |
-| Astro / Bun / Deno | `request` |
+| Astro / Bun | `request` |
 | Hono on Node | `c.env.incoming` |
 | Hono on Bun | `c.req.raw` |
 
