@@ -18,6 +18,11 @@
   </a>
 </p>
 
+> [!WARNING]
+> `@arcjet/redact` is deprecated and no longer maintained. Existing versions keep
+> working, but they will not receive fixes, including security fixes, and
+> the package will be removed from this repository.
+
 [Arcjet][arcjet] helps developers protect their apps in just a few lines of
 code. Implement rate limiting, bot protection, email verification, and defense
 against common attacks.
