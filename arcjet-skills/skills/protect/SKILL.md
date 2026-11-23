@@ -10,6 +10,7 @@ metadata:
   library_version: "1.16.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-19: docs/protect.md adds CATEGORY:AI_AGENT + isAiAgent.
+  # Reviewed 2026-11-23: docs/protect.md deprecates @arcjet/deno (use @arcjet/node) and notes @arcjet/redact deprecated.
   - docs/protect.md
 ---
 
@@ -71,9 +72,10 @@ One client. `withRule()` clones share the decision cache. A second
 
 Astro is an integration (`arcjet:client`), not a shared file; add a
 per-route rule with `aj.withRule()` on `arcjet:client`. Nuxt is a
-module (`#arcjet`). NestJS is `ArcjetModule` + `@InjectArcjet()`. Bun and
-Deno wrap fetch with `aj.handler()` for IP detection, then still call
-`protect()`. Hono on Node passes `c.env.incoming`.
+module (`#arcjet`). NestJS is `ArcjetModule` + `@InjectArcjet()`. Bun wraps
+fetch with `aj.handler()` for IP detection, then still call `protect()`.
+Deno: `@arcjet/deno` is deprecated – use `@arcjet/node` with `node:http`.
+Hono on Node passes `c.env.incoming`.
 
 ## Handler
 

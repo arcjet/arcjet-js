@@ -55,10 +55,15 @@ decision.
 ## Unsafe content
 
 **Rule:** Guard `moderateContent` only (not available on `protect()`). The
-result is `{ detected, billing? }` (`text_units` when present). Gate on
-`DENY || hasFailedOpen()`, never on `reason === "MODERATE_CONTENT"` alone.
-Only the first 60 KB is evaluated (`AJ1142`); over 128 KiB is denied
-(`AJ1141`). Don't copy the checked text into `metadata`.
+result is `{ detected, detectedCategories, billing? }` (`text_units` when
+present). `detectedCategories` lists `SEXUALLY_EXPLICIT`, `MISCONDUCT`,
+`HATE_SPEECH`, `INSULTS` (plus any future string) in fixed catalogue order;
+scores and thresholds are never returned. Gate on `detected` /
+`DENY || hasFailedOpen()` – the list can be empty even when `detected` is
+true. Never gate on `reason === "MODERATE_CONTENT"` alone. On published
+`@arcjet/guard` 1.16.0 the field is absent (merged on `main` in #6380) –
+check installed types. Only the first 60 KB is evaluated (`AJ1142`); over
+128 KiB is denied (`AJ1141`). Don't copy the checked text into `metadata`.
 
 ## Data loss prevention
 

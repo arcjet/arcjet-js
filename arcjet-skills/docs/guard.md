@@ -100,7 +100,12 @@ The rule doesn't inherit `launchArcjet({ sensitiveInfoBackend })`, so share
 one Rampart instance between the client and the rule. Rampart's bundled loader
 needs a filesystem; on Cloudflare Workers or other edge runtimes, pass
 `rampart()` a `classify` function that runs the model on your runtime.
-`moderateContent()` is Guard-only.
+`moderateContent()` is Guard-only. The result includes `detected`,
+`detectedCategories` (`SEXUALLY_EXPLICIT`, `MISCONDUCT`, `HATE_SPEECH`,
+`INSULTS`, plus any future string), and optional `billing` (`text_units`).
+Scores and thresholds are never returned. Decide on `detected`; the list can
+be empty even when `detected` is true. Absent from published `@arcjet/guard`
+1.16.0 – check installed types (`main` #6380).
 
 Rampart denies input longer than `maxInputChars` (default `100_000`)
 without scanning it: the rule returns DENY with no detected entities, and a

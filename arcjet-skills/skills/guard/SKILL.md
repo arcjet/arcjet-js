@@ -12,6 +12,7 @@ sources:
   # Reviewed 2026-11-05: docs/guard.md adds the claude-managed-agents/v1 row; this skill has no per-SDK import table.
   # Reviewed 2026-11-19: docs/guard.md scopes vercel-eve/v1 to ≥1.17.0 with a ≤1.16.0 export check; this skill has no per-SDK import table.
   # Reviewed 2026-11-19: docs/choose-protections.md / protect.md add CATEGORY:AI_AGENT; this skill is unaffected.
+  # Reviewed 2026-11-23: docs/guard.md adds moderateContent detectedCategories.
   - docs/guard.md
 ---
 
@@ -87,7 +88,9 @@ Use `localDetectSensitiveInfo({ backend: rampart() })` from
 card, email, phone, IP). Always pass the backend on the rule – it doesn't
 inherit the client's `sensitiveInfoBackend`, so share one instance. On
 Cloudflare Workers or edge runtimes, pass `rampart()` a `classify` function.
-`moderateContent()` is Guard-only.
+`moderateContent()` is Guard-only. Result includes `detectedCategories`
+(`SEXUALLY_EXPLICIT`, `MISCONDUCT`, `HATE_SPEECH`, `INSULTS`); decide on
+`detected`. Absent from published 1.16.0 – check installed types.
 
 Rampart denies input longer than `maxInputChars` (default `100_000`)
 without scanning it: the rule returns DENY with no detected entities, and a

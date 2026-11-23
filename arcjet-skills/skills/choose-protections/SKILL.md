@@ -10,6 +10,7 @@ metadata:
   library_version: "1.16.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-19: docs/choose-protections.md adds CATEGORY:AI_AGENT + isAiAgent.
+  # Reviewed 2026-11-23: docs/choose-protections.md adds moderateContent detectedCategories.
   - docs/choose-protections.md
 ---
 
