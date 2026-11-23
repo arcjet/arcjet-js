@@ -11,6 +11,7 @@ metadata:
 sources:
   # Reviewed 2026-11-19: docs/protect.md adds CATEGORY:AI_AGENT + isAiAgent.
   # Reviewed 2026-11-23: docs/protect.md deprecates @arcjet/deno (use @arcjet/node) and notes @arcjet/redact deprecated.
+  # Reviewed 2026-11-23: docs/protect.md protect() table puts Deno on req (node:http), not request.
   - docs/protect.md
 ---
 

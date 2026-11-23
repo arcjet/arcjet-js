@@ -88,13 +88,14 @@ Install the adapter with the project's package manager. Do not hand-edit
 | Framework | Argument |
 | --------- | -------- |
 | Express / Node.js | `req` |
+| Deno (via `@arcjet/node`) | `req` (`IncomingMessage` from `node:http`) |
 | Next.js App Router | `req` |
 | Next.js Server Components / actions | `await request()` from `@arcjet/next` |
 | Fastify | `request` (Fastify request, not raw Node) |
 | NestJS | `req` |
 | SvelteKit / Nuxt | `event` |
 | Remix / React Router | `args` |
-| Astro / Bun / Deno | `request` |
+| Astro / Bun | `request` |
 | Hono on Node | `c.env.incoming` |
 | Hono on Bun | `c.req.raw` |
 
