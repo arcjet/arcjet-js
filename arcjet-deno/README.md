@@ -16,6 +16,12 @@
   </a>
 </p>
 
+> [!WARNING]
+> `@arcjet/deno` is deprecated and receives no further updates. On Deno, use
+> [`@arcjet/node`](https://github.com/arcjet/arcjet-js/tree/main/arcjet-node)
+> with a `node:http` server, which Deno runs through its Node.js compatibility
+> layer. The rest of this README documents the deprecated package.
+
 [Arcjet][arcjet] is the runtime security platform that ships in your AI code. Detect prompt injection, authorize agent tool calls, redact sensitive data, and block bots and abuse. Real-time security building blocks you call inside your app, before an action happens.
 
 This is the [Arcjet][arcjet] SDK for [Deno][deno] **request protection** —
