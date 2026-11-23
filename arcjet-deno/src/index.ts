@@ -75,6 +75,9 @@ function rawPathFromServedRequest(request: Request): string | undefined {
   return undefined;
 }
 
+const DEPRECATION_MESSAGE =
+  "`@arcjet/deno` is deprecated and receives no further updates; use `@arcjet/node` with a `node:http` server instead. See <https://docs.arcjet.com/reference/nodejs>.";
+
 let warnedForAutomaticBodyRead = false;
 
 // Type helpers from https://github.com/sindresorhus/type-fest but adjusted for
@@ -268,6 +271,10 @@ export interface ArcjetDeno<Props extends PlainObject> {
 /**
  * Create a new Deno integration of Arcjet.
  *
+ * @deprecated
+ *   `@arcjet/deno` is deprecated and receives no further updates. Use
+ *   `@arcjet/node` with a `node:http` server, which Deno runs through its
+ *   Node.js compatibility layer.
  * @template Rules
  *   List of rules.
  * @template Characteristics
@@ -304,6 +311,7 @@ export default function arcjet<
 
   const proxies = Array.isArray(options.proxies) ? parseProxies(options.proxies) : undefined;
   const reportClientIp = createClientIpDiagnostics(log);
+  log.warn(DEPRECATION_MESSAGE);
   if (proxies && hasTrustAllProxy(proxies)) {
     log.warn(
       { trustAll: true },

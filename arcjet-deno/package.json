@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/deno",
   "version": "1.16.0",
-  "description": "Arcjet runtime security SDK for Deno — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
+  "description": "Deprecated: use @arcjet/node on Deno. Arcjet runtime security SDK for Deno — bot protection, rate limiting, prompt injection detection, PII blocking, and WAF",
   "keywords": [
     "ai",
     "analyze",

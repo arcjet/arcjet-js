@@ -41,6 +41,9 @@ import arcjetDeno, {
   validateEmail,
 } from "../dist/index.js";
 
+const DEPRECATION =
+  "`@arcjet/deno` is deprecated and receives no further updates; use `@arcjet/node` with a `node:http` server instead. See <https://docs.arcjet.com/reference/nodejs>.";
+
 const exampleKey = "ajkey_yourkey";
 const oneMegabyte = 1024 * 1024;
 
@@ -125,6 +128,27 @@ test("`createRemoteClient`", async function (t) {
 });
 
 test("`arcjetDeno`", async function (t) {
+  await t.test("should warn that the package is deprecated", async function () {
+    const warnings: Array<Array<unknown>> = [];
+    const restore = capture();
+    process.env.ARCJET_ENV = "";
+
+    arcjetDeno({
+      key: "test-key",
+      log: {
+        ...console,
+        warn(...rest) {
+          warnings.push(rest);
+        },
+      },
+      rules: [],
+    });
+
+    restore();
+
+    assert.deepEqual(warnings, [[DEPRECATION]]);
+  });
+
   await t.test("should warn about IP addresses missing in development", async function () {
     let parameters: unknown;
     const restore = capture();
@@ -150,7 +174,7 @@ test("`arcjetDeno`", async function (t) {
   await t.test(
     "should not warn about IP addresses missing when not in development",
     async function () {
-      let called = false;
+      const warnings: Array<Array<unknown>> = [];
       const restore = capture();
       process.env.ARCJET_ENV = "";
 
@@ -158,8 +182,8 @@ test("`arcjetDeno`", async function (t) {
         key: "test-key",
         log: {
           ...console,
-          warn() {
-            called = true;
+          warn(...rest) {
+            warnings.push(rest);
           },
         },
         rules: [],
@@ -167,7 +191,7 @@ test("`arcjetDeno`", async function (t) {
 
       restore();
 
-      assert.equal(called, false);
+      assert.deepEqual(warnings, [[DEPRECATION]]);
     },
   );
 
@@ -192,8 +216,8 @@ test("`arcjetDeno`", async function (t) {
         rules: [detectBot({ deny: ["CURL"], mode: "LIVE" })],
       });
 
-      // Not called when constructing.
-      assert.deepEqual(parameters, undefined);
+      // Only the deprecation warning when constructing.
+      assert.deepEqual(parameters, [DEPRECATION]);
 
       await arcjet.protect(
         new Request("https://example.com/", {
@@ -673,6 +697,7 @@ test("`arcjetDeno`", async function (t) {
 
     assert.equal(response.status, 200);
     assert.deepEqual(warnings, [
+      [DEPRECATION],
       ["Arcjet will use 127.0.0.1 when missing public IP address in development mode"],
       [
         "Automatically reading the request body is deprecated; please pass an explicit `sensitiveInfoValue` field. See <https://docs.arcjet.com/upgrading/sdk-migration>.",
