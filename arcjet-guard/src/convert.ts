@@ -368,6 +368,7 @@ export function resultFromProto(pr: ProtoGuardRuleResult): RuleResult {
         type: "MODERATE_CONTENT",
         warnings,
         detected: v.detected,
+        detectedCategories: [...v.detectedCategories],
         billing: billingFromProto(v.billing),
       };
     }

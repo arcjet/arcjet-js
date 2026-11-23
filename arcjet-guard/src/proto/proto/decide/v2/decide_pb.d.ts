@@ -817,6 +817,19 @@ export declare type ResultModerateContent = Message<"proto.decide.v2.ResultModer
    * @generated from field: proto.decide.v2.Billing billing = 3;
    */
   billing?: Billing;
+
+  /**
+   * The categories of harmful content detected, e.g. "HATE_SPEECH" or
+   * "INSULTS". Listed in a fixed order, not by score. A category's score and
+   * threshold are never returned. `detected` is authoritative: the list is
+   * empty when nothing was detected, and can also be empty when harmful
+   * content was detected but categories are unavailable, as from a server
+   * that predates this field. New categories may be added, so treat an
+   * unrecognized value as harmful content of an unknown kind.
+   *
+   * @generated from field: repeated string detected_categories = 4;
+   */
+  detectedCategories: string[];
 };
 
 /**
