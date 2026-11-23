@@ -143,6 +143,48 @@ test("detectBot", async function (t) {
     },
   );
 
+  await t.test("should detect newly synced agents and HTTP clients", async function () {
+    for (const [userAgent, id] of [
+      ["AgentDrivesAgent/1.0", "AGENTDRIVES_AGENT"],
+      ["Claude-Agent/1.0", "ANTHROPIC_CLAUDE_AGENT"],
+      ["node", "JAVASCRIPT_NODEJS_FETCH"],
+      ["Ruby", "RUBY_NET_HTTP"],
+      ["undici", "JAVASCRIPT_UNDICI"],
+      ["Bun/1.3.0", "JAVASCRIPT_BUN"],
+      ["Deno/2.0", "JAVASCRIPT_DENO"],
+      ["python-urllib3/2.0", "PYTHON_URLLIB3"],
+      ["Java-http-client/21", "JAVA_HTTP_CLIENT"],
+      ["GuzzleHttp/7", "PHP_GUZZLE"],
+    ] as const) {
+      const result = await detectBot(
+        exampleContext,
+        { ip: "127.0.0.1", headers: { "user-agent": userAgent } },
+        {
+          tag: "allowed-bot-config",
+          val: { entities: [], skipCustomDetect: false },
+        },
+      );
+      assert.deepEqual(result.denied, [id], userAgent);
+    }
+  });
+
+  await t.test("should anchor Node.js and Ruby default user agents", async function () {
+    for (const userAgent of ["custom node client", "custom Ruby client"]) {
+      const result = await detectBot(
+        exampleContext,
+        { ip: "127.0.0.1", headers: { "user-agent": userAgent } },
+        {
+          tag: "denied-bot-config",
+          val: {
+            entities: ["JAVASCRIPT_NODEJS_FETCH", "RUBY_NET_HTTP"],
+            skipCustomDetect: false,
+          },
+        },
+      );
+      assert.deepEqual(result.denied, [], userAgent);
+    }
+  });
+
   await t.test("should allow an AI agent through `CATEGORY:AI_AGENT`", async function () {
     const result = await detectBot(
       exampleContext,

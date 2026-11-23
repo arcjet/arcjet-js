@@ -20,6 +20,7 @@ export type ArcjetWellKnownBot =
   | "ADSTXTCRAWLER"
   | "ADVBOT_CRAWLER"
   | "ADYEN_WEBHOOK"
+  | "AGENTDRIVES_AGENT"
   | "AGENTTESLA_BOTNET"
   | "AHREFS_CRAWLER"
   | "AHREFS_SITE_AUDIT"
@@ -51,6 +52,7 @@ export type ArcjetWellKnownBot =
   | "ANDERSPINK_CRAWLER"
   | "ANOMURA_CRAWLER"
   | "ANTHROPIC_AI"
+  | "ANTHROPIC_CLAUDE_AGENT"
   | "ANTHROPIC_CLAUDE_CODE"
   | "ANTHROPIC_CRAWLER"
   | "ANTHROPIC_CRAWLER_SEARCH"
@@ -187,6 +189,7 @@ export type ArcjetWellKnownBot =
   | "CYBERPATROL_CRAWLER"
   | "CYPRESS"
   | "DAREBOOST_CRAWLER"
+  | "DART_HTTP"
   | "DATADOG_MONITOR_SYNTHETICS"
   | "DATAFEEDWATCH_CRAWLER"
   | "DATAFORSEO_CRAWLER"
@@ -242,6 +245,7 @@ export type ArcjetWellKnownBot =
   | "EPICTIONS_CRAWLER"
   | "EREPUBLIK_TOOLS_CRAWLER"
   | "ERIGHT_CRAWLER"
+  | "ERLANG_HACKNEY"
   | "EUROPARCHIVE_CRAWLER"
   | "EVENTURES_CRAWLER"
   | "EVENTURES_CRAWLER_BATCH"
@@ -309,7 +313,9 @@ export type ArcjetWellKnownBot =
   | "GLUTENFREEPLEASURE_CRAWLER"
   | "GNAM_GNAM_SPIDER"
   | "GNOWIT_CRAWLER"
+  | "GO_COLLY"
   | "GO_HTTP"
+  | "GO_RESTY"
   | "GOGUIDES_CRAWLER"
   | "GOO_CRAWLER"
   | "GOOGLE_ADS_CONVERSIONS"
@@ -424,14 +430,21 @@ export type ArcjetWellKnownBot =
   | "JAVA_APACHE_HTTPCLIENT"
   | "JAVA_ASYNCHTTPCLIENT"
   | "JAVA_CRAWLER4J"
+  | "JAVA_HTTP_CLIENT"
   | "JAVA_HTTPUNIT"
   | "JAVA_JERSEY"
   | "JAVA_JETTY"
   | "JAVA_OKHTTP"
   | "JAVA_SNACKTORY"
+  | "JAVA_URLCONNECTION"
   | "JAVASCRIPT_AXIOS"
+  | "JAVASCRIPT_BUN"
+  | "JAVASCRIPT_DENO"
+  | "JAVASCRIPT_NEEDLE"
   | "JAVASCRIPT_NODE_FETCH"
+  | "JAVASCRIPT_NODEJS_FETCH"
   | "JAVASCRIPT_PHANTOM"
+  | "JAVASCRIPT_UNDICI"
   | "JETPACK_MONITOR"
   | "JETSLIDE_CRAWLER"
   | "JOBBOERSE_CRAWLER"
@@ -610,11 +623,13 @@ export type ArcjetWellKnownBot =
   | "PEER39_CRAWLER"
   | "PERL_LIBWWW"
   | "PERL_PCORE"
+  | "PERL_WWW_MECHANIZE"
   | "PERPLEXITY_CRAWLER"
   | "PERPLEXITY_USER"
   | "PETALSEARCH_CRAWLER"
   | "PHIND_BOT"
   | "PHP_CURLCLASS"
+  | "PHP_GUZZLE"
   | "PHP_PHPCRAWL"
   | "PHP_SIMPLE_SCRAPER"
   | "PHP_SIMPLEPIE"
@@ -631,6 +646,7 @@ export type ArcjetWellKnownBot =
   | "POMOTHY_BOT"
   | "POSTMAN"
   | "POSTRANK_CRAWLER"
+  | "POWERSHELL"
   | "PRCY_CRAWLER"
   | "PRERENDER_BOT"
   | "PRIMAL_CRAWLER"
@@ -645,11 +661,14 @@ export type ArcjetWellKnownBot =
   | "PURE_CRAWLER"
   | "PYTHON_AIOHTTP"
   | "PYTHON_BITBOT"
+  | "PYTHON_HTTPLIB2"
   | "PYTHON_HTTPX"
   | "PYTHON_OPENGRAPH"
+  | "PYTHON_PYCURL"
   | "PYTHON_REQUESTS"
   | "PYTHON_SCRAPY"
   | "PYTHON_URLLIB"
+  | "PYTHON_URLLIB3"
   | "QODER"
   | "QUALIFIED_BOT"
   | "QUANTCAST_CRAWLER"
@@ -671,7 +690,13 @@ export type ArcjetWellKnownBot =
   | "RSSBOT_FEEDFETCHER"
   | "RSSING_CRAWLER"
   | "RSSMICRO_FEEDFETCHER"
+  | "RUBY_FARADAY"
+  | "RUBY_HTTP_RB"
+  | "RUBY_MECHANIZE"
   | "RUBY_METAINSPECTOR"
+  | "RUBY_NET_HTTP"
+  | "RUBY_REST_CLIENT"
+  | "RUBY_TYPHOEUS"
   | "RYTE_CRAWLER"
   | "SAFEDNS_CRAWLER"
   | "SBINTUITIONS_BOT"
@@ -974,6 +999,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "YAHOO_AD_MONITORING",
   ]),
   "CATEGORY:AI": Object.freeze<ArcjetWellKnownBot[]>([
+    "AGENTDRIVES_AGENT",
     "AI_SEARCH_BOT",
     "AI2_CRAWLER",
     "AI2_CRAWLER_DOLMA",
@@ -987,6 +1013,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "AMAZON_USER",
     "ANOMURA_CRAWLER",
     "ANTHROPIC_AI",
+    "ANTHROPIC_CLAUDE_AGENT",
     "ANTHROPIC_CLAUDE_CODE",
     "ANTHROPIC_CRAWLER",
     "ANTHROPIC_CRAWLER_SEARCH",
@@ -1098,6 +1125,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "AMAZON_KIRO",
     "AMAZON_QUICK",
     "AMAZON_USER",
+    "ANTHROPIC_CLAUDE_AGENT",
     "ANTHROPIC_CLAUDE_CODE",
     "ANTHROPIC_CRAWLER_USER",
     "AUGMENT_CODE",
@@ -1479,36 +1507,58 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
   ]),
   "CATEGORY:PROGRAMMATIC": Object.freeze<ArcjetWellKnownBot[]>([
     "CODA_SERVER_FETCHER",
+    "DART_HTTP",
+    "ERLANG_HACKNEY",
     "GIGABLAST_CRAWLER_OSS",
+    "GO_COLLY",
     "GO_HTTP",
+    "GO_RESTY",
     "GOOGLE_APPENGINE",
     "GOWIKI_CRAWLER",
     "HTTP_GET",
     "JAVA_APACHE_HTTPCLIENT",
     "JAVA_ASYNCHTTPCLIENT",
     "JAVA_CRAWLER4J",
+    "JAVA_HTTP_CLIENT",
     "JAVA_HTTPUNIT",
     "JAVA_JERSEY",
     "JAVA_JETTY",
     "JAVA_OKHTTP",
     "JAVA_SNACKTORY",
+    "JAVA_URLCONNECTION",
     "JAVASCRIPT_AXIOS",
+    "JAVASCRIPT_BUN",
+    "JAVASCRIPT_DENO",
+    "JAVASCRIPT_NEEDLE",
     "JAVASCRIPT_NODE_FETCH",
+    "JAVASCRIPT_NODEJS_FETCH",
     "JAVASCRIPT_PHANTOM",
+    "JAVASCRIPT_UNDICI",
     "PERL_LIBWWW",
     "PERL_PCORE",
+    "PERL_WWW_MECHANIZE",
     "PHP_CURLCLASS",
+    "PHP_GUZZLE",
     "PHP_PHPCRAWL",
     "PHP_SIMPLE_SCRAPER",
     "PHP_SIMPLEPIE",
     "PYTHON_AIOHTTP",
     "PYTHON_BITBOT",
+    "PYTHON_HTTPLIB2",
     "PYTHON_HTTPX",
     "PYTHON_OPENGRAPH",
+    "PYTHON_PYCURL",
     "PYTHON_REQUESTS",
     "PYTHON_SCRAPY",
     "PYTHON_URLLIB",
+    "PYTHON_URLLIB3",
+    "RUBY_FARADAY",
+    "RUBY_HTTP_RB",
+    "RUBY_MECHANIZE",
     "RUBY_METAINSPECTOR",
+    "RUBY_NET_HTTP",
+    "RUBY_REST_CLIENT",
+    "RUBY_TYPHOEUS",
     "STRIPE_CRAWLER",
   ]),
   "CATEGORY:SEARCH_ENGINE": Object.freeze<ArcjetWellKnownBot[]>([
@@ -1667,6 +1717,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "NUTCH",
     "ONCRAWL",
     "POSTMAN",
+    "POWERSHELL",
     "PRERENDER_BOT",
     "SE_RANKING_CRAWLER",
     "SEMRUSH_SITE_AUDIT",
@@ -2036,10 +2087,11 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
 });
 
 /** The well-known-bots commit this file was generated from */
-export const catalogSha = "83616dc545abd6cf73c0fc9ead542c8a98b6eaed";
+export const catalogSha = "c413909276c93c9f38c1abb76f4362173d866b00";
 
 /** Bots that sign requests with Web Bot Auth or Poppy, verified by Arcjet Cloud */
 export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
+  "AGENTDRIVES_AGENT",
   "AHREFS_CRAWLER",
   "AI_MANAGED_AGENTS_AGENT",
   "BROWSERBASE",
@@ -2051,7 +2103,9 @@ export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
   "ENFILADE_CRAWLER",
   "EXA_SEARCHBOT",
   "EXA_USER",
+  "GEEDO_CRAWLER_SHOP",
   "GOOGLE_AGENT",
+  "IBOU_SEARCH",
   "ISONAI_USER",
   "ISONSEARCH_CRAWLER",
   "KERNEL_AGENT",
@@ -2061,6 +2115,8 @@ export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
   "LINER_USER",
   "MANUS_BOT",
   "META_MUSE",
+  "META_WEBINDEXER",
+  "NAVER_CRAWLER",
   "OSANO_BOT",
   "RIVER_CRAWLER",
   "SHAP_USER",
