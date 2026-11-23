@@ -318,10 +318,29 @@ export type RuleResultPromptInjection = {
 };
 
 /**
+ * A category of harmful content that content moderation can detect.
+ *
+ * - `"SEXUALLY_EXPLICIT"` — Sexually explicit content
+ * - `"MISCONDUCT"` — Criminal or deceptive activity, such as fraud
+ * - `"HATE_SPEECH"` — Content targeting protected attributes
+ * - `"INSULTS"` — Demeaning or insulting language
+ *
+ * Arcjet may add categories, so any other string can also appear. Treat an
+ * unrecognized value as harmful content of an unknown kind.
+ */
+export type ModerationCategory =
+  | "SEXUALLY_EXPLICIT"
+  | "MISCONDUCT"
+  | "HATE_SPEECH"
+  | "INSULTS"
+  | (string & Record<never, never>);
+
+/**
  * Result from a content moderation evaluation.
  *
- * See {@link moderateContent}. The public result shape is `detected` plus
- * optional {@link Billing}; per-category scores are not part of this type.
+ * See {@link moderateContent}. The public result shape is `detected`, the
+ * {@link ModerationCategory} values detected, plus optional {@link Billing}.
+ * Per-category scores and thresholds are never returned.
  */
 export type RuleResultModerateContent = {
   /** Whether the request was allowed or denied by this rule. */
@@ -334,6 +353,15 @@ export type RuleResultModerateContent = {
   readonly warnings: readonly Warning[];
   /** Whether harmful content was detected in the input text. */
   readonly detected: boolean;
+  /**
+   * The categories of harmful content detected, in a fixed order (not ranked
+   * by score). Use `detected` to decide: it is authoritative. This list is
+   * empty when nothing was detected, and can also be empty when harmful
+   * content was detected but categories are unavailable, such as from an
+   * Arcjet server that predates them. Values outside
+   * {@link ModerationCategory}'s known names may appear.
+   */
+  readonly detectedCategories: readonly ModerationCategory[];
   /** Usage charged for this evaluation, when reported by the service. */
   readonly billing?: Billing | undefined;
 };

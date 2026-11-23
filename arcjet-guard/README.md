@@ -295,6 +295,11 @@ const result = moderate.result(decision);
 // `detected` is true when harmful content was found. Billing is undefined
 // when the service does not report usage. Content moderation uses text_units.
 console.log(result?.detected, result?.billing?.unit, result?.billing?.count);
+
+// `detectedCategories` names what was found, such as "HATE_SPEECH" or
+// "INSULTS", never the scores behind it. Decide on `detected`: the list can be
+// empty even when it is true, and new category names may appear.
+console.log(result?.detectedCategories);
 ```
 
 ## Sensitive information detection

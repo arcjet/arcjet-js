@@ -13,6 +13,7 @@ sources:
   # Reviewed 2026-10-28: the oxfmt 0.74 reformat of README examples does not affect this skill.
   # Reviewed 2026-11-05: the README adds claude-managed-agents/v1 for @anthropic-ai/sdk 1.x; import guidance updated to match.
   # Reviewed 2026-11-19: the README adds @arcjet/guard/vercel-eve/v1 for Eve 1.x and scopes /v0 to Eve 0.x; this skill is unaffected.
+  # Reviewed 2026-11-23: the README adds content moderation detectedCategories; this skill is unaffected.
   - README.md
 ---
 

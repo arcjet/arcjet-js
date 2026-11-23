@@ -287,6 +287,7 @@ describe("resultFromProto", () => {
         value: create(ResultModerateContentSchema, {
           conclusion: GuardConclusion.DENY,
           detected: true,
+          detectedCategories: ["HATE_SPEECH", "INSULTS"],
           billing: create(BillingSchema, { unit: "text_units", count: 456n }),
         }),
       },
@@ -298,6 +299,7 @@ describe("resultFromProto", () => {
     assert.equal(result.conclusion, "DENY");
     if (result.type === "MODERATE_CONTENT") {
       assert.equal(result.detected, true);
+      assert.deepEqual(result.detectedCategories, ["HATE_SPEECH", "INSULTS"]);
       assert.deepEqual(result.billing, { unit: "text_units", count: 456n });
       assert.equal("scores" in result, false);
     }
@@ -323,8 +325,52 @@ describe("resultFromProto", () => {
     assert.equal(result.conclusion, "ALLOW");
     if (result.type === "MODERATE_CONTENT") {
       assert.equal(result.detected, false);
+      assert.deepEqual(result.detectedCategories, []);
       assert.deepEqual(result.billing, { unit: "text_units", count: 12n });
       assert.equal("scores" in result, false);
+    }
+  });
+
+  test("moderateContent DENY without categories, as from an older server", () => {
+    const pr = create(GuardRuleResultSchema, {
+      resultId: "gres_1",
+      type: GuardRuleType.MODERATE_CONTENT,
+      result: {
+        case: "moderateContent",
+        value: create(ResultModerateContentSchema, {
+          conclusion: GuardConclusion.DENY,
+          detected: true,
+        }),
+      },
+    });
+
+    const result = resultFromProto(pr);
+    assert.equal(result.type, "MODERATE_CONTENT");
+    if (result.type === "MODERATE_CONTENT") {
+      assert.equal(result.detected, true);
+      assert.deepEqual(result.detectedCategories, []);
+    }
+  });
+
+  test("moderateContent keeps an unrecognized category", () => {
+    const pr = create(GuardRuleResultSchema, {
+      resultId: "gres_1",
+      type: GuardRuleType.MODERATE_CONTENT,
+      result: {
+        case: "moderateContent",
+        value: create(ResultModerateContentSchema, {
+          conclusion: GuardConclusion.DENY,
+          detected: true,
+          detectedCategories: ["MISCONDUCT", "SOME_FUTURE_CATEGORY"],
+        }),
+      },
+    });
+
+    const result = resultFromProto(pr);
+    if (result.type === "MODERATE_CONTENT") {
+      assert.deepEqual(result.detectedCategories, ["MISCONDUCT", "SOME_FUTURE_CATEGORY"]);
+    } else {
+      assert.fail(`expected MODERATE_CONTENT, got ${result.type}`);
     }
   });
 

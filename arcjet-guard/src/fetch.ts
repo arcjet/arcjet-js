@@ -117,6 +117,7 @@ export {
   type DetectPromptInjectionInput,
   type ModerateContentConfig,
   type ModerateContentInput,
+  type ModerationCategory,
   type ExperimentalModerateContentConfig,
   type ExperimentalModerateContentInput,
   type LocalDetectSensitiveInfoConfig,
