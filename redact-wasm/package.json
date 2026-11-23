@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/redact-wasm",
   "version": "1.16.0",
-  "description": "Arcjet sensitive information redaction detection engine",
+  "description": "Deprecated: Arcjet sensitive information redaction detection engine",
   "keywords": [
     "arcjet",
     "redact",

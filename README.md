@@ -1075,8 +1075,8 @@ See [the docs][nosecone-docs] for details.
 - [`@arcjet/logger`](./logger/README.md): Lightweight logger which mirrors the
   Pino structured logger interface.
 - [`@arcjet/protocol`](./protocol/README.md): JS interface into the protocol.
-- [`@arcjet/redact`](./redact/README.md): Redact & unredact sensitive info from
-  strings.
+- [`@arcjet/redact`](./redact/README.md): **Deprecated, no longer maintained.**
+  Redact & unredact sensitive info from strings.
 - [`@arcjet/runtime`](./runtime/README.md): Runtime detection.
 - [`@arcjet/sprintf`](./sprintf/README.md): Platform-independent replacement
   for `util.format`.

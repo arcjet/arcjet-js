@@ -1,7 +1,7 @@
 {
   "name": "@arcjet/redact",
   "version": "1.16.0",
-  "description": "Arcjet sensitive information redaction library",
+  "description": "Deprecated: Arcjet sensitive information redaction library",
   "keywords": [
     "arcjet",
     "redact",

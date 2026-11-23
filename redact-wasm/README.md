@@ -16,6 +16,11 @@
   </a>
 </p>
 
+> [!WARNING]
+> `@arcjet/redact-wasm` is deprecated and no longer maintained. Existing versions keep
+> working, but they will not receive fixes, including security fixes, and
+> the package will be removed from this repository.
+
 [Arcjet][arcjet] sensitive information redaction detection engine.
 
 - [npm package (`@arcjet/redact-wasm`)](https://www.npmjs.com/package/@arcjet/redact-wasm)

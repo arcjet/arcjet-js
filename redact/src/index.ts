@@ -7,6 +7,9 @@ import type {
 
 /**
  * Types of standard sensitive information that can be detected.
+ *
+ * @deprecated
+ *   `@arcjet/redact` is no longer maintained and will not receive fixes.
  */
 export type ArcjetSensitiveInfoType = Exclude<SensitiveInfoEntity["tag"], "custom">;
 
@@ -17,6 +20,9 @@ export type ArcjetSensitiveInfoType = Exclude<SensitiveInfoEntity["tag"], "custo
  *   Custom entity names that are returned from `detect` and optionally listed in `entities`.
  * @template ListedEntities
  *   Entity names that can be listed in the `entities` option.
+ *
+ * @deprecated
+ *   `@arcjet/redact` is no longer maintained and will not receive fixes.
  */
 export type RedactOptions<
   DetectedEntities extends string | undefined = undefined,
@@ -341,6 +347,9 @@ type Unredact = (input: string) => string;
  *   Configuration.
  * @returns
  *   Promise to a tuple with the redacted string and a function to unredact it.
+ *
+ * @deprecated
+ *   `@arcjet/redact` is no longer maintained and will not receive fixes.
  */
 export async function redact<
   const DetectedEntities extends string | undefined = undefined,
