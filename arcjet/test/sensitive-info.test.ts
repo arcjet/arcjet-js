@@ -160,18 +160,23 @@ describe("Primitive > sensitiveInfo", () => {
     );
   });
 
-  test("rejects a name that is not a built-in type without `detect`", () => {
+  test("rejects a name that is not a built-in type without `detect` or a backend", () => {
     assert.throws(
       () => sensitiveInfo<"MY_CUSTOM_THING">({ deny: ["MY_CUSTOM_THING"] }),
       /`sensitiveInfo` options error: "MY_CUSTOM_THING" is not a built-in sensitive information type/,
     );
     assert.throws(
-      () =>
-        sensitiveInfo<"MY_CUSTOM_THING">({
-          allow: ["EMAIL", "MY_CUSTOM_THING"],
-          backend: { detect: async () => ({ allowed: [], denied: [] }) },
-        }),
-      /"MY_CUSTOM_THING" is not a built-in sensitive information type/,
+      () => sensitiveInfo<"emails">({ allow: ["EMAIL", "emails"] }),
+      /"emails" is not a built-in sensitive information type/,
+    );
+  });
+
+  test("accepts a custom name with a backend", () => {
+    assert.doesNotThrow(() =>
+      sensitiveInfo<"MY_CUSTOM_THING">({
+        deny: ["MY_CUSTOM_THING"],
+        backend: { detect: async () => ({ allowed: [], denied: [] }) },
+      }),
     );
   });
 

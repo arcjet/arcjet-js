@@ -1856,7 +1856,8 @@ export type SensitiveInfoOptionsAllow<
   /**
    * Custom detection function to identify sensitive information.
    *
-   * Required to list a name in `allow` or `deny` that is not a built-in type.
+   * Required to list a name in `allow` or `deny` that is not a built-in type,
+   * unless a `backend` that identifies it is configured.
    *
    * @param tokens
    *   Tokens.
@@ -1968,7 +1969,8 @@ export type SensitiveInfoOptionsDeny<
   /**
    * Custom detection function to identify sensitive information.
    *
-   * Required to list a name in `allow` or `deny` that is not a built-in type.
+   * Required to list a name in `allow` or `deny` that is not a built-in type,
+   * unless a `backend` that identifies it is configured.
    *
    * @param tokens
    *   Tokens.
@@ -2923,9 +2925,10 @@ export function sensitiveInfo<
   const allow = options.allow || [];
   const deny = options.deny || [];
 
-  // Without a custom `detect` function, nothing can identify a name that is
-  // not a built-in type, so reject it rather than silently never matching.
-  if (typeof options.detect === "undefined") {
+  // Without a custom `detect` function or a backend, only the default (WASM)
+  // backend runs, and it cannot identify a name that is not a built-in type, so
+  // reject it rather than silently never matching.
+  if (typeof options.detect === "undefined" && typeof options.backend === "undefined") {
     const unknown = [...new Set([...allow, ...deny])].filter(
       (entity) =>
         typeof entity !== "string" ||
@@ -2936,7 +2939,7 @@ export function sensitiveInfo<
       throw new Error(
         `\`sensitiveInfo\` options error: ${list} ${unknown.length === 1 ? "is not a" : "are not"} ` +
           `built-in sensitive information ${unknown.length === 1 ? "type" : "types"}. ` +
-          `Use a built-in type, or provide a custom \`detect\` function that identifies ` +
+          `Use a built-in type, or provide a custom \`detect\` function or a \`backend\` that identifies ` +
           `${unknown.length === 1 ? "it" : "them"}.`,
       );
     }
