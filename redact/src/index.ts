@@ -407,60 +407,84 @@ export async function redact<
     originals.set(redaction.redacted, list);
   }
 
-  const pattern = replacementPattern(originals.keys());
+  const texts = [...originals.keys()];
 
   // Unredact finds replacements in one pass, so it must find exactly the
   // replacements made here. Text that already held a replacement would be
   // "restored" to something it never was.
-  if (pattern) {
-    let at = 0;
-    for (const match of output.matchAll(pattern)) {
-      while (at < inserted.length && inserted[at].start < match.index) at++;
-      const expected = inserted[at];
-      if (
-        typeof expected === "undefined" ||
-        expected.start !== match.index ||
-        expected.end !== match.index + match[0].length
-      ) {
-        throw new Error(
-          "redact cannot produce reversible output: the text already contains a replacement it would produce; use a custom `replace` function",
-        );
-      }
-      at++;
+  let at = 0;
+  for (const match of findReplacements(output, texts)) {
+    while (at < inserted.length && inserted[at].start < match.start) at++;
+    const expected = inserted[at];
+    if (
+      typeof expected === "undefined" ||
+      expected.start !== match.start ||
+      expected.end !== match.start + match.text.length
+    ) {
+      throw new Error(
+        "redact cannot produce reversible output: the text already contains a replacement it would produce; use a custom `replace` function",
+      );
     }
+    at++;
   }
 
   function unredact(input: string): string {
-    if (!pattern) return input;
     const seen = new Map<string, number>();
+    let result = "";
+    let cursor = 0;
     // Replaced text is never searched again, so a replacement that contains
     // its original, or another replacement, cannot loop.
-    return input.replace(pattern, (redacted) => {
-      const list = originals.get(redacted);
-      if (typeof list === "undefined") return redacted;
-      const count = seen.get(redacted) ?? 0;
-      seen.set(redacted, count + 1);
-      return list[Math.min(count, list.length - 1)];
-    });
+    for (const match of findReplacements(input, texts)) {
+      const list = originals.get(match.text);
+      if (typeof list === "undefined") continue;
+      const count = seen.get(match.text) ?? 0;
+      seen.set(match.text, count + 1);
+      result += input.substring(cursor, match.start) + list[Math.min(count, list.length - 1)];
+      cursor = match.start + match.text.length;
+    }
+    return result + input.substring(cursor);
   }
 
   return [output, unredact];
 }
 
 /**
- * Build one pattern that matches any of `texts`, longest first so a
- * replacement that contains another is matched whole.
+ * Find every occurrence of any of `texts` in `value`, left to right and
+ * without overlaps. At each position the longest text wins, so a replacement
+ * that contains another is found whole. Empty texts are never found.
  *
+ * @param value
+ *   Text to search.
  * @param texts
  *   Replacement texts.
  * @returns
- *   Global pattern, or `undefined` when there is nothing to match.
+ *   Matches in order.
  */
-function replacementPattern(texts: Iterable<string>): RegExp | undefined {
-  const sorted = [...texts].sort((a, b) => b.length - a.length);
-  if (sorted.length === 0) return undefined;
-  return new RegExp(
-    sorted.map((text) => text.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&")).join("|"),
-    "g",
-  );
+function findReplacements(
+  value: string,
+  texts: ReadonlyArray<string>,
+): Array<{ start: number; text: string }> {
+  // Group by first character, longest first, so each position checks only the
+  // texts that could start there.
+  const byFirst = new Map<string, string[]>();
+  for (const text of texts) {
+    if (text === "") continue;
+    const list = byFirst.get(text[0]) ?? [];
+    list.push(text);
+    byFirst.set(text[0], list);
+  }
+  for (const list of byFirst.values()) list.sort((a, b) => b.length - a.length);
+
+  const matches: Array<{ start: number; text: string }> = [];
+  let index = 0;
+  while (index < value.length) {
+    const text = byFirst.get(value[index])?.find((candidate) => value.startsWith(candidate, index));
+    if (typeof text === "undefined") {
+      index++;
+    } else {
+      matches.push({ start: index, text });
+      index += text.length;
+    }
+  }
+  return matches;
 }
