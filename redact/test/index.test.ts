@@ -246,6 +246,32 @@ describe("ArcjetRedact", () => {
       assert.equal(unredact(redacted), text);
     });
 
+    test("it will throw when one replacement stands for different values", async () => {
+      await assert.rejects(
+        redact("mail a@example.com and b@example.com", {
+          entities: ["email"],
+          replace: () => "[email]",
+        }),
+        /one replacement stands for different values/,
+      );
+    });
+
+    test("it allows one replacement for repeats of the same value", async () => {
+      const text = "mail a@example.com and a@example.com";
+      const [redacted, unredact] = await redact(text, {
+        entities: ["email"],
+        replace: () => "[email]",
+      });
+      assert.equal(redacted, "mail [email] and [email]");
+      assert.equal(unredact(redacted), text);
+    });
+
+    test("it finds many replacements that share a prefix in linear time", async () => {
+      const text = Array.from({ length: 2000 }, (_, i) => `u${i}@example.com`).join(" ");
+      const [redacted, unredact] = await redact(text, { entities: ["email"] });
+      assert.equal(unredact(redacted), text);
+    });
+
     test("it returns when a replacement is empty", async () => {
       const [redacted, unredact] = await redact("mail quinn@example.com", {
         entities: ["email"],

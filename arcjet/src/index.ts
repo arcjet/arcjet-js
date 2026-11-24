@@ -1865,7 +1865,7 @@ export type SensitiveInfoOptionsAllow<
    *   One entry per token, in the same order: the entity name, or `undefined`
    *   when the token is not sensitive.
    */
-  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities | undefined>;
   /**
    * Experimental: detection backend to use (default: bundled WebAssembly
    * engine).
@@ -1978,7 +1978,7 @@ export type SensitiveInfoOptionsDeny<
    *   One entry per token, in the same order: the entity name, or `undefined`
    *   when the token is not sensitive.
    */
-  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities | undefined>;
   /**
    * Experimental: detection backend to use (default: bundled WebAssembly
    * engine).

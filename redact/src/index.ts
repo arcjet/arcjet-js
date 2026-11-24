@@ -55,7 +55,7 @@ export type RedactOptions<
    *   One entry per token, in the same order: the entity name, or `undefined`
    *   when the token is not sensitive.
    */
-  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities | undefined>;
   /**
    * Custom replace function to redact sensitive information.
    *
@@ -397,23 +397,28 @@ export async function redact<
   }
   output += candidate.substring(cursor);
 
-  // The originals for each replacement text, in the order they were redacted.
-  const originals = new Map<string, string[]>();
+  // The original for each replacement text. A replacement must stand for one
+  // original, or unredact could restore the wrong value.
+  const originals = new Map<string, string>();
   for (const redaction of redactions) {
     // An empty replacement cannot be found again, so it cannot be restored.
     if (redaction.redacted === "") continue;
-    const list = originals.get(redaction.redacted) ?? [];
-    list.push(redaction.original);
-    originals.set(redaction.redacted, list);
+    const existing = originals.get(redaction.redacted);
+    if (typeof existing !== "undefined" && existing !== redaction.original) {
+      throw new Error(
+        "redact cannot produce reversible output: one replacement stands for different values; make each `replace` result unique to its value",
+      );
+    }
+    originals.set(redaction.redacted, redaction.original);
   }
 
-  const texts = [...originals.keys()];
+  const matcher = new ReplacementMatcher(originals.keys());
 
   // Unredact finds replacements in one pass, so it must find exactly the
   // replacements made here. Text that already held a replacement would be
   // "restored" to something it never was.
   let at = 0;
-  for (const match of findReplacements(output, texts)) {
+  for (const match of matcher.find(output)) {
     while (at < inserted.length && inserted[at].start < match.start) at++;
     const expected = inserted[at];
     if (
@@ -429,17 +434,12 @@ export async function redact<
   }
 
   function unredact(input: string): string {
-    const seen = new Map<string, number>();
     let result = "";
     let cursor = 0;
     // Replaced text is never searched again, so a replacement that contains
     // its original, or another replacement, cannot loop.
-    for (const match of findReplacements(input, texts)) {
-      const list = originals.get(match.text);
-      if (typeof list === "undefined") continue;
-      const count = seen.get(match.text) ?? 0;
-      seen.set(match.text, count + 1);
-      result += input.substring(cursor, match.start) + list[Math.min(count, list.length - 1)];
+    for (const match of matcher.find(input)) {
+      result += input.substring(cursor, match.start) + originals.get(match.text);
       cursor = match.start + match.text.length;
     }
     return result + input.substring(cursor);
@@ -448,43 +448,70 @@ export async function redact<
   return [output, unredact];
 }
 
-/**
- * Find every occurrence of any of `texts` in `value`, left to right and
- * without overlaps. At each position the longest text wins, so a replacement
- * that contains another is found whole. Empty texts are never found.
- *
- * @param value
- *   Text to search.
- * @param texts
- *   Replacement texts.
- * @returns
- *   Matches in order.
- */
-function findReplacements(
-  value: string,
-  texts: ReadonlyArray<string>,
-): Array<{ start: number; text: string }> {
-  // Group by first character, longest first, so each position checks only the
-  // texts that could start there.
-  const byFirst = new Map<string, string[]>();
-  for (const text of texts) {
-    if (text === "") continue;
-    const list = byFirst.get(text[0]) ?? [];
-    list.push(text);
-    byFirst.set(text[0], list);
-  }
-  for (const list of byFirst.values()) list.sort((a, b) => b.length - a.length);
+interface TrieNode {
+  children: Map<string, TrieNode>;
+  text: string | undefined;
+}
 
-  const matches: Array<{ start: number; text: string }> = [];
-  let index = 0;
-  while (index < value.length) {
-    const text = byFirst.get(value[index])?.find((candidate) => value.startsWith(candidate, index));
-    if (typeof text === "undefined") {
-      index++;
-    } else {
-      matches.push({ start: index, text });
-      index += text.length;
+/**
+ * Finds replacement texts in a string. The texts share one prefix tree, so
+ * each position costs at most the length of the longest text, however many
+ * texts share a prefix such as `<Redacted`.
+ */
+class ReplacementMatcher {
+  #root: TrieNode = { children: new Map(), text: undefined };
+
+  /**
+   * @param texts
+   *   Replacement texts. Empty texts are ignored.
+   */
+  constructor(texts: Iterable<string>) {
+    for (const text of texts) {
+      if (text === "") continue;
+      let node = this.#root;
+      for (const char of text) {
+        let child = node.children.get(char);
+        if (typeof child === "undefined") {
+          child = { children: new Map(), text: undefined };
+          node.children.set(char, child);
+        }
+        node = child;
+      }
+      node.text = text;
     }
   }
-  return matches;
+
+  /**
+   * Find every occurrence in `value`, left to right and without overlaps. At
+   * each position the longest text wins, so a replacement that contains
+   * another is found whole.
+   *
+   * @param value
+   *   Text to search.
+   * @returns
+   *   Matches in order.
+   */
+  find(value: string): Array<{ start: number; text: string }> {
+    const matches: Array<{ start: number; text: string }> = [];
+    let index = 0;
+    while (index < value.length) {
+      let node: TrieNode | undefined = this.#root;
+      let found: string | undefined;
+      let position = index;
+      while (typeof node !== "undefined" && position < value.length) {
+        const codePoint = value.codePointAt(position)!;
+        const char = String.fromCodePoint(codePoint);
+        node = node.children.get(char);
+        position += char.length;
+        if (typeof node?.text !== "undefined") found = node.text;
+      }
+      if (typeof found === "undefined") {
+        index++;
+      } else {
+        matches.push({ start: index, text: found });
+        index += found.length;
+      }
+    }
+    return matches;
+  }
 }

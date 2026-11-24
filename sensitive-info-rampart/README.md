@@ -210,6 +210,11 @@ you don't have to provide `start` and `end`.
 To replace detection entirely — including windowing — pass `runModel` instead,
 which takes the whole value and returns spans.
 
+Either way, card numbers come from Arcjet's card detection in
+`@arcjet/analyze`, which runs WebAssembly. A custom runtime must support
+WebAssembly. If card detection fails, the backend still denies on its other
+findings, and otherwise reports an error rather than a clean result.
+
 
 ## Bundlers and frameworks
 

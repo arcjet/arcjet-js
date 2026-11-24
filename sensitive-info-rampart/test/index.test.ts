@@ -349,3 +349,44 @@ test("the `sensitiveInfo` rule denies input over the limit without running the m
   assert.equal(warnCalls.length, 1);
   assert.equal(JSON.stringify(warnCalls).includes(secret), false);
 });
+
+test("a recognizer's card labels are not used", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({
+    recognizers: [() => [{ start: 6, end: 11, type: "CREDIT_CARD_NUMBER" }]],
+    runModel: stubModel([]),
+  });
+
+  const result = await backend.detect(
+    context,
+    "order 12345 shipped",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, []);
+});
+
+test("a failed card scan still denies on the other findings", async function (t) {
+  t.mock.method(WebAssembly, "instantiate", () => Promise.reject(new Error("no wasm")));
+  const { context } = fakeContext();
+  const backend = rampart({
+    recognizers: [],
+    runModel: stubModel([{ start: 6, end: 12, type: "SURNAME" }]),
+  });
+
+  const result = await backend.detect(context, "Hello Rivera", denyEntities(["SURNAME"]));
+
+  assert.deepEqual(result.denied, [
+    { start: 6, end: 12, identifiedType: { tag: "custom", val: "SURNAME" } },
+  ]);
+});
+
+test("a failed card scan with nothing else to deny is an error", async function (t) {
+  t.mock.method(WebAssembly, "instantiate", () => Promise.reject(new Error("no wasm")));
+  const { context } = fakeContext();
+  const backend = rampart({ recognizers: [], runModel: stubModel([]) });
+
+  await assert.rejects(
+    backend.detect(context, "nothing here", denyEntities(["CREDIT_CARD_NUMBER"])),
+  );
+});

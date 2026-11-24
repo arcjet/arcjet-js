@@ -141,9 +141,20 @@ Redacts sensitive information in a string. You can use the returned
 This function returns a `Promise` that resolves to a tuple with the redacted
 string and a function to unredact it (`Promise<[string, Unredact]>`).
 
-The promise rejects when the candidate already contains a replacement that
-`redact` would produce, because `unredact` could not restore it reliably. Use a
-custom `replace` function whose replacements cannot already appear in the text.
+The promise rejects when:
+
+- an entity name in `entities` is not built in and there is no `detect`
+  function
+- one replacement stands for different values, for example a custom `replace`
+  that returns `[email]` for every email address
+- the candidate already contains a replacement that `redact` would produce
+
+In each case `unredact` could not restore the original text reliably.
+
+To keep custom replacements reversible, make each one unique to its value and
+unlikely to appear in the text already, for example by including a counter:
+`<email 1>`, `<email 2>`. The same value may share a replacement. An empty
+replacement deletes the value: `unredact` cannot restore it.
 
 ## License
 

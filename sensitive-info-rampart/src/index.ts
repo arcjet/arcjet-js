@@ -46,12 +46,16 @@ export interface RampartOptions extends ModelOptions {
    *
    * These handle structured, validatable types — email addresses, URLs, IP
    * addresses, and SSNs — which are more reliable with patterns than with the
-   * model. Card numbers are always detected by Arcjet's own card detection,
-   * whatever recognizers are configured. They are also the supported extension point
-   * for custom detection with this backend: add a recognizer to detect
-   * additional spans.
+   * model. They are also the supported extension point for custom detection
+   * with this backend: add a recognizer to detect additional spans.
    *
-   * Pass `[]` to disable deterministic recognition and rely on the model alone.
+   * Card numbers are always detected by Arcjet's own card detection in
+   * `@arcjet/analyze`, whatever recognizers are configured, so the backend
+   * needs WebAssembly even with `runModel`. A recognizer's card labels are
+   * ignored.
+   *
+   * Pass `[]` to disable these recognizers. The model and card detection
+   * still run.
    */
   recognizers?: ReadonlyArray<Recognizer>;
   /**
@@ -238,15 +242,19 @@ export function rampart(options: RampartOptions = {}): SensitiveInfoBackend {
         );
       }
 
-      const [modelSpans, recognizerSpans, cardSpans] = await Promise.all([
+      const [modelSpans, recognizerSpans, cardScan] = await Promise.all([
         runModel(value),
         Promise.resolve(runRecognizers(value, recognizers)),
-        detectCardNumbers(context, value),
+        detectCardNumbers(context, value).then(
+          (spans) => ({ spans, error: undefined }),
+          (error: unknown) => ({ spans: [], error }),
+        ),
       ]);
+      const cardSpans: DetectedSpan[] = cardScan.spans;
 
       // Card numbers come from Arcjet's card detection alone, the same
       // definition the default backend and the server use, so the model's own
-      // card labels are ignored. Cards are kept apart from the merge, where a
+      // card labels, and a recognizer's, are ignored. Cards are kept apart from the merge, where a
       // longer overlapping span would otherwise replace them, and a span that
       // lies within a card names the same digits, so it is dropped.
       // Recognizers take precedence over the model on overlapping text.
@@ -255,7 +263,7 @@ export function rampart(options: RampartOptions = {}): SensitiveInfoBackend {
       const merged = [
         ...cardSpans,
         ...mergeSpans([
-          recognizerSpans.filter((span) => !withinCard(span)),
+          recognizerSpans.filter((span) => span.type !== "CREDIT_CARD_NUMBER" && !withinCard(span)),
           modelSpans.filter((span) => span.type !== "CREDIT_CARD_NUMBER" && !withinCard(span)),
         ]),
       ].sort((a, b) => a.start - b.start || a.end - b.end);
@@ -280,6 +288,18 @@ export function rampart(options: RampartOptions = {}): SensitiveInfoBackend {
         } else {
           allowed.push(entity);
         }
+      }
+
+      // Without the card scan the result is incomplete. A denial already found
+      // still stands; otherwise report the failure rather than a clean result.
+      if (typeof cardScan.error !== "undefined") {
+        if (denied.length > 0) {
+          context.log.warn(
+            "card detection failed, so card numbers were not scanned; denying on the other findings",
+          );
+          return { allowed, denied };
+        }
+        throw cardScan.error;
       }
 
       return { allowed, denied };
