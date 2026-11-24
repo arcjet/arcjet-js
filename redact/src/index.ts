@@ -52,7 +52,8 @@ export type RedactOptions<
    * @param tokens
    *   Tokens.
    * @returns
-   *   List of entities (or undefined).
+   *   One entry per token, in the same order: the entity name, or `undefined`
+   *   when the token is not sensitive.
    */
   detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
   /**
@@ -82,6 +83,13 @@ export type RedactOptions<
  * @returns
  *   Entity object.
  */
+const builtInEntities: ReadonlySet<string> = new Set([
+  "credit-card-number",
+  "email",
+  "ip-address",
+  "phone-number",
+]);
+
 function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
   if (typeof entity !== "string") {
     throw new Error("redaction entities must be strings");
@@ -120,15 +128,6 @@ function wasmEntitiesToString(entity: SensitiveInfoEntity): string {
   }
 
   return entity.val;
-}
-
-function performReplacementInText(
-  text: string,
-  replacement: string,
-  start: number,
-  end: number,
-): string {
-  return text.substring(0, start) + replacement + text.substring(end);
 }
 
 /**
@@ -261,6 +260,22 @@ function getWasmOptions<
       if (entities.length < 1) {
         throw new Error("no entities configured for redaction");
       }
+
+      // Without a custom `detect` function, nothing can identify a name that
+      // is not built in, so reject it rather than silently redacting nothing.
+      if (typeof options.detect !== "function") {
+        const unknown = entities.filter(
+          (entity: unknown) => typeof entity === "string" && !builtInEntities.has(entity),
+        );
+        if (unknown.length > 0) {
+          const list = unknown.map((entity: unknown) => `"${String(entity)}"`).join(", ");
+          throw new Error(
+            `${list} ${unknown.length === 1 ? "is not a built-in entity" : "are not built-in entities"}; ` +
+              `use one of "credit-card-number", "email", "ip-address" or "phone-number", ` +
+              `or provide a custom \`detect\` function`,
+          );
+        }
+      }
     }
 
     // `entities` is an optional field but not allowed to be `undefined`.
@@ -297,10 +312,13 @@ async function callRedactWasm<
   let convertedDetect = noOpDetect;
   if (typeof options?.detect === "function") {
     const detect = options.detect;
+    // Keep one result per token: an `undefined` slot means "not sensitive"
+    // for that token, and dropping it would move every later result onto the
+    // wrong token.
     convertedDetect = (tokens: string[]) => {
-      return detect(tokens)
-        .filter((e) => typeof e !== "undefined")
-        .map((e) => userEntitiesToWasm(e));
+      return detect(tokens).map((e) =>
+        typeof e === "undefined" ? undefined : userEntitiesToWasm(e),
+      );
     };
   }
 
@@ -367,38 +385,82 @@ export async function redact<
   // before an entity shifts the cut and leaves part of the entity behind.
   const spans = resolveByteOffsets(candidate, redactions);
 
-  // Need to apply the redactions in reverse order so that the offsets aren't changed
-  // when we redact with strings that are longer/shorter than the original.
-  redactions.reverse();
-  spans.reverse();
-
+  // Build the output in text order, recording where each replacement lands.
+  let output = "";
+  let cursor = 0;
+  const inserted: Array<{ start: number; end: number }> = [];
   for (const [index, redaction] of redactions.entries()) {
-    candidate = performReplacementInText(
-      candidate,
-      redaction.redacted,
-      spans[index].start,
-      spans[index].end,
-    );
+    output += candidate.substring(cursor, spans[index].start);
+    inserted.push({ start: output.length, end: output.length + redaction.redacted.length });
+    output += redaction.redacted;
+    cursor = spans[index].end;
+  }
+  output += candidate.substring(cursor);
+
+  // The originals for each replacement text, in the order they were redacted.
+  const originals = new Map<string, string[]>();
+  for (const redaction of redactions) {
+    // An empty replacement cannot be found again, so it cannot be restored.
+    if (redaction.redacted === "") continue;
+    const list = originals.get(redaction.redacted) ?? [];
+    list.push(redaction.original);
+    originals.set(redaction.redacted, list);
+  }
+
+  const pattern = replacementPattern(originals.keys());
+
+  // Unredact finds replacements in one pass, so it must find exactly the
+  // replacements made here. Text that already held a replacement would be
+  // "restored" to something it never was.
+  if (pattern) {
+    let at = 0;
+    for (const match of output.matchAll(pattern)) {
+      while (at < inserted.length && inserted[at].start < match.index) at++;
+      const expected = inserted[at];
+      if (
+        typeof expected === "undefined" ||
+        expected.start !== match.index ||
+        expected.end !== match.index + match[0].length
+      ) {
+        throw new Error(
+          "redact cannot produce reversible output: the text already contains a replacement it would produce; use a custom `replace` function",
+        );
+      }
+      at++;
+    }
   }
 
   function unredact(input: string): string {
-    for (const redaction of redactions) {
-      let position;
-      while (position !== -1) {
-        position = input.indexOf(redaction.redacted);
-        if (position !== -1) {
-          input = performReplacementInText(
-            input,
-            redaction.original,
-            position,
-            position + redaction.redacted.length,
-          );
-        }
-      }
-    }
-
-    return input;
+    if (!pattern) return input;
+    const seen = new Map<string, number>();
+    // Replaced text is never searched again, so a replacement that contains
+    // its original, or another replacement, cannot loop.
+    return input.replace(pattern, (redacted) => {
+      const list = originals.get(redacted);
+      if (typeof list === "undefined") return redacted;
+      const count = seen.get(redacted) ?? 0;
+      seen.set(redacted, count + 1);
+      return list[Math.min(count, list.length - 1)];
+    });
   }
 
-  return [candidate, unredact];
+  return [output, unredact];
+}
+
+/**
+ * Build one pattern that matches any of `texts`, longest first so a
+ * replacement that contains another is matched whole.
+ *
+ * @param texts
+ *   Replacement texts.
+ * @returns
+ *   Global pattern, or `undefined` when there is nothing to match.
+ */
+function replacementPattern(texts: Iterable<string>): RegExp | undefined {
+  const sorted = [...texts].sort((a, b) => b.length - a.length);
+  if (sorted.length === 0) return undefined;
+  return new RegExp(
+    sorted.map((text) => text.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&")).join("|"),
+    "g",
+  );
 }

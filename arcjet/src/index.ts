@@ -1856,10 +1856,13 @@ export type SensitiveInfoOptionsAllow<
   /**
    * Custom detection function to identify sensitive information.
    *
+   * Required to list a name in `allow` or `deny` that is not a built-in type.
+   *
    * @param tokens
    *   Tokens.
    * @returns
-   *   List of entities (or undefined).
+   *   One entry per token, in the same order: the entity name, or `undefined`
+   *   when the token is not sensitive.
    */
   detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
   /**
@@ -1965,10 +1968,13 @@ export type SensitiveInfoOptionsDeny<
   /**
    * Custom detection function to identify sensitive information.
    *
+   * Required to list a name in `allow` or `deny` that is not a built-in type.
+   *
    * @param tokens
    *   Tokens.
    * @returns
-   *   List of entities (or undefined).
+   *   One entry per token, in the same order: the entity name, or `undefined`
+   *   when the token is not sensitive.
    */
   detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
   /**
@@ -2773,6 +2779,17 @@ const wasmSensitiveInfoBackend: SensitiveInfoBackend = {
 
 /**
  * Built-in {@linkcode ArcjetSensitiveInfoType} values that the default (WASM)
+ * backend detects.
+ */
+const defaultSensitiveInfoTypes: ReadonlySet<string> = new Set([
+  "EMAIL",
+  "PHONE_NUMBER",
+  "IP_ADDRESS",
+  "CREDIT_CARD_NUMBER",
+]);
+
+/**
+ * Built-in {@linkcode ArcjetSensitiveInfoType} values that the default (WASM)
  * backend cannot detect. Each is only detected when a
  * {@linkcode SensitiveInfoBackend} that supports it is configured (such as
  * `@arcjet/sensitive-info-rampart`), so listing one without a `backend` (and
@@ -2906,6 +2923,25 @@ export function sensitiveInfo<
   const allow = options.allow || [];
   const deny = options.deny || [];
 
+  // Without a custom `detect` function, nothing can identify a name that is
+  // not a built-in type, so reject it rather than silently never matching.
+  if (typeof options.detect === "undefined") {
+    const unknown = [...new Set([...allow, ...deny])].filter(
+      (entity) =>
+        typeof entity !== "string" ||
+        (!defaultSensitiveInfoTypes.has(entity) && !backendOnlySensitiveInfoTypes.has(entity)),
+    );
+    if (unknown.length > 0) {
+      const list = unknown.map((entity) => `"${entity}"`).join(", ");
+      throw new Error(
+        `\`sensitiveInfo\` options error: ${list} ${unknown.length === 1 ? "is not a" : "are not"} ` +
+          `built-in sensitive information ${unknown.length === 1 ? "type" : "types"}. ` +
+          `Use a built-in type, or provide a custom \`detect\` function that identifies ` +
+          `${unknown.length === 1 ? "it" : "them"}.`,
+      );
+    }
+  }
+
   // A configured backend handles its own supported entity types, and a custom
   // `detect` function can identify anything the caller lists. Without either,
   // only the default (WASM) backend runs, which detects `EMAIL`,
@@ -3015,10 +3051,13 @@ export function sensitiveInfo<
         let convertedDetect = undefined;
         if (typeof options.detect !== "undefined") {
           const detect = options.detect;
+          // Keep one result per token: an `undefined` slot means "not
+          // sensitive" for that token, and dropping it would move every later
+          // result onto the wrong token.
           convertedDetect = (tokens: string[]) => {
-            return detect(tokens)
-              .filter((e) => typeof e !== "undefined")
-              .map(protocolSensitiveInfoEntitiesToAnalyze);
+            return detect(tokens).map((e) =>
+              typeof e === "undefined" ? undefined : protocolSensitiveInfoEntitiesToAnalyze(e),
+            );
           };
         }
 

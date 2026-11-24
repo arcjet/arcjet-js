@@ -66,9 +66,6 @@
     "arcjet": "1.16.0"
   },
   "peerDependenciesMeta": {
-    "@arcjet/analyze": {
-      "optional": true
-    },
     "arcjet": {
       "optional": true
     }

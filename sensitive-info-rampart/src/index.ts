@@ -1,3 +1,4 @@
+import { detectSensitiveInfo } from "@arcjet/analyze";
 import type {
   DetectedSensitiveInfoEntity,
   SensitiveInfoEntities,
@@ -44,8 +45,9 @@ export interface RampartOptions extends ModelOptions {
    * {@linkcode defaultRecognizers}).
    *
    * These handle structured, validatable types — email addresses, URLs, IP
-   * addresses, SSNs, and Luhn-valid card numbers — which are more reliable with
-   * patterns than with the model. They are also the supported extension point
+   * addresses, and SSNs — which are more reliable with patterns than with the
+   * model. Card numbers are always detected by Arcjet's own card detection,
+   * whatever recognizers are configured. They are also the supported extension point
    * for custom detection with this backend: add a recognizer to detect
    * additional spans.
    *
@@ -89,6 +91,31 @@ function overlaps(a: DetectedSpan, b: DetectedSpan): boolean {
  * @returns
  *   Non-overlapping spans, ordered by start offset.
  */
+/**
+ * Find card numbers with Arcjet's card detection in `@arcjet/analyze`.
+ *
+ * @param context
+ *   Backend context.
+ * @param value
+ *   Text to scan.
+ * @returns
+ *   Card number spans, in UTF-16 code units.
+ */
+async function detectCardNumbers(
+  context: SensitiveInfoBackendContext,
+  value: string,
+): Promise<DetectedSpan[]> {
+  const result = await detectSensitiveInfo(
+    { log: context.log, characteristics: [] },
+    value,
+    { tag: "deny", val: [{ tag: "credit-card-number" }] },
+    1,
+  );
+  return result.denied
+    .filter((entity) => entity.identifiedType.tag === "credit-card-number")
+    .map((entity) => ({ start: entity.start, end: entity.end, type: "CREDIT_CARD_NUMBER" }));
+}
+
 function mergeSpans(groups: ReadonlyArray<ReadonlyArray<DetectedSpan>>): DetectedSpan[] {
   const ranked = groups.flatMap((group, priority) => group.map((span) => ({ span, priority })));
 
@@ -211,13 +238,27 @@ export function rampart(options: RampartOptions = {}): SensitiveInfoBackend {
         );
       }
 
-      const [modelSpans, recognizerSpans] = await Promise.all([
+      const [modelSpans, recognizerSpans, cardSpans] = await Promise.all([
         runModel(value),
         Promise.resolve(runRecognizers(value, recognizers)),
+        detectCardNumbers(context, value),
       ]);
 
+      // Card numbers come from Arcjet's card detection alone, the same
+      // definition the default backend and the server use, so the model's own
+      // card labels are ignored. Cards are kept apart from the merge, where a
+      // longer overlapping span would otherwise replace them, and a span that
+      // lies within a card names the same digits, so it is dropped.
       // Recognizers take precedence over the model on overlapping text.
-      const merged = mergeSpans([recognizerSpans, modelSpans]);
+      const withinCard = (span: DetectedSpan) =>
+        cardSpans.some((card) => card.start <= span.start && span.end <= card.end);
+      const merged = [
+        ...cardSpans,
+        ...mergeSpans([
+          recognizerSpans.filter((span) => !withinCard(span)),
+          modelSpans.filter((span) => span.type !== "CREDIT_CARD_NUMBER" && !withinCard(span)),
+        ]),
+      ].sort((a, b) => a.start - b.start || a.end - b.end);
 
       const listed = new Set<ArcjetSensitiveInfoType>(entities.val.map(fromAnalyzeEntity));
       const denyListed = entities.tag === "deny";

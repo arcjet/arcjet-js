@@ -124,6 +124,53 @@ test("recognizer spans win over overlapping model spans", async function () {
   });
 });
 
+test("card numbers are found with the recognizers disabled", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({ recognizers: [], runModel: stubModel([]) });
+
+  const result = await backend.detect(
+    context,
+    "card 4111 1111 1111 1111",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, [
+    { start: 5, end: 24, identifiedType: { tag: "credit-card-number" } },
+  ]);
+});
+
+test("the model's card labels are not used", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({
+    runModel: stubModel([{ start: 6, end: 11, type: "CREDIT_CARD_NUMBER" }]),
+  });
+
+  const result = await backend.detect(
+    context,
+    "order 12345 shipped",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, []);
+});
+
+test("a card number is kept when a longer span overlaps it", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({
+    runModel: stubModel([{ start: 0, end: 24, type: "STREET_NAME" }]),
+  });
+
+  const result = await backend.detect(
+    context,
+    "card 4111 1111 1111 1111",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, [
+    { start: 5, end: 24, identifiedType: { tag: "credit-card-number" } },
+  ]);
+});
+
 test("a short recognizer span does not delete a longer overlapping entity", async function () {
   const { context } = fakeContext();
   // "1 Infinite Loop" — the model spans the whole street ([0,15)); a stray

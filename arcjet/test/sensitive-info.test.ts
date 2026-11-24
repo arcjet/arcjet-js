@@ -160,11 +160,27 @@ describe("Primitive > sensitiveInfo", () => {
     );
   });
 
-  test("ignores unknown custom entity strings (pre-existing behavior)", () => {
+  test("rejects a name that is not a built-in type without `detect`", () => {
+    assert.throws(
+      () => sensitiveInfo<"MY_CUSTOM_THING">({ deny: ["MY_CUSTOM_THING"] }),
+      /`sensitiveInfo` options error: "MY_CUSTOM_THING" is not a built-in sensitive information type/,
+    );
+    assert.throws(
+      () =>
+        sensitiveInfo<"MY_CUSTOM_THING">({
+          allow: ["EMAIL", "MY_CUSTOM_THING"],
+          backend: { detect: async () => ({ allowed: [], denied: [] }) },
+        }),
+      /"MY_CUSTOM_THING" is not a built-in sensitive information type/,
+    );
+  });
+
+  test("accepts a custom name with `detect`", () => {
     assert.doesNotThrow(() =>
-      // A custom string that is not a built-in type is left alone — the
-      // backend-support check only covers known backend-only types.
-      sensitiveInfo<"MY_CUSTOM_THING">({ deny: ["MY_CUSTOM_THING"] }),
+      sensitiveInfo<"MY_CUSTOM_THING">({
+        deny: ["MY_CUSTOM_THING"],
+        detect: (tokens) => tokens.map(() => undefined),
+      }),
     );
   });
 
@@ -765,6 +781,42 @@ describe("Primitive > sensitiveInfo", () => {
     });
     assert.equal(rule.type, "SENSITIVE_INFO");
     await rule.protect(context, details);
+  });
+
+  test("it keeps each `detect` result on its own token in a larger context window", async () => {
+    const context = {
+      key: "test-key",
+      fingerprint: "test-fingerprint",
+      runtime: "test",
+      log: createMockLogger(),
+      characteristics: [],
+      cache: new MemoryCache<ArcjetCacheEntry>(),
+      getBody: () => Promise.resolve("account ACC-00412345 belongs to Pat"),
+    };
+    const details = {
+      ip: "172.100.1.1",
+      method: "GET",
+      protocol: "http:",
+      host: "example.com",
+      path: "/",
+      headers: new Headers(),
+      cookies: "",
+      query: "",
+      extra: {},
+    };
+
+    const [rule] = sensitiveInfo<"ACCOUNT_ID">({
+      mode: "LIVE",
+      deny: ["ACCOUNT_ID"],
+      detect(tokens: string[]) {
+        return tokens.map((token) => (/^ACC-\d{8}$/.test(token) ? "ACCOUNT_ID" : undefined));
+      },
+      contextWindowSize: 5,
+    });
+    const result = await rule.protect(context, details);
+    assert.equal(result.conclusion, "DENY");
+    assert.ok(result.reason.isSensitiveInfo());
+    assert.deepEqual(result.reason.denied, [{ start: 8, end: 20, identifiedType: "ACCOUNT_ID" }]);
   });
 
   test("it returns an error decision when body is not available", async () => {

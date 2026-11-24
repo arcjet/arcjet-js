@@ -197,8 +197,73 @@ describe("ArcjetRedact", () => {
         },
       });
     });
+    test("it will throw for an entity that is not built in without `detect`", async () => {
+      await assert.rejects(
+        redact("email test@example.com", {
+          // @ts-expect-error: not a built-in entity.
+          entities: ["emails"],
+        }),
+        /"emails" is not a built-in entity/,
+      );
+      await assert.rejects(
+        redact("email test@example.com", {
+          // @ts-expect-error: not a built-in entity.
+          entities: ["account", "email"],
+        }),
+        /"account" is not a built-in entity/,
+      );
+    });
+
+    test("it keeps each `detect` result on its own token in a larger context window", async () => {
+      const [redacted] = await redact("account ACC-00412345 belongs to Pat", {
+        entities: ["account-id"],
+        contextWindowSize: 5,
+        detect(tokens) {
+          return tokens.map((token) => (/^ACC-\d{8}$/.test(token) ? "account-id" : undefined));
+        },
+      });
+      assert.equal(redacted, "account <Redacted account-id #0> belongs to Pat");
+    });
   });
   describe("unredact()", () => {
+    test("it returns when a replacement contains its original", async () => {
+      const text = "mail quinn@example.com";
+      const [redacted, unredact] = await redact(text, {
+        entities: ["email"],
+        replace: (_entity, plaintext) => plaintext,
+      });
+      assert.equal(redacted, text);
+      assert.equal(unredact(redacted), text);
+    });
+
+    test("it returns when a replacement contains its original and more", async () => {
+      const text = "mail quinn@example.com";
+      const [redacted, unredact] = await redact(text, {
+        entities: ["email"],
+        replace: (_entity, plaintext) => `[${plaintext}]`,
+      });
+      assert.equal(redacted, "mail [quinn@example.com]");
+      assert.equal(unredact(redacted), text);
+    });
+
+    test("it returns when a replacement is empty", async () => {
+      const [redacted, unredact] = await redact("mail quinn@example.com", {
+        entities: ["email"],
+        replace: () => "",
+      });
+      assert.equal(redacted, "mail ");
+      assert.equal(unredact(redacted), "mail ");
+    });
+
+    test("it will throw when the text already contains a replacement it would produce", async () => {
+      await assert.rejects(
+        redact("They wrote <Redacted email #0> in the docs. Mine is quinn@example.com", {
+          entities: ["email"],
+        }),
+        /redact cannot produce reversible output/,
+      );
+    });
+
     test("it will redact and unredact configured entities", async () => {
       const text = "email test@example.com phone 011234567 ip 10.12.234.2";
       const expectedRedacted =

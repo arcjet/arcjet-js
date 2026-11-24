@@ -130,6 +130,11 @@ export const phoneRecognizer: Recognizer = (value) =>
 
 /**
  * Credit/debit card recognizer, validated with the Luhn checksum.
+ *
+ * @deprecated
+ *   The backend detects card numbers with Arcjet's own card detection, the
+ *   same definition the default backend and the server use, so this
+ *   recognizer is no longer in {@linkcode defaultRecognizers}.
  */
 export const creditCardRecognizer: Recognizer = (value) =>
   matchAll(value, CREDIT_CARD, "CREDIT_CARD_NUMBER").filter((span) => {
@@ -147,7 +152,6 @@ export const creditCardRecognizer: Recognizer = (value) =>
  * A pattern cannot validate which semantic type the digits represent.
  */
 export const defaultRecognizers: ReadonlyArray<Recognizer> = [
-  creditCardRecognizer,
   ssnRecognizer,
   emailRecognizer,
   urlRecognizer,

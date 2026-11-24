@@ -93,10 +93,14 @@ The model detects: `GIVEN_NAME`, `SURNAME`, `EMAIL`, `PHONE_NUMBER`, `URL`,
 `CITY`, `STATE`, and `ZIP_CODE`.
 
 Deterministic recognizers additionally detect the structured, validatable types
-`EMAIL`, `URL`, `IP_ADDRESS`, `SSN`, and `CREDIT_CARD_NUMBER` (Luhn-validated),
-mirroring Rampart's deterministic redaction layer. Phone numbers are left to
-the model because their digit shape overlaps with financial and government
-identifiers. On overlapping text the recognizer result wins over the model.
+`EMAIL`, `URL`, `IP_ADDRESS`, and `SSN`, mirroring Rampart's deterministic
+redaction layer. Phone numbers are left to the model because their digit shape
+overlaps with financial and government identifiers. On overlapping text the
+recognizer result wins over the model.
+
+`CREDIT_CARD_NUMBER` is detected by Arcjet's own card detection from
+`@arcjet/analyze`, the same as the default backend, whatever recognizers are
+configured. The model's card labels are not used.
 
 The full set is exported as `rampartEntities`:
 
