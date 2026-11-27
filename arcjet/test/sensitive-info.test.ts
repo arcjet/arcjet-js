@@ -166,9 +166,31 @@ describe("Primitive > sensitiveInfo", () => {
       /`sensitiveInfo` options error: "MY_CUSTOM_THING" is not a built-in sensitive information type/,
     );
     assert.throws(
-      () => sensitiveInfo<"emails">({ allow: ["EMAIL", "emails"] }),
-      /"emails" is not a built-in sensitive information type/,
+      () => sensitiveInfo<"ACCOUNT">({ allow: ["EMAIL", "ACCOUNT"] }),
+      /"ACCOUNT" is not a built-in sensitive information type/,
     );
+  });
+
+  test("rejects a name that looks like a built-in type, even with `detect`", () => {
+    for (const name of ["emails", "EMIAL", "credit-card", "phone_number", "Ip-Address"]) {
+      assert.throws(
+        () =>
+          sensitiveInfo<string>({
+            deny: [name],
+            detect: (tokens) => tokens.map(() => undefined),
+          }),
+        /looks like the built-in type/,
+        name,
+      );
+    }
+  });
+
+  test("accepts a custom name that is not close to a built-in type", () => {
+    for (const name of ["ACCOUNT_ID", "URLS", "INVOICE"]) {
+      assert.doesNotThrow(() =>
+        sensitiveInfo<string>({ deny: [name], detect: (tokens) => tokens.map(() => undefined) }),
+      );
+    }
   });
 
   test("accepts a custom name with a backend", () => {

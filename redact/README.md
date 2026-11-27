@@ -145,11 +145,19 @@ The promise rejects when:
 
 - an entity name in `entities` is not built in and there is no `detect`
   function
+- an entity name looks like a built-in one, such as `emails` or `credit-card`,
+  even with a `detect` function
 - one replacement stands for different values, for example a custom `replace`
   that returns `[email]` for every email address
 - the candidate already contains a replacement that `redact` would produce
 
 In each case `unredact` could not restore the original text reliably.
+
+Each call numbers its placeholders from `#0`, so two calls can produce the
+same placeholder for different values. Only use an `unredact` function on text
+derived from its own call's output. For example, in a chat app that redacts each
+message separately, keep every message's `unredact` with that message, or redact
+the whole conversation in one call.
 
 To keep custom replacements reversible, make each one unique to its value and
 unlikely to appear in the text already, for example by including a counter:

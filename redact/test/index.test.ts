@@ -203,7 +203,7 @@ describe("ArcjetRedact", () => {
           // @ts-expect-error: not a built-in entity.
           entities: ["emails"],
         }),
-        /"emails" is not a built-in entity/,
+        /"emails" looks like the built-in entity "email"/,
       );
       await assert.rejects(
         redact("email test@example.com", {
@@ -212,6 +212,19 @@ describe("ArcjetRedact", () => {
         }),
         /"account" is not a built-in entity/,
       );
+    });
+
+    test("it will throw for a name that looks like a built-in entity, even with `detect`", async () => {
+      for (const name of ["credit-card", "emial", "Phone_Number"]) {
+        await assert.rejects(
+          redact("mail a@example.com", {
+            // @ts-expect-error: not a built-in entity.
+            entities: [name],
+            detect: (tokens) => tokens.map(() => undefined),
+          }),
+          /looks like the built-in entity/,
+        );
+      }
     });
 
     test("it keeps each `detect` result on its own token in a larger context window", async () => {

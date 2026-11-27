@@ -90,6 +90,53 @@ const builtInEntities: ReadonlySet<string> = new Set([
   "phone-number",
 ]);
 
+/**
+ * The built-in name that `name` most likely meant, when `name` is not built in
+ * but looks like one: equal once case and punctuation are ignored, or, for
+ * names of five or more characters, a prefix of a built-in or one edit (an
+ * insertion, deletion, substitution or swap of neighbours) away from one.
+ *
+ * @param name
+ *   Listed entity name.
+ * @param builtIns
+ *   Built-in entity names.
+ * @returns
+ *   The built-in name, or `undefined`.
+ */
+function normalizeEntityName(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function lookalikeBuiltIn(name: string, builtIns: Iterable<string>): string | undefined {
+  const wanted = normalizeEntityName(name);
+  for (const builtIn of builtIns) {
+    if (builtIn === name) return undefined;
+  }
+  for (const builtIn of builtIns) {
+    const candidate = normalizeEntityName(builtIn);
+    if (candidate === wanted) return builtIn;
+    if (wanted.length >= 5 && (candidate.startsWith(wanted) || withinOneEdit(wanted, candidate))) {
+      return builtIn;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Whether `a` and `b` differ by at most one insertion, deletion, substitution
+ * or swap of neighbouring characters.
+ */
+function withinOneEdit(a: string, b: string): boolean {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  if (a.length === b.length) {
+    const rest = (n: number) => a.slice(i + n) === b.slice(i + n);
+    return rest(1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && rest(2));
+  }
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+}
+
 function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
   if (typeof entity !== "string") {
     throw new Error("redaction entities must be strings");
@@ -259,6 +306,19 @@ function getWasmOptions<
 
       if (entities.length < 1) {
         throw new Error("no entities configured for redaction");
+      }
+
+      // A name that looks like a built-in entity is almost always a typo for
+      // it, and a custom `detect` function would never report it.
+      for (const entity of entities) {
+        if (typeof entity !== "string") continue;
+        const meant = lookalikeBuiltIn(entity, builtInEntities);
+        if (typeof meant !== "undefined") {
+          throw new Error(
+            `"${entity}" looks like the built-in entity "${meant}"; use "${meant}", ` +
+              `or give a custom entity a name that is not close to a built-in one`,
+          );
+        }
       }
 
       // Without a custom `detect` function, nothing can identify a name that
