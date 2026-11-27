@@ -234,6 +234,7 @@ export type ArcjetWellKnownBot =
   | "DYNATRACE_MONITOR"
   | "EASYCRON_MONITOR"
   | "EC2LINKFINDER"
+  | "ECHELONGRAPH_RADAR"
   | "EDGEWATCH_MONITOR"
   | "EDISTER_CRAWLER"
   | "ELEVENLABS_CRAWLER"
@@ -1349,6 +1350,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
     "DUBBOT_CRAWLER",
     "DYNATRACE_MONITOR",
     "EASYCRON_MONITOR",
+    "ECHELONGRAPH_RADAR",
     "EDGEWATCH_MONITOR",
     "FEDISTATS_CRAWLER",
     "FLIPBOARD_PROXY",
@@ -2087,7 +2089,7 @@ export const categories: Record<ArcjetBotCategory, readonly ArcjetWellKnownBot[]
 });
 
 /** The well-known-bots commit this file was generated from */
-export const catalogSha = "c413909276c93c9f38c1abb76f4362173d866b00";
+export const catalogSha = "18631dcb0e344102f90fd9e8f24eec3a59746388";
 
 /** Bots that sign requests with Web Bot Auth or Poppy, verified by Arcjet Cloud */
 export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
@@ -2100,6 +2102,7 @@ export const signedBots: readonly ArcjetWellKnownBot[] = Object.freeze([
   "CONTEXT7_CRAWLER",
   "DUCKASSIST_BOT",
   "DUCKDUCKGO_CRAWLER",
+  "ECHELONGRAPH_RADAR",
   "ENFILADE_CRAWLER",
   "EXA_SEARCHBOT",
   "EXA_USER",
