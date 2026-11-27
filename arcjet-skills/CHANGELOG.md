@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...@arcjet/skills-v2.0.0) (2026-11-27)
+
+
+### 🚀 New Features
+
+* **guard:** add @arcjet/guard/vercel-eve/v1 for Eve 1.x ([#6374](https://github.com/arcjet/arcjet-js/issues/6374)) ([0ecf23d](https://github.com/arcjet/arcjet-js/commit/0ecf23dd8a1586e5f9c80e7bcf7e1afe27c74ed3))
+
+
+### 📝 Documentation
+
+* **skills:** AI_AGENT guidance and honest Eve /v1 caveat ([#6376](https://github.com/arcjet/arcjet-js/issues/6376)) ([2edd27c](https://github.com/arcjet/arcjet-js/commit/2edd27ce38628918d2cc5663e3dbe852bb207884))
+* **skills:** moderation categories and Deno/redact deprecations ([#6381](https://github.com/arcjet/arcjet-js/issues/6381)) ([ed0151d](https://github.com/arcjet/arcjet-js/commit/ed0151d4cb27bec58d70877a0328a08ebc470a21))
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/skills-v1.16.0) (2026-11-16)
 
 

@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...v2.0.0) (2026-11-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deno:** deprecate @arcjet/deno ([#6378](https://github.com/arcjet/arcjet-js/issues/6378))
+
+### 🚀 New Features
+
+* **guard:** add @arcjet/guard/vercel-eve/v1 for Eve 1.x ([#6374](https://github.com/arcjet/arcjet-js/issues/6374)) ([0ecf23d](https://github.com/arcjet/arcjet-js/commit/0ecf23dd8a1586e5f9c80e7bcf7e1afe27c74ed3))
+* **guard:** return detected content moderation categories ([#6380](https://github.com/arcjet/arcjet-js/issues/6380)) ([9d0bbdb](https://github.com/arcjet/arcjet-js/commit/9d0bbdbff853a54228eb48e90fe416615a38d15b))
+* sync analyze 38753f0 and well-known-bots c413909 ([#6377](https://github.com/arcjet/arcjet-js/issues/6377)) ([752d954](https://github.com/arcjet/arcjet-js/commit/752d9540eaa5f5ab529ed8bab5e506468b983bef))
+* sync well-known-bots 18631dc ([#6383](https://github.com/arcjet/arcjet-js/issues/6383)) ([e68dc9c](https://github.com/arcjet/arcjet-js/commit/e68dc9cafca47cbd35cf62b446c8237f15859996))
+
+
+### 📝 Documentation
+
+* **redact:** deprecate @arcjet/redact and @arcjet/redact-wasm ([#6379](https://github.com/arcjet/arcjet-js/issues/6379)) ([08c2640](https://github.com/arcjet/arcjet-js/commit/08c26405fa39b5a115fbe4b4016d394c1d95ca03))
+* **skills:** AI_AGENT guidance and honest Eve /v1 caveat ([#6376](https://github.com/arcjet/arcjet-js/issues/6376)) ([2edd27c](https://github.com/arcjet/arcjet-js/commit/2edd27ce38628918d2cc5663e3dbe852bb207884))
+* **skills:** moderation categories and Deno/redact deprecations ([#6381](https://github.com/arcjet/arcjet-js/issues/6381)) ([ed0151d](https://github.com/arcjet/arcjet-js/commit/ed0151d4cb27bec58d70877a0328a08ebc470a21))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deno:** deprecate @arcjet/deno ([#6378](https://github.com/arcjet/arcjet-js/issues/6378)) ([aa3aa8f](https://github.com/arcjet/arcjet-js/commit/aa3aa8ffa1c31c3a7711479d4d74a88bf9f813b1))
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...v1.16.0) (2026-11-16)
 
 

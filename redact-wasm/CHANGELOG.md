@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...@arcjet/redact-wasm-v2.0.0) (2026-11-27)
+
+
+### 🚀 New Features
+
+* sync analyze 38753f0 and well-known-bots c413909 ([#6377](https://github.com/arcjet/arcjet-js/issues/6377)) ([752d954](https://github.com/arcjet/arcjet-js/commit/752d9540eaa5f5ab529ed8bab5e506468b983bef))
+
+
+### 📝 Documentation
+
+* **redact:** deprecate @arcjet/redact and @arcjet/redact-wasm ([#6379](https://github.com/arcjet/arcjet-js/issues/6379)) ([08c2640](https://github.com/arcjet/arcjet-js/commit/08c26405fa39b5a115fbe4b4016d394c1d95ca03))
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/redact-wasm-v1.16.0) (2026-11-16)
 
 
