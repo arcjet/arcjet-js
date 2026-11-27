@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...@arcjet/deno-v2.0.0) (2026-11-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deno:** deprecate @arcjet/deno ([#6378](https://github.com/arcjet/arcjet-js/issues/6378))
+
+### 🚀 New Features
+
+* sync analyze 38753f0 and well-known-bots c413909 ([#6377](https://github.com/arcjet/arcjet-js/issues/6377)) ([752d954](https://github.com/arcjet/arcjet-js/commit/752d9540eaa5f5ab529ed8bab5e506468b983bef))
+
+
+### 🧹 Miscellaneous Chores
+
+* **deno:** deprecate @arcjet/deno ([#6378](https://github.com/arcjet/arcjet-js/issues/6378)) ([aa3aa8f](https://github.com/arcjet/arcjet-js/commit/aa3aa8ffa1c31c3a7711479d4d74a88bf9f813b1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/body bumped from 1.16.0 to 2.0.0
+    * @arcjet/env bumped from 1.16.0 to 2.0.0
+    * @arcjet/headers bumped from 1.16.0 to 2.0.0
+    * @arcjet/ip bumped from 1.16.0 to 2.0.0
+    * @arcjet/logger bumped from 1.16.0 to 2.0.0
+    * @arcjet/protocol bumped from 1.16.0 to 2.0.0
+    * @arcjet/transport bumped from 1.16.0 to 2.0.0
+    * arcjet bumped from 1.16.0 to 2.0.0
+  * devDependencies
+    * @arcjet/cache bumped from 1.16.0 to 2.0.0
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/deno-v1.16.0) (2026-11-16)
 
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...@arcjet/guard-v2.0.0) (2026-11-27)
+
+
+### 🚀 New Features
+
+* **guard:** add @arcjet/guard/vercel-eve/v1 for Eve 1.x ([#6374](https://github.com/arcjet/arcjet-js/issues/6374)) ([0ecf23d](https://github.com/arcjet/arcjet-js/commit/0ecf23dd8a1586e5f9c80e7bcf7e1afe27c74ed3))
+* **guard:** return detected content moderation categories ([#6380](https://github.com/arcjet/arcjet-js/issues/6380)) ([9d0bbdb](https://github.com/arcjet/arcjet-js/commit/9d0bbdbff853a54228eb48e90fe416615a38d15b))
+
+
+### 📝 Documentation
+
+* **skills:** AI_AGENT guidance and honest Eve /v1 caveat ([#6376](https://github.com/arcjet/arcjet-js/issues/6376)) ([2edd27c](https://github.com/arcjet/arcjet-js/commit/2edd27ce38628918d2cc5663e3dbe852bb207884))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/analyze bumped from 1.16.0 to 2.0.0
+    * @arcjet/logger bumped from 1.16.0 to 2.0.0
+    * @arcjet/transport bumped from 1.16.0 to 2.0.0
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/guard-v1.16.0) (2026-11-16)
 
 

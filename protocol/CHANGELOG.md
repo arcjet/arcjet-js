@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...@arcjet/protocol-v2.0.0) (2026-11-27)
+
+
+### 🚀 New Features
+
+* sync analyze 38753f0 and well-known-bots c413909 ([#6377](https://github.com/arcjet/arcjet-js/issues/6377)) ([752d954](https://github.com/arcjet/arcjet-js/commit/752d9540eaa5f5ab529ed8bab5e506468b983bef))
+* sync well-known-bots 18631dc ([#6383](https://github.com/arcjet/arcjet-js/issues/6383)) ([e68dc9c](https://github.com/arcjet/arcjet-js/commit/e68dc9cafca47cbd35cf62b446c8237f15859996))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @arcjet/cache bumped from 1.16.0 to 2.0.0
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/protocol-v1.16.0) (2026-11-16)
 
 

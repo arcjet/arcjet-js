@@ -7,7 +7,7 @@ metadata:
   author: arcjet
   type: core
   library: "@arcjet/skills"
-  library_version: "1.16.0" # x-release-please-version
+  library_version: "2.0.0" # x-release-please-version
 sources:
   # Reviewed 2026-11-05: docs/guard.md adds the claude-managed-agents/v1 row; this skill has no per-SDK import table.
   # Reviewed 2026-11-19: docs/guard.md scopes vercel-eve/v1 to ≥1.17.0 with a ≤1.16.0 export check; this skill has no per-SDK import table.

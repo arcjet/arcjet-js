@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0](https://github.com/arcjet/arcjet-js/compare/v1.16.0...@arcjet/analyze-wasm-v2.0.0) (2026-11-27)
+
+
+### 🚀 New Features
+
+* sync analyze 38753f0 and well-known-bots c413909 ([#6377](https://github.com/arcjet/arcjet-js/issues/6377)) ([752d954](https://github.com/arcjet/arcjet-js/commit/752d9540eaa5f5ab529ed8bab5e506468b983bef))
+
 ## [1.16.0](https://github.com/arcjet/arcjet-js/compare/v1.15.0...@arcjet/analyze-wasm-v1.16.0) (2026-11-16)
 
 
