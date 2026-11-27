@@ -377,6 +377,7 @@ test("`arcjet`", async function (t) {
           "IBOU_SEARCH",
           "META_WEBINDEXER",
           "NAVER_CRAWLER",
+          "ECHELONGRAPH_RADAR",
           "CATEGORY:MONITOR",
           "CATEGORY:META",
           "CATEGORY:UNKNOWN",
