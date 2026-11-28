@@ -332,16 +332,10 @@ test("email address", async function (t) {
     ]);
   });
 
-  await t.test("should support dotless domain", async function () {
-    assert.deepEqual(wasm.redact("user@localhost", emptyOptions), [
-      {
-        end: 14,
-        identifiedType: { tag: "email" },
-        original: "user@localhost",
-        redacted: "<Redacted email #0>",
-        start: 0,
-      },
-    ]);
+  await t.test("should not treat a dotless domain as an email", async function () {
+    // A single-label domain is more often a handle, path or password than a
+    // deliverable address.
+    assert.deepEqual(wasm.redact("user@localhost", emptyOptions), []);
   });
 
   await t.test("should support domain literal", async function () {
