@@ -37,7 +37,65 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
     let memory0;
     let realloc0;
     
-    function trampoline0(arg0, arg1, arg2) {
+    function trampoline0(arg0, arg1, arg2, arg3, arg4, arg5) {
+      let variant1;
+      switch (arg0) {
+        case 0: {
+          variant1= {
+            tag: 'email',
+          };
+          break;
+        }
+        case 1: {
+          variant1= {
+            tag: 'phone-number',
+          };
+          break;
+        }
+        case 2: {
+          variant1= {
+            tag: 'ip-address',
+          };
+          break;
+        }
+        case 3: {
+          variant1= {
+            tag: 'credit-card-number',
+          };
+          break;
+        }
+        case 4: {
+          var ptr0 = arg1;
+          var len0 = arg2;
+          var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
+          variant1= {
+            tag: 'custom',
+            val: result0
+          };
+          break;
+        }
+        default: {
+          throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
+        }
+      }
+      var ptr2 = arg3;
+      var len2 = arg4;
+      var result2 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr2, len2));
+      const ret = redactSensitiveInfo(variant1, result2);
+      var variant4 = ret;
+      if (variant4 === null || variant4=== undefined) {
+        dataView(memory0).setInt8(arg5 + 0, 0, true);
+      } else {
+        const e = variant4;
+        dataView(memory0).setInt8(arg5 + 0, 1, true);
+        var ptr3 = utf8Encode(e, realloc0, memory0);
+        var len3 = utf8EncodedLen;
+        dataView(memory0).setInt32(arg5 + 8, len3, true);
+        dataView(memory0).setInt32(arg5 + 4, ptr3, true);
+      }
+    }
+    
+    function trampoline1(arg0, arg1, arg2) {
       var len1 = arg1;
       var base1 = arg0;
       var result1 = [];
@@ -96,72 +154,14 @@ export function instantiate(getCoreModule, imports, instantiateCore = WebAssembl
       dataView(memory0).setInt32(arg2 + 4, len5, true);
       dataView(memory0).setInt32(arg2 + 0, result5, true);
     }
-    
-    function trampoline1(arg0, arg1, arg2, arg3, arg4, arg5) {
-      let variant1;
-      switch (arg0) {
-        case 0: {
-          variant1= {
-            tag: 'email',
-          };
-          break;
-        }
-        case 1: {
-          variant1= {
-            tag: 'phone-number',
-          };
-          break;
-        }
-        case 2: {
-          variant1= {
-            tag: 'ip-address',
-          };
-          break;
-        }
-        case 3: {
-          variant1= {
-            tag: 'credit-card-number',
-          };
-          break;
-        }
-        case 4: {
-          var ptr0 = arg1;
-          var len0 = arg2;
-          var result0 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr0, len0));
-          variant1= {
-            tag: 'custom',
-            val: result0
-          };
-          break;
-        }
-        default: {
-          throw new TypeError('invalid variant discriminant for SensitiveInfoEntity');
-        }
-      }
-      var ptr2 = arg3;
-      var len2 = arg4;
-      var result2 = utf8Decoder.decode(new Uint8Array(memory0.buffer, ptr2, len2));
-      const ret = redactSensitiveInfo(variant1, result2);
-      var variant4 = ret;
-      if (variant4 === null || variant4=== undefined) {
-        dataView(memory0).setInt8(arg5 + 0, 0, true);
-      } else {
-        const e = variant4;
-        dataView(memory0).setInt8(arg5 + 0, 1, true);
-        var ptr3 = utf8Encode(e, realloc0, memory0);
-        var len3 = utf8EncodedLen;
-        dataView(memory0).setInt32(arg5 + 8, len3, true);
-        dataView(memory0).setInt32(arg5 + 4, ptr3, true);
-      }
-    }
     let exports2;
     let postReturn0;
     Promise.all([module0, module1, module2]).catch(() => {});
     ({ exports: exports0 } = yield instantiateCore(yield module1));
     ({ exports: exports1 } = yield instantiateCore(yield module0, {
       'arcjet:redact/custom-redact': {
-        'detect-sensitive-info': exports0['0'],
-        'redact-sensitive-info': exports0['1'],
+        'detect-sensitive-info': exports0['1'],
+        'redact-sensitive-info': exports0['0'],
       },
     }));
     memory0 = exports1.memory;

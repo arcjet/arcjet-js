@@ -93,10 +93,14 @@ The model detects: `GIVEN_NAME`, `SURNAME`, `EMAIL`, `PHONE_NUMBER`, `URL`,
 `CITY`, `STATE`, and `ZIP_CODE`.
 
 Deterministic recognizers additionally detect the structured, validatable types
-`EMAIL`, `URL`, `IP_ADDRESS`, `SSN`, and `CREDIT_CARD_NUMBER` (Luhn-validated),
-mirroring Rampart's deterministic redaction layer. Phone numbers are left to
-the model because their digit shape overlaps with financial and government
-identifiers. On overlapping text the recognizer result wins over the model.
+`EMAIL`, `URL`, `IP_ADDRESS`, and `SSN`, mirroring Rampart's deterministic
+redaction layer. Phone numbers are left to the model because their digit shape
+overlaps with financial and government identifiers. On overlapping text the
+recognizer result wins over the model.
+
+`CREDIT_CARD_NUMBER` is detected by Arcjet's own card detection from
+`@arcjet/analyze`, the same as the default backend, whatever recognizers are
+configured. The model's card labels are not used.
 
 The full set is exported as `rampartEntities`:
 
@@ -205,6 +209,11 @@ you don't have to provide `start` and `end`.
 
 To replace detection entirely — including windowing — pass `runModel` instead,
 which takes the whole value and returns spans.
+
+Either way, card numbers come from Arcjet's card detection in
+`@arcjet/analyze`, which runs WebAssembly. A custom runtime must support
+WebAssembly. If card detection fails, the backend still denies on its other
+findings, and otherwise reports an error rather than a clean result.
 
 
 ## Bundlers and frameworks

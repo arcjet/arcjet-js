@@ -1794,6 +1794,13 @@ export type SensitiveInfoOptionsAllow<
    * empty.
    * You must provide either `allow` or `deny`, not both.
    *
+   * A name that is not built in but looks like a built-in type throws, even
+   * with `detect` or a `backend`: equal to one with case and punctuation
+   * ignored or, at five or more letters and digits, a prefix of one or one
+   * edit away (`"emails"`, `"EMIAL"`, `"STREET"`). Use the exact built-in name,
+   * or rename an intentional lookalike in both this list and the detector or
+   * backend that reports it.
+   *
    * You can use the following sensitive info types that can be detected
    * natively by the default backend:
    *
@@ -1856,12 +1863,16 @@ export type SensitiveInfoOptionsAllow<
   /**
    * Custom detection function to identify sensitive information.
    *
+   * Required to list a name in `allow` or `deny` that is not a built-in type,
+   * unless a `backend` that identifies it is configured.
+   *
    * @param tokens
    *   Tokens.
    * @returns
-   *   List of entities (or undefined).
+   *   One entry per token, in the same order: the entity name, or `undefined`
+   *   when the token is not sensitive.
    */
-  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities | undefined>;
   /**
    * Experimental: detection backend to use (default: bundled WebAssembly
    * engine).
@@ -1907,6 +1918,13 @@ export type SensitiveInfoOptionsDeny<
    * All sensitive info (including that detected by `detect`) will be allowed if
    * empty.
    * You must provide either `allow` or `deny`, not both.
+   *
+   * A name that is not built in but looks like a built-in type throws, even
+   * with `detect` or a `backend`: equal to one with case and punctuation
+   * ignored or, at five or more letters and digits, a prefix of one or one
+   * edit away (`"emails"`, `"EMIAL"`, `"STREET"`). Use the exact built-in name,
+   * or rename an intentional lookalike in both this list and the detector or
+   * backend that reports it.
    *
    * You can use the following sensitive info types that can be detected
    * natively by the default backend:
@@ -1965,12 +1983,16 @@ export type SensitiveInfoOptionsDeny<
   /**
    * Custom detection function to identify sensitive information.
    *
+   * Required to list a name in `allow` or `deny` that is not a built-in type,
+   * unless a `backend` that identifies it is configured.
+   *
    * @param tokens
    *   Tokens.
    * @returns
-   *   List of entities (or undefined).
+   *   One entry per token, in the same order: the entity name, or `undefined`
+   *   when the token is not sensitive.
    */
-  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities | undefined>;
   /**
    * Experimental: detection backend to use (default: bundled WebAssembly
    * engine).
@@ -2772,6 +2794,75 @@ const wasmSensitiveInfoBackend: SensitiveInfoBackend = {
 };
 
 /**
+ * The built-in name that `name` most likely meant, when `name` is not built in
+ * but looks like one: equal once case and punctuation are ignored, or, for
+ * names of five or more characters, a prefix of a built-in or one edit (an
+ * insertion, deletion, substitution or swap of neighbours) away from one.
+ *
+ * @param name
+ *   Listed entity name.
+ * @param builtIns
+ *   Built-in entity names.
+ * @returns
+ *   The built-in name, or `undefined`.
+ */
+function normalizeEntityName(value: string): string {
+  // Letters and digits in any script count, so a name with a non-ASCII
+  // suffix is its own name.
+  return value.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+function lookalikeBuiltIn(name: string, builtIns: Iterable<string>): string | undefined {
+  const wanted = normalizeEntityName(name);
+  for (const builtIn of builtIns) {
+    if (builtIn === name) return undefined;
+  }
+  for (const builtIn of builtIns) {
+    const candidate = normalizeEntityName(builtIn);
+    if (candidate === wanted) return builtIn;
+    if (
+      Array.from(wanted).length >= 5 &&
+      (candidate.startsWith(wanted) || withinOneEdit(Array.from(wanted), Array.from(candidate)))
+    ) {
+      return builtIn;
+    }
+  }
+  return undefined;
+}
+
+function same(x: readonly string[], y: readonly string[]): boolean {
+  return x.length === y.length && x.every((c, k) => c === y[k]);
+}
+
+/**
+ * Whether `a` and `b`, as code points, differ by at most one insertion,
+ * deletion, substitution or swap of neighbouring characters.
+ */
+function withinOneEdit(a: readonly string[], b: readonly string[]): boolean {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  if (a.length === b.length) {
+    return (
+      same(a.slice(i + 1), b.slice(i + 1)) ||
+      (a[i] === b[i + 1] && a[i + 1] === b[i] && same(a.slice(i + 2), b.slice(i + 2)))
+    );
+  }
+  return a.length > b.length ? same(a.slice(i + 1), b.slice(i)) : same(a.slice(i), b.slice(i + 1));
+}
+
+/**
+ * Built-in {@linkcode ArcjetSensitiveInfoType} values that the default (WASM)
+ * backend detects.
+ */
+const defaultSensitiveInfoTypes: ReadonlySet<string> = new Set([
+  "EMAIL",
+  "PHONE_NUMBER",
+  "IP_ADDRESS",
+  "CREDIT_CARD_NUMBER",
+]);
+
+/**
  * Built-in {@linkcode ArcjetSensitiveInfoType} values that the default (WASM)
  * backend cannot detect. Each is only detected when a
  * {@linkcode SensitiveInfoBackend} that supports it is configured (such as
@@ -2906,6 +2997,42 @@ export function sensitiveInfo<
   const allow = options.allow || [];
   const deny = options.deny || [];
 
+  // A name that looks like a built-in type is almost always a typo for it,
+  // and a custom `detect` function or backend would never report it.
+  for (const entity of new Set([...allow, ...deny])) {
+    if (typeof entity !== "string") continue;
+    const meant = lookalikeBuiltIn(entity, [
+      ...defaultSensitiveInfoTypes,
+      ...backendOnlySensitiveInfoTypes,
+    ]);
+    if (typeof meant !== "undefined") {
+      throw new Error(
+        `\`sensitiveInfo\` options error: "${entity}" looks like the built-in type "${meant}". ` +
+          `Use "${meant}", or give a custom type a name that is not close to a built-in one.`,
+      );
+    }
+  }
+
+  // Without a custom `detect` function or a backend, only the default (WASM)
+  // backend runs, and it cannot identify a name that is not a built-in type, so
+  // reject it rather than silently never matching.
+  if (typeof options.detect === "undefined" && typeof options.backend === "undefined") {
+    const unknown = [...new Set([...allow, ...deny])].filter(
+      (entity) =>
+        typeof entity !== "string" ||
+        (!defaultSensitiveInfoTypes.has(entity) && !backendOnlySensitiveInfoTypes.has(entity)),
+    );
+    if (unknown.length > 0) {
+      const list = unknown.map((entity) => `"${entity}"`).join(", ");
+      throw new Error(
+        `\`sensitiveInfo\` options error: ${list} ${unknown.length === 1 ? "is not a" : "are not"} ` +
+          `built-in sensitive information ${unknown.length === 1 ? "type" : "types"}. ` +
+          `Use a built-in type, or provide a custom \`detect\` function or a \`backend\` that identifies ` +
+          `${unknown.length === 1 ? "it" : "them"}.`,
+      );
+    }
+  }
+
   // A configured backend handles its own supported entity types, and a custom
   // `detect` function can identify anything the caller lists. Without either,
   // only the default (WASM) backend runs, which detects `EMAIL`,
@@ -3015,10 +3142,13 @@ export function sensitiveInfo<
         let convertedDetect = undefined;
         if (typeof options.detect !== "undefined") {
           const detect = options.detect;
+          // Keep one result per token: an `undefined` slot means "not
+          // sensitive" for that token, and dropping it would move every later
+          // result onto the wrong token.
           convertedDetect = (tokens: string[]) => {
-            return detect(tokens)
-              .filter((e) => typeof e !== "undefined")
-              .map(protocolSensitiveInfoEntitiesToAnalyze);
+            return detect(tokens).map((e) =>
+              typeof e === "undefined" ? undefined : protocolSensitiveInfoEntitiesToAnalyze(e),
+            );
           };
         }
 

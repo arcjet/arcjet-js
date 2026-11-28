@@ -104,7 +104,8 @@ test("runRecognizers accepts a custom recognizer list", function () {
 });
 
 test("defaultRecognizers covers the structured types", function () {
-  assert.equal(defaultRecognizers.length, 5);
+  assert.equal(defaultRecognizers.length, 4);
   assert.ok(!defaultRecognizers.includes(phoneRecognizer));
+  assert.ok(!defaultRecognizers.includes(creditCardRecognizer));
   assert.deepEqual(runRecognizers("bank account 0123456789"), []);
 });

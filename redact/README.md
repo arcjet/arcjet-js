@@ -112,11 +112,14 @@ You can pass these options to configure how `redact` works.
 - `contextWindowSize` (`number`, default: `1`)
   — the number of tokens to consider for context
 - `detect` (`(tokens: string[]) => ReadonlyArray<string | undefined>`, optional)
-  — a custom detection function to identify sensitive information
+  — a custom detection function to identify sensitive information; it must
+  return one entry per token, in order, with `undefined` for a token that is
+  not sensitive
 - `entities` (`Array<string>`, default: all builtin and detect entities)
   — which entities to redact; this includes the builtin
   [`ArcjetSensitiveInfoType`][api-arcjet-sensitive-info-type]s and
-  any custom types returned by your `detect` function
+  any custom types returned by your `detect` function; a name that is not
+  built in requires `detect`, otherwise `redact` throws
 - `replace` (`(entity: string, plaintext: string) => string | undefined`, optional)
   — a custom replace function to control how sensitive information is
   redacted
@@ -137,6 +140,29 @@ Redacts sensitive information in a string. You can use the returned
 
 This function returns a `Promise` that resolves to a tuple with the redacted
 string and a function to unredact it (`Promise<[string, Unredact]>`).
+
+The promise rejects when:
+
+- an entity name in `entities` is not built in and there is no `detect`
+  function
+- an entity name looks like a built-in one, such as `emails` or `credit-card`,
+  even with a `detect` function
+- one replacement stands for different values, for example a custom `replace`
+  that returns `[email]` for every email address
+- the candidate already contains a replacement that `redact` would produce
+
+In each case `unredact` could not restore the original text reliably.
+
+Each call numbers its placeholders from `#0`, so two calls can produce the
+same placeholder for different values. Only use an `unredact` function on text
+derived from its own call's output. For example, in a chat app that redacts each
+message separately, keep every message's `unredact` with that message, or redact
+the whole conversation in one call.
+
+To keep custom replacements reversible, make each one unique to its value and
+unlikely to appear in the text already, for example by including a counter:
+`<email 1>`, `<email 2>`. The same value may share a replacement. An empty
+replacement deletes the value: `unredact` cannot restore it.
 
 ## License
 

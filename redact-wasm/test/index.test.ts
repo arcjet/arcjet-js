@@ -261,17 +261,36 @@ test("card number", async function (t) {
     ]);
   });
 
-  await t.test("should not work w/ dashes and spaces", async function () {
-    assert.deepEqual(wasm.redact("4242-4242 4242-4242", emptyOptions), []);
+  await t.test("should work w/ dashes and spaces", async function () {
+    assert.deepEqual(wasm.redact("4242-4242 4242-4242", emptyOptions), [
+      {
+        end: 19,
+        identifiedType: { tag: "credit-card-number" },
+        original: "4242-4242 4242-4242",
+        redacted: "<Redacted credit card number #0>",
+        start: 0,
+      },
+    ]);
   });
 
   await t.test("should fail if too short w/ dashes", async function () {
     assert.deepEqual(wasm.redact("4242-4242-4242-424", emptyOptions), []);
   });
 
-  await t.test("should work if too long w/ dashes", async function () {
-    assert.deepEqual(wasm.redact("4242-4242-4242-4242-4242", emptyOptions), []);
-  });
+  await t.test(
+    "should redact all of a longer number that holds overlapping cards",
+    async function () {
+      assert.deepEqual(wasm.redact("4242-4242-4242-4242-4242", emptyOptions), [
+        {
+          end: 24,
+          identifiedType: { tag: "credit-card-number" },
+          original: "4242-4242-4242-4242-4242",
+          redacted: "<Redacted credit card number #0>",
+          start: 0,
+        },
+      ]);
+    },
+  );
 });
 
 test("email address", async function (t) {
@@ -313,16 +332,10 @@ test("email address", async function (t) {
     ]);
   });
 
-  await t.test("should support dotless domain", async function () {
-    assert.deepEqual(wasm.redact("user@localhost", emptyOptions), [
-      {
-        end: 14,
-        identifiedType: { tag: "email" },
-        original: "user@localhost",
-        redacted: "<Redacted email #0>",
-        start: 0,
-      },
-    ]);
+  await t.test("should not treat a dotless domain as an email", async function () {
+    // A single-label domain is more often a handle, path or password than a
+    // deliverable address.
+    assert.deepEqual(wasm.redact("user@localhost", emptyOptions), []);
   });
 
   await t.test("should support domain literal", async function () {

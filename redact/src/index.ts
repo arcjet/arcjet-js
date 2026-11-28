@@ -52,9 +52,10 @@ export type RedactOptions<
    * @param tokens
    *   Tokens.
    * @returns
-   *   List of entities (or undefined).
+   *   One entry per token, in the same order: the entity name, or `undefined`
+   *   when the token is not sensitive.
    */
-  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities>;
+  detect?: (tokens: string[]) => ReadonlyArray<DetectedEntities | undefined>;
   /**
    * Custom replace function to redact sensitive information.
    *
@@ -82,6 +83,71 @@ export type RedactOptions<
  * @returns
  *   Entity object.
  */
+const builtInEntities: ReadonlySet<string> = new Set([
+  "credit-card-number",
+  "email",
+  "ip-address",
+  "phone-number",
+]);
+
+/**
+ * The built-in name that `name` most likely meant, when `name` is not built in
+ * but looks like one: equal once case and punctuation are ignored, or, for
+ * names of five or more characters, a prefix of a built-in or one edit (an
+ * insertion, deletion, substitution or swap of neighbours) away from one.
+ *
+ * @param name
+ *   Listed entity name.
+ * @param builtIns
+ *   Built-in entity names.
+ * @returns
+ *   The built-in name, or `undefined`.
+ */
+function normalizeEntityName(value: string): string {
+  // Letters and digits in any script count, so a name with a non-ASCII
+  // suffix is its own name.
+  return value.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+function lookalikeBuiltIn(name: string, builtIns: Iterable<string>): string | undefined {
+  const wanted = normalizeEntityName(name);
+  for (const builtIn of builtIns) {
+    if (builtIn === name) return undefined;
+  }
+  for (const builtIn of builtIns) {
+    const candidate = normalizeEntityName(builtIn);
+    if (candidate === wanted) return builtIn;
+    if (
+      Array.from(wanted).length >= 5 &&
+      (candidate.startsWith(wanted) || withinOneEdit(Array.from(wanted), Array.from(candidate)))
+    ) {
+      return builtIn;
+    }
+  }
+  return undefined;
+}
+
+function same(x: readonly string[], y: readonly string[]): boolean {
+  return x.length === y.length && x.every((c, k) => c === y[k]);
+}
+
+/**
+ * Whether `a` and `b`, as code points, differ by at most one insertion,
+ * deletion, substitution or swap of neighbouring characters.
+ */
+function withinOneEdit(a: readonly string[], b: readonly string[]): boolean {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  if (a.length === b.length) {
+    return (
+      same(a.slice(i + 1), b.slice(i + 1)) ||
+      (a[i] === b[i + 1] && a[i + 1] === b[i] && same(a.slice(i + 2), b.slice(i + 2)))
+    );
+  }
+  return a.length > b.length ? same(a.slice(i + 1), b.slice(i)) : same(a.slice(i), b.slice(i + 1));
+}
+
 function userEntitiesToWasm(entity: unknown): SensitiveInfoEntity {
   if (typeof entity !== "string") {
     throw new Error("redaction entities must be strings");
@@ -120,15 +186,6 @@ function wasmEntitiesToString(entity: SensitiveInfoEntity): string {
   }
 
   return entity.val;
-}
-
-function performReplacementInText(
-  text: string,
-  replacement: string,
-  start: number,
-  end: number,
-): string {
-  return text.substring(0, start) + replacement + text.substring(end);
 }
 
 /**
@@ -261,6 +318,35 @@ function getWasmOptions<
       if (entities.length < 1) {
         throw new Error("no entities configured for redaction");
       }
+
+      // A name that looks like a built-in entity is almost always a typo for
+      // it, and a custom `detect` function would never report it.
+      for (const entity of entities) {
+        if (typeof entity !== "string") continue;
+        const meant = lookalikeBuiltIn(entity, builtInEntities);
+        if (typeof meant !== "undefined") {
+          throw new Error(
+            `"${entity}" looks like the built-in entity "${meant}"; use "${meant}", ` +
+              `or give a custom entity a name that is not close to a built-in one`,
+          );
+        }
+      }
+
+      // Without a custom `detect` function, nothing can identify a name that
+      // is not built in, so reject it rather than silently redacting nothing.
+      if (typeof options.detect !== "function") {
+        const unknown = entities.filter(
+          (entity: unknown) => typeof entity === "string" && !builtInEntities.has(entity),
+        );
+        if (unknown.length > 0) {
+          const list = unknown.map((entity: unknown) => `"${String(entity)}"`).join(", ");
+          throw new Error(
+            `${list} ${unknown.length === 1 ? "is not a built-in entity" : "are not built-in entities"}; ` +
+              `use one of "credit-card-number", "email", "ip-address" or "phone-number", ` +
+              `or provide a custom \`detect\` function`,
+          );
+        }
+      }
     }
 
     // `entities` is an optional field but not allowed to be `undefined`.
@@ -297,10 +383,13 @@ async function callRedactWasm<
   let convertedDetect = noOpDetect;
   if (typeof options?.detect === "function") {
     const detect = options.detect;
+    // Keep one result per token: an `undefined` slot means "not sensitive"
+    // for that token, and dropping it would move every later result onto the
+    // wrong token.
     convertedDetect = (tokens: string[]) => {
-      return detect(tokens)
-        .filter((e) => typeof e !== "undefined")
-        .map((e) => userEntitiesToWasm(e));
+      return detect(tokens).map((e) =>
+        typeof e === "undefined" ? undefined : userEntitiesToWasm(e),
+      );
     };
   }
 
@@ -367,38 +456,133 @@ export async function redact<
   // before an entity shifts the cut and leaves part of the entity behind.
   const spans = resolveByteOffsets(candidate, redactions);
 
-  // Need to apply the redactions in reverse order so that the offsets aren't changed
-  // when we redact with strings that are longer/shorter than the original.
-  redactions.reverse();
-  spans.reverse();
-
+  // Build the output in text order, recording where each replacement lands.
+  let output = "";
+  let cursor = 0;
+  const inserted: Array<{ start: number; end: number }> = [];
   for (const [index, redaction] of redactions.entries()) {
-    candidate = performReplacementInText(
-      candidate,
-      redaction.redacted,
-      spans[index].start,
-      spans[index].end,
-    );
+    output += candidate.substring(cursor, spans[index].start);
+    inserted.push({ start: output.length, end: output.length + redaction.redacted.length });
+    output += redaction.redacted;
+    cursor = spans[index].end;
+  }
+  output += candidate.substring(cursor);
+
+  // The original for each replacement text. A replacement must stand for one
+  // original, or unredact could restore the wrong value.
+  const originals = new Map<string, string>();
+  for (const redaction of redactions) {
+    // An empty replacement cannot be found again, so it cannot be restored.
+    if (redaction.redacted === "") continue;
+    const existing = originals.get(redaction.redacted);
+    if (typeof existing !== "undefined" && existing !== redaction.original) {
+      throw new Error(
+        "redact cannot produce reversible output: one replacement stands for different values; make each `replace` result unique to its value",
+      );
+    }
+    originals.set(redaction.redacted, redaction.original);
+  }
+
+  const matcher = new ReplacementMatcher(originals.keys());
+
+  // Unredact finds replacements in one pass, so it must find exactly the
+  // replacements made here. Text that already held a replacement would be
+  // "restored" to something it never was.
+  let at = 0;
+  for (const match of matcher.find(output)) {
+    while (at < inserted.length && inserted[at].start < match.start) at++;
+    const expected = inserted[at];
+    if (
+      typeof expected === "undefined" ||
+      expected.start !== match.start ||
+      expected.end !== match.start + match.text.length
+    ) {
+      throw new Error(
+        "redact cannot produce reversible output: the text already contains a replacement it would produce; use a custom `replace` function",
+      );
+    }
+    at++;
   }
 
   function unredact(input: string): string {
-    for (const redaction of redactions) {
-      let position;
-      while (position !== -1) {
-        position = input.indexOf(redaction.redacted);
-        if (position !== -1) {
-          input = performReplacementInText(
-            input,
-            redaction.original,
-            position,
-            position + redaction.redacted.length,
-          );
-        }
-      }
+    let result = "";
+    let cursor = 0;
+    // Replaced text is never searched again, so a replacement that contains
+    // its original, or another replacement, cannot loop.
+    for (const match of matcher.find(input)) {
+      result += input.substring(cursor, match.start) + originals.get(match.text);
+      cursor = match.start + match.text.length;
     }
-
-    return input;
+    return result + input.substring(cursor);
   }
 
-  return [candidate, unredact];
+  return [output, unredact];
+}
+
+interface TrieNode {
+  children: Map<string, TrieNode>;
+  text: string | undefined;
+}
+
+/**
+ * Finds replacement texts in a string. The texts share one prefix tree, so
+ * each position costs at most the length of the longest text, however many
+ * texts share a prefix such as `<Redacted`.
+ */
+class ReplacementMatcher {
+  #root: TrieNode = { children: new Map(), text: undefined };
+
+  /**
+   * @param texts
+   *   Replacement texts. Empty texts are ignored.
+   */
+  constructor(texts: Iterable<string>) {
+    for (const text of texts) {
+      if (text === "") continue;
+      let node = this.#root;
+      for (const char of text) {
+        let child = node.children.get(char);
+        if (typeof child === "undefined") {
+          child = { children: new Map(), text: undefined };
+          node.children.set(char, child);
+        }
+        node = child;
+      }
+      node.text = text;
+    }
+  }
+
+  /**
+   * Find every occurrence in `value`, left to right and without overlaps. At
+   * each position the longest text wins, so a replacement that contains
+   * another is found whole.
+   *
+   * @param value
+   *   Text to search.
+   * @returns
+   *   Matches in order.
+   */
+  find(value: string): Array<{ start: number; text: string }> {
+    const matches: Array<{ start: number; text: string }> = [];
+    let index = 0;
+    while (index < value.length) {
+      let node: TrieNode | undefined = this.#root;
+      let found: string | undefined;
+      let position = index;
+      while (typeof node !== "undefined" && position < value.length) {
+        const codePoint = value.codePointAt(position)!;
+        const char = String.fromCodePoint(codePoint);
+        node = node.children.get(char);
+        position += char.length;
+        if (typeof node?.text !== "undefined") found = node.text;
+      }
+      if (typeof found === "undefined") {
+        index++;
+      } else {
+        matches.push({ start: index, text: found });
+        index += found.length;
+      }
+    }
+    return matches;
+  }
 }

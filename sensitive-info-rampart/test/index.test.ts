@@ -124,6 +124,53 @@ test("recognizer spans win over overlapping model spans", async function () {
   });
 });
 
+test("card numbers are found with the recognizers disabled", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({ recognizers: [], runModel: stubModel([]) });
+
+  const result = await backend.detect(
+    context,
+    "card 4111 1111 1111 1111",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, [
+    { start: 5, end: 24, identifiedType: { tag: "credit-card-number" } },
+  ]);
+});
+
+test("the model's card labels are not used", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({
+    runModel: stubModel([{ start: 6, end: 11, type: "CREDIT_CARD_NUMBER" }]),
+  });
+
+  const result = await backend.detect(
+    context,
+    "order 12345 shipped",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, []);
+});
+
+test("a card number is kept when a longer span overlaps it", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({
+    runModel: stubModel([{ start: 0, end: 24, type: "STREET_NAME" }]),
+  });
+
+  const result = await backend.detect(
+    context,
+    "card 4111 1111 1111 1111",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, [
+    { start: 5, end: 24, identifiedType: { tag: "credit-card-number" } },
+  ]);
+});
+
 test("a short recognizer span does not delete a longer overlapping entity", async function () {
   const { context } = fakeContext();
   // "1 Infinite Loop" — the model spans the whole street ([0,15)); a stray
@@ -301,4 +348,45 @@ test("the `sensitiveInfo` rule denies input over the limit without running the m
   );
   assert.equal(warnCalls.length, 1);
   assert.equal(JSON.stringify(warnCalls).includes(secret), false);
+});
+
+test("a recognizer's card labels are not used", async function () {
+  const { context } = fakeContext();
+  const backend = rampart({
+    recognizers: [() => [{ start: 6, end: 11, type: "CREDIT_CARD_NUMBER" }]],
+    runModel: stubModel([]),
+  });
+
+  const result = await backend.detect(
+    context,
+    "order 12345 shipped",
+    denyEntities(["CREDIT_CARD_NUMBER"]),
+  );
+
+  assert.deepEqual(result.denied, []);
+});
+
+test("a failed card scan still denies on the other findings", async function (t) {
+  t.mock.method(WebAssembly, "instantiate", () => Promise.reject(new Error("no wasm")));
+  const { context } = fakeContext();
+  const backend = rampart({
+    recognizers: [],
+    runModel: stubModel([{ start: 6, end: 12, type: "SURNAME" }]),
+  });
+
+  const result = await backend.detect(context, "Hello Rivera", denyEntities(["SURNAME"]));
+
+  assert.deepEqual(result.denied, [
+    { start: 6, end: 12, identifiedType: { tag: "custom", val: "SURNAME" } },
+  ]);
+});
+
+test("a failed card scan with nothing else to deny is an error", async function (t) {
+  t.mock.method(WebAssembly, "instantiate", () => Promise.reject(new Error("no wasm")));
+  const { context } = fakeContext();
+  const backend = rampart({ recognizers: [], runModel: stubModel([]) });
+
+  await assert.rejects(
+    backend.detect(context, "nothing here", denyEntities(["CREDIT_CARD_NUMBER"])),
+  );
 });

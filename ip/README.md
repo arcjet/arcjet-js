@@ -67,14 +67,19 @@ console.log(ip); // => "1.1.1.1"
 ## API
 
 This package exports the identifiers
-[`findIp`][api-find-ip] and [`parseProxy`][api-parse-proxy].
+[`findIp`][api-find-ip],
+[`findIpDetails`][api-find-ip-details],
+[`parseProxy`][api-parse-proxy], and
+[`resolveClientIp`][api-resolve-client-ip].
 The default export is [`findIp`][api-find-ip].
 
 This package exports the [TypeScript][] types
 [`Cidr`][api-cidr],
+[`ClientIpDetails`][api-client-ip-details],
 [`Options`][api-options],
-[`Platform`][api-platform], and
-[`RequestLike`][api-request-like].
+[`Platform`][api-platform],
+[`RequestLike`][api-request-like], and
+[`ResolveOptions`][api-resolve-options].
 
 ### `Cidr`
 
@@ -88,6 +93,23 @@ type Cidr = Ipv4Cidr | Ipv6Cidr;
 // `{bits: number, partSize: 8 | 16, parts: Array<number>, type: "v4" | "v6"}`,
 // with a `contains` function that can be passed an array of octets.
 ```
+
+### `ClientIpDetails`
+
+This type represents a found client IP address and where it came from.
+
+###### Fields
+
+- `ip` (`string`)
+  — the IP address, or an empty string when none was found
+- `provenance` (`string`)
+  — where the address came from: `"direct"`, `"platform"`,
+  `"trusted-proxy"`, `"unverified-header"`, `"manual"`, `"development"`,
+  `"request"`, or `"none"`
+- `verified` (`boolean`)
+  — whether the source is tied to the direct request or a trusted path
+- `header` (`string`, optional)
+  — the lowercase header that supplied the address, when a header did
 
 ### `Options`
 
@@ -110,6 +132,20 @@ This type represents the platform names that `findIp` recognizes.
 ```ts
 type Platform = "cloudflare" | "firebase" | "fly-io" | "render" | "vercel";
 ```
+
+### `ResolveOptions`
+
+You can pass these options to [`resolveClientIp`][api-resolve-client-ip]. They
+extend [`Options`][api-options].
+
+###### Fields
+
+- `ipSrc` (`string`, optional)
+  — a client IP your application trusts; it takes precedence, a malformed
+  value throws, and an empty string means not supplied
+- `development` (`boolean`, optional)
+  — enable the `X-Arcjet-Ip` header override and the loopback fallback for
+  development
 
 ### `RequestLike`
 
@@ -147,6 +183,45 @@ by that platform.
 
 The found IP address (`string`), or an empty string if no IP could be
 determined.
+
+### `findIpDetails(request[, options])`
+
+Finds the client IP address like [`findIp`][api-find-ip], and also reports
+where it came from. It doesn't log or send anything.
+
+###### Parameters
+
+- `request` ([`RequestLike`][api-request-like])
+  — the request to extract an IP from
+- `options` ([`Options`][api-options], optional)
+  — configuration for platform and trusted proxies
+
+###### Returns
+
+[`ClientIpDetails`][api-client-ip-details]. When no platform is set and only a
+forwarding header supplies the address, `provenance` is `"unverified-header"`
+and `verified` is `false`.
+
+### `resolveClientIp(request[, options])`
+
+Resolves the client IP address the way the Arcjet SDK does: a trusted
+`ipSrc` first, then the development override, then
+[`findIpDetails`][api-find-ip-details].
+
+###### Parameters
+
+- `request` ([`RequestLike`][api-request-like])
+  — the request to extract an IP from
+- `options` ([`ResolveOptions`][api-resolve-options], optional)
+  — configuration for platform, trusted proxies, and overrides
+
+###### Returns
+
+[`ClientIpDetails`][api-client-ip-details].
+
+###### Throws
+
+When `ipSrc` is a non-empty string that is not a valid IPv4 or IPv6 address.
 
 ### `parseProxy(value)`
 
@@ -191,11 +266,15 @@ licensed under [MIT][request-ip-license] © Petar Bojinov.
 Our work cherry picks only what we need.
 
 [api-cidr]: #cidr
+[api-client-ip-details]: #clientipdetails
 [api-find-ip]: #findiprequest-options
+[api-find-ip-details]: #findipdetailsrequest-options
 [api-options]: #options
 [api-parse-proxy]: #parseproxyvalue
 [api-platform]: #platform
 [api-request-like]: #requestlike
+[api-resolve-client-ip]: #resolveclientiprequest-options
+[api-resolve-options]: #resolveoptions
 [arcjet]: https://arcjet.com
 [request-ip-client-ip]: https://github.com/pbojinov/request-ip/blob/e1d0f4b/src/index.js#L55
 [request-ip-license]: https://github.com/pbojinov/request-ip/blob/e1d0f4b/LICENSE.md
