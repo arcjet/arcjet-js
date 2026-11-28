@@ -172,7 +172,15 @@ describe("Primitive > sensitiveInfo", () => {
   });
 
   test("rejects a name that looks like a built-in type, even with `detect`", () => {
-    for (const name of ["emails", "EMIAL", "credit-card", "phone_number", "Ip-Address"]) {
+    for (const name of [
+      "emails",
+      "EMIAL",
+      "credit-card",
+      "phone_number",
+      "Ip-Address",
+      // One non-ASCII substitution is still one edit.
+      "EMA\u0406L",
+    ]) {
       assert.throws(
         () =>
           sensitiveInfo<string>({
@@ -186,7 +194,8 @@ describe("Primitive > sensitiveInfo", () => {
   });
 
   test("accepts a custom name that is not close to a built-in type", () => {
-    for (const name of ["ACCOUNT_ID", "URLS", "INVOICE"]) {
+    // A non-ASCII suffix makes its own name.
+    for (const name of ["ACCOUNT_ID", "URLS", "INVOICE", "EMAIL\u5730\u5740"]) {
       assert.doesNotThrow(() =>
         sensitiveInfo<string>({ deny: [name], detect: (tokens) => tokens.map(() => undefined) }),
       );

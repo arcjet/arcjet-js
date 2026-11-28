@@ -215,7 +215,7 @@ describe("ArcjetRedact", () => {
     });
 
     test("it will throw for a name that looks like a built-in entity, even with `detect`", async () => {
-      for (const name of ["credit-card", "emial", "Phone_Number"]) {
+      for (const name of ["credit-card", "emial", "Phone_Number", "ema\u0456l"]) {
         await assert.rejects(
           redact("mail a@example.com", {
             // @ts-expect-error: not a built-in entity.

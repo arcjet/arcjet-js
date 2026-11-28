@@ -1794,6 +1794,13 @@ export type SensitiveInfoOptionsAllow<
    * empty.
    * You must provide either `allow` or `deny`, not both.
    *
+   * A name that is not built in but looks like a built-in type throws, even
+   * with `detect` or a `backend`: equal to one with case and punctuation
+   * ignored or, at five or more letters and digits, a prefix of one or one
+   * edit away (`"emails"`, `"EMIAL"`, `"STREET"`). Use the exact built-in name,
+   * or rename an intentional lookalike in both this list and the detector or
+   * backend that reports it.
+   *
    * You can use the following sensitive info types that can be detected
    * natively by the default backend:
    *
@@ -1911,6 +1918,13 @@ export type SensitiveInfoOptionsDeny<
    * All sensitive info (including that detected by `detect`) will be allowed if
    * empty.
    * You must provide either `allow` or `deny`, not both.
+   *
+   * A name that is not built in but looks like a built-in type throws, even
+   * with `detect` or a `backend`: equal to one with case and punctuation
+   * ignored or, at five or more letters and digits, a prefix of one or one
+   * edit away (`"emails"`, `"EMIAL"`, `"STREET"`). Use the exact built-in name,
+   * or rename an intentional lookalike in both this list and the detector or
+   * backend that reports it.
    *
    * You can use the following sensitive info types that can be detected
    * natively by the default backend:
@@ -2793,7 +2807,9 @@ const wasmSensitiveInfoBackend: SensitiveInfoBackend = {
  *   The built-in name, or `undefined`.
  */
 function normalizeEntityName(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+  // Letters and digits in any script count, so a name with a non-ASCII
+  // suffix is its own name.
+  return value.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 }
 
 function lookalikeBuiltIn(name: string, builtIns: Iterable<string>): string | undefined {
@@ -2804,26 +2820,35 @@ function lookalikeBuiltIn(name: string, builtIns: Iterable<string>): string | un
   for (const builtIn of builtIns) {
     const candidate = normalizeEntityName(builtIn);
     if (candidate === wanted) return builtIn;
-    if (wanted.length >= 5 && (candidate.startsWith(wanted) || withinOneEdit(wanted, candidate))) {
+    if (
+      Array.from(wanted).length >= 5 &&
+      (candidate.startsWith(wanted) || withinOneEdit(Array.from(wanted), Array.from(candidate)))
+    ) {
       return builtIn;
     }
   }
   return undefined;
 }
 
+function same(x: readonly string[], y: readonly string[]): boolean {
+  return x.length === y.length && x.every((c, k) => c === y[k]);
+}
+
 /**
- * Whether `a` and `b` differ by at most one insertion, deletion, substitution
- * or swap of neighbouring characters.
+ * Whether `a` and `b`, as code points, differ by at most one insertion,
+ * deletion, substitution or swap of neighbouring characters.
  */
-function withinOneEdit(a: string, b: string): boolean {
+function withinOneEdit(a: readonly string[], b: readonly string[]): boolean {
   if (Math.abs(a.length - b.length) > 1) return false;
   let i = 0;
   while (i < a.length && i < b.length && a[i] === b[i]) i++;
   if (a.length === b.length) {
-    const rest = (n: number) => a.slice(i + n) === b.slice(i + n);
-    return rest(1) || (a[i] === b[i + 1] && a[i + 1] === b[i] && rest(2));
+    return (
+      same(a.slice(i + 1), b.slice(i + 1)) ||
+      (a[i] === b[i + 1] && a[i + 1] === b[i] && same(a.slice(i + 2), b.slice(i + 2)))
+    );
   }
-  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+  return a.length > b.length ? same(a.slice(i + 1), b.slice(i)) : same(a.slice(i), b.slice(i + 1));
 }
 
 /**
